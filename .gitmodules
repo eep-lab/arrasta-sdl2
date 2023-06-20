@@ -1,0 +1,3 @@
+[submodule "dependencies/epiktimer"]
+	path = dependencies/epiktimer
+	url = https://github.com/graemeg/epiktimer.git
