@@ -4,3 +4,6 @@
 [submodule "dependencies/SDL2-for-Pascal"]
 	path = dependencies/SDL2-for-Pascal
 	url = https://github.com/PascalGameDevelopment/SDL2-for-Pascal.git
+[submodule "dependencies/EyeLink-for-Pascal"]
+	path = dependencies/EyeLink-for-Pascal
+	url = https://github.com/cpicanco/EyeLink-for-Pascal.git
