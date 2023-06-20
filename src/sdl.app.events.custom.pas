@@ -101,6 +101,7 @@ constructor TCustomEventHandler.Create;
 begin
   inherited Create;
   EventHandler := Self;
+  AssignEvents;
 end;
 
 procedure TCustomEventHandler.AssignEvents;
