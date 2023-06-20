@@ -1,0 +1,21 @@
+object FormBackground: TFormBackground
+  Left = 480
+  Height = 240
+  Top = 181
+  Width = 320
+  BorderStyle = bsNone
+  Caption = 'FormBackground'
+  ClientHeight = 240
+  ClientWidth = 320
+  LCLVersion = '2.3.0.0'
+  WindowState = wsFullScreen
+  object Button1: TButton
+    Left = 8
+    Height = 131
+    Top = 8
+    Width = 148
+    Caption = 'Button1'
+    OnClick = Button1Click
+    TabOrder = 0
+  end
+end
