@@ -7,3 +7,6 @@
 [submodule "dependencies/EyeLink-for-Pascal"]
 	path = dependencies/EyeLink-for-Pascal
 	url = https://github.com/cpicanco/EyeLink-for-Pascal.git
+[submodule "media"]
+	path = media
+	url = https://github.com/cpicanco/media.git
