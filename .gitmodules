@@ -1,3 +1,6 @@
 [submodule "dependencies/epiktimer"]
 	path = dependencies/epiktimer
 	url = https://github.com/graemeg/epiktimer.git
+[submodule "dependencies/SDL2-for-Pascal"]
+	path = dependencies/SDL2-for-Pascal
+	url = https://github.com/PascalGameDevelopment/SDL2-for-Pascal.git
