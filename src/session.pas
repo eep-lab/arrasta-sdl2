@@ -44,9 +44,7 @@ type
 implementation
 
 uses
-  FileUtil
-  , LazFileUtils
-  , timestamps
+  timestamps
   , session.configurationfile
   , session.pool
   , sdl.app.trials.factory

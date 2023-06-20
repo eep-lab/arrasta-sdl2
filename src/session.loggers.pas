@@ -42,7 +42,8 @@ type
 
 implementation
 
-uses SysUtils, LazFileUtils
+uses SysUtils
+  , LazFileUtils
   , session.pool
   , session.loggers.instances;
 
