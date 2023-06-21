@@ -23,6 +23,9 @@ function MakeConfigurationFile(
   AHasLimitedHold: Boolean;
   AShowMouse: Boolean) : string;
 
+var
+  ConfigurationFilename : string;
+
 implementation
 
 uses

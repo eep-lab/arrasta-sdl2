@@ -50,11 +50,6 @@ uses
 
 { TFormBackground }
 
-var
-  LSession : TSession;
-  SDLApp : TSDLApplication;
-  ConfigurationFilename : string;
-
 procedure TFormBackground.Button1Click(Sender: TObject);
 var
   ITI : integer = 4;
@@ -79,8 +74,10 @@ begin
   SDLApp.SetupAudio;
   SDLApp.SetupText;
 
-  LSession := TSession.Create(Self);
-  LSession.Play;
+  SDLSession := TSession.Create(Self);
+  //SDLSession.OnBeforeStart := @BeginSession;
+  //SDLSession.OnEndSession  := @EndSession;
+  SDLSession.Play;
 
   SDLApp.Run;
 end;

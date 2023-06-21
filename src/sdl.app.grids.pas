@@ -86,13 +86,14 @@ var
   BorderBottom : TRect;
   BorderLeft   : TRect;
   BorderRight  : TRect;
-  MonitorWidth : integer;
-  MonitorHeight: integer;
 
 implementation
 
-uses Math, sdl.app.grids.methods;
+uses Math, sdl.app, sdl.app.grids.methods;
 
+var
+  MonitorWidth : integer;
+  MonitorHeight: integer;
 {
   GetPositionFromSegment returns Left or Top position based on:
     ASegment = Width or Height from which get the Left or Top position.
@@ -502,7 +503,12 @@ begin
 end;
 
 constructor TGrid.Create(ASeed: integer);
+var
+  LRect : TSDL_Rect;
 begin
+  LRect := SDLApp.Monitor;
+  MonitorWidth := LRect.w;
+  MonitorHeight:= LRect.h;
   FSeed := ASeed;
   FSamplesCount := -1;
   FComparisonsCount := -1;

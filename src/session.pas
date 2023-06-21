@@ -41,6 +41,9 @@ type
     property Timer : TSDLTimer read FTimer;
   end;
 
+var
+  SDLSession: TSession;
+
 implementation
 
 uses

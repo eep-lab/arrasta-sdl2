@@ -18,7 +18,6 @@ uses
   , SDL2
   , ctypes
   , sdl.app.events.custom
-  , sdl.app.renderer
   ;
 
 type
@@ -28,6 +27,7 @@ type
   TSDLApplication = class
     private
       //FKeyboardState : integer;
+      FCurrentMonitorIndex : cint;
       FEvents : TCustomEventHandler;
       FRunning: Boolean;
       FSDLWindow: PSDL_Window;
@@ -47,8 +47,10 @@ type
       destructor Destroy; override;
       procedure Run;
       procedure SetupEvents;
+      {$IFNDEF NO_LCL}
       procedure SetupAudio;
       procedure SetupText;
+      {$ENDIF}
       property Running : Boolean read FRunning write FRunning;
       property Window  : PSDL_Window read FSDLWindow;
       property Monitor : TSDL_Rect read GetCurrentMonitor;
@@ -56,13 +58,20 @@ type
       property Events  : TCustomEventHandler read FEvents;
   end;
 
+var
+  SDLApp : TSDLApplication;
+
 implementation
 
 uses sdl.app.output
   , sdl.app.video.methods
-  , sdl.app.audio
+{$IFDEF NO_LCL}
+  , sdl.app.renderer.nolcl
+{$ELSE}
   , sdl.app.text
-  , sdl.app.grids
+  , sdl.app.audio
+  , sdl.app.renderer
+{$ENDIF}
   ;
 
 { TSDLApplication }
@@ -115,7 +124,7 @@ end;
 
 function TSDLApplication.GetCurrentMonitor: TSDL_Rect;
 begin
-  Result := MonitorFromWindow;
+  Result := FMonitors[FCurrentMonitorIndex];
 end;
 
 function TSDLApplication.GetMonitor(i: cint): TSDL_Rect;
@@ -137,20 +146,20 @@ begin
   Print(Self.ClassName+'.'+{$I %CURRENTROUTINE%}+#32+ATitle);
   if AMonitor > SDL_GetNumVideoDisplays then Exit;
 
+  {$IFNDEF NO_LCL}
   // Audio Setup
   SDLAudio := TSDLAudio.Create;
 
   // text/font setup
   SDLText  := TSDLText.Create;
+  {$ENDIF}
 
   // Monitor Setup
   LoadMonitors;
+  FCurrentMonitorIndex := AMonitor;
   LMonitor := FMonitors[AMonitor];
   FSDLWindow := SDL_CreateWindow(ATitle, LMonitor.x, LMonitor.y,
     LMonitor.w, LMonitor.h, SDL_WINDOW_FULLSCREEN);
-
-  MonitorWidth := LMonitor.w;
-  MonitorHeight:= LMonitor.h;
 
   FSDLRenderer := SDL_CreateRenderer(FSDLWindow, -1, SDL_RENDERER_ACCELERATED);
   //FSDLSurface  := SDL_CreateRGBSurface(0, LMonitor.w, LMonitor.h, 32, 128, 128, 128, 255);
@@ -159,8 +168,10 @@ end;
 
 destructor TSDLApplication.Destroy;
 begin
+  {$IFNDEF NO_LCL}
   SDLText.Free;
   SDLAudio.Free;
+  {$ENDIF}
   FEvents.Free;
   inherited Destroy;
 end;
@@ -183,6 +194,7 @@ begin
   FEvents.OnKeyDown:=@KeyDown;
 end;
 
+{$IFNDEF NO_LCL}
 procedure TSDLApplication.SetupAudio;
 begin
   AllocateAudioChannels;
@@ -192,6 +204,7 @@ procedure TSDLApplication.SetupText;
 begin
   SDLText.SetupFonts;
 end;
+{$ENDIF}
 
 end.
 
