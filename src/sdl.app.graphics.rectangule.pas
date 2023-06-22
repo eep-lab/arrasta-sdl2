@@ -48,7 +48,8 @@ type
     procedure Centralize;
     procedure Show;
     procedure Hide;
-    function IntersectsWith(ARect: TSDL_Rect) : Boolean;
+    function IntersectsWith(ARect: TSDL_Rect) : Boolean; overload;
+    function IntersectsWith(ARect: TRectangule) : Boolean; overload;
     procedure CentralizeWith(ARect: TSDL_Rect);
     procedure Inflate(AValue : cint);
     procedure ToOriginalBounds;
@@ -169,6 +170,11 @@ end;
 function TRectangule.IntersectsWith(ARect: TSDL_Rect): Boolean;
 begin
   Result := SDL_HasIntersection(@FRect, @ARect);
+end;
+
+function TRectangule.IntersectsWith(ARect: TRectangule): Boolean;
+begin
+  Result := IntersectsWith(ARect.BoundsRect);
 end;
 
 procedure TRectangule.CentralizeWith(ARect: TSDL_Rect);

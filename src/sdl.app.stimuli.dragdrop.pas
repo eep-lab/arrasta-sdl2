@@ -223,17 +223,10 @@ procedure TDragDropStimuli.Start;
 var
   LItem : TDragDropablePicture;
 begin
-  for LItem in FComparisons do
-    LItem.Show;
-
-  Animate(GetRandomSample);
-  //FAnimation.BringToFront;
-
-  for LItem in FSamples do
-  begin
-    LItem.Show;
-    //LItem.BringToFront;
-  end;
+  for LItem in FComparisons do LItem.Show;
+  for LItem in FSamples do LItem.Show;
+  LItem := GetRandomSample;
+  Animate(LItem);
 end;
 
 procedure TDragDropStimuli.Stop;
@@ -255,9 +248,15 @@ end;
 procedure TDragDropStimuli.OtherDragDrop(Sender, Source: TObject;
   X, Y: Integer);
 var
-  LItem : TDragDropablePicture;
+  LSample , LSourceSample: TDragDropablePicture;
 begin
-  LItem := Source as TDragDropablePicture;
+  LSourceSample := Source as TDragDropablePicture;
+  for LSample in FSamples do begin
+    if LSample = LSourceSample then Continue;
+    if LSample.IntersectsWith(LSourceSample) then begin
+      LSourceSample.ToOriginalBounds;
+    end;
+  end;
   //LItem.Color := clWhite;
   if Assigned(OnOtherDragDrop) then
     OnOtherDragDrop(Sender, Source, X, Y);
@@ -305,7 +304,6 @@ begin
   LAnimation := TAnimation.Create(Self);
   //LAnimation.Cursor:=Cursor;
   LAnimation.Join(Sample, Comparison, FGridOrientation);
-  //LAnimation.SendToBack;
   LAnimation.Show;
   FDoneAnimations.Add(LAnimation);
 
@@ -409,11 +407,11 @@ end;
 procedure TDragDropStimuli.Animate(ASample: TDragDropablePicture);
 begin
   //FAnimation.Cursor := Cursor;
-  //FAnimation.BringToFront;
-  //ASample.BringToFront;
   //ASample.UpdateDragMouseMoveMode;
   FAnimation.Animate(ASample);
   FAnimation.Show;
+  FAnimation.BringToFront;
+  ASample.BringToFront;
   //Parent.Invalidate;
 end;
 

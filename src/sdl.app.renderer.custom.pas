@@ -39,9 +39,11 @@ type
     FOnMouseEnter: TNotifyEvent;
     FOnMouseExit: TNotifyEvent;
     FParent : TCustomRenderer;
+    function GetInFront: Boolean;
     function GetSDLMouseMotion    : TOnMouseMotionEvent;
     function GetSDLMouseButtonDown: TOnMouseButtonDownEvent;
     function GetSDLMouseButtonUp  : TOnMouseButtonUpEvent;
+    function GetZIndex: integer;
     procedure SetOnMouseDown(AValue: TOnMouseEvent);
     procedure SetOnMouseEnter(AValue: TNotifyEvent);
     procedure SetOnMouseExit(AValue: TNotifyEvent);
@@ -54,6 +56,7 @@ type
     procedure SDLMouseMotion(const event: TSDL_MouseMotionEvent);
     procedure SDLMouseButtonDown(const event: TSDL_MouseButtonEvent);
     procedure SDLMouseButtonUp(const event: TSDL_MouseButtonEvent);
+    procedure BringChildToFront(AChild : TComponent);
   protected
     FChilds : TChilds;
     function GetMouseInside : Boolean; virtual;
@@ -75,6 +78,7 @@ type
     function AsIClickable : IClickable;
     function AsIPaintable : IPaintable;
     function AsIMoveable : IMoveable;
+    procedure BringToFront;
     property Parent : TCustomRenderer read FParent write SetParent;
     property BoundsRect : TSDL_Rect read GetBoundsRect;
     //property OnEyeFixation :
@@ -85,6 +89,8 @@ type
     property OnMouseEnter : TNotifyEvent read FOnMouseEnter write SetOnMouseEnter;
     property OnMouseExit : TNotifyEvent read FOnMouseExit write SetOnMouseExit;
     property MouseInside : Boolean read GetMouseInside write SetMouseInside;
+    property ZIndex : integer read GetZIndex;
+    property InFront : Boolean read GetInFront;
   end;
 
 implementation
@@ -135,6 +141,11 @@ begin
   Result := @SDLMouseMotion;
 end;
 
+function TCustomRenderer.GetInFront: Boolean;
+begin
+  Result := ZIndex = Parent.FChilds.Count-1;
+end;
+
 function TCustomRenderer.GetSDLMouseButtonDown: TOnMouseButtonDownEvent;
 begin
   Result := @SDLMouseButtonDown;
@@ -143,6 +154,11 @@ end;
 function TCustomRenderer.GetSDLMouseButtonUp: TOnMouseButtonUpEvent;
 begin
   Result := @SDLMouseButtonUp;
+end;
+
+function TCustomRenderer.GetZIndex: integer;
+begin
+  Result := Parent.FChilds.IndexOf(Self);
 end;
 
 procedure TCustomRenderer.AddChild(AChild: TComponent);
@@ -185,6 +201,12 @@ var
 begin
   Shift := GetShiftState;
   MouseUp(Self, Shift, event.x, event.y);
+end;
+
+procedure TCustomRenderer.BringChildToFront(AChild: TComponent);
+begin
+  if FChilds.Count <= 1 then Exit;
+  with FChilds do Add(Extract(AChild));
 end;
 
 function TCustomRenderer.GetMouseInside: Boolean;
@@ -268,6 +290,11 @@ end;
 function TCustomRenderer.AsIMoveable: IMoveable;
 begin
   Result := Self as IMoveable;
+end;
+
+procedure TCustomRenderer.BringToFront;
+begin
+  Parent.BringChildToFront(Self);
 end;
 
 end.
