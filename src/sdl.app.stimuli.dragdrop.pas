@@ -346,7 +346,7 @@ begin
     if (FAnimation.Sibling as TDragDropablePicture) <> LSample then
     begin
       if Assigned(FAnimation.Sibling) then
-        FAnimation.Sibling.EdgeColor:=clInactiveCaption;
+        FAnimation.Sibling.EdgeColor:=clGray;
       Animate(LSample);
     end;
   end;

@@ -15,7 +15,6 @@ interface
 
 uses
   SysUtils, fgl
-  , sdl.app.paintable.contract
   , sdl.app.trials.contract
   , sdl.app.trials
   ;
@@ -37,9 +36,8 @@ type
     public
       class procedure RegisterTrialClass(
         ATrialKind: string; ATrialClass: TTrialClass); static;
-      class function NextTrial : ITrial; static;
-      class function GetCurrentTrial : TTrial; static;
-      class function GetLastTrial    : ITrial; static;
+      class procedure Play; static;
+      class function GetLastTrial : ITrial; static;
       class procedure Paint;
   end;
 
@@ -65,7 +63,6 @@ end;
 class destructor TTrialFactory.Destroy;
 begin
   Registry.Free;
-
   if Assigned(CurrentTrial) then
     CurrentTrial.Free;
 end;
@@ -76,7 +73,7 @@ begin
   Registry[ATrialKind] := ATrialClass;
 end;
 
-class function TTrialFactory.NextTrial: ITrial;
+class procedure TTrialFactory.Play;
 var
   TrialData : TTrialData;
   TrialClass : TTrialClass;
@@ -84,8 +81,7 @@ begin
   if Assigned(CurrentTrial) then
     FreeAndNil(CurrentTrial);
 
-  TrialData :=
-    ConfigurationFile.Trial[Counters.CurrentBloc+1, Counters.CurrentTrial+1];
+  TrialData := ConfigurationFile.CurrentTrial;
 
   if not Registry.TryGetData(TrialData.Kind, TrialClass) then
     raise EArgumentException.CreateFmt(
@@ -94,12 +90,6 @@ begin
   CurrentTrial := TrialClass.Create(nil);
   CurrentTrial.OnTrialEnd := InterTrial.OnBegin;
   CurrentTrial.Data := TrialData;
-  Result := CurrentTrial as ITrial;
-end;
-
-class function TTrialFactory.GetCurrentTrial: TTrial;
-begin
-  Result := CurrentTrial;
 end;
 
 class function TTrialFactory.GetLastTrial: ITrial;

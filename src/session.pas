@@ -57,7 +57,6 @@ uses
 
 procedure TSession.PlayBloc;
 begin
-  EndCriteria.Invalidate;
   if EndCriteria.OfSession then begin
     EndSession;
   end else begin
@@ -68,7 +67,6 @@ end;
 
 procedure TSession.EndBloc(Sender: TObject);
 begin
-  Counters.EndBlc;
   PlayBloc;
 end;
 

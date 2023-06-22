@@ -43,8 +43,10 @@ var
 implementation
 
 uses
-  session.pool,
-  session.configurationfile;
+  session.pool
+  , session.loggers.writerow
+  , session.configurationfile
+  ;
 
 { TEndCriteria }
 
@@ -56,6 +58,7 @@ end;
 procedure TEndCriteria.Invalidate;
 begin
   FCurrentBloc := ConfigurationFile.CurrentBloc;
+  BlocName := FCurrentBloc.Name;
   //LCurrentTrial := Counters.CurrentTrial;
 end;
 
@@ -69,18 +72,19 @@ function TEndCriteria.OfBloc: Boolean;
 begin
   EndBlocOnEndTrial;
   Result := Counters.CurrentTrial >= FCurrentBloc.TotalTrials;
+  if Result then begin
+    Counters.EndBlc;
+  end;
 end;
 
 function TEndCriteria.OfTrial: Boolean;
 var
-  RepeatTrial : integer;
-  S1 : string;
+  RepeatTrial , LNextTrial: integer;
+  S1 : string = '';
 begin
   Result := True;
   if Assigned(ConfigurationFile) then begin
     S1 := ConfigurationFile.CurrentTrial.Parameters.Values['RepeatTrial'];
-  end else begin
-    S1 := '0';
   end;
   RepeatTrial := StrToIntDef(S1, 0) -1;
   if RepeatTrial > 0 then begin
@@ -91,6 +95,15 @@ begin
       Counters.RepeatedTrials := 0;
     end;
   end;
+
+  if Result then begin
+    LNextTrial := 1;
+  end else begin
+    LNextTrial := 0;
+  end;
+  Counters.CurrentTrial := Counters.CurrentTrial+LNextTrial; // EndTrial
+  if Counters.CurrentTrial < 0 then
+    raise Exception.Create('CurrentTrial cannot be less than zero.');
 end;
 
 procedure TEndCriteria.EndBlocOnEndTrial;

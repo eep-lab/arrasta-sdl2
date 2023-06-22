@@ -30,6 +30,7 @@ type
     procedure SetOnEndBloc(AValue: TNotifyEvent);
     procedure InterTrialEventsEnd(Sender: TObject);
     procedure SetOnInterTrialEnd(AValue: TNotifyEvent);
+    procedure EndBloc;
   public
     constructor Create(AOwner : TComponent); override;
     procedure BeforePlay;
@@ -41,9 +42,10 @@ type
 implementation
 
 uses sdl.app.trials.factory
-   , sdl.app.trials.contract
    , session.intertrial
    , session.pool
+   , session.loggers.writerow
+   , session.configurationfile
    ;
 
 { TBloc }
@@ -55,17 +57,8 @@ begin
 end;
 
 procedure TBloc.InterTrialEventsEnd(Sender: TObject);
-var
-  LNextTrial: Integer;
 begin
-  if EndCriteria.OfTrial then begin
-    LNextTrial := 1;
-  end else begin
-    LNextTrial := 0;
-  end;
-  Counters.CurrentTrial := Counters.CurrentTrial+LNextTrial;
-  if Counters.CurrentTrial < 0 then
-    Exception.Create('Exception. CurrentTrial cannot be less than zero.');
+  EndCriteria.OfTrial;
   Play;
 end;
 
@@ -73,6 +66,12 @@ procedure TBloc.SetOnInterTrialEnd(AValue: TNotifyEvent);
 begin
   if FOnInterTrialEnd=AValue then Exit;
   FOnInterTrialEnd:=AValue;
+end;
+
+procedure TBloc.EndBloc;
+begin
+  if Assigned(OnEndBloc) then
+    OnEndBloc(Self);
 end;
 
 constructor TBloc.Create(AOwner: TComponent);
@@ -84,17 +83,15 @@ end;
 
 procedure TBloc.BeforePlay;
 begin
-
+  EndCriteria.Invalidate;
 end;
 
 procedure TBloc.Play;
 begin
-  EndCriteria.Invalidate;
   if EndCriteria.OfBloc then begin
-    if Assigned(OnEndBloc) then
-      OnEndBloc(Self);
+    EndBloc;
   end else begin
-    TTrialFactory.NextTrial;
+    TTrialFactory.Play;
   end;
 end;
 

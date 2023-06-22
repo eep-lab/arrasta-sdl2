@@ -19,6 +19,7 @@ uses
 procedure WriteDataRow;
 
 var
+  BlocName,
   LastTrialHeader,
   TrialHeader,
   TrialName,
@@ -33,14 +34,13 @@ uses session.constants
    , timestamps
    , session.loggers
    , session.loggers.instances
-   , session.configurationfile
    , session.pool;
 
 procedure WriteDataRow;
 var
   LSaveData : TDataProcedure;
   i, j : integer;
-  LTrialNo, LBlocID, LBlocName,
+  LTrialNo, LBlocID,
   LTrialID, ITIData, LData : string;
 const
   DoNotApply = #32#32#32#32#32#32 + 'NA';
@@ -62,7 +62,6 @@ begin
   j := Counters.CurrentBloc;
   LTrialNo := (Counters.SessionTrials + 1).ToString;
   LBlocID := (j + 1).ToString;
-  LBlocName := ConfigurationFile.Bloc[j+1].Name;
   LTrialID := (i + 1).ToString;
 
   // FTrial Name
@@ -82,7 +81,7 @@ begin
   LData := TLogger.Row([LData +
     LTrialNo,
     LBlocID,
-    LBlocName,
+    BlocName,
     LTrialID,
     TrialName,
     ITIData,

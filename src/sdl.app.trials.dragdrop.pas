@@ -56,8 +56,8 @@ type
 
 implementation
 
-uses SDL2
-  , session.pool
+uses
+  session.pool
   , session.constants.dragdrop
   , sdl.app.moveable.contract
   , sdl.app.renderer.custom
