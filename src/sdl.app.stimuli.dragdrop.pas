@@ -22,7 +22,6 @@ uses
   , sdl.app.graphics.picture.dragdrop
   , sdl.app.grids
   , sdl.app.audio.contract
-  , session.loggers.writerow
   ;
 
 type

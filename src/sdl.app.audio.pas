@@ -14,7 +14,7 @@ unit sdl.app.audio;
 interface
 
 uses
-  Classes, SysUtils
+  SysUtils
   , fgl
   , ctypes
   , sdl2

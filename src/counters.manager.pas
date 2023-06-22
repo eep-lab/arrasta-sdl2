@@ -13,8 +13,6 @@ unit counters.manager;
 
 interface
 
-uses Classes, Dialogs, SysUtils;
-
 type
 
   { TCounterManager }

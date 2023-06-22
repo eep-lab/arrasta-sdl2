@@ -15,8 +15,6 @@ unit sdl.app.dragdropable.contract;
 
 interface
 
-uses Classes;
-
 type
 
   IDragDropable = interface

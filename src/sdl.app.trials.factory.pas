@@ -45,7 +45,6 @@ implementation
 
 uses session.intertrial
    , session.configuration
-   , session.pool
    , session.configurationfile
    , sdl.app.trials.mts
    , sdl.app.trials.dragdrop

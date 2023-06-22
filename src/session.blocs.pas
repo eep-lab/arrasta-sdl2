@@ -44,8 +44,6 @@ implementation
 uses sdl.app.trials.factory
    , session.intertrial
    , session.pool
-   , session.loggers.writerow
-   , session.configurationfile
    ;
 
 { TBloc }

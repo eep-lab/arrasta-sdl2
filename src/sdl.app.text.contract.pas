@@ -15,8 +15,6 @@ unit sdl.app.text.contract;
 
 interface
 
-uses Classes;
-
 type
 
   { IText }

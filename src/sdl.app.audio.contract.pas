@@ -15,7 +15,7 @@ unit sdl.app.audio.contract;
 
 interface
 
-uses Classes, ctypes;
+uses ctypes;
 
 type
 

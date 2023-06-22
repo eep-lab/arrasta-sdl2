@@ -16,7 +16,6 @@ interface
 
 uses
   Classes, SysUtils
-  , fgl
   , sdl.app.graphics.picture
   , sdl.app.choiceable.rectangule
   , sdl.app.dragdropable.contract

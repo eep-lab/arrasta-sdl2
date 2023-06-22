@@ -15,9 +15,6 @@ unit sdl.app.choiceable.contract;
 
 interface
 
-uses
-  Classes, SysUtils;
-
 type
 
   { IChoiceable }

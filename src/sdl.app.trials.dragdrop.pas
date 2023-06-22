@@ -57,8 +57,7 @@ type
 implementation
 
 uses
-  session.pool
-  , session.constants.dragdrop
+  session.constants.dragdrop
   , sdl.app.moveable.contract
   , sdl.app.renderer.custom
   ;
