@@ -34,7 +34,6 @@ type
     FOnRightDragDrop: TDragDropEvent;
     FOnWrongDragDrop: TDragDropEvent;
     FOffSet : TPoint;
-    function IsDragging : Boolean;
     procedure SetDraggable(AValue: Boolean);
     procedure SetOnOtherDragDrop(AValue: TDragDropEvent);
     procedure SetOnRightDragDrop(AValue: TDragDropEvent);
@@ -60,17 +59,14 @@ implementation
 
 //uses SDL2, math.bresenhamline.classes;
 
+var SomeInstanceIsDragging : Boolean;
+
 { TChoiceablePicture }
 
 procedure TDragDropablePicture.SetOnOtherDragDrop(AValue: TDragDropEvent);
 begin
   if FOnOtherDragDrop=AValue then Exit;
   FOnOtherDragDrop:=AValue;
-end;
-
-function TDragDropablePicture.IsDragging: Boolean;
-begin
-  Result := FIsDragging;
 end;
 
 procedure TDragDropablePicture.SetDraggable(AValue: Boolean);
@@ -100,11 +96,12 @@ procedure TDragDropablePicture.MouseDown(Sender: TObject;
   Shift: TCustomShiftState; X, Y: Integer);
 begin
   if FDraggable then begin
-    if not FIsDragging then begin
+    if (not FIsDragging) and (not SomeInstanceIsDragging) then begin
       //if ssLeft in Shift then begin
         FOffSet.X := X - Left;
         FOffSet.Y := Y - Top;
         FIsDragging := True;
+        SomeInstanceIsDragging := True;
       //end;
     end;
   end;
@@ -115,7 +112,7 @@ procedure TDragDropablePicture.MouseMove(Sender: TObject;
   Shift: TCustomShiftState; X, Y: Integer);
 begin
   if Draggable then begin
-    if FIsDragging then begin
+    if FIsDragging and SomeInstanceIsDragging then begin
       Left := X - FOffSet.X;
       Top  := Y - FOffSet.Y;
       //BorderColision;
@@ -128,16 +125,18 @@ procedure TDragDropablePicture.MouseUp(Sender: TObject;
   Shift: TCustomShiftState; X, Y: Integer);
 var
   i : integer;
-  LTarget : TDragDropablePicture;
+  LIntersectedPicture : TDragDropablePicture;
   LIntersected : Boolean;
 begin
   if FDraggable then begin
+    if FIsDragging and SomeInstanceIsDragging then begin
     //if ssLeft in Shift then begin
       FIsDragging := False;
+      SomeInstanceIsDragging := False;
       for i := 0 to Choices.Count -1 do begin
         if Choices[i] is TDragDropablePicture then begin
-          LTarget := Choices[i] as TDragDropablePicture;
-          LIntersected := IntersectsWith(LTarget.BoundsRect);
+          LIntersectedPicture := Choices[i] as TDragDropablePicture;
+          LIntersected := IntersectsWith(LIntersectedPicture.BoundsRect);
           if LIntersected then Break;
         end;
       end;
@@ -146,17 +145,17 @@ begin
         case i of
           0 :
             if Assigned(OnRightDragDrop) then
-              OnRightDragDrop(LTarget, Self, X, Y);
+              OnRightDragDrop(LIntersectedPicture, Self, X, Y);
 
           else
             if Assigned(OnWrongDragDrop) then
-              OnWrongDragDrop(LTarget, Self, X, Y);
+              OnWrongDragDrop(LIntersectedPicture, Self, X, Y);
         end
       end else begin
         if Assigned(OnOtherDragDrop) then
           OnOtherDragDrop(nil, Self, X, Y);
       end;
-    //end;
+    end;
   end;
   inherited MouseUp(Sender, Shift, X, Y);
 end;
