@@ -45,7 +45,7 @@ var
 
 implementation
 
-uses sdl.app.trials, sdl.timer;
+uses sdl.app.trials, sdl.timer, sdl.app.audio;
 
 { TCustomEventHandler }
 
@@ -60,7 +60,9 @@ procedure TCustomEventHandler.UserEvent(const event: TSDL_UserEvent);
 
   procedure DoOnEndSound;
   begin
-    //event.code;
+    if Assigned(OnAudioChannelFinished) then begin
+      OnAudioChannelFinished(event.code);
+    end;
   end;
 
   procedure DoOnEndTrial;
@@ -69,9 +71,12 @@ procedure TCustomEventHandler.UserEvent(const event: TSDL_UserEvent);
     LTrial: TTrial;
   begin
     LTrial := TTrial(event.data1);
-    LOnTrialEnd := LTrial.OnTrialEnd;
-    if Assigned(LTrial) and Assigned(LOnTrialEnd) then
-      LOnTrialEnd(LTrial);
+    if Assigned(LTrial) then begin
+      LOnTrialEnd := LTrial.OnTrialEnd;
+      if Assigned(LOnTrialEnd) then begin
+        LOnTrialEnd(LTrial);
+      end;
+    end;
   end;
 
   procedure DoOnTimer;
@@ -79,28 +84,37 @@ procedure TCustomEventHandler.UserEvent(const event: TSDL_UserEvent);
     LTimer : TSDLTimer;
   begin
     LTimer := TSDLTimer(event.data1);
-    if Assigned(LTimer) then
-      if Assigned(LTimer.OnTimer) then
+    if Assigned(LTimer) then begin
+      if Assigned(LTimer.OnTimer) then begin
         LTimer.OnTimer(LTimer);
+      end;
+    end;
   end;
 
 begin
-  case event.code of
-    SDL_AUDIO_STOPPED:
-      DoOnEndSound;
-
+  case event.type_ of
     SESSION_TRIALEND:
       DoOnEndTrial;
 
     SESSION_ONTIMER:
       DoOnTimer;
+
+    SESSION_CHUNK_STOPPED:
+      DoOnEndSound;
   end;
 end;
 
 constructor TCustomEventHandler.Create;
+var
+  Event : TSDL_EventType;
+  SDLUserEvents : array [0..2] of TSDL_EventType =
+    (SESSION_TRIALEND, SESSION_ONTIMER, SESSION_CHUNK_STOPPED);
 begin
   inherited Create;
   EventHandler := Self;
+  for Event in SDLUserEvents do
+    if not UserEventRegistered(Event) then
+      raise Exception.Create('Event not registered:'+IntToStr(Event));
   AssignEvents;
 end;
 

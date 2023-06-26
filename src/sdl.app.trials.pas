@@ -176,23 +176,19 @@ begin
   end;
 end;
 
-procedure DoEndTrial(Self: Pointer);
+procedure DoEndTrial(PSelf: Pointer);
 var
   event : TSDL_Event;
 begin
-  event.type_ := SDL_USEREVENT;
-  event.user.code := SESSION_TRIALEND;
-  event.user.data1 := Self;
+  event.type_ := SESSION_TRIALEND;
+  event.user.data1 := PSelf;
   SDL_PushEvent(@event);
 end;
 
 procedure TTrial.EndTrial;
-var
-  SelfAsPointer : Pointer;
 begin
   Hide;
-  SelfAsPointer := Pointer(Self);
-  DoEndTrial(SelfAsPointer);
+  DoEndTrial(Pointer(Self));
 end;
 
 procedure TTrial.Paint;

@@ -75,8 +75,7 @@ begin
     end else begin
       Result := 0;
     end;
-  event.type_ := SDL_USEREVENT;
-  event.user.code:= SESSION_ONTIMER;
+  event.type_ := SESSION_ONTIMER;
   event.user.data1 := param;
   SDL_PushEvent(@event);
 end;

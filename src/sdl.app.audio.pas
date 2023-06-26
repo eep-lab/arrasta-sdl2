@@ -46,6 +46,9 @@ type
 
   procedure AllocateAudioChannels;
 
+const
+  SESSION_CHUNK_STOPPED = SDL_USEREVENT+2;
+
 var
   SDLAudio : TSDLAudio;
 
@@ -57,8 +60,7 @@ procedure ChannelFinishedCallback(channel : cint); cdecl;
 var
   event : TSDL_Event;
 begin
-  event.type_ := SDL_USEREVENT;
-  event.user.type_:= SDL_AUDIO_STOPPED;
+  event.type_ := SESSION_CHUNK_STOPPED;
   event.user.code := channel;
   SDL_PushEvent(@event);
 end;

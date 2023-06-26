@@ -136,6 +136,7 @@ type
       //procedure ControllerDeviceRemoved(const event: TSDL_ControllerDeviceEvent); virtual; abstract;
       //procedure ControllerDeviceRemapped(const event: TSDL_ControllerDeviceEvent); virtual; abstract;
       //procedure UserEvent(const event: TSDL_UserEvent); virtual; abstract;
+      function UserEventRegistered(AEvent: TSDL_EventType) : Boolean;
       property OnQuit : TOnQuitEvent read FOnQuit write SetOnQuit;
       property OnWindowEvent : TOnWindowEventEvent read FOnWindowEvent write SetOnWindowEvent;
       property OnWindowManagerEvent : TOnWindowManagerEventEvent read FOnWindowManagerEvent write SetOnWindowManagerEvent;
@@ -172,6 +173,10 @@ type
 implementation
 
 uses ctypes;
+
+const
+  SDL_USEREVENTSTOCREATE = 2;
+  SDL_USEREVENT_HIGH = SDL_USEREVENT+SDL_USEREVENTSTOCREATE;
 
 var
   KeyboardState: pcuint8 = nil;
@@ -300,7 +305,7 @@ begin
     SDL_CONTROLLERDEVICEREMAPPED:
       if Assigned(OnControllerDeviceRemapped) then
         OnControllerDeviceRemapped(event.cdevice);
-    SDL_USEREVENT:
+    SDL_USEREVENT..SDL_USEREVENT_HIGH:
       if Assigned(OnUserEvent) then
         OnUserEvent(event.user);
   end;
@@ -463,6 +468,11 @@ begin
   FOnWindowManagerEvent:=AValue;
 end;
 
+function TEventHandler.UserEventRegistered(AEvent: TSDL_EventType): Boolean;
+begin
+  Result := (AEvent >=SDL_USEREVENT) and (AEvent <=SDL_USEREVENT_HIGH);
+end;
+
 procedure TEventHandler.HandlePending;
 var
   Event : TSDL_Event;
@@ -473,6 +483,7 @@ end;
 
 constructor TEventHandler.Create;
 begin
+  SDL_RegisterEvents(SDL_USEREVENTSTOCREATE);
   FOnControllerAxisMotion:= nil;
   FOnControllerButtonDown:= nil;
   FOnControllerButtonUp:= nil;
