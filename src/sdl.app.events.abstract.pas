@@ -170,13 +170,15 @@ type
   function GetShiftState: TCustomShiftState;
   function GetKeyState(KeyCode : TSDL_ScanCode) : Boolean;
 
+const
+  SDL_USEREVENTSTOREGISTER = 2;
+
 implementation
 
 uses ctypes;
 
 const
-  SDL_USEREVENTSTOCREATE = 2;
-  SDL_USEREVENT_HIGH = SDL_USEREVENT+SDL_USEREVENTSTOCREATE;
+  SDL_USEREVENT_HIGH = SDL_USEREVENT+SDL_USEREVENTSTOREGISTER;
 
 var
   KeyboardState: pcuint8 = nil;
@@ -483,7 +485,7 @@ end;
 
 constructor TEventHandler.Create;
 begin
-  SDL_RegisterEvents(SDL_USEREVENTSTOCREATE);
+  SDL_RegisterEvents(SDL_USEREVENTSTOREGISTER);
   FOnControllerAxisMotion:= nil;
   FOnControllerButtonDown:= nil;
   FOnControllerButtonUp:= nil;

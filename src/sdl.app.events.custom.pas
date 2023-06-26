@@ -107,7 +107,7 @@ end;
 constructor TCustomEventHandler.Create;
 var
   Event : TSDL_EventType;
-  SDLUserEvents : array [0..2] of TSDL_EventType =
+  SDLUserEvents : array [0..SDL_USEREVENTSTOREGISTER] of TSDL_EventType =
     (SESSION_TRIALEND, SESSION_ONTIMER, SESSION_CHUNK_STOPPED);
 begin
   inherited Create;
