@@ -36,6 +36,7 @@ type
     function Duration : cuint32;
     function Playing : Boolean;
     function ShortName : string;
+    function ShortPath : string;
     function AsInterface : ISound;
     procedure LoadFromFile(AFilename : string);
     procedure Play;
@@ -94,6 +95,22 @@ end;
 function TChunk.ShortName: string;
 begin
   Result := ExtractFileNameWithoutExt(ExtractFileNameOnly(FFilename));
+end;
+
+function TChunk.ShortPath: string;
+var
+  LastSeparatorPos, SecondLastSeparatorPos: Integer;
+begin
+  LastSeparatorPos := LastDelimiter(PathDelim, FFilename);
+  SecondLastSeparatorPos :=
+    LastDelimiter(PathDelim, Copy(FFilename, 1, LastSeparatorPos - 1));
+
+  if (LastSeparatorPos > 0) and (SecondLastSeparatorPos > 0) then
+    Result := Copy(FFilename,
+      SecondLastSeparatorPos + 1,
+      LastSeparatorPos - SecondLastSeparatorPos - 1)
+  else
+    Result := '';
 end;
 
 function TChunk.AsInterface: ISound;

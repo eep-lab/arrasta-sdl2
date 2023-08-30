@@ -39,6 +39,7 @@ type
     constructor Create; reintroduce;
     destructor Destroy; override;
     function SoundFromName(AName : string) : ISound;
+    function SoundFromShortPath(AShortPath : string) : ISound;
     procedure LoadFromFile(AFilename : string);
     function RegisterChannel(Sound : ISound) : cint;
     property Volume : int32 read GetSetVolume write FVolume;
@@ -66,9 +67,17 @@ begin
 end;
 
 procedure AllocateAudioChannels;
+var
+  i, j: Integer;
 begin
   SDLAudio.LoadFromFile('acerto.wav');
   SDLAudio.LoadFromFile('erro.wav');
+  for i := 1 to 6 do begin
+    for j := 1 to 4 do begin
+      SDLAudio.LoadFromFile(
+        Format('%02d', [i])+PathSep+'A'+j.ToString+'.wav');
+    end;
+  end;
 end;
 
 { TSDLAudio }
@@ -118,6 +127,19 @@ begin
   Result := nil;
   for IChunk in FChannels do
     if IChunk.ShortName.ToUpper = AName.ToUpper then begin
+      Result := IChunk;
+      Exit;
+    end;
+end;
+
+function TSDLAudio.SoundFromShortPath(AShortPath: string): ISound;
+var
+  IChunk : ISound;
+begin
+  if FChannels.Count = 0 then Exit;
+  Result := nil;
+  for IChunk in FChannels do
+    if IChunk.ShortPath.ToUpper = AShortPath.ToUpper then begin
       Result := IChunk;
       Exit;
     end;

@@ -46,6 +46,7 @@ uses
   , common.helpers
   , sdl.app
   , sdl.app.output
+  , eyelink.classes
   ;
 
 { TFormBackground }
@@ -69,7 +70,7 @@ begin
       True,
       True);
 
-  SDLApp := TSDLApplication.Create('Stimulus Control', 1);
+  SDLApp := TSDLApplication.Create('Stimulus Control', 0);
   SDLApp.SetupEvents;
   SDLApp.SetupAudio;
   SDLApp.SetupText;

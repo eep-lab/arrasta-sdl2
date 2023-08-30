@@ -26,6 +26,7 @@ type
     function Duration : cuint32;
     function Playing : Boolean;
     function ShortName : string;
+    function ShortPath : string;
     procedure DoOnStop;
     procedure LoadFromFile(AFilename : string);
     procedure Play;

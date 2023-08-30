@@ -54,6 +54,7 @@ type
     procedure Inflate(AValue : cint);
     procedure ToOriginalBounds;
     procedure SetOriginalBounds;
+    procedure DoRandomMouseDown;
     property Left   : cint read GetLeft write SetLeft;
     property Top    : cint read GetTop write SetTop;
     property Width  : cint read GetWidth write SetWidth;
@@ -67,7 +68,7 @@ type
 
 implementation
 
-uses sdl.app.video.methods, sdl.colors;
+uses sdl.app.video.methods, sdl.colors, math;
 
 { TStimulus }
 
@@ -199,6 +200,16 @@ end;
 procedure TRectangule.SetOriginalBounds;
 begin
   FOriginalBounds := FRect;
+end;
+
+procedure TRectangule.DoRandomMouseDown;
+var
+  X : cint;
+  Y : cint;
+begin
+  X := RandomRange(0, Width);
+  Y := RandomRange(0, Height);
+  MouseDown(Self, [], Left+X, Top+Y);
 end;
 
 end.

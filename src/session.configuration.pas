@@ -10,6 +10,7 @@
 unit session.configuration;
 
 {$mode objfpc}{$H+}
+{$modeswitch AdvancedRecords}
 
 interface
 
@@ -17,13 +18,18 @@ uses Classes, SysUtils;
 
 type
 
+  { TTrialData }
+
   TTrialData = record
     ID : integer;
     Kind: string;
     Parameters: TStringList;
+    class operator = (A, B: TTrialData): Boolean;
   end;
 
   TTrials = array of TTrialData;
+
+  { TBlocData }
 
   TBlocData = record
     ID : integer;
@@ -49,12 +55,27 @@ type
     Trials: TTrials;
     NextBlocOnCriteria : integer;
     NextBlocOnNotCriteria : integer;
+    class operator = (A, B: TBlocData): Boolean;
   end;
 
   TBlocs = array of TBlocData;
 
 implementation
 
+
+{ TTrialData }
+
+class operator TTrialData.=(A, B: TTrialData): Boolean;
+begin
+  Result := A.ID = B.ID;
+end;
+
+{ TBlocData }
+
+class operator TBlocData.=(A, B: TBlocData): Boolean;
+begin
+  Result := A.ID = B.ID;
+end;
 
 end.
 

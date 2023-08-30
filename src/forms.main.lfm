@@ -7,7 +7,7 @@ object FormBackground: TFormBackground
   Caption = 'FormBackground'
   ClientHeight = 240
   ClientWidth = 320
-  LCLVersion = '2.3.0.0'
+  LCLVersion = '3.99.0.0'
   WindowState = wsFullScreen
   object Button1: TButton
     Left = 8

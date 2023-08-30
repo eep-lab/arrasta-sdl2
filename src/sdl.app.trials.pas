@@ -41,6 +41,7 @@ type
       FData : TTrialData;
       FIStimuli : IStimuli;
       procedure Paint; override;
+      procedure EndTrialCallBack(Sender : TObject);
       procedure MouseMove(Sender:TObject; Shift: TCustomShiftState; X, Y: Integer); override;
       procedure MouseDown(Sender:TObject; Shift: TCustomShiftState; X, Y: Integer); override;
       procedure MouseUp(Sender:TObject; Shift: TCustomShiftState; X, Y: Integer); override;
@@ -189,6 +190,11 @@ procedure TTrial.EndTrial;
 begin
   Hide;
   DoEndTrial(Pointer(Self));
+end;
+
+procedure TTrial.EndTrialCallBack(Sender: TObject);
+begin
+  EndTrial;
 end;
 
 procedure TTrial.Paint;

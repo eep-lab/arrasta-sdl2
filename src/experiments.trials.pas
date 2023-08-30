@@ -37,7 +37,7 @@ uses
   , session.configurationfile
   , session.configurationfile.writer
   , sdl.app.trials.mts
-  , sdl.app.trials.dragdrop
+  //, sdl.app.trials.dragdrop
   ;
 
 var Writer : TConfigurationWriter;
@@ -45,7 +45,7 @@ var Writer : TConfigurationWriter;
 procedure WriteTrials(ATrials: integer; AName: string;
   ARelation: string; ASamples: string; AComparisons: string;
   AHasLimitedHold : Boolean;
-  AShowMouse: Boolean);
+  AShowMouse: Boolean; ACycle:string);
 begin
   case Writer.CurrentBloc of
     1 : begin
@@ -62,45 +62,48 @@ begin
             Values[LimitedHold] := Parameters.LimitedHold.ToString;
           Values[InterTrialInterval] := Parameters.InterTrialInterval.ToString;
           Values[RepeatTrials] := ATrials.ToString;
-          Values[ImageFilesExtension] := '.png';
+          //case ARelation of
+          //  Values[ImageFilesExtension] := '.jpg';
+          //end;
         end;
 
         with MTSKeys do begin
           Values[Relation] := ARelation;
           Values[Samples] := ASamples;
           Values[Comparisons] := AComparisons;
+          Values[Cycle] := ACycle;
         end;
       end;
       Writer.WriteTrial;
     end;
-    0 : begin
-      with Writer.TrialConfig do begin
-         with TrialKeys do begin
-           Values[Name] := AName;
-           if AShowMouse then begin
-             Values[Cursor] := '0';
-           end else begin
-             Values[Cursor] := '-1';
-           end;
-           Values[Kind] := TDragDrop.ClassName;
-           if AHasLimitedHold then
-             Values[LimitedHold] := Parameters.LimitedHold.ToString;
-           Values[InterTrialInterval] := Parameters.InterTrialInterval.ToString;
-           Values[RepeatTrials] := ATrials.ToString;
-           Values[ImageFilesExtension] := '.png';
-
-         end;
-
-         with DragDropKeys do begin
-           Values[UseHelpProgression] := '0';
-           Values[DragDropOrientation] := 'Random';
-           Values[Relation] := 'A-C';
-           Values[Samples] := '3';
-           Values[Comparisons] := '3';
-         end;
-       end;
-       Writer.WriteTrial;
-    end;
+    //0 : begin
+    //  with Writer.TrialConfig do begin
+    //     with TrialKeys do begin
+    //       Values[Name] := AName;
+    //       if AShowMouse then begin
+    //         Values[Cursor] := '0';
+    //       end else begin
+    //         Values[Cursor] := '-1';
+    //       end;
+    //       Values[Kind] := TDragDrop.ClassName;
+    //       if AHasLimitedHold then
+    //         Values[LimitedHold] := Parameters.LimitedHold.ToString;
+    //       Values[InterTrialInterval] := Parameters.InterTrialInterval.ToString;
+    //       Values[RepeatTrials] := ATrials.ToString;
+    //       Values[ImageFilesExtension] := '.png';
+    //
+    //     end;
+    //
+    //     with DragDropKeys do begin
+    //       Values[UseHelpProgression] := '0';
+    //       Values[DragDropOrientation] := 'Random';
+    //       Values[Relation] := 'A-C';
+    //       Values[Samples] := '3';
+    //       Values[Comparisons] := '3';
+    //     end;
+    //   end;
+    //   Writer.WriteTrial;
+    //end;
   end;
 end;
 
@@ -123,7 +126,7 @@ begin
     Writer.WriteBloc;
     WriteTrials(ATrials, LName, ARelation,
       ASamples.ToString, AComparisons.ToString,
-      AHasLimitedHold, AShowMouse);
+      AHasLimitedHold, AShowMouse, Format('%2D', [1]));
 
     Inc(LBloc);
     Writer.CurrentBloc := LBloc;
@@ -133,7 +136,7 @@ begin
     Writer.WriteBloc;
     WriteTrials(ATrials, LName, ARelation,
       ASamples.ToString, AComparisons.ToString,
-      AHasLimitedHold, AShowMouse);
+      AHasLimitedHold, AShowMouse, Format('%2D', [2]));
 
   finally
     Writer.Free;

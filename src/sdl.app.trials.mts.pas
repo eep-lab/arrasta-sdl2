@@ -52,6 +52,7 @@ constructor TMTS.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   FStimuli := TMTSStimuli.Create(Self);
+  FStimuli.OnFinalize := @EndTrialCallBack;
   FIStimuli := FStimuli.AsInterface;
 end;
 
@@ -69,11 +70,13 @@ end;
 procedure TMTS.Show;
 begin
   inherited Show;
+  //FIStimuli.Start;
 end;
 
 procedure TMTS.Hide;
 begin
   inherited Hide;
+  //FIStimuli.Stop;
 end;
 
 end.

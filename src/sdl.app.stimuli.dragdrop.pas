@@ -171,6 +171,7 @@ begin
   inherited Load(AParameters, AParent);
   if not Assigned(Grid) then
     Grid := TGrid.Create(3);
+    Grid.FixedSample := False;
   //Cursor := StrToIntDef(AParameters.Values['Cursor'], -1);
   FAnimation.Parent := TCustomRenderer(AParent);
   FSoundRight := SDLAudio.SoundFromName('acerto');

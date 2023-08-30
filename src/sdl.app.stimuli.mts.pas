@@ -17,6 +17,7 @@ uses
   Classes, SysUtils
   , fgl
   , sdl.app.stimuli
+  , sdl.app.stimulus.contract
   , sdl.app.stimuli.contract
   , sdl.app.graphics.picture
   , sdl.app.events.abstract
@@ -26,25 +27,25 @@ uses
 
 type
 
-  TPictures = specialize TFPGList<TPicture>;
+  TStimulusIList = specialize TFPGList<IStimulus>;
 
   { TMTSStimuli }
 
   TMTSStimuli = class sealed (TStimuli, IStimuli)
     private
       FSound : ISound;
-      FText  : TText;
-      FComparisons : TPictures;
-      FSamples : TPictures;
-      procedure PictureMouseEnter(Sender: TObject);
-      procedure PictureMouseExit(Sender: TObject);
-      procedure PictureMouseDown(Sender: TObject; Shift: TCustomShiftState; X, Y: Integer);
+      FComparisons : TStimulusIList;
+      FSamples : TStimulusIList;
+      procedure StimulusMouseEnter(Sender: TObject);
+      procedure StimulusMouseExit(Sender: TObject);
+      procedure StimulusMouseDown(Sender: TObject; Shift: TCustomShiftState; X, Y: Integer);
     public
       constructor Create(AOwner : TComponent); override;
       destructor Destroy; override;
       function AsInterface : IStimuli;
       procedure DoExpectedResponse; override;
-      procedure Load(AParameters : TStringList; AParent : TObject); override;
+      procedure Load(AParameters : TStringList;
+        AParent : TObject); override;
       procedure Start; override;
       procedure Stop; override;
   end;
@@ -54,38 +55,43 @@ implementation
 uses
   StrUtils
   , sdl.app.renderer.custom
-  , sdl.app.trials
+  //, sdl.app.trials
   , sdl.app.output
   , sdl.app.audio
   , sdl.app.grids
+  , sdl.app.stimulus.factory
+  , sdl.app.stimulus
   , session.constants.trials
   , session.constants.mts
   ;
 
 { TMTSStimuli }
 
-procedure TMTSStimuli.PictureMouseEnter(Sender: TObject);
+procedure TMTSStimuli.StimulusMouseEnter(Sender: TObject);
 begin
-  TPicture(Sender).Visible := True;
+  IStimulus(Sender as TStimulus).Start;
 end;
 
-procedure TMTSStimuli.PictureMouseExit(Sender: TObject);
+procedure TMTSStimuli.StimulusMouseExit(Sender: TObject);
 begin
-  TPicture(Sender).Visible := False;
+  IStimulus(Sender as TStimulus).Stop;
 end;
 
-procedure TMTSStimuli.PictureMouseDown(Sender: TObject;
+procedure TMTSStimuli.StimulusMouseDown(Sender: TObject;
   Shift: TCustomShiftState; X, Y: Integer);
 begin
-  FSound.Play;
-  TTrial(TPicture(Sender).Parent).EndTrial;
+  if IStimulus(Sender as TStimulus) = FComparisons[0] then begin
+    FSound.Play;
+    if Assigned(OnFinalize) then
+      OnFinalize(Sender);
+  end;
 end;
 
 constructor TMTSStimuli.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
-  FSamples := TPictures.Create;
-  FComparisons := TPictures.Create;
+  FSamples := TStimulusIList.Create;
+  FComparisons := TStimulusIList.Create;
 end;
 
 destructor TMTSStimuli.Destroy;
@@ -102,72 +108,86 @@ end;
 
 procedure TMTSStimuli.DoExpectedResponse;
 begin
-
+  //FComparisons[0].DoResponse;
 end;
-
-
 
 procedure TMTSStimuli.Load(AParameters: TStringList; AParent: TObject);
 var
-  LExt : string;
   LRelation    : string;
   SampleLetter : string;
   ComparLetter : string;
   LSamples      : integer;
   LComparisons  : integer;
-  LItem : TPicture;
-  i: Integer;
+  LCycle : string;
+  S : string;
 
   procedure NewGridItems(ASamples, AComparisons: integer;
     AGridOrientation: TGridOrientation);
+  type
+    TStimulusList = specialize TFPGList<TStimulus>;
   var
-    LItem : TPicture;
-    LComparison : TPicture;
-    LComparisons : TPictures;
+    LItem : TStimulus;
+    LComparison : TStimulus;
+    LComparisons : TStimulusList;
     i : integer;
+    LParameters : TStringList;
+    LCallbacks : TCallbacks;
   begin
-    if not Assigned(Grid) then
-      Grid := TGrid.Create(3);
-    Grid.UpdatePositions(ASamples, AComparisons, AGridOrientation);
-    with Grid.RandomPositions do begin
-      LComparisons := TPictures.Create;
-      for i := low(Comparisons) to high(Comparisons) do
-      begin
-        LItem := TPicture.Create(Self);
-        LItem.Name := MTSKeys.Comparisons+(i+1).ToString;
-        LItem.OnMouseDown:=@PictureMouseDown;
-        LItem.OnMouseEnter:=@PictureMouseEnter;
-        LItem.OnMouseExit:=@PictureMouseExit;
-        LItem.BoundsRect := Comparisons[i].Rect;
+    LCallbacks.OnMouseExit := @StimulusMouseExit;
+    LCallbacks.OnMouseEnter := @StimulusMouseEnter;
+    LCallbacks.OnMouseDown := @StimulusMouseDown;
 
-        Comparisons[i].Item := LItem as TObject;
-        FComparisons.Add(LItem);
-        LComparisons.Add(LItem);
-      end;
+    LParameters := TStringList.Create;
+    try
+      if not Assigned(Grid) then
+        Grid := TGrid.Create(3);
+        Grid.FixedSample:=True;
+      Grid.UpdatePositions(ASamples, AComparisons, AGridOrientation);
+      with Grid.RandomPositions do begin
+        LComparisons := TStimulusList.Create;
+        for i := low(Comparisons) to high(Comparisons) do
+        begin
+          LItem := TStimulusFactory.New(Self, ComparLetter, LCallbacks);
 
-      for i := low(Samples) to high(Samples) do
-      begin
-        LItem := TPicture.Create(Self);
-        LItem.Name := MTSKeys.Samples+(i+1).ToString;
-        LItem.OnMouseDown:=@PictureMouseDown;
-        LItem.OnMouseEnter:=@PictureMouseEnter;
-        LItem.OnMouseExit:=@PictureMouseExit;
-        //LItem.OnMouseDown := @SetFocus;
-        LItem.BoundsRect := Samples[i].Rect;
-        case i of
-          0 : // do nothing;
+          LParameters.Clear;
+          LParameters.Values['Media'] :=
+            LCycle+PathDelim+ComparLetter+(i+1).ToString;
+          S := LParameters.Values['Media'];
+          LItem.Name:=MTSKeys.Comparisons+(i+1).ToString;
+          LItem.Load(LParameters, AParent, Comparisons[i].Rect);
 
-          else begin                     // making sure that we have always
-            LComparisons.Exchange(0, i); // the right comparison as the first one
-          end;                           // inside the sample targets
+          Comparisons[i].Item := LItem as TObject;
+          FComparisons.Add(LItem);
+          LComparisons.Add(LItem);
         end;
-        for LComparison in LComparisons do
-          LItem.AddOrderedChoice(LComparison);
 
-        Samples[i].Item := LItem as TObject;
-        FSamples.Add(LItem);
+        for i := low(Samples) to high(Samples) do
+        begin
+          LItem := TStimulusFactory.New(Self, SampleLetter, LCallbacks);
+
+          LParameters.Clear;
+          LParameters.Values['Media'] :=
+            LCycle+PathDelim+SampleLetter+(i+1).ToString;
+          LItem.Name := MTSKeys.Samples+(i+1).ToString;
+          LItem.Load(LParameters, AParent, Samples[i].Rect);
+
+          case i of
+            0 : // do nothing;
+
+            else begin                     // making sure that we have always
+              LComparisons.Exchange(0, i); // the right comparison as the first one
+            end;                           // inside the sample targets
+          end;
+          for LComparison in LComparisons do
+            LItem.AddOrderedChoice(LComparison);
+
+          Samples[i].Item := LItem as TObject;
+          FSamples.Add(LItem);
+        end;
+        LComparisons.Free;
       end;
-      LComparisons.Free;
+    finally
+      LParameters.Free;
     end;
   end;
 
@@ -176,16 +196,14 @@ begin
     raise Exception.Create('You must assign a parent.');
 
   FSound := SDLAudio.SoundFromName('acerto');
-  FText  := TText.Create(Self);
-  FText.Load('Hello World!', 'Raleway-Regular');
-  FText.Top := 300;
-  FText.Parent := TCustomRenderer(AParent);
+  //FText  := TText.Create(Self);
+  //FText.Load('BOFÁ', 'Hanna_Serif');
+  //FText.Top := 300;
+  //FText.Parent := TCustomRenderer(AParent);
 
-  with TrialKeys do begin
-    LExt := AParameters.Values[ImageFilesExtension];
-  end;
   with MTSKeys do begin
     LRelation := AParameters.Values[Relation];
+    LCycle    := AParameters.Values[Cycle];
     SampleLetter := ExtractDelimited(1,LRelation,['-']);
     ComparLetter := ExtractDelimited(2,LRelation,['-']);
 
@@ -193,43 +211,29 @@ begin
     LComparisons := AParameters.Values[Comparisons].ToInteger;
   end;
 
-  NewGridItems(LSamples, LComparisons, Grid.GetRandomGridOrientation);
-  with Grid.RandomPositions do begin
-    for i := low(Comparisons) to high(Comparisons) do
-    begin
-      LItem := Comparisons[i].Item as TPicture;
-      //LItem.Cursor := Cursor;
-      LItem.LoadFromFile(ComparLetter+(i+1).ToString+LExt);
-      LItem.Parent := TCustomRenderer(AParent);
-      //LItem.Invalidate;
-    end;
-
-    for i := low(Samples) to high(Samples) do
-    begin
-      LItem := Samples[i].Item as TPicture;
-      //LItem.Cursor := Cursor;
-      LItem.LoadFromFile(SampleLetter+(i+1).ToString+LExt);
-      LItem.Parent := TCustomRenderer(AParent);
-      //LItem.Invalidate;
-    end;
-  end;
+  NewGridItems(LSamples, LComparisons, goTopToBottom);
 end;
 
 procedure TMTSStimuli.Start;
 var
-  LItem : TPicture;
+  LStimulus : IStimulus;
 begin
-  FText.Show;
-  for LItem in FComparisons do LItem.Show;
-  for LItem in FSamples do LItem.Show;
+  for LStimulus in FComparisons do
+    LStimulus.Start;
+
+  for LStimulus in FSamples do
+    LStimulus.Start;
 end;
 
 procedure TMTSStimuli.Stop;
 var
-  LItem : TPicture;
+  LStimulus : IStimulus;
 begin
-  for LItem in FComparisons do LItem.Hide;
-  for LItem in FSamples do LItem.Hide;
+  for LStimulus in FComparisons do
+    LStimulus.Stop;
+
+  for LStimulus in FSamples do
+    LStimulus.Stop;
 end;
 
 end.

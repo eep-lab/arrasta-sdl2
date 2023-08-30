@@ -92,8 +92,8 @@ procedure TSDLApplication.KeyDown(const event: TSDL_KeyboardEvent);
 begin
   case Event.keysym.sym of
     SDLK_ESCAPE: begin
-    FRunning:=False;
-    Print('SDLK_ESCAPE');
+      FRunning:=False;
+      Print('SDLK_ESCAPE');
     end
   end;
 end;
@@ -159,7 +159,7 @@ begin
   FCurrentMonitorIndex := AMonitor;
   LMonitor := FMonitors[AMonitor];
   FSDLWindow := SDL_CreateWindow(ATitle, LMonitor.x, LMonitor.y,
-    LMonitor.w, LMonitor.h, SDL_WINDOW_FULLSCREEN);
+    LMonitor.w, LMonitor.h, 0);
 
   FSDLRenderer := SDL_CreateRenderer(FSDLWindow, -1, SDL_RENDERER_ACCELERATED);
   //FSDLSurface  := SDL_CreateRGBSurface(0, LMonitor.w, LMonitor.h, 32, 128, 128, 128, 255);

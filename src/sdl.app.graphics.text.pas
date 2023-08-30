@@ -34,6 +34,7 @@ type
     public
       constructor Create(AOwner: TComponent); override;
       procedure Load(S : string; FontName : string);
+      procedure LoadFromFile (AFilename: string; FontName : string);
       destructor Destroy; override;
       procedure Show;
       procedure Hide;
@@ -42,7 +43,7 @@ type
 
 implementation
 
-uses sdl.app.video.methods, sdl.app.text, sdl.colors;
+uses sdl.app.video.methods, sdl.app.text, sdl.colors, session.pool;
 
 { TText }
 
@@ -75,6 +76,27 @@ begin
   FRect := PSDLSurface^.clip_rect;
   FSDLTexture := SDL_CreateTextureFromSurface(PSDLRenderer, PSDLSurface);
   SDL_FreeSurface(PSDLSurface);
+end;
+
+procedure TText.LoadFromFile(AFilename: string; FontName: string);
+var
+  LFile : TStringList;
+  LText : string;
+  LFontName : string;
+begin
+  LFile := TStringList.Create;
+  try
+    LFile.LoadFromFile(Pool.RootMedia+AFilename+'.txt');
+    LText := LFile.Text;
+  finally
+    LFile.Free;
+  end;
+  if FontName.IsEmpty then begin
+    LFontName := 'Raleway-Regular';
+  end else begin
+    LFontName := FontName;
+  end;
+  Load(LText, LFontName);
 end;
 
 destructor TText.Destroy;

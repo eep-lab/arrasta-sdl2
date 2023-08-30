@@ -7,7 +7,7 @@
   You should have received a copy of the GNU General Public License
   along with this program. If not, see <http://www.gnu.org/licenses/>.
 }
-unit sdl.app.graphics.picture;
+unit sdl.app.choiceable.picture;
 
 {$mode ObjFPC}{$H+}
 
@@ -16,16 +16,16 @@ interface
 uses
   Classes, SysUtils
   , SDL2
-  , sdl.app.graphics.rectangule
+  , sdl.app.choiceable.rectangule
   , sdl.app.paintable.contract
   , sdl.app.events.abstract
   ;
 
 type
 
-  { TPicture }
+  { TChoiceablePicture }
 
-  TPicture = class(TRectangule, IPaintable)
+  TChoiceablePicture = class(TChoiceableRect, IPaintable)
   private
     FTexture  : PSDL_Texture;
   protected
@@ -50,43 +50,43 @@ uses
   , session.pool
   ;
 
-{ TPicture }
+{ TChoiceablePicture }
 
-constructor TPicture.Create(AOwner: TComponent);
+constructor TChoiceablePicture.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   IMG_Init(IMG_INIT_PNG);
 end;
 
-destructor TPicture.Destroy;
+destructor TChoiceablePicture.Destroy;
 begin
   SDL_DestroyTexture(FTexture);
   inherited Destroy;
 end;
 
-procedure TPicture.MouseMove(Sender: TObject; Shift: TCustomShiftState; X,
+procedure TChoiceablePicture.MouseMove(Sender: TObject; Shift: TCustomShiftState; X,
   Y: Integer);
 begin
   inherited MouseMove(Self, Shift, X, Y);
 end;
 
-procedure TPicture.MouseDown(Sender: TObject; Shift: TCustomShiftState; X,
+procedure TChoiceablePicture.MouseDown(Sender: TObject; Shift: TCustomShiftState; X,
   Y: Integer);
 begin
   inherited MouseDown(Self, Shift, X, Y);
 end;
 
-procedure TPicture.MouseEnter(Sender: TObject);
+procedure TChoiceablePicture.MouseEnter(Sender: TObject);
 begin
   inherited MouseEnter(Self);
 end;
 
-procedure TPicture.MouseExit(Sender: TObject);
+procedure TChoiceablePicture.MouseExit(Sender: TObject);
 begin
   inherited MouseExit(Self);
 end;
 
-procedure TPicture.Paint;
+procedure TChoiceablePicture.Paint;
 begin
   if Visible then begin
     SDL_RenderCopy(PSDLRenderer, FTexture, nil, @FRect);
@@ -95,7 +95,7 @@ begin
   end;
 end;
 
-procedure TPicture.LoadFromFile(AFilename: string);
+procedure TChoiceablePicture.LoadFromFile(AFilename: string);
 var
   Media : PAnsiChar;
 begin
@@ -104,4 +104,5 @@ begin
 end;
 
 end.
+
 
