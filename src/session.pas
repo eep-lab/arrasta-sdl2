@@ -107,7 +107,6 @@ end;
 destructor TSession.Destroy;
 begin
   FTimer.Free;
-  ConfigurationFile.Free;
   inherited Destroy;
 end;
 

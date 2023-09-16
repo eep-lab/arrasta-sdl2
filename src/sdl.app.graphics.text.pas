@@ -33,8 +33,10 @@ type
       procedure Paint; override;
     public
       constructor Create(AOwner: TComponent); override;
-      procedure Load(S : string; FontName : string);
-      procedure LoadFromFile (AFilename: string; FontName : string);
+      procedure Load(S : string;
+        FontName : string = 'Picanco_et_al');
+      procedure LoadFromFile(AFilename: string;
+        FontName : string = 'Raleway-Regular');
       destructor Destroy; override;
       procedure Show;
       procedure Hide;
@@ -72,7 +74,7 @@ begin
   FFont := SDLText.Get(FontName).Font;
   PText := PAnsiChar(S);
   PSDLSurface := TTF_RenderUTF8_LCD(
-    FFont, PText, CLWhite, CLBlack);
+    FFont, PText, clBlack, clWhite);
   FRect := PSDLSurface^.clip_rect;
   FSDLTexture := SDL_CreateTextureFromSurface(PSDLRenderer, PSDLSurface);
   SDL_FreeSurface(PSDLSurface);
@@ -87,14 +89,9 @@ begin
   LFile := TStringList.Create;
   try
     LFile.LoadFromFile(Pool.RootMedia+AFilename+'.txt');
-    LText := LFile.Text;
+    LText := LFile[0];
   finally
     LFile.Free;
-  end;
-  if FontName.IsEmpty then begin
-    LFontName := 'Raleway-Regular';
-  end else begin
-    LFontName := FontName;
   end;
   Load(LText, LFontName);
 end;

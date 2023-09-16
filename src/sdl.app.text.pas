@@ -96,8 +96,8 @@ end;
 function GetFontSize: cint32;
 const
   ReferenceWidth = 1280;
-  ReferenceFontSize = 100;
-  MinimumFontSize = 40;
+  ReferenceFontSize = 150;
+  MinimumFontSize = 90;
 begin
   Result := Round(MonitorFromWindow.w / ReferenceWidth * ReferenceFontSize);
   if MonitorFromWindow.h < MonitorFromWindow.w then

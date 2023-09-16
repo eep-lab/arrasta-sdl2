@@ -13,42 +13,32 @@ unit experiments;
 
 interface
 
-function MakeConfigurationFile(
-  ATrials : integer;
-  AITI    : integer;
-  ALimitedHold : integer;
-  ADesign : string;
-  ASamples: integer;
-  AComparisons: integer;
-  AHasLimitedHold: Boolean;
-  AShowMouse: Boolean) : string;
+uses common.helpers;
+
+function MakeConfigurationFile : string;
 
 var
-  ConfigurationFilename : string;
+  ConfigurationFilename : string = '';
+  ITI : integer = 4;
+  LimitedHold : integer  = 1;
 
 implementation
 
 uses
   session.fileutils
-   , experiments.trials
-   , session.configurationfile
-   ;
+  , experiments.trials
+  , session.configurationfile
+  ;
 
-function MakeConfigurationFile(ATrials: integer; AITI: integer;
-  ALimitedHold: integer; ADesign: string; ASamples: integer;
-  AComparisons: integer; AHasLimitedHold: Boolean; AShowMouse: Boolean): string;
+function MakeConfigurationFile: string;
 begin
   Result := NewConfigurationFile;
-  Experiments.Trials.Parameters.InterTrialInterval := AITI;
-  Experiments.Trials.Parameters.InterTrialInterval:=ALimitedHold;
-  Experiments.Trials.WriteToConfigurationFile(ATrials,
-    ADesign, ASamples, AComparisons, AHasLimitedHold, AShowMouse);
+  GlobalTrialParameters.InterTrialInterval := ITI.SecondsToMiliseconds;
+  GlobalTrialParameters.LimitedHold := LimitedHold.MinutesToMiliseconds;
+  GlobalTrialParameters.Cursor := 1;
+  Experiments.Trials.WriteToConfigurationFile;
   ConfigurationFile.Invalidate;
   ConfigurationFile.UpdateFile;
 end;
-
-
-
-
 
 end.

@@ -78,7 +78,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir);dependencies\FreeType\include"/>
-            <OtherUnitFiles Value="src;dependencies\epiktimer;src\schedules;dependencies\SDL2-for-Pascal\units;dependencies\EyeLink-for-Pascal\classes;dependencies\EyeLink-for-Pascal\bindings;dependencies\EyeLink-for-Pascal\utils"/>
+            <OtherUnitFiles Value="src;dependencies\epiktimer;src\schedules;dependencies\SDL2-for-Pascal\units;dependencies\EyeLink-for-Pascal\classes;dependencies\EyeLink-for-Pascal\bindings;dependencies\EyeLink-for-Pascal\utils;dependencies\mspeech"/>
             <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
           <Parsing>
@@ -498,6 +498,50 @@
       </Unit>
       <Unit>
         <Filename Value="src\sdl.app.graphics.picture.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="src\sdl.app.audio.recorder.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="src\picanco.experiments.words.types.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="src\picanco.experiments.words.constants.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="src\picanco.experiments.words.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="src\picanco.experiments.images.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="src\picanco.experiments.constants.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="src\picanco.experiments.audio.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="dependencies\mspeech\SpeechLib_TLB.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="src\session.csv.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="src\session.csv.enumerator.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="src\sdl.app.graphics.button.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit>
     </Units>

@@ -27,6 +27,7 @@ procedure AppendFilesTo(var AStimuliArray: TStringArray;
 procedure LoadMessageFromFile(var AMessage : string; AFilename : string);
 
 function NewConfigurationFile : string;
+function LoadConfigurationFile(AFilename : string) : string;
 
 implementation
 
@@ -96,12 +97,29 @@ begin
   NewConfigurationFile := Pool.BaseFilePath + 'last_session.ini';
   if FileExists(NewConfigurationFile) then
     DeleteFile(NewConfigurationFile);
+
+  if Assigned(ConfigurationFile) then
+    ConfigurationFile.Free;
   ConfigurationFile := TConfigurationFile.Create(NewConfigurationFile);
   ConfigurationFile.CacheUpdates := True;
   ConfigurationFile.WriteString(_Main, _NumBlc, '3');
   ConfigurationFile.WriteToBloc(1, _Name, 'SS');
   ConfigurationFile.Invalidate;
 end;
+
+function LoadConfigurationFile(AFilename : string) : string;
+begin
+  if FileExists(AFilename) then begin
+    if Assigned(ConfigurationFile) then
+      ConfigurationFile.Free;
+    ConfigurationFile := TConfigurationFile.Create(AFilename);
+    ConfigurationFile.CacheUpdates := True;
+    Result := AFilename;
+  end else begin
+    raise EFileNotFoundException.Create(AFilename);
+  end;
+end;
+
 
 end.
 

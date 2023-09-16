@@ -20,6 +20,7 @@ uses
   , sdl.app.stimulus.contract
   , sdl.app.choiceable.contract
   , sdl.app.renderer.custom
+  , sdl.app.events.abstract
   ;
 
 type
@@ -28,16 +29,19 @@ type
 
   { TStimulus }
 
-  TStimulus = class(TComponent, IStimulus, IChoiceable)
+  TStimulus = class(TComponent, IStimulus)
     private
-      FChoices : TChoices;
+      //FChoices : TChoices;
+      FIndex : integer;
+      FIsSample: Boolean;
       FOnMouseDown: TOnMouseEvent;
       FOnMouseEnter: TNotifyEvent;
       FOnMouseExit: TNotifyEvent;
       FOnMouseMove: TOnMouseEvent;
       FOnMouseUp: TOnMouseEvent;
       FOnResponse: TNotifyEvent;
-      function GetTargetChoice: TObject;
+      //function GetTargetChoice: TObject;
+      procedure SetIsSample(AValue: Boolean);
       procedure SetOnMouseDown(AValue: TOnMouseEvent);
       procedure SetOnMouseEnter(AValue: TNotifyEvent);
       procedure SetOnMouseExit(AValue: TNotifyEvent);
@@ -45,7 +49,9 @@ type
       procedure SetOnMouseUp(AValue: TOnMouseEvent);
       procedure SetOnResponse(AValue: TNotifyEvent);
     protected
-
+      procedure MouseDown(Sender:TObject; Shift: TCustomShiftState; X, Y: Integer); virtual; abstract;
+      procedure MouseEnter(Sender:TObject); virtual; abstract;
+      procedure MouseExit(Sender:TObject); virtual; abstract;
     public
       constructor Create(AOwner : TComponent); override;
       destructor Destroy; override;
@@ -54,15 +60,17 @@ type
       procedure Start; virtual; abstract;
       procedure Stop; virtual; abstract;
       procedure DoResponse; virtual;
-      procedure AddOrderedChoice(AChoice: TObject);
-      property TargetChoice : TObject read GetTargetChoice;
-      property Choices : TChoices read FChoices;
+      //procedure AddOrderedChoice(AChoice: TObject);
+      //property TargetChoice : TObject read GetTargetChoice;
+      //property Choices : TChoices read FChoices;
       property OnMouseMove: TOnMouseEvent read FOnMouseMove write SetOnMouseMove;
       property OnMouseDown: TOnMouseEvent read FOnMouseDown write SetOnMouseDown;
       property OnMouseUp: TOnMouseEvent read FOnMouseUp write SetOnMouseUp;
       property OnMouseEnter: TNotifyEvent read FOnMouseEnter write SetOnMouseEnter;
       property OnMouseExit: TNotifyEvent read FOnMouseExit write SetOnMouseExit;
       property OnResponse : TNotifyEvent read FOnResponse write SetOnResponse;
+      property IsSample : Boolean read FIsSample write SetIsSample;
+      property Index : integer read FIndex write FIndex;
   end;
 
 
@@ -70,12 +78,18 @@ implementation
 
 { TStimulus }
 
-function TStimulus.GetTargetChoice: TObject;
+//function TStimulus.GetTargetChoice: TObject;
+//begin
+//  if FChoices.Count > 0 then
+//    Result := FChoices[0] as TObject
+//  else
+//    Result := nil;
+//end;
+
+procedure TStimulus.SetIsSample(AValue: Boolean);
 begin
-  if FChoices.Count > 0 then
-    Result := FChoices[0] as TObject
-  else
-    Result := nil;
+  if FIsSample=AValue then Exit;
+  FIsSample:=AValue;
 end;
 
 procedure TStimulus.SetOnMouseDown(AValue: TOnMouseEvent);
@@ -117,13 +131,14 @@ end;
 constructor TStimulus.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
-  FChoices := TChoices.Create;
+  //FChoices := TChoices.Create;
+  //OnMouseDown := @MouseDown;
 end;
 
 destructor TStimulus.Destroy;
 begin
   inherited Destroy;
-  FChoices.Free;
+  //FChoices.Free;
 end;
 
 procedure TStimulus.DoResponse;
@@ -132,10 +147,10 @@ begin
     OnResponse(Self);
 end;
 
-procedure TStimulus.AddOrderedChoice(AChoice: TObject);
-begin
-  FChoices.Add(AChoice);
-end;
+//procedure TStimulus.AddOrderedChoice(AChoice: TObject);
+//begin
+//  FChoices.Add(AChoice);
+//end;
 
 end.
 

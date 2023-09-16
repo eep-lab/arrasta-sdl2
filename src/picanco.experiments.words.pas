@@ -1,0 +1,261 @@
+{
+  Stimulus Control
+  Copyright (C) 2014-2023 Carlos Rafael Fernandes Picanço.
+
+  The present file is distributed under the terms of the GNU General Public License (GPL v3.0).
+
+  You should have received a copy of the GNU General Public License
+  along with this program. If not, see <http://www.gnu.org/licenses/>.
+}
+unit picanco.experiments.words;
+
+{$mode ObjFPC}{$H+}
+
+interface
+
+uses picanco.experiments.words.types;
+
+var
+  Words : TWords;
+  NewWords : TWords;
+  HashWords : THashWords;
+  HashNewWords : THashWords;
+
+
+procedure SetComparisons(var AWord: TWord);
+function GetPhase(ACycle, ACondition : integer; ARelation: string) : TPhase;
+function GetModalityFromLetter(ALetter : string) : TModality;
+//procedure Initialize;
+//procedure Finalize;
+
+implementation
+
+uses
+  Classes, SysUtils, StrUtils
+  , sdl.app.output
+  , picanco.experiments.constants
+  , picanco.experiments.words.constants;
+
+procedure SetComparisons(var AWord: TWord);
+var
+  i: Integer;
+  Code : TAlphaNumericCode;
+  LCandidateNegativeWords : TWordList;
+  LCandidateNegativeWordsWithImages : TWordList;
+  LCandidateNegativeWordsWithNewImages : TWordList;
+begin
+  for i := Low(AWord.Comparisons) to High(AWord.Comparisons) do begin
+    with AWord.Comparisons[i] do begin
+      Audio  := @EmptyWord;
+      Image  := @EmptyWord;
+      Text   := @EmptyWord;
+      Speech := @EmptyWord;
+    end;
+  end;
+
+  LCandidateNegativeWords := TWordList.Create;
+  LCandidateNegativeWordsWithImages := TWordList.Create;
+  LCandidateNegativeWordsWithNewImages := TWordList.Create;
+  try
+    for i := Low(AWord.CandidateNegativeWords) to
+             High(AWord.CandidateNegativeWords) do begin
+      LCandidateNegativeWords.Add(AWord.CandidateNegativeWords[i]);
+    end;
+    for Code in E1WordsWithImagesRange do begin
+      LCandidateNegativeWordsWithImages.Add(HashWords[E1WordsWithImages[Code]]);
+    end;
+    for i := Low(E1WordsWithNewImages) to High(E1WordsWithNewImages) do begin
+      LCandidateNegativeWordsWithNewImages.Add(HashNewWords[E1WordsWithNewImages[i]]);
+    end;
+    for i := Low(AWord.Comparisons) to High(AWord.Comparisons) do begin
+      with AWord.Comparisons[i] do begin
+            Audio  := @EmptyWord;
+            Image  := @EmptyWord;
+            Text   := @EmptyWord;
+            Speech := @EmptyWord;
+        if i <= High(AWord.CandidateNegativeWords) then begin
+          if i = 0 then begin
+            case AWord.Phase.SampModality of
+              ModalityA: Audio  := @AWord;
+              ModalityB: Image  := @AWord;
+              ModalityC: Text   := @AWord;
+              ModalityD: Speech := @AWord;
+              else
+                raise Exception.Create(
+                  'picanco.experiments.words.SetComparisons: Unknown modality');
+            end;
+          end else begin
+            case AWord.Phase.CompModality of
+              ModalityA: Audio  := GetRandomWord(LCandidateNegativeWords);
+              ModalityB: begin
+                case AWord.Phase.Condition of
+                  Condition_BC_CB_Training :
+                    Image := GetRandomWord(LCandidateNegativeWordsWithNewImages);
+                  else
+                    Image := GetRandomWord(LCandidateNegativeWordsWithImages);
+                end;
+              end;
+              ModalityC: Text   := GetRandomWord(LCandidateNegativeWords);
+              ModalityD: Speech := @EmptyWord;
+              else
+                raise Exception.Create(
+                  'picanco.experiments.words.SetComparisons: Unknown modality');
+            end;
+          end;
+        end;
+      end;
+    end;
+  finally
+    LCandidateNegativeWords.Free;
+    LCandidateNegativeWordsWithImages.Free;
+    LCandidateNegativeWordsWithNewImages.Free;
+  end;
+end;
+
+function GetPhase(ACycle, ACondition: integer; ARelation: string): TPhase;
+begin
+  Result.SampModality :=
+    GetModalityFromLetter(ExtractDelimited(1, ARelation,['-']));
+  Result.CompModality:=
+    GetModalityFromLetter(ExtractDelimited(2, ARelation,['-']));
+
+  case ACycle of
+    0 : Result.Cycle := CycleNone;
+    1 : Result.Cycle := Cycle1;
+    2 : Result.Cycle := Cycle2;
+    3 : Result.Cycle := Cycle3;
+    4 : Result.Cycle := Cycle4;
+    5 : Result.Cycle := Cycle5;
+    6 : Result.Cycle := Cycle6;
+  end;
+
+  case ACondition of
+    0 : Result.Condition := ConditionNone;
+    1 : Result.Condition := Condition_AB;
+    2 : Result.Condition := Condition_AC_CD;
+    3 : Result.Condition := Condition_BC_CB_Training;
+    4 : Result.Condition := Condition_BC_CB_Testing;
+    5 : Result.Condition := Condition_CD_1;
+    6 : Result.Condition := Condition_AC;
+    7 : Result.Condition := Condition_CD_2;
+  end;
+
+  case Result.Condition of
+    ConditionNone   : Result.Stage:= StageNone;
+    Condition_AB,
+    Condition_AC_CD : Result.Stage:= StageTraining;
+    else
+      Result.Stage:= StageTesting;
+  end;
+end;
+
+function GetModalityFromLetter(ALetter: string): TModality;
+begin
+  case ALetter of
+    'A' : Result := ModalityA;
+    'B' : Result := ModalityB;
+    'C' : Result := ModalityC;
+    'D' : Result := ModalityD;
+    else
+      raise Exception.Create('Unknown modality: '+ ALetter);
+  end;
+
+end;
+
+procedure Initialize;
+var
+  i, j : Integer;
+begin
+  EmptyWord.Caption := '----';
+  EmptyWord.Filenames.Audio:='--Empty--';
+  EmptyWord.Filenames.Image:='--Empty--';
+  EmptyWord.Filenames.Text:='--Empty--';
+  EmptyWord.Filenames.Speech:='--Empty--';
+  EmptyWord.Syllab1.Consoant.Ord := csNone;
+  EmptyWord.Syllab1.Vowel.Ord := vsNone;
+  EmptyWord.Syllab2.Consoant.Ord := csNone;
+  EmptyWord.Syllab2.Vowel.Ord := vsNone;
+
+  Consoants := TConsoants.Create;
+  Consoants.Add(PlosiveBilabial);
+  Consoants.Add(NonSibilantFricative);
+  Consoants.Add(LateralApproximantAlveolar);
+  Consoants.Add(NasalAlveolar);
+
+  Vowels := TVowels.Create;
+  Vowels.Add(OpenFront);
+  Vowels.Add(OpenMidFront);
+  Vowels.Add(CloseFront);
+  Vowels.Add(OpenMidBack);
+
+  SetLength(Syllabs, Consoants.Count * Vowels.Count);
+  for i := 0 to Consoants.Count -1 do
+    for j := 0 to Vowels.Count-1 do
+    begin
+      Syllabs[i * Consoants.Count + j].Consoant := Consoants[i];
+      Syllabs[i * Vowels.Count + j].Vowel := Vowels[j];
+    end;
+
+  SetLength(Words, 0);
+  for i := Low(Syllabs) to High(Syllabs) do
+    for j := Low(Syllabs) to High(Syllabs) do
+    begin
+      //if Syllabs[i] = Syllabs[j] then
+      //  Continue;
+
+      //if Syllabs[i].Consoant = Syllabs[j].Consoant then
+      //  Continue;
+      //
+      //if Syllabs[i].Vowel = Syllabs[j].Vowel then
+      //  Continue;
+
+      SetLength(Words, Length(Words) + 1);
+      Words[Length(Words) - 1].Syllab1 := Syllabs[i];
+      Words[Length(Words) - 1].Syllab2 := Syllabs[j];
+    end;
+
+  for i := Low(Words) to High(Words) do begin
+    InitializeWord(Words[i]);
+  end;
+
+  Print(Length(Words).ToString);
+  for i := Low(Words) to High(Words) do begin
+    SetNegativeComparisons(Words[i], Words);
+    Print('');
+    Print(Words[i].ToString);
+  end;
+
+  HashWords := THashWords.Create;
+  for i := Low(Words) to High(Words) do begin
+    HashWords[Words[i].Caption] := @Words[i];
+  end;
+
+  SetLength(NewWords, 0);
+  for i := Low(E1WordsWithNewImages) to High(E1WordsWithNewImages) do begin
+    SetLength(NewWords, Length(NewWords) + 1);
+    NewWords[i].Caption := E1WordsWithNewImages[i];
+    NewWords[i].Filenames := GetWordFilenames(E1WordsWithNewImages[i]);
+  end;
+
+  HashNewWords := THashWords.Create;
+  for i := Low(NewWords) to High(NewWords) do begin
+    HashNewWords[NewWords[i].Caption] := @NewWords[i];
+  end;
+end;
+
+procedure Finalize;
+begin
+  Consoants.Free;
+  Vowels.Free;
+  HashWords.Free;
+  HashNewWords.Free;
+end;
+
+initialization
+  Initialize;
+
+finalization
+  Finalize;
+
+end.
+

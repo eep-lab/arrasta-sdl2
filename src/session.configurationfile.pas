@@ -52,6 +52,7 @@ type
     procedure WriteToTrial(ATrial : integer; AStrings : TStrings); overload;
     procedure WriteToTrial(ATrial : integer; AName, AValue: string); overload;
     procedure WriteToTrial(ATrial : integer; ABloc : integer; AName, AValue: string); overload;
+    procedure WriteToMain(AKey: string; AValue: string);
     procedure WriteMain(AMain : TStrings);
     procedure WriteBlocFromTarget(ATargetBloc : integer; ATargetConfigurationFile : TConfigurationFile;
       AlsoAppendTrials : Boolean = True);
@@ -287,7 +288,7 @@ end;
 constructor TConfigurationFile.Create(const AConfigurationFile: string;
   AEscapeLineFeeds: Boolean);
 begin
-  inherited Create(AConfigurationFile,AEscapeLineFeeds);
+  inherited Create(AConfigurationFile, AEscapeLineFeeds);
   FBlocCount := 0;
   GetBlocCount;
 end;
@@ -313,8 +314,8 @@ begin
   WriteSection(TrialSection(BlocCount,ATrial),AStrings);
 end;
 
-procedure TConfigurationFile.WriteToTrial(ATrial: integer; AName, AValue: string
-  );
+procedure TConfigurationFile.WriteToTrial(ATrial: integer;
+  AName, AValue: string);
 begin
   WriteString(TrialSection(BlocCount,ATrial),AName,AValue);
 end;
@@ -325,9 +326,14 @@ begin
   WriteString(TrialSection(ABloc,ATrial),AName,AValue);
 end;
 
+procedure TConfigurationFile.WriteToMain(AKey: string; AValue: string);
+begin
+  WriteString(_Main, AKey, AValue);
+end;
+
 procedure TConfigurationFile.WriteMain(AMain: TStrings);
 begin
-  WriteSection(_Main,AMain);
+  WriteSection(_Main, AMain);
 end;
 
 procedure TConfigurationFile.WriteBlocFromTarget(ATargetBloc: integer;
@@ -389,6 +395,10 @@ begin
         WriteString(LBlocSection, LKeyName, ABlocSection.Values[LKeyName]);
     end;
 end;
+
+finalization
+  if Assigned(ConfigurationFile) then
+    ConfigurationFile.Free;
 
 end.
 

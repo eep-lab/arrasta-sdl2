@@ -222,7 +222,8 @@ begin
   if Assigned(Parameters) then begin
     with TrialKeys do begin
       with Parameters do begin
-        FLimitedHoldTimer.Interval := Values[LimitedHold].ToInteger;
+        if not Values[LimitedHold].IsEmpty then
+          FLimitedHoldTimer.Interval := Values[LimitedHold].ToInteger;
       end;
     end;
   end;

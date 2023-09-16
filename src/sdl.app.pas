@@ -197,7 +197,7 @@ end;
 {$IFNDEF NO_LCL}
 procedure TSDLApplication.SetupAudio;
 begin
-  AllocateAudioChannels;
+  AllocateDefaultAudioChannels;
 end;
 
 procedure TSDLApplication.SetupText;

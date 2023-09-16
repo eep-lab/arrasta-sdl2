@@ -13,133 +13,154 @@ unit experiments.trials;
 
 interface
 
-uses session.constants.trials;
+uses session.constants.trials, session.constants.mts;
 
-procedure WriteToConfigurationFile(
-  ATrials : integer;
-  ARelation : string;
-  ASamples: integer;
-  AComparisons: integer;
-  AHasLimitedHold : Boolean;
-  AShowMouse : Boolean);
+procedure WriteToConfigurationFile;
 
 var
-  Parameters : TTrialParameters;
+  GlobalTrialParameters : TTrialParameters;
+  MTSParameters   : TMTSParameters;
 
 implementation
 
 uses
   Classes
   , SysUtils
-  , session.constants.mts
-  , session.constants.dragdrop
   , LazFileUtils
+  , StrUtils
+  , session.csv
+  , sdl.app.output
+  , session.constants.dragdrop
+  , session.fileutils
   , session.configurationfile
   , session.configurationfile.writer
   , sdl.app.trials.mts
+  , picanco.experiments.words.types
+  , picanco.experiments.words
+  , picanco.experiments.images
+  , picanco.experiments.audio
+  , picanco.experiments.constants
   //, sdl.app.trials.dragdrop
   ;
 
 var Writer : TConfigurationWriter;
 
-procedure WriteTrials(ATrials: integer; AName: string;
-  ARelation: string; ASamples: string; AComparisons: string;
-  AHasLimitedHold : Boolean;
-  AShowMouse: Boolean; ACycle:string);
+procedure WriteTrials(AName: string; ARelation: string;
+  AWord: TWord; AComparisons: integer; AHasConsequence : Boolean = True;
+  ASamples: integer = 1; ARepeatTrials: integer = 1;
+  AHasLimitedHold : Boolean = False);
+var
+  LWord : TWord;
+  i: Integer;
 begin
-  case Writer.CurrentBloc of
-    1 : begin
-      with Writer.TrialConfig do begin
-        with TrialKeys do begin
-          Values[Name] := AName;
-          if AShowMouse then begin
-            Values[Cursor] := '0';
-          end else begin
-            Values[Cursor] := '-1';
-          end;
-          Values[Kind] := TMTS.ClassName;
-          if AHasLimitedHold then
-            Values[LimitedHold] := Parameters.LimitedHold.ToString;
-          Values[InterTrialInterval] := Parameters.InterTrialInterval.ToString;
-          Values[RepeatTrials] := ATrials.ToString;
-          //case ARelation of
-          //  Values[ImageFilesExtension] := '.jpg';
-          //end;
-        end;
+  with Writer.TrialConfig do begin
+    with TrialKeys do begin
+      Values[Name] := AName;
+      Values[Cursor] := GlobalTrialParameters.Cursor.ToString;
+      Values[Kind] := TMTS.ClassName;
+      if AHasLimitedHold then
+        Values[LimitedHold] := GlobalTrialParameters.LimitedHold.ToString;
+      Values[InterTrialInterval] := GlobalTrialParameters.InterTrialInterval.ToString;
+      Values[RepeatTrials] := ARepeatTrials.ToString;
+      Values[HasConsequence] := AHasConsequence.ToString;
+    end;
 
-        with MTSKeys do begin
-          Values[Relation] := ARelation;
-          Values[Samples] := ASamples;
-          Values[Comparisons] := AComparisons;
-          Values[Cycle] := ACycle;
+    with MTSKeys do begin
+      Values[Relation] := ARelation;
+      Values[Samples] := ASamples.ToString;
+      Values[Comparisons] := AComparisons.ToString;
+      Values[Word] := AWord.Caption;
+
+      for i := Low(AWord.Comparisons) to High(AWord.Comparisons) do begin
+        case AWord.Phase.CompModality of
+          ModalityA : LWord := AWord.Comparisons[i].Audio^;
+          ModalityB : LWord := AWord.Comparisons[i].Image^;
+          ModalityC : LWord := AWord.Comparisons[i].Text^;
+          ModalityD : LWord := AWord.Comparisons[i].Speech^;
+          ModalityNone : LWord := EmptyWord; // should never occur
+        end;
+        if not LWord.IsEmpty then begin
+          Values[Comparison+(i+1).ToString] := LWord.Caption;
         end;
       end;
-      Writer.WriteTrial;
     end;
-    //0 : begin
-    //  with Writer.TrialConfig do begin
-    //     with TrialKeys do begin
-    //       Values[Name] := AName;
-    //       if AShowMouse then begin
-    //         Values[Cursor] := '0';
-    //       end else begin
-    //         Values[Cursor] := '-1';
-    //       end;
-    //       Values[Kind] := TDragDrop.ClassName;
-    //       if AHasLimitedHold then
-    //         Values[LimitedHold] := Parameters.LimitedHold.ToString;
-    //       Values[InterTrialInterval] := Parameters.InterTrialInterval.ToString;
-    //       Values[RepeatTrials] := ATrials.ToString;
-    //       Values[ImageFilesExtension] := '.png';
-    //
-    //     end;
-    //
-    //     with DragDropKeys do begin
-    //       Values[UseHelpProgression] := '0';
-    //       Values[DragDropOrientation] := 'Random';
-    //       Values[Relation] := 'A-C';
-    //       Values[Samples] := '3';
-    //       Values[Comparisons] := '3';
-    //     end;
-    //   end;
-    //   Writer.WriteTrial;
-    //end;
   end;
+  Writer.WriteTrial;
 end;
 
-procedure WriteToConfigurationFile(ATrials: integer;
-  ARelation: string; ASamples: integer; AComparisons: integer;
-  AHasLimitedHold: Boolean; AShowMouse: Boolean);
+procedure WriteToConfigurationFile;
 var
+  LID : integer;
+  LCycle : integer;
   LBloc : integer = 0;
+  LTrials : integer;
+  LComparisons : integer;
+  LCondition : integer;
   LName : string;
+  LRelation : string;
+  LCode : TAlphaNumericCode;
+  LHasConsequence : Boolean;
+  LWord : TWord;
+  LPhase : TPhase;
+  LStartAt : TStartAt;
+  FCSVRows : TCSVRows;
+  LTrialConfiguration : TStringList;
+
+  function ToAlphaNumericCode(S : string) : TAlphaNumericCode;
+  var
+    LErrorCode : Word;
+  begin
+    Val(S, Result, LErrorCode);
+    if LErrorCode <> 0 then
+      Result := NA;
+  end;
+
+  function GetWord(APhase : TPhase; ACode : TAlphaNumericCode) : TWord;
+  const
+    LCodes = [Low(E1CyclesCodeRange)..High(E1CyclesCodeRange)];
+  begin
+    if ACode in LCodes then begin
+      Result := HashWords[E1WordPerCycleCode[APhase.Cycle, ACode]]^;
+      Result.Phase := APhase;
+      SetComparisons(Result);
+    end;
+  end;
 begin
+  //Format('%.2d', [LCycle])
+  FCSVRows := TCSVRows.Create('test.csv');
+
   Writer := TConfigurationWriter.Create(ConfigurationFile);
   try
-    LName := ARelation + #32 +
-      'S' + ASamples.ToString + 'C' + AComparisons.ToString;
+    for LTrialConfiguration in FCSVRows do  begin
+      with LTrialConfiguration do begin
+        LID          := Values['ID'].ToInteger;
+        LCycle       := Values['Cycle'].ToInteger;
+        LCondition   := Values['Condition'].ToInteger;
+        LBloc        := Values['Bloc'].ToInteger -1;
+        LTrials      := Values['Trials'].ToInteger;
+        LComparisons := Values['Comparisons'].ToInteger;
+        LRelation    := Values['Relation'];
+        LCode        := ToAlphaNumericCode(Values['Code']);
+        LHasConsequence := True;
+      end;
+      LPhase := GetPhase(LCycle, LCondition, LRelation);
+      LWord := GetWord(LPhase, LCode);
+      LStartAt.Bloc := 1;
+      LStartAt.Trial:= 1;
+      Writer.StartAt := LStartAt;
 
-    Writer.CurrentBloc := LBloc;
-    with Writer.BlocConfig do begin
-      Values['Name'] := 'Bloco ' + LBloc.ToString;
+      Writer.CurrentBloc := LBloc;
+      with Writer.BlocConfig do begin
+        Values['Name'] := 'Bloco ' + LBloc.ToString;
+      end;
+      Writer.WriteBloc;
+
+      LName := LWord.Caption + #32 + LRelation + #32 + LComparisons.ToString + 'C';
+      WriteTrials(LName, LRelation, LWord, LComparisons, LHasConsequence);
     end;
-    Writer.WriteBloc;
-    WriteTrials(ATrials, LName, ARelation,
-      ASamples.ToString, AComparisons.ToString,
-      AHasLimitedHold, AShowMouse, Format('%2D', [1]));
-
-    Inc(LBloc);
-    Writer.CurrentBloc := LBloc;
-    with Writer.BlocConfig do begin
-      Values['Name'] := 'Bloco ' + LBloc.ToString;
-    end;
-    Writer.WriteBloc;
-    WriteTrials(ATrials, LName, ARelation,
-      ASamples.ToString, AComparisons.ToString,
-      AHasLimitedHold, AShowMouse, Format('%2D', [2]));
-
   finally
     Writer.Free;
+    FCSVRows.Free;
   end;
 end;
 

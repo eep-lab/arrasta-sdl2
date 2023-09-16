@@ -32,20 +32,25 @@ type
   private
     FVolume : int32;
     FChannels : TChannels;
+    function GetPlaying: Boolean;
     function GetSetVolume: int32;
+    // Returns the current number of channels without changing anything.
     function AllocatedChannels : cint;
     procedure SDLAudioChannelFinished(const AChannel: cint32);
   public
     constructor Create; reintroduce;
     destructor Destroy; override;
+    //procedure DeallocateAudioChannels(AUpperChannels : integer);
+    procedure UnregisterChannel(Sound : ISound);
+    function LoadFromFile(AFilename : string) : ISound;
     function SoundFromName(AName : string) : ISound;
-    function SoundFromShortPath(AShortPath : string) : ISound;
-    procedure LoadFromFile(AFilename : string);
+    //function SoundFromShortPath(AShortPath : string) : ISound;
     function RegisterChannel(Sound : ISound) : cint;
     property Volume : int32 read GetSetVolume write FVolume;
+    property Playing : Boolean read GetPlaying;
   end;
 
-  procedure AllocateAudioChannels;
+  procedure AllocateDefaultAudioChannels;
 
 const
   SESSION_CHUNK_STOPPED = SDL_USEREVENT+2;
@@ -66,18 +71,10 @@ begin
   SDL_PushEvent(@event);
 end;
 
-procedure AllocateAudioChannels;
-var
-  i, j: Integer;
+procedure AllocateDefaultAudioChannels;
 begin
   SDLAudio.LoadFromFile('acerto.wav');
   SDLAudio.LoadFromFile('erro.wav');
-  for i := 1 to 6 do begin
-    for j := 1 to 4 do begin
-      SDLAudio.LoadFromFile(
-        Format('%02d', [i])+PathSep+'A'+j.ToString+'.wav');
-    end;
-  end;
 end;
 
 { TSDLAudio }
@@ -90,6 +87,19 @@ end;
 function TSDLAudio.GetSetVolume: int32;
 begin
   Result := (MIX_MAX_VOLUME*FVolume) div 100;
+end;
+
+function TSDLAudio.GetPlaying: Boolean;
+var
+  IChunk: ISound;
+begin
+  Result := False;
+  if FChannels.Count = 0 then Exit;
+  for IChunk in FChannels do
+    if IChunk.Playing then begin
+      Result := True;
+      Exit;
+    end;
 end;
 
 function TSDLAudio.AllocatedChannels: cint;
@@ -130,35 +140,48 @@ begin
       Result := IChunk;
       Exit;
     end;
+  raise EFileNotFoundException.Create('TSDLAudio.SoundFromName'+AName);
 end;
 
-function TSDLAudio.SoundFromShortPath(AShortPath: string): ISound;
-var
-  IChunk : ISound;
-begin
-  if FChannels.Count = 0 then Exit;
-  Result := nil;
-  for IChunk in FChannels do
-    if IChunk.ShortPath.ToUpper = AShortPath.ToUpper then begin
-      Result := IChunk;
-      Exit;
-    end;
-end;
+//function TSDLAudio.SoundFromShortPath(AShortPath: string): ISound;
+//var
+//  IChunk : ISound;
+//begin
+//  if FChannels.Count = 0 then Exit;
+//  Result := nil;
+//  for IChunk in FChannels do begin
+//    if IChunk.ShortPath.ToUpper = AShortPath.ToUpper then begin
+//      Result := IChunk;
+//      Exit;
+//    end;
+//  end;
+//end;
 
-procedure TSDLAudio.LoadFromFile(AFilename: string);
+function TSDLAudio.LoadFromFile(AFilename: string): ISound;
 var
   LChunk : TChunk;
 begin
   LChunk := TChunk.Create;
   LChunk.LoadFromFile(AFilename);
+  LChunk.Channel := SDLAudio.RegisterChannel(LChunk.AsInterface);
+  Result := LChunk.AsInterface;
+end;
+
+procedure TSDLAudio.UnregisterChannel(Sound: ISound);
+begin
+  FChannels.Remove(Sound);
+  Mix_AllocateChannels(FChannels.Count);
+  if FChannels.Count <> AllocatedChannels then
+    raise Exception.Create(
+      'Error: TSDLAudio.UnregisterChannel incosistency. Audio may not play.');
 end;
 
 function TSDLAudio.RegisterChannel(Sound: ISound) : cint;
 begin
-  if FChannels.Count = AllocatedChannels then begin
-    Mix_AllocateChannels(FChannels.Count+1)
-  end;
   Result:= FChannels.Add(Sound);
+  if AllocatedChannels < FChannels.Count then begin
+    Mix_AllocateChannels(FChannels.Count);
+  end;
 end;
 
 end.

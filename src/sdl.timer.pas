@@ -113,6 +113,7 @@ end;
 constructor TSDLTimer.Create;
 begin
   FID := -1;
+  FInterval := 0;
   FOnTimer := nil;
 end;
 

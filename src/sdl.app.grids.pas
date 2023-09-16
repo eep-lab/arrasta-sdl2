@@ -534,9 +534,9 @@ begin
   FSamplesCount := -1;
   FComparisonsCount := -1;
   FCellsCount:=ASeed*ASeed;
-  FCellsSize := 4.5;
+  FCellsSize := 6;
   FFixedSample := True;
-  FGridStyle := gtSquare;
+  FGridStyle := gtDistributed;
   FGridOrientation:= goTopToBottom;
   FGrid := GetCentralGrid(FSeed, FCellsSize, DispersionStyle);
 end;

@@ -27,8 +27,11 @@ type
 
   TPicture = class(TRectangule, IPaintable)
   private
-    FTexture  : PSDL_Texture;
+    FShaded : Boolean;
+    FSibling: TPicture;
+    procedure SetSibling(AValue: TPicture);
   protected
+    FTexture  : PSDL_Texture;
     procedure MouseMove(Sender: TObject; Shift: TCustomShiftState; X, Y: Integer); override;
     procedure MouseDown(Sender: TObject; Shift: TCustomShiftState; X, Y: Integer); override;
     procedure MouseEnter(Sender: TObject); override;
@@ -38,6 +41,7 @@ type
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
     procedure LoadFromFile(AFilename: string);
+    property Sibling : TPicture read FSibling write SetSibling;
   end;
 
 
@@ -45,6 +49,7 @@ implementation
 
 uses
   sdl2_image
+  , sdl.colors
   , sdl.app.video.methods
   , sdl.app.output
   , session.pool
@@ -55,6 +60,7 @@ uses
 constructor TPicture.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
+  FSibling := nil;
   IMG_Init(IMG_INIT_PNG);
 end;
 
@@ -64,32 +70,53 @@ begin
   inherited Destroy;
 end;
 
+procedure TPicture.SetSibling(AValue: TPicture);
+begin
+  if FSibling=AValue then Exit;
+  FSibling:=AValue;
+  CentralizeAtTopWith(FSibling.BoundsRect);
+end;
+
 procedure TPicture.MouseMove(Sender: TObject; Shift: TCustomShiftState; X,
   Y: Integer);
 begin
-  inherited MouseMove(Self, Shift, X, Y);
+  if Visible then
+    inherited MouseMove(Self, Shift, X, Y);
 end;
 
 procedure TPicture.MouseDown(Sender: TObject; Shift: TCustomShiftState; X,
   Y: Integer);
 begin
-  inherited MouseDown(Self, Shift, X, Y);
+  if Visible then
+    inherited MouseDown(Self, Shift, X, Y);
 end;
 
 procedure TPicture.MouseEnter(Sender: TObject);
 begin
-  inherited MouseEnter(Self);
+  if Visible then begin
+    inherited MouseEnter(Self);
+    FShaded := True;
+  end;
 end;
 
 procedure TPicture.MouseExit(Sender: TObject);
 begin
-  inherited MouseExit(Self);
+  if Visible then begin
+    inherited MouseExit(Self);
+    FShaded := False;
+  end;
 end;
 
 procedure TPicture.Paint;
 begin
   if Visible then begin
     SDL_RenderCopy(PSDLRenderer, FTexture, nil, @FRect);
+    if FShaded then begin
+      SDL_SetRenderDrawBlendMode(PSDLRenderer, SDL_BLENDMODE_BLEND);
+      with clLightBlueShaded1 do
+        SDL_SetRenderDrawColor(PSDLRenderer, r, g, b, a);
+      SDL_RenderFillRect(PSDLRenderer, @FRect);
+    end;
   end else begin
     inherited Paint;
   end;

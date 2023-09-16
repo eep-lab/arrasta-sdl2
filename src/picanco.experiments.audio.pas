@@ -1,0 +1,101 @@
+{
+  Stimulus Control
+  Copyright (C) 2014-2023 Carlos Rafael Fernandes Picanço.
+
+  The present file is distributed under the terms of the GNU General Public License (GPL v3.0).
+
+  You should have received a copy of the GNU General Public License
+  along with this program. If not, see <http://www.gnu.org/licenses/>.
+}
+unit picanco.experiments.audio;
+
+{$mode ObjFPC}{$H+}
+
+interface
+
+uses
+  Classes, SysUtils, SpeechLib_TLB;
+
+implementation
+
+uses sdl.app.output, picanco.experiments.words.types, picanco.experiments.words;
+
+function WordToSSML(const AWord : TWord) : string;
+begin
+  Result := '<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="pt-BR">' +
+    '<voice name="Microsoft Maria Desktop - Portuguese(Brazil)">' +
+      '<prosody rate="medium">' +
+        '<phoneme alphabet="ipa" ph="'+AWord.ToIPA+'">'+AWord.Caption+'</phoneme>.'+
+      '</prosody>'+
+    '</voice>'+
+  '</speak>';
+end;
+
+procedure Speak(const AWord: TWord);
+var
+  LSpVoice: SpVoice;
+begin
+  LSpVoice := CoSpVoice.Create;
+  try
+    LSpVoice.Speak(WordToSSML(AWord), SVSFDefault);
+  finally
+    LSpVoice := nil;
+  end;
+end;
+
+procedure SpeakToFile(const AWord: TWord; AFileName: WideString);
+var
+  LSpFileStream: SpFileStream;
+  LSpVoice: SpVoice;
+begin
+  LSpFileStream := CoSpFileStream.Create;
+  LSpVoice := CoSpVoice.Create;
+  try
+    LSpFileStream.Format.Type_ := SAFT44kHz16BitStereo;
+    LSpFileStream.Open(AFileName, SSFMCreateForWrite, False);
+    LSpVoice.AudioOutputStream := LSpFileStream;
+    LSpVoice.Speak(WordToSSML(AWord), SVSFDefault);
+    LSpFileStream.Close;
+  finally
+    LSpVoice := nil;
+    LSpFileStream := nil;
+  end;
+end;
+
+procedure ListAvailableVoices;
+var
+  LSpVoice: SpVoice;
+  TokenEnum: ISpeechObjectTokens;
+  Token: ISpeechObjectToken;
+  AttrValue: WideString;
+  i: Integer;
+begin
+  LSpVoice := CoSpVoice.Create;
+  try
+    TokenEnum := LSpVoice.GetVoices('', '');
+    for i := 0 to TokenEnum.Count-1 do
+    begin
+      Token := TokenEnum.Item(i);
+      AttrValue := Token.GetDescription(0);
+      Print(AttrValue);
+    end;
+  finally
+    LSpVoice := nil;
+  end;
+end;
+
+procedure Synthetize;
+var
+  LWord : TWord;
+begin
+  for LWord in Words do
+    SpeakToFile(LWord, LWord.Filenames.Audio);
+end;
+
+//initialization
+  //ListAvailableVoices;
+  //Speak(Words[0]);
+  //Synthetize;
+
+end.
+

@@ -16,10 +16,11 @@ interface
 uses
   Classes, SysUtils
   , SDL2
-  , fgl
+  //, fgl
   , sdl.app.audio.contract
   , sdl.app.stimulus
   , sdl.app.graphics.picture
+  , sdl.app.events.abstract
   ;
 
 type
@@ -27,37 +28,87 @@ type
   { TAudioStimulus }
 
   TAudioStimulus = class(TStimulus)
-    private
-      FSound : ISound;
-      FPicture : TPicture;
-    public
-    procedure DoResponse; override;
+  private
+    FRect : TSDL_Rect;
+    FSound : ISound;
+    FPicture : TPicture;
+  protected
+    procedure SoundFinished(Sender: TObject);
+    procedure MouseDown(Sender: TObject; Shift: TCustomShiftState;
+      X, Y: Integer); override;
+    procedure MouseEnter(Sender: TObject); override;
+    procedure MouseExit(Sender: TObject); override;
+  public
+    destructor Destroy; override;
     procedure Load(AParameters : TStringList;
         AParent : TObject; ARect: TSDL_Rect); override;
     procedure Start; override;
     procedure Stop; override;
+    property Picture : TPicture read FPicture;
   end;
 
 implementation
 
 uses sdl.app.audio
    , sdl.app.renderer.custom
-   ;
+   , session.constants.mts;
 
 { TAudioStimulus }
 
-procedure TAudioStimulus.DoResponse;
+procedure TAudioStimulus.SoundFinished(Sender: TObject);
 begin
+  if IsSample then begin
+    DoResponse;
+    FSound.SetOnStop(nil);
+  end else begin
+    DoResponse;
+  end;
+end;
 
+procedure TAudioStimulus.MouseDown(Sender: TObject; Shift: TCustomShiftState;
+  X, Y: Integer);
+begin
+  if SDLAudio.Playing then begin
+    { do nothing }
+  end else begin
+    if Assigned(OnMouseDown) then
+      OnMouseDown(Self, Shift, X, Y);
+    FSound.Play;
+  end;
+end;
+
+procedure TAudioStimulus.MouseEnter(Sender: TObject);
+begin
+  if IsSample then begin
+    { do nothing }
+  end else begin
+    //FButtonPicture.Show;
+  end;
+end;
+
+procedure TAudioStimulus.MouseExit(Sender: TObject);
+begin
+  if IsSample then begin
+    { do nothing }
+  end else begin
+    //FButtonPicture.Hide;
+  end;
+end;
+
+destructor TAudioStimulus.Destroy;
+begin
+  //SDLAudio.UnregisterChannel(FSound);
+  //FSound.Free;
+  inherited Destroy;
 end;
 
 procedure TAudioStimulus.Load(AParameters: TStringList; AParent: TObject;
   ARect: TSDL_Rect);
 var
+  LSound: string;
   LAudioPicture : string;
 begin
-  LAudioPicture:=AParameters.Values['Media']+'.wav';
-  FSound := SDLAudio.SoundFromShortPath(AParameters.Values['Media']+'.wav');
+  FRect := ARect;
   FPicture := TPicture.Create(Self);
   if AParameters.Values['AudioPicture'].IsEmpty then begin
     LAudioPicture := 'AudioPicture';
@@ -67,12 +118,28 @@ begin
   FPicture.LoadFromFile(LAudioPicture+'.png');
   FPicture.BoundsRect := ARect;
   FPicture.Parent := TCustomRenderer(AParent);
-  FPicture.Show;
+  FPicture.OnMouseDown := @MouseDown;
+  FPicture.OnMouseEnter := @MouseEnter;
+  FPicture.OnMouseExit := @MouseExit;
+
+  if IsSample then begin
+    LSound := AParameters.Values[MTSKeys.Word];
+  end else begin
+    LSound := AParameters.Values[MTSKeys.Comparison+(Index+1).ToString];
+  end;
+
+  FSound := SDLAudio.LoadFromFile(LSound+'.wav');
+  FSound.SetOnStop(@SoundFinished);
 end;
 
 procedure TAudioStimulus.Start;
 begin
-  FSound.Play;
+  if IsSample then begin
+    FSound.Play;
+    FPicture.Show;
+  end else begin
+    FPicture.Show;
+  end;
 end;
 
 procedure TAudioStimulus.Stop;

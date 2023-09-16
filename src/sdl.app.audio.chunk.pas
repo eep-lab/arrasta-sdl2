@@ -36,7 +36,7 @@ type
     function Duration : cuint32;
     function Playing : Boolean;
     function ShortName : string;
-    function ShortPath : string;
+    //function ShortPath : string;
     function AsInterface : ISound;
     procedure LoadFromFile(AFilename : string);
     procedure Play;
@@ -78,6 +78,7 @@ end;
 
 destructor TChunk.Destroy;
 begin
+  SDLAudio.UnregisterChannel(AsInterface);
   Mix_FreeChunk(FChunk);
   inherited Destroy;
 end;
@@ -97,21 +98,25 @@ begin
   Result := ExtractFileNameWithoutExt(ExtractFileNameOnly(FFilename));
 end;
 
-function TChunk.ShortPath: string;
-var
-  LastSeparatorPos, SecondLastSeparatorPos: Integer;
-begin
-  LastSeparatorPos := LastDelimiter(PathDelim, FFilename);
-  SecondLastSeparatorPos :=
-    LastDelimiter(PathDelim, Copy(FFilename, 1, LastSeparatorPos - 1));
-
-  if (LastSeparatorPos > 0) and (SecondLastSeparatorPos > 0) then
-    Result := Copy(FFilename,
-      SecondLastSeparatorPos + 1,
-      LastSeparatorPos - SecondLastSeparatorPos - 1)
-  else
-    Result := '';
-end;
+//function TChunk.ShortPath: string;
+//  function ExtractOneLevelUp(AFilename : string): string;
+//  var
+//    LastSeparatorPos, SecondLastSeparatorPos: Integer;
+//  begin
+//    LastSeparatorPos := LastDelimiter(PathDelim, AFilename);
+//    SecondLastSeparatorPos :=
+//      LastDelimiter(PathDelim, Copy(AFilename, 1, LastSeparatorPos - 1));
+//
+//    if (LastSeparatorPos > 0) and (SecondLastSeparatorPos > 0) then
+//      Result := Copy(AFilename,
+//        SecondLastSeparatorPos + 1,
+//        LastSeparatorPos - SecondLastSeparatorPos)
+//    else
+//      Result := '';
+//  end;
+//begin
+//  Result := ExtractOneLevelUp(FFilename)+ExtractFileName(FFilename);
+//end;
 
 function TChunk.AsInterface: ISound;
 begin
@@ -126,14 +131,16 @@ begin
   FChunk := Mix_LoadWAV(Media);
   if FChunk <> nil then begin
     FFilename := Pool.RootMedia+AFilename;
-    FChannel := SDLAudio.RegisterChannel(AsInterface);
   end;
 end;
 
 procedure TChunk.Play;
+var
+  i : cint;
 begin
   if Assigned(OnStartPlaying) then OnStartPlaying(Self);
   if Playing then Stop;
+  i := Mix_AllocateChannels(-1);
   Mix_PlayChannel(FChannel, FChunk, 0);
 end;
 

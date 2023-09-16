@@ -192,10 +192,8 @@ begin
     FGridOrientation := DragDropToGridOrientation(
       AParameters.Values[DragDropOrientation].ToDragDropOrientation);
   end;
-  with TrialKeys do begin
-    LExt := AParameters.Values[ImageFilesExtension];
-  end;
 
+  LExt := '.jpg';
   NewGridItems(LSamples, LComparisons, FGridOrientation);
   with Grid.RandomPositions do begin
     for i := low(Comparisons) to high(Comparisons) do

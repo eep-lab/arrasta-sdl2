@@ -14,19 +14,29 @@ unit forms.main;
 interface
 
 uses
-  Classes, SysUtils, Forms, Controls, Graphics, Dialogs, StdCtrls;
+  Classes, SysUtils, Forms, Controls, Graphics, Dialogs, StdCtrls, ExtCtrls,
+  IniPropStorage;
 
 type
 
   { TFormBackground }
 
   TFormBackground = class(TForm)
-    Button1: TButton;
-    procedure Button1Click(Sender: TObject);
+    ButtonLoadConfigurationFile: TButton;
+    ButtonNewConfigurationFile: TButton;
+    ButtonRunSession: TButton;
+    ComboBoxParticipant: TComboBox;
+    IniPropStorage1: TIniPropStorage;
+    OpenDialog1: TOpenDialog;
+    Panel1: TPanel;
+    procedure ButtonLoadConfigurationFileClick(Sender: TObject);
+    procedure ButtonNewConfigurationFileClick(Sender: TObject);
+    procedure ButtonRunSessionClick(Sender: TObject);
     procedure BeginSession(Sender: TObject);
     procedure EndSession(Sender : TObject);
   private
     //FEyeLink : TEyeLink;
+    function ParticipantName : string;
   public
 
   end;
@@ -39,11 +49,12 @@ implementation
 {$R *.lfm}
 
 uses
-  session
+  FileUtil
+  , session
   , session.pool
   , session.loggers
+  , session.fileutils
   , experiments
-  , common.helpers
   , sdl.app
   , sdl.app.output
   , eyelink.classes
@@ -51,24 +62,22 @@ uses
 
 { TFormBackground }
 
-procedure TFormBackground.Button1Click(Sender: TObject);
-var
-  ITI : integer = 4;
-  LH : integer  = 1;
+procedure TFormBackground.ButtonRunSessionClick(Sender: TObject);
 begin
+
+  if ConfigurationFilename.IsEmpty then begin
+    ShowMessage('Crie uma nova sessão ou abra uma pronta.');
+    Exit;
+  end;
+
+  if ComboBoxParticipant.ItemIndex < 0 then begin
+    ShowMessage('Escolha um participante.');
+    Exit;
+  end;
+
   Pool.RootData := Pool.RootData +
-    'Participant' + DirectorySeparator;
+    ParticipantName + DirectorySeparator;
   ForceDirectories(Pool.RootData);
-  ConfigurationFilename :=
-    Experiments.MakeConfigurationFile(
-      5,
-      ITI.SecondsToMiliseconds,
-      LH.MinutesToMiliseconds,
-      'A-A',
-      1,
-      3,
-      True,
-      True);
 
   SDLApp := TSDLApplication.Create('Stimulus Control', 0);
   SDLApp.SetupEvents;
@@ -76,21 +85,38 @@ begin
   SDLApp.SetupText;
 
   SDLSession := TSession.Create(Self);
-  //SDLSession.OnBeforeStart := @BeginSession;
+  SDLSession.OnBeforeStart := @BeginSession;
   //SDLSession.OnEndSession  := @EndSession;
   SDLSession.Play;
 
   SDLApp.Run;
 end;
 
+procedure TFormBackground.ButtonNewConfigurationFileClick(Sender: TObject);
+begin
+  ConfigurationFilename := Experiments.MakeConfigurationFile;
+end;
+
+procedure TFormBackground.ButtonLoadConfigurationFileClick(Sender: TObject);
+begin
+  if OpenDialog1.Execute then
+    ConfigurationFilename := LoadConfigurationFile(OpenDialog1.FileName);
+end;
+
 procedure TFormBackground.BeginSession(Sender: TObject);
 begin
+  CopyFile(ConfigurationFilename, Pool.BaseFilename+'.ini');
   TLogger.SetHeader('Session Name', 'Participant');
 end;
 
 procedure TFormBackground.EndSession(Sender: TObject);
 begin
   TLogger.SetFooter;
+end;
+
+function TFormBackground.ParticipantName: string;
+begin
+  Result := ComboBoxParticipant.Items[ComboBoxParticipant.ItemIndex];
 end;
 
 end.

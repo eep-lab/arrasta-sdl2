@@ -12,19 +12,26 @@ unit session.configurationfile.writer;
 interface
 
 uses
-  Classes, Session.ConfigurationFile;
+  Classes, SysUtils, Session.ConfigurationFile;
 
 type
+
+  TStartAt = record
+    Trial : integer;
+    Bloc  : integer;
+  end;
 
   { TConfigurationWriter }
 
   TConfigurationWriter = class
   private
     FBlocConfig: TStringList;
+    FStartAt: TStartAt;
     FTrialConfig: TStringList;
     FCurrentBloc : integer;
     FConfigurationFile: TConfigurationFile;
     function GetCurrentTrial: integer;
+    procedure SetStartTrial(AValue: TStartAt);
   public
     constructor Create(AConfigurationFile: TConfigurationFile); reintroduce;
     destructor Destroy; override;
@@ -34,6 +41,7 @@ type
     property TrialConfig: TStringList read FTrialConfig;
     property CurrentBloc  : integer read FCurrentBloc write FCurrentBloc;
     property CurrentTrial : integer read GetCurrentTrial;
+    property StartAt : TStartAt read FStartAt write SetStartTrial;
   end;
 
 implementation
@@ -43,6 +51,15 @@ implementation
 function TConfigurationWriter.GetCurrentTrial: integer;
 begin
   Result := FConfigurationFile.TrialCount[CurrentBloc+1];
+end;
+
+procedure TConfigurationWriter.SetStartTrial(AValue: TStartAt);
+begin
+  if (FStartAt.Bloc=AValue.Bloc) and (FStartAt.Trial=AValue.Trial) then Exit;
+  FStartAt:=AValue;
+  with FConfigurationFile do begin
+    WriteToMain('StartAt', StartAt.Bloc.ToString + '-' + StartAt.Trial.ToString);
+  end;
 end;
 
 constructor TConfigurationWriter.Create(AConfigurationFile: TConfigurationFile);
