@@ -12,7 +12,8 @@ unit sdl.app.graphics.button;
 interface
 
 uses
-  Classes, SysUtils, SDL2
+  Classes, SysUtils
+  //, SDL2
   , sdl.app.graphics.picture
   , sdl.app.events.abstract;
 
@@ -30,12 +31,13 @@ type
   public
     constructor Create(AOwner: TComponent); override;
     procedure Click; virtual;
+    procedure LoadFromFile(AFilename: string); override;
     property OnClick: TNotifyEvent read FOnClick write FOnClick;
   end;
 
 implementation
 
-uses sdl.app.video.methods, sdl.colors;
+//uses sdl.app.video.methods, sdl.colors;
 
 { TButton }
 
@@ -70,6 +72,12 @@ procedure TButton.Click;
 begin
   if Assigned(FOnClick) then
     FOnClick(Self);
+end;
+
+procedure TButton.LoadFromFile(AFilename: string);
+begin
+  inherited LoadFromFile(AFilename);
+  Height:=Height div 3;
 end;
 
 end.

@@ -40,7 +40,7 @@ type
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
-    procedure LoadFromFile(AFilename: string);
+    procedure LoadFromFile(AFilename: string); virtual;
     property Sibling : TPicture read FSibling write SetSibling;
   end;
 

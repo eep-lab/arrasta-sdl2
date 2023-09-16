@@ -30,6 +30,7 @@ type
 
   TSDLAudio = class
   private
+    FOnChannelFinished: TMix_Channel_Finished;
     FVolume : int32;
     FChannels : TChannels;
     function GetPlaying: Boolean;
@@ -40,11 +41,9 @@ type
   public
     constructor Create; reintroduce;
     destructor Destroy; override;
-    //procedure DeallocateAudioChannels(AUpperChannels : integer);
     procedure UnregisterChannel(Sound : ISound);
     function LoadFromFile(AFilename : string) : ISound;
     function SoundFromName(AName : string) : ISound;
-    //function SoundFromShortPath(AShortPath : string) : ISound;
     function RegisterChannel(Sound : ISound) : cint;
     property Volume : int32 read GetSetVolume write FVolume;
     property Playing : Boolean read GetPlaying;
@@ -142,20 +141,6 @@ begin
     end;
   raise EFileNotFoundException.Create('TSDLAudio.SoundFromName'+AName);
 end;
-
-//function TSDLAudio.SoundFromShortPath(AShortPath: string): ISound;
-//var
-//  IChunk : ISound;
-//begin
-//  if FChannels.Count = 0 then Exit;
-//  Result := nil;
-//  for IChunk in FChannels do begin
-//    if IChunk.ShortPath.ToUpper = AShortPath.ToUpper then begin
-//      Result := IChunk;
-//      Exit;
-//    end;
-//  end;
-//end;
 
 function TSDLAudio.LoadFromFile(AFilename: string): ISound;
 var

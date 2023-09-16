@@ -44,6 +44,7 @@ type
       procedure StimulusMouseEnter(Sender: TObject);
       procedure StimulusMouseExit(Sender: TObject);
       procedure StimulusMouseDown(Sender: TObject; Shift: TCustomShiftState; X, Y: Integer);
+      procedure ButtonClick(Sender: TObject);
       procedure ComparisonResponse(Sender: TObject);
       procedure SampleResponse(Sender: TObject);
     public
@@ -94,7 +95,7 @@ begin
   FSoundCorrect.SetOnStop(nil);
   FSoundWrong.SetOnStop(nil);
   if Assigned(OnFinalize) then
-    OnFinalize(Sender);
+    OnFinalize(Self);
 end;
 
 procedure TMTSStimuli.StimulusMouseEnter(Sender: TObject);
@@ -112,19 +113,23 @@ procedure TMTSStimuli.StimulusMouseDown(Sender: TObject;
 var
   LStimulus: TStimulus;
 begin
-  if Sender = FButton then begin
-    if FButton.Sibling <> nil then begin
-      LStimulus := FButton.Sibling.Owner as TStimulus;
-    end;
-    DoConsequence(LStimulus);
-    Exit;
-  end;
-
   if Sender is TAudioStimulus then begin
     LStimulus := Sender as TStimulus;
     if FComparisons.IndexOf(LStimulus) <> -1 then begin
       FButton.Hide;
     end;
+  end;
+end;
+
+procedure TMTSStimuli.ButtonClick(Sender: TObject);
+var
+  LStimulus: TStimulus;
+begin
+  if Sender = FButton then begin
+    if FButton.Sibling <> nil then begin
+      LStimulus := FButton.Sibling.Owner as TStimulus;
+    end;
+    DoConsequence(LStimulus);
   end;
 end;
 
@@ -142,12 +147,6 @@ begin
       end;
       DoConsequence(LStimulus);
     end;
-  end;
-
-  if LStimulus = FComparisons[0] then begin
-    FSoundCorrect.Play;
-  end else begin
-    FSoundWrong.Play;
   end;
 end;
 
@@ -273,7 +272,7 @@ begin
       FButton := TButton.Create(Self);
       FButton.LoadFromFile('ConfirmButton.png');
       FButton.Parent := TCustomRenderer(AParent);
-      FButton.OnMouseDown:=@StimulusMouseDown;
+      FButton.OnClick:=@ButtonClick;
     end;
 
     LSamples := AParameters.Values[Samples].ToInteger;

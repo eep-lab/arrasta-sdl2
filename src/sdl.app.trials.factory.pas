@@ -51,6 +51,9 @@ uses session.intertrial
    , sdl.app.trials.last
    ;
 
+var
+  TrialID : integer;
+
 { TTrialFactory }
 
 class constructor TTrialFactory.Create;
@@ -87,6 +90,8 @@ begin
       'Trial kind is not registered: %s %s', [TrialData.Kind, TrialClass]);
 
   CurrentTrial := TrialClass.Create(nil);
+  Inc(TrialID);
+  CurrentTrial.Name := 'T'+TrialID.ToString;
   CurrentTrial.OnTrialEnd := InterTrial.OnBegin;
   CurrentTrial.Data := TrialData;
 end;

@@ -193,8 +193,15 @@ begin
 end;
 
 procedure TTrial.EndTrialCallBack(Sender: TObject);
+var
+  LStimuli : TComponent;
+  LTrial    : TComponent;
 begin
-  EndTrial;
+  if Sender is TComponent then begin
+    LStimuli := Sender as TComponent;
+    if LStimuli.Owner.Name = Self.Name then
+      EndTrial;
+  end;
 end;
 
 procedure TTrial.Paint;
