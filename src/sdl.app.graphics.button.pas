@@ -49,17 +49,21 @@ end;
 
 procedure TButton.MouseDown(Sender: TObject; Shift: TCustomShiftState; X, Y: Integer);
 begin
-  inherited MouseDown(Sender, Shift, X, Y);
-  FIsPressed := True;
+  if Visible then begin
+    inherited MouseDown(Sender, Shift, X, Y);
+    FIsPressed := True;
+  end;
 end;
 
 procedure TButton.MouseUp(Sender: TObject; Shift: TCustomShiftState; X, Y: Integer);
 begin
-  inherited MouseUp(Sender, Shift, X, Y);
-  FIsPressed := False;
-  // test if InRect(BoundsRect, Point(X, Y)) is needed
-  if Assigned(OnClick) then
-    OnClick(Self);
+  if Visible then begin
+    inherited MouseUp(Sender, Shift, X, Y);
+    FIsPressed := False;
+    // test if InRect(BoundsRect, Point(X, Y)) is needed
+    if Assigned(OnClick) then
+      OnClick(Self);
+  end;
 end;
 
 procedure TButton.Paint;

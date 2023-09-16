@@ -30,6 +30,7 @@ type
       procedure UserEvent(const event: TSDL_UserEvent);
     public
       constructor Create; reintroduce;
+      destructor Destroy; override;
       procedure AssignEvents;
       property OnAudioChannelFinished : TOnAudioChannelFinished read FOnAudioChannelFinished write SetOnAudioChannelFinished;
     public
@@ -116,6 +117,12 @@ begin
     if not UserEventRegistered(Event) then
       raise Exception.Create('Event not registered:'+IntToStr(Event));
   AssignEvents;
+end;
+
+destructor TCustomEventHandler.Destroy;
+begin
+  FOnAudioChannelFinished:=nil;
+  inherited Destroy;
 end;
 
 procedure TCustomEventHandler.AssignEvents;

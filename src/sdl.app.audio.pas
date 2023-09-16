@@ -124,7 +124,9 @@ var
   IChunk : ISound;
 begin
   for IChunk in FChannels do IChunk.Free;
+  Mix_AllocateChannels(0);
   FChannels.Free;
+  Mix_CloseAudio;
   inherited Destroy;
 end;
 
