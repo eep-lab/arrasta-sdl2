@@ -102,8 +102,8 @@ begin
     ConfigurationFile.Free;
   ConfigurationFile := TConfigurationFile.Create(NewConfigurationFile);
   ConfigurationFile.CacheUpdates := True;
-  ConfigurationFile.WriteString(_Main, _NumBlc, '3');
-  ConfigurationFile.WriteToBloc(1, _Name, 'SS');
+  ConfigurationFile.WriteString(_Main, _NumBlock, '3');
+  ConfigurationFile.WriteToBlock(1, _Name, 'SS');
   ConfigurationFile.Invalidate;
 end;
 

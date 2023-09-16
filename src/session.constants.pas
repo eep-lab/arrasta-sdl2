@@ -31,11 +31,11 @@ const
   _Data  = 'Data';
   _RootData   = 'RootData';
   _RootMedia  = 'RootMedia';
-  _NumBlc = 'NumBlc';
+  _NumBlock = 'NumBlock';
   _Type = 'Type';
   _ServerAddress = 'ServerAddress';
 
-  // Blc
+  // Block
   _NumTrials = 'NumTrials';
   _AutoEndSession = 'AutoEndSession';
   _CrtHitPorcentage = 'Criteria.HitPorcentage';
@@ -44,17 +44,17 @@ const
   _CrtConsecutiveHitPerType = 'ConsecutiveHitCriterionPerType';
   _CrtConsecutiveMiss = 'ConsecutiveMissCriterion';
   _CrtMaxTrials = 'MaxTrialCriterion';
-  _NextBlocOnCriteria = 'NextBloc.OnCriteria';
-  _NextBlocOnNotCriteria = 'NextBloc.OnNotCriteria';
+  _NextBlockOnCriteria = 'NextBlock.OnCriteria';
+  _NextBlockOnNotCriteria = 'NextBlock.OnNotCriteria';
   _CsqCriterion = 'CsqCriterion';
-  _DefNextBlc = 'DefNextBlc';
+  _DefNextBlock = 'DefNextBlock';
   _MaxCorrection = 'MaxCorrection';
-  _MaxBlcRepetition = 'MaxBlcRepetition';
+  _MaxBlockRepetition = 'MaxBlockRepetition';
   _ITI = 'ITI';
   _Counter = 'Counter';
   _Counter_Performance = 'performance';
 
-  // Blc and Trial
+  // Block and Trial
   _BkGnd = 'BkGnd';
 
   // Trial
@@ -133,13 +133,13 @@ const
   _Kplus = 'K+';
   _Kminus = 'K-';
   _Pos = 'P';
-  _Blc = 'Blc';
+  _Block = 'Block';
   _Trial = 'T';
   _Comp = 'C';
   _Samp = 'S';
 
-  LAST_BLOCS_INI_FILENAME = 'last.blocs.ini';
-  LAST_BLOC_INI_FILENAME = 'last.bloc.ini';
+  LAST_BLOCkS_INI_FILENAME = 'last.blocks.ini';
+  LAST_BLOCk_INI_FILENAME = 'last.block.ini';
 
 
 const
@@ -155,7 +155,7 @@ const
   KData = 'Data=' + #9;
   KRootData = 'RootData=' + #9;
   KServer = 'ServerAddress=' + #9;
-  KNumBlc = 'NumBlc=' + #9;
+  KNumBlock = 'NumBlock=' + #9;
   KNumTrial = 'NumTrials=' + #9;
   KMaxCorrection = 'MaxCorrection=' + #9;
   KCrtConsecutiveHit = 'ConsecutiveHitCriterion=' + #9;
@@ -317,8 +317,8 @@ resourcestring
   rsReportRspCmpFrq = 'R.Comparacoes.Frequencia';
 
   rsReportTime = 'Tempo';
-  rsReportBlocID  = 'Bloco.ID';
-  rsReportBlocName = 'Bloco.Nome';
+  rsReportBlockID  = 'Bloco.ID';
+  rsReportBlockName = 'Bloco.Nome';
   rsReportTrialID = 'Tentativa.ID';
   rsReportTrialNO = 'Tentativa.Contador';
   rsReportTrialName = 'Tentativa.Nome';

@@ -19,7 +19,7 @@ uses
 procedure WriteDataRow;
 
 var
-  BlocName,
+  BlockName,
   LastTrialHeader,
   TrialHeader,
   TrialName,
@@ -40,7 +40,7 @@ procedure WriteDataRow;
 var
   LSaveData : TDataProcedure;
   i, j : integer;
-  LTrialNo, LBlocID,
+  LTrialNo, LBlockID,
   LTrialID, ITIData, LData : string;
 const
   DoNotApply = #32#32#32#32#32#32 + 'NA';
@@ -48,8 +48,8 @@ begin
   if TrialHeader <> LastTrialHeader then begin
     LData := TLogger.Row([
       rsReportTrialNO,
-      rsReportBlocID,
-      rsReportBlocName,
+      rsReportBlockID,
+      rsReportBlockName,
       rsReportTrialID,
       rsReportTrialName,
       rsReportITIBeg,
@@ -59,9 +59,9 @@ begin
   LastTrialHeader := TrialHeader;
 
   i := Counters.CurrentTrial;
-  j := Counters.CurrentBloc;
+  j := Counters.CurrentBlock;
   LTrialNo := (Counters.SessionTrials + 1).ToString;
-  LBlocID := (j + 1).ToString;
+  LBlockID := (j + 1).ToString;
   LTrialID := (i + 1).ToString;
 
   // FTrial Name
@@ -80,8 +80,8 @@ begin
   LSaveData := GetSaveDataProc(LGData);
   LData := TLogger.Row([LData +
     LTrialNo,
-    LBlocID,
-    BlocName,
+    LBlockID,
+    BlockName,
     LTrialID,
     TrialName,
     ITIData,

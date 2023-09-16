@@ -16,6 +16,7 @@ interface
 uses
   SysUtils
   , session.configuration
+  , session.configurationfile
   ;
 
 type
@@ -24,17 +25,21 @@ type
 
   TEndCriteria = class
   private
-    FCurrentBloc : TBlocData;
+    FCurrentBlock : TBlockData;
     //FTrial : TCfgTrial;
-    procedure EndBlocOnEndTrial;
-    procedure EndSessionOnEndBloc;
-    function HitPorcentageInBloc : real;
+    procedure EndBlockOnEndTrial;
+    procedure EndSessionOnEndBlock;
+    function GetRunningAt: TStartAt;
+    function HitPorcentageInBlock : real;
+    procedure SetRunningAt(AValue: TStartAt);
   public
     constructor Create;
     procedure Invalidate;
     function OfSession : Boolean;
-    function OfBloc : Boolean;
+    function OfBlock : Boolean;
     function OfTrial : Boolean;
+    function Running : Boolean;
+    property RunningAt : TStartAt read GetRunningAt write SetRunningAt;
   end;
 
 var
@@ -45,7 +50,6 @@ implementation
 uses
   session.pool
   , session.loggers.writerow
-  , session.configurationfile
   ;
 
 { TEndCriteria }
@@ -57,23 +61,23 @@ end;
 
 procedure TEndCriteria.Invalidate;
 begin
-  FCurrentBloc := ConfigurationFile.CurrentBloc;
-  BlocName := FCurrentBloc.Name;
+  FCurrentBlock := ConfigurationFile.CurrentBlock;
+  BlockName := FCurrentBlock.Name;
   //LCurrentTrial := Counters.CurrentTrial;
 end;
 
 function TEndCriteria.OfSession: Boolean;
 begin
-  EndSessionOnEndBloc;
-  Result := Counters.CurrentBloc >= ConfigurationFile.BlocCount;
+  EndSessionOnEndBlock;
+  Result := Counters.CurrentBlock >= ConfigurationFile.BlockCount;
 end;
 
-function TEndCriteria.OfBloc: Boolean;
+function TEndCriteria.OfBlock: Boolean;
 begin
-  EndBlocOnEndTrial;
-  Result := Counters.CurrentTrial >= FCurrentBloc.TotalTrials;
+  EndBlockOnEndTrial;
+  Result := Counters.CurrentTrial >= FCurrentBlock.TotalTrials;
   if Result then begin
-    Counters.EndBlc;
+    Counters.EndBlock;
   end;
 end;
 
@@ -106,75 +110,92 @@ begin
     raise Exception.Create('CurrentTrial cannot be less than zero.');
 end;
 
-procedure TEndCriteria.EndBlocOnEndTrial;
-  procedure EndBloc;
+function TEndCriteria.Running: Boolean;
+begin
+  Result :=
+    (Counters.CurrentBlock  >= ConfigurationFile.BlockCount) and
+    (Counters.CurrentTrial >= FCurrentBlock.TotalTrials);
+end;
+
+procedure TEndCriteria.EndBlockOnEndTrial;
+  procedure EndBlock;
   begin
-    Counters.CurrentTrial := FCurrentBloc.TotalTrials;
+    Counters.CurrentTrial := FCurrentBlock.TotalTrials;
   end;
 
 begin
-  if FCurrentBloc.CrtConsecutiveHit > 0 then begin
-    if Counters.BlcCscHits >= FCurrentBloc.CrtConsecutiveHit then begin
-      EndBloc;
+  if FCurrentBlock.CrtConsecutiveHit > 0 then begin
+    if Counters.BlockCscHits >= FCurrentBlock.CrtConsecutiveHit then begin
+      EndBlock;
       Exit;
     end;
   end;
 
-  if FCurrentBloc.CrtMaxTrials > 0 then begin
-    if Counters.BlcTrials >= FCurrentBloc.CrtMaxTrials then begin
-      EndBloc;
+  if FCurrentBlock.CrtMaxTrials > 0 then begin
+    if Counters.BlockTrials >= FCurrentBlock.CrtMaxTrials then begin
+      EndBlock;
       Exit;
     end;
   end;
 end;
 
-procedure TEndCriteria.EndSessionOnEndBloc;
+procedure TEndCriteria.EndSessionOnEndBlock;
   procedure EndSession;
   begin
-    if FCurrentBloc.MaxBlcRepetition > 0 then begin
-      if (Counters.RepeatedBlocs < FCurrentBloc.MaxBlcRepetition) then begin
-        Inc(Counters.RepeatedBlocs);
+    if FCurrentBlock.MaxBlockRepetition > 0 then begin
+      if (Counters.RepeatedBlocks < FCurrentBlock.MaxBlockRepetition) then begin
+        Inc(Counters.RepeatedBlocks);
         Exit;
       end;
     end;
 
-    if FCurrentBloc.AutoEndSession then begin
+    if FCurrentBlock.AutoEndSession then begin
       { End session }
     end else begin
       Exit;
     end;
 
-    Counters.CurrentBloc := ConfigurationFile.BlocCount;
+    Counters.CurrentBlock := ConfigurationFile.BlockCount;
   end;
-  procedure NextBlocOnCriteria;
+  procedure NextBlockOnCriteria;
   begin
-    if FCurrentBloc.NextBlocOnCriteria > 0 then begin
-      Counters.CurrentBloc := FCurrentBloc.NextBlocOnCriteria-1;
+    if FCurrentBlock.NextBlockOnCriteria > 0 then begin
+      Counters.CurrentBlock := FCurrentBlock.NextBlockOnCriteria-1;
     end;
   end;
 begin
-  if (FCurrentBloc.CrtHitValue > 0) then begin
-    if (Counters.BlcHits < FCurrentBloc.CrtHitValue) then begin
+  if (FCurrentBlock.CrtHitValue > 0) then begin
+    if (Counters.BlockHits < FCurrentBlock.CrtHitValue) then begin
       EndSession;
     end else begin
-      NextBlocOnCriteria;
+      NextBlockOnCriteria;
     end;
   end;
 
-  if (FCurrentBloc.CrtHitPorcentage > 0) and
-     (FCurrentBloc.CrtHitPorcentage <= 100) then begin
-    if (HitPorcentageInBloc < FCurrentBloc.CrtHitPorcentage) then begin
+  if (FCurrentBlock.CrtHitPorcentage > 0) and
+     (FCurrentBlock.CrtHitPorcentage <= 100) then begin
+    if (HitPorcentageInBlock < FCurrentBlock.CrtHitPorcentage) then begin
       EndSession;
     end else begin
-      NextBlocOnCriteria;
+      NextBlockOnCriteria;
     end;
   end;
 end;
 
-
-function TEndCriteria.HitPorcentageInBloc: real;
+function TEndCriteria.GetRunningAt: TStartAt;
 begin
-  Result := (Counters.BlcHits * 100)/FCurrentBloc.TotalTrials;
+  Result.Trial := Counters.CurrentTrial;
+  Result.Block := Counters.CurrentBlock;
+end;
+
+function TEndCriteria.HitPorcentageInBlock: real;
+begin
+  Result := (Counters.BlockHits * 100)/FCurrentBlock.TotalTrials;
+end;
+
+procedure TEndCriteria.SetRunningAt(AValue: TStartAt);
+begin
+
 end;
 
 

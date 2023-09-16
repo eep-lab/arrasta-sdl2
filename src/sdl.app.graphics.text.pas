@@ -41,6 +41,7 @@ type
       procedure Show;
       procedure Hide;
       property Visible : Boolean read FVisible write FVisible;
+
   end;
 
 implementation

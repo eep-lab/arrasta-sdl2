@@ -29,9 +29,9 @@ type
 
   TTrials = array of TTrialData;
 
-  { TBlocData }
+  { TBlockData }
 
-  TBlocData = record
+  TBlockData = record
     ID : integer;
     Name: string;
     ITI: integer;
@@ -41,9 +41,9 @@ type
     VirtualTrialValue: integer;
     AutoEndSession : Boolean;
     MaxCorrection: integer;
-    MaxBlcRepetition: integer;
+    MaxBlockRepetition: integer;
 
-    DefNextBlc: string;
+    DefNextBlock: string;
     CrtConsecutive: integer;
     CrtHitValue: integer;
     CrtConsecutiveHit: integer;
@@ -53,12 +53,12 @@ type
     CrtMaxTrials : integer;
     CrtCsqHit : integer;
     Trials: TTrials;
-    NextBlocOnCriteria : integer;
-    NextBlocOnNotCriteria : integer;
-    class operator = (A, B: TBlocData): Boolean;
+    NextBlockOnCriteria : integer;
+    NextBlockOnNotCriteria : integer;
+    class operator = (A, B: TBlockData): Boolean;
   end;
 
-  TBlocs = array of TBlocData;
+  TBlocks = array of TBlockData;
 
 implementation
 
@@ -70,9 +70,9 @@ begin
   Result := A.ID = B.ID;
 end;
 
-{ TBlocData }
+{ TBlockData }
 
-class operator TBlocData.=(A, B: TBlocData): Boolean;
+class operator TBlockData.=(A, B: TBlockData): Boolean;
 begin
   Result := A.ID = B.ID;
 end;

@@ -14,7 +14,7 @@ unit session;
 interface
 
 uses
-  Classes, SysUtils, Session.Blocs, sdl.timer;
+  Classes, SysUtils, Session.Blocks, sdl.timer;
 
 type
 
@@ -23,11 +23,11 @@ type
   TSession = class(TComponent)
   private
     FTimer : TSDLTimer;
-    FBloc : TBloc;
+    FBlock : TBlock;
     FOnBeforeStart: TNotifyEvent;
     FOnEndSession: TNotifyEvent;
-    procedure PlayBloc;
-    procedure EndBloc(Sender : TObject);
+    procedure PlayBlock;
+    procedure EndBlock(Sender : TObject);
     procedure SetOnBeforeStart(AValue: TNotifyEvent);
     procedure SetOnEndSession(AValue: TNotifyEvent);
     procedure TimerOnTimer(Sender: TObject);
@@ -55,19 +55,19 @@ uses
 
 { TSession }
 
-procedure TSession.PlayBloc;
+procedure TSession.PlayBlock;
 begin
   if EndCriteria.OfSession then begin
     EndSession;
   end else begin
-    FBloc.BeforePlay;
-    FBloc.Play;
+    FBlock.BeforePlay;
+    FBlock.Play;
   end;
 end;
 
-procedure TSession.EndBloc(Sender: TObject);
+procedure TSession.EndBlock(Sender: TObject);
 begin
-  PlayBloc;
+  PlayBlock;
 end;
 
 procedure TSession.EndSession;
@@ -100,8 +100,8 @@ begin
   FTimer := TSDLTimer.Create;
   FTimer.OnTimer:=@TimerOnTimer;
   FTimer.Interval := 0;
-  FBloc := TBloc.Create(Self);
-  FBloc.OnEndBloc := @EndBloc;
+  FBlock := TBlock.Create(Self);
+  FBlock.OnEndBlock := @EndBlock;
 end;
 
 destructor TSession.Destroy;
@@ -119,7 +119,7 @@ begin
   {$ENDIF}
   if FTimer.Interval > 0 then
     FTimer.Start;
-  PlayBloc;
+  PlayBlock;
 end;
 
 end.

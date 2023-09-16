@@ -7,7 +7,7 @@
   You should have received a copy of the GNU General Public License
   along with this program. If not, see <http://www.gnu.org/licenses/>.
 }
-unit session.blocs;
+unit session.blocks;
 
 {$mode objfpc}{$H+}
 
@@ -18,24 +18,24 @@ uses
 
 type
 
-  { TBloc }
+  { TBlock }
 
   {
     Controls Trials Create/Destroy cycle
   }
-  TBloc = class(TComponent)
+  TBlock = class(TComponent)
   private
-    FOnEndBloc: TNotifyEvent;
+    FOnEndBlock: TNotifyEvent;
     FOnInterTrialEnd: TNotifyEvent;
-    procedure SetOnEndBloc(AValue: TNotifyEvent);
+    procedure SetOnEndBlock(AValue: TNotifyEvent);
     procedure InterTrialEventsEnd(Sender: TObject);
     procedure SetOnInterTrialEnd(AValue: TNotifyEvent);
-    procedure EndBloc;
+    procedure EndBlock;
   public
     constructor Create(AOwner : TComponent); override;
     procedure BeforePlay;
     procedure Play;
-    property OnEndBloc : TNotifyEvent read FOnEndBloc write SetOnEndBloc;
+    property OnEndBlock : TNotifyEvent read FOnEndBlock write SetOnEndBlock;
     property OnInterTrialEnd : TNotifyEvent read FOnInterTrialEnd write SetOnInterTrialEnd;
   end;
 
@@ -46,48 +46,48 @@ uses sdl.app.trials.factory
    , session.pool
    ;
 
-{ TBloc }
+{ TBlock }
 
-procedure TBloc.SetOnEndBloc(AValue: TNotifyEvent);
+procedure TBlock.SetOnEndBlock(AValue: TNotifyEvent);
 begin
-  if FOnEndBloc=AValue then Exit;
-  FOnEndBloc:=AValue;
+  if FOnEndBlock=AValue then Exit;
+  FOnEndBlock:=AValue;
 end;
 
-procedure TBloc.InterTrialEventsEnd(Sender: TObject);
+procedure TBlock.InterTrialEventsEnd(Sender: TObject);
 begin
   EndCriteria.OfTrial;
   Play;
 end;
 
-procedure TBloc.SetOnInterTrialEnd(AValue: TNotifyEvent);
+procedure TBlock.SetOnInterTrialEnd(AValue: TNotifyEvent);
 begin
   if FOnInterTrialEnd=AValue then Exit;
   FOnInterTrialEnd:=AValue;
 end;
 
-procedure TBloc.EndBloc;
+procedure TBlock.EndBlock;
 begin
-  if Assigned(OnEndBloc) then
-    OnEndBloc(Self);
+  if Assigned(OnEndBlock) then
+    OnEndBlock(Self);
 end;
 
-constructor TBloc.Create(AOwner: TComponent);
+constructor TBlock.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   InterTrial := TInterTrialEvents.Create(Self);
   InterTrial.OnEnd:=@InterTrialEventsEnd;
 end;
 
-procedure TBloc.BeforePlay;
+procedure TBlock.BeforePlay;
 begin
   EndCriteria.Invalidate;
 end;
 
-procedure TBloc.Play;
+procedure TBlock.Play;
 begin
-  if EndCriteria.OfBloc then begin
-    EndBloc;
+  if EndCriteria.OfBlock then begin
+    EndBlock;
   end else begin
     TTrialFactory.Play;
   end;

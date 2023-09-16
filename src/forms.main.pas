@@ -34,6 +34,7 @@ type
     procedure ButtonRunSessionClick(Sender: TObject);
     procedure BeginSession(Sender: TObject);
     procedure EndSession(Sender : TObject);
+    procedure CloseSDLApp(Sender : TObject);
   private
     //FEyeLink : TEyeLink;
     function ParticipantName : string;
@@ -83,10 +84,11 @@ begin
   SDLApp.SetupEvents;
   SDLApp.SetupAudio;
   SDLApp.SetupText;
+  SDLApp.OnClose := @CloseSDLApp;
 
   SDLSession := TSession.Create(Self);
   SDLSession.OnBeforeStart := @BeginSession;
-  //SDLSession.OnEndSession  := @EndSession;
+  SDLSession.OnEndSession  := @EndSession;
   SDLSession.Play;
 
   SDLApp.Run;
@@ -112,6 +114,11 @@ end;
 procedure TFormBackground.EndSession(Sender: TObject);
 begin
   TLogger.SetFooter;
+end;
+
+procedure TFormBackground.CloseSDLApp(Sender: TObject);
+begin
+  SDLSession.Free;
 end;
 
 function TFormBackground.ParticipantName: string;

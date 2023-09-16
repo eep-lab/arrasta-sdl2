@@ -27,7 +27,6 @@ type
 
   TPicture = class(TRectangule, IPaintable)
   private
-    FShaded : Boolean;
     FSibling: TPicture;
     procedure SetSibling(AValue: TPicture);
   protected
@@ -95,7 +94,7 @@ procedure TPicture.MouseEnter(Sender: TObject);
 begin
   if Visible then begin
     inherited MouseEnter(Self);
-    FShaded := True;
+
   end;
 end;
 
@@ -103,22 +102,15 @@ procedure TPicture.MouseExit(Sender: TObject);
 begin
   if Visible then begin
     inherited MouseExit(Self);
-    FShaded := False;
+
   end;
 end;
 
 procedure TPicture.Paint;
 begin
+  inherited Paint;
   if Visible then begin
     SDL_RenderCopy(PSDLRenderer, FTexture, nil, @FRect);
-    if FShaded then begin
-      SDL_SetRenderDrawBlendMode(PSDLRenderer, SDL_BLENDMODE_BLEND);
-      with clLightBlueShaded1 do
-        SDL_SetRenderDrawColor(PSDLRenderer, r, g, b, a);
-      SDL_RenderFillRect(PSDLRenderer, @FRect);
-    end;
-  end else begin
-    inherited Paint;
   end;
 end;
 

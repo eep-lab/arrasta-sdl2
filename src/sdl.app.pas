@@ -29,6 +29,7 @@ type
       //FKeyboardState : integer;
       FCurrentMonitorIndex : cint;
       FEvents : TCustomEventHandler;
+      FOnClose: TNotifyEvent;
       FRunning: Boolean;
       FSDLWindow: PSDL_Window;
       FSDLRenderer: PSDL_Renderer;
@@ -41,6 +42,7 @@ type
       procedure SetMouse(AValue: TPoint);
       procedure LoadMonitors;
       procedure KeyDown(const event: TSDL_KeyboardEvent);
+      procedure SetOnClose(AValue: TNotifyEvent);
     public
       constructor Create(ATitle : PAnsiChar = 'Stimulus Control';
         AMonitor : cint = 0); reintroduce;
@@ -56,6 +58,7 @@ type
       property Monitor : TSDL_Rect read GetCurrentMonitor;
       property Mouse   : TPoint read GetMouse write SetMouse;
       property Events  : TCustomEventHandler read FEvents;
+      property OnClose : TNotifyEvent read FOnClose write SetOnClose;
   end;
 
 var
@@ -96,6 +99,12 @@ begin
       Print('SDLK_ESCAPE');
     end
   end;
+end;
+
+procedure TSDLApplication.SetOnClose(AValue: TNotifyEvent);
+begin
+  if FOnClose=AValue then Exit;
+  FOnClose:=AValue;
 end;
 
 procedure TSDLApplication.SetMouse(AValue: TPoint);
@@ -187,6 +196,8 @@ begin
   SDL_DestroyWindow(FSDLWindow);
   SDL_Quit;
   Print('Good Bye');
+  if Assigned(OnClose) then
+    OnClose(Self);
 end;
 
 procedure TSDLApplication.SetupEvents;

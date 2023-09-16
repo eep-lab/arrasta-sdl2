@@ -92,7 +92,7 @@ procedure WriteToConfigurationFile;
 var
   LID : integer;
   LCycle : integer;
-  LBloc : integer = 0;
+  LBlock : integer = 0;
   LTrials : integer;
   LComparisons : integer;
   LCondition : integer;
@@ -136,7 +136,7 @@ begin
         LID          := Values['ID'].ToInteger;
         LCycle       := Values['Cycle'].ToInteger;
         LCondition   := Values['Condition'].ToInteger;
-        LBloc        := Values['Bloc'].ToInteger -1;
+        LBlock        := Values['Block'].ToInteger -1;
         LTrials      := Values['Trials'].ToInteger;
         LComparisons := Values['Comparisons'].ToInteger;
         LRelation    := Values['Relation'];
@@ -145,15 +145,15 @@ begin
       end;
       LPhase := GetPhase(LCycle, LCondition, LRelation);
       LWord := GetWord(LPhase, LCode);
-      LStartAt.Bloc := 1;
+      LStartAt.Block := 1;
       LStartAt.Trial:= 1;
       Writer.StartAt := LStartAt;
 
-      Writer.CurrentBloc := LBloc;
-      with Writer.BlocConfig do begin
-        Values['Name'] := 'Bloco ' + LBloc.ToString;
+      Writer.CurrentBlock := LBlock;
+      with Writer.BlockConfig do begin
+        Values['Name'] := 'Block ' + LBlock.ToString;
       end;
-      Writer.WriteBloc;
+      Writer.WriteBlock;
 
       LName := LWord.Caption + #32 + LRelation + #32 + LComparisons.ToString + 'C';
       WriteTrials(LName, LRelation, LWord, LComparisons, LHasConsequence);

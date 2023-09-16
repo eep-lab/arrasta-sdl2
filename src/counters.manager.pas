@@ -20,18 +20,18 @@ type
   TCounterManager = class
   public
     SessionTrials : integer;
-    RepeatedBlocs : integer;
+    RepeatedBlocks : integer;
     RepeatedTrials : integer;
-    CurrentBloc : integer;
+    CurrentBlock : integer;
     CurrentTrial : integer;
-    BlcCscHits : integer;
-    BlcTrials  : integer;
-    BlcHits    : integer;
+    BlockCscHits : integer;
+    BlockTrials  : integer;
+    BlockHits    : integer;
     procedure EndTrial;
     procedure Hit;
     procedure Miss;
     procedure BeginSess;
-    procedure EndBlc;
+    procedure EndBlock;
   end;
 
 implementation
@@ -40,49 +40,49 @@ implementation
 
 procedure TCounterManager.BeginSess;
 begin
-  CurrentBloc := 0;
+  CurrentBlock := 0;
   CurrentTrial := 0;
 end;
 
-procedure TCounterManager.EndBlc;
+procedure TCounterManager.EndBlock;
 begin
-  RepeatedBlocs := 0;
+  RepeatedBlocks := 0;
   CurrentTrial := 0;
-  //BlcTrials := 0;
-  Inc(CurrentBloc);
+  //BlockTrials := 0;
+  Inc(CurrentBlock);
 end;
 
 procedure TCounterManager.EndTrial;
 begin
   Inc(SessionTrials);
-  //Inc(BlcTrials);
+  //Inc(BlockTrials);
   Inc(CurrentTrial);
 end;
 
 procedure TCounterManager.Hit;
 begin
-  //Inc(FBlcHits);           //Contador de corretas no bloco
-  //Inc(FBlcCscHits);        //Contador de corretas consecutivas do bloco
-  //Inc(FBlcCscHitsType1);        //Contador de corretas consecutivas t1
-  //Inc(FBlcCscHitsType2);        //Contador de corretas consecutivas t2
-  //Inc(FBlcCsqHits);        //Contador de corretas consecutivas para liberação de consequências
+  //Inc(FBlockHits);           //Contador de corretas no Block
+  //Inc(FBlockCscHits);        //Contador de corretas consecutivas do Block
+  //Inc(FBlockCscHitsType1);        //Contador de corretas consecutivas t1
+  //Inc(FBlockCscHitsType2);        //Contador de corretas consecutivas t2
+  //Inc(FBlockCsqHits);        //Contador de corretas consecutivas para liberação de consequências
   //
-  //if FBlcCscMisses > FBlcHighCscMisses then FBlcHighCscMisses := FBlcCscMisses;
-  //FBlcCscMisses := 0;
-  //if FBlcCscHits > FBlcHighCscHits then FBlcHighCscHits := FBlcCscHits;
+  //if FBlockCscMisses > FBlockHighCscMisses then FBlockHighCscMisses := FBlockCscMisses;
+  //FBlockCscMisses := 0;
+  //if FBlockCscHits > FBlockHighCscHits then FBlockHighCscHits := FBlockCscHits;
 end;
 
 procedure TCounterManager.Miss;
 begin
-  //FBlcCsqHits := 0; //Para a liberação de consequências
-  //Inc(FBlcMisses);
-  //Inc(FBlcCscMisses);
+  //FBlockCsqHits := 0; //Para a liberação de consequências
+  //Inc(FBlockMisses);
+  //Inc(FBlockCscMisses);
   //
-  //if FBlcCscHits > FBlcHighCscHits then FBlcHighCscHits := FBlcCscHits;
-  //FBlcCscHits := 0;
-  //FBlcCscHitsType1 := 0;
-  //FBlcCscHitsType2 := 0;
-  //if FBlcCscMisses > FBlcHighCscMisses then FBlcHighCscMisses := FBlcCscMisses;
+  //if FBlockCscHits > FBlockHighCscHits then FBlockHighCscHits := FBlockCscHits;
+  //FBlockCscHits := 0;
+  //FBlockCscHitsType1 := 0;
+  //FBlockCscHitsType2 := 0;
+  //if FBlockCscMisses > FBlockHighCscMisses then FBlockHighCscMisses := FBlockCscMisses;
 end;
 
 end.
