@@ -56,7 +56,7 @@ end;
 
 procedure TBlock.InterTrialEventsEnd(Sender: TObject);
 begin
-  EndCriteria.OfTrial;
+  Pool.EndCriteria.OfTrial;
   Play;
 end;
 
@@ -81,12 +81,12 @@ end;
 
 procedure TBlock.BeforePlay;
 begin
-  EndCriteria.Invalidate;
+  Pool.EndCriteria.Invalidate;
 end;
 
 procedure TBlock.Play;
 begin
-  if EndCriteria.OfBlock then begin
+  if Pool.EndCriteria.OfBlock then begin
     EndBlock;
   end else begin
     TTrialFactory.Play;

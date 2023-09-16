@@ -58,9 +58,9 @@ begin
   end;
   LastTrialHeader := TrialHeader;
 
-  i := Counters.CurrentTrial;
-  j := Counters.CurrentBlock;
-  LTrialNo := (Counters.SessionTrials + 1).ToString;
+  i := Pool.Counters.CurrentTrial;
+  j := Pool.Counters.CurrentBlock;
+  LTrialNo := (Pool.Counters.SessionTrials + 1).ToString;
   LBlockID := (j + 1).ToString;
   LTrialID := (i + 1).ToString;
 
@@ -69,7 +69,7 @@ begin
     TrialName := '--------';
 
   // iti
-  if Counters.SessionTrials = 0 then
+  if Pool.Counters.SessionTrials = 0 then
     ITIData := DoNotApply + #9 + TimestampToStr(0)
   else
     ITIData :=

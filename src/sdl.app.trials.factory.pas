@@ -58,6 +58,7 @@ var
 
 class constructor TTrialFactory.Create;
 begin
+  TrialID := 0;
   Registry := TTrialRegistry.Create;
   CurrentTrial := nil;
 end;

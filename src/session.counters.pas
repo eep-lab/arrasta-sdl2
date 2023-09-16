@@ -7,7 +7,7 @@
   You should have received a copy of the GNU General Public License
   along with this program. If not, see <http://www.gnu.org/licenses/>.
 }
-unit counters.manager;
+unit session.counters;
 
 {$mode objfpc}{$H+}
 
@@ -33,6 +33,9 @@ type
     procedure BeginSess;
     procedure EndBlock;
   end;
+
+var
+  Counters : TCounterManager;
 
 implementation
 

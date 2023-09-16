@@ -25,7 +25,6 @@ type
       FFilename : string;
       FFileIndex : integer;
       FTextFile : TextFile;
-
     public
       constructor Create(AFilename : string);
       destructor Destroy; override;
@@ -47,7 +46,7 @@ uses SysUtils
   , session.pool
   , session.loggers.instances;
 
-const FirstFilename: string = '001';
+const FirstBasename: string = '001';
 
 { TLogger }
 
@@ -68,10 +67,12 @@ constructor TLogger.Create(AFilename: string);
     S := AFilename;
     while FileExistsUTF8(S) do begin
       Inc(i);
-      S := FilePath + StringOfChar(#48, 3 - Length(IntToStr(i))) + IntToStr(i) + LExtension;
+      S := FilePath +
+           StringOfChar(#48, 3 - Length(IntToStr(i))) + IntToStr(i) +
+           LExtension;
     end;
     FFileIndex := i;
-    Result := AFilename;
+    Result := S;
   end;
 begin
   FFilename := FilenameNoOverride(AFilename);
@@ -88,7 +89,7 @@ end;
 class function TLogger.GetBaseFilename: string;
 begin
   if DataFilename = '' then
-    Result := FirstFilename
+    Result := FirstBasename
   else
     Result := ExtractFileNameWithoutExt(DataFilename);
 end;
@@ -109,16 +110,19 @@ begin
       Result := Result + Cols[i]+LineEnding;
 end;
 
-class procedure TLogger.SetHeader(ASessionName: string; AParticipantName: string);
+class procedure TLogger.SetHeader(ASessionName: string;
+  AParticipantName: string);
 var
-  Header : string;
+  LHeader : string;
+  LFirstFilename : string;
 begin
-  FirstFilename := Pool.RootData + FirstFilename;
-  Header := HSUBJECT_NAME + #9 + AParticipantName + LineEnding +
-            HSESSION_NAME + #9 + ASessionName + LineEnding +
-            HBEGIN_TIME + #9 + DateTimeToStr(Date) + #9 + TimeToStr(Time) + LineEnding;
-  DataFilename := CreateLogger(LGData, FirstFilename, Header);
-  TimestampsFilename := CreateLogger(LGTimestamps, FirstFilename, Header);
+  LFirstFilename := Pool.BaseFileName + FirstBasename;
+  LHeader :=
+    HSUBJECT_NAME + #9 + AParticipantName + LineEnding +
+    HSESSION_NAME + #9 + ASessionName + LineEnding +
+    HBEGIN_TIME + #9 + DateTimeToStr(Date) + #9 + TimeToStr(Time) + LineEnding;
+  DataFilename := CreateLogger(LGData, LFirstFilename, LHeader);
+  TimestampsFilename := CreateLogger(LGTimestamps, LFirstFilename, LHeader);
   Pool.BaseFilename := GetBaseFilename;
 end;
 

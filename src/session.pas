@@ -14,7 +14,7 @@ unit session;
 interface
 
 uses
-  Classes, SysUtils, Session.Blocks, sdl.timer;
+  Classes, SysUtils, session.blocks, sdl.timer;
 
 type
 
@@ -48,8 +48,10 @@ implementation
 
 uses
   timestamps
-  , session.configurationfile
+  , session.counters
   , session.pool
+  , session.configurationfile
+  , session.endcriteria
   , sdl.app.trials.factory
   ;
 
@@ -97,6 +99,10 @@ end;
 constructor TSession.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
+  Counters := TCounterManager.Create;
+  Pool.Counters := Counters;
+  EndCriteria := TEndCriteria.Create;
+  Pool.EndCriteria := EndCriteria;
   FTimer := TSDLTimer.Create;
   FTimer.OnTimer:=@TimerOnTimer;
   FTimer.Interval := 0;
@@ -106,6 +112,8 @@ end;
 
 destructor TSession.Destroy;
 begin
+  Counters.Free;
+  EndCriteria.Free;
   FTimer.Free;
   inherited Destroy;
 end;

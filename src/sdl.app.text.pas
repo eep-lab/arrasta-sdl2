@@ -67,9 +67,10 @@ destructor TSDLText.Destroy;
 var
   i : integer;
 begin
-  for i := 0 to FFontCollention.KeySize -1 do begin
+  for i := 0 to FFontCollention.Count -1 do begin
     TTF_CloseFont(FFontCollention.Data[i].Font);
   end;
+  FFontCollention.Free;
   inherited Destroy;
 end;
 

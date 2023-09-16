@@ -21,7 +21,6 @@ type
   TConfigurationWriter = class
   private
     FBlockConfig: TStringList;
-    FStartAt: TStartAt;
     FTrialConfig: TStringList;
     FCurrentBlock : integer;
     FConfigurationFile: TConfigurationFile;
@@ -36,7 +35,7 @@ type
     property TrialConfig: TStringList read FTrialConfig;
     property CurrentBlock  : integer read FCurrentBlock write FCurrentBlock;
     property CurrentTrial : integer read GetCurrentTrial;
-    property StartAt : TStartAt read FStartAt write SetStartTrial;
+    property StartAt : TStartAt write SetStartTrial;
   end;
 
 implementation
@@ -50,11 +49,7 @@ end;
 
 procedure TConfigurationWriter.SetStartTrial(AValue: TStartAt);
 begin
-  if (FStartAt.Block=AValue.Block) and (FStartAt.Trial=AValue.Trial) then Exit;
-  FStartAt:=AValue;
-  with FConfigurationFile do begin
-    WriteToMain('StartAt', StartAt.Block.ToString + '-' + StartAt.Trial.ToString);
-  end;
+  FConfigurationFile.StartAt:=AValue;
 end;
 
 constructor TConfigurationWriter.Create(AConfigurationFile: TConfigurationFile);

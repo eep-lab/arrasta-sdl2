@@ -294,7 +294,7 @@
         <IsPartOfProject Value="True"/>
       </Unit>
       <Unit>
-        <Filename Value="src\session.blocs.pas"/>
+        <Filename Value="src\session.blocks.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit>
       <Unit>
@@ -330,7 +330,7 @@
         <IsPartOfProject Value="True"/>
       </Unit>
       <Unit>
-        <Filename Value="src\counters.manager.pas"/>
+        <Filename Value="src\session.counters.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit>
       <Unit>

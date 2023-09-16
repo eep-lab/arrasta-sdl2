@@ -38,6 +38,7 @@ type
   private
     //FEyeLink : TEyeLink;
     function ParticipantName : string;
+    function SessionName : string;
   public
 
   end;
@@ -76,9 +77,9 @@ begin
     Exit;
   end;
 
-  Pool.RootData := Pool.RootData +
+  Pool.BaseFileName := Pool.RootData +
     ParticipantName + DirectorySeparator;
-  ForceDirectories(Pool.RootData);
+  ForceDirectories(Pool.BaseFileName);
 
   SDLApp := TSDLApplication.Create('Stimulus Control', 0);
   SDLApp.SetupEvents;
@@ -107,23 +108,30 @@ end;
 
 procedure TFormBackground.BeginSession(Sender: TObject);
 begin
+  TLogger.SetHeader(SessionName, ParticipantName);
   CopyFile(ConfigurationFilename, Pool.BaseFilename+'.ini');
-  TLogger.SetHeader('Session Name', 'Participant');
 end;
 
 procedure TFormBackground.EndSession(Sender: TObject);
 begin
-  TLogger.SetFooter;
+
 end;
 
 procedure TFormBackground.CloseSDLApp(Sender: TObject);
 begin
+  TLogger.SetFooter;
   SDLSession.Free;
+  SDLApp.Free;
 end;
 
 function TFormBackground.ParticipantName: string;
 begin
   Result := ComboBoxParticipant.Items[ComboBoxParticipant.ItemIndex];
+end;
+
+function TFormBackground.SessionName: string;
+begin
+  Result := 'Sessão';
 end;
 
 end.

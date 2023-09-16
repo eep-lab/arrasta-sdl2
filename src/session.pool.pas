@@ -14,7 +14,7 @@ unit session.pool;
 interface
 
 uses
-  session.endcriteria, counters.manager;
+  session.endcriteria, session.counters;
 
 type
 
@@ -28,21 +28,18 @@ type
     TimeStart : Extended;
     TestMode : Boolean;
     MonitorToShow : Byte;
+    Counters : TCounterManager;
+    EndCriteria : TEndCriteria;
   end;
 var
   Pool : TPool;
-  Counters : TCounterManager;
-  EndCriteria : TEndCriteria;
 
 implementation
 
-uses SysUtils, SDL2;
+uses SysUtils, SDL2, FileUtil;
 
 initialization
-  Counters := TCounterManager.Create;
   Pool := TPool.Create;
-  EndCriteria := TEndCriteria.Create;
-
   with Pool do
   begin
     BaseFileName := '';
@@ -53,12 +50,12 @@ initialization
     ForceDirectories(RootMedia);
     MonitorToShow := 0;
     TestMode := False;
+    Counters := nil;
+    EndCriteria := nil;
   end
 
 finalization
   Pool.Free;
-  Counters.Free;
-  EndCriteria.Free;
 
 end.
 

@@ -30,6 +30,8 @@ type
   TConfigurationFile = class(TIniFile)
   private
     FBlockCount : integer;
+    function GetStartAt: TStartAt;
+    procedure SetStartAt(AValue: TStartAt);
     class function TrialSection(BlockIndex, TrialIndex : integer) : string;
     class function BlockSection(BlockIndex : integer) : string;
     function CurrentBlockSection : string;
@@ -68,6 +70,7 @@ type
     property TrialCount[BlockIndex : integer] : integer read GetTrialCount;
     property Block[BlockIndex : integer] : TBlockData read GetBlock {write SetBlock};
     property Trial[BlockIndex, TrialIndex : integer] : TTrialData read GetTrial {write SetTrial};
+    property StartAt : TStartAt read GetStartAt write SetStartAt;
   end;
 
 var
@@ -107,16 +110,31 @@ begin
   Result := BlockSection(BlockIndex) + ' - ' + _Trial + IntToStr(TrialIndex);
 end;
 
+function TConfigurationFile.GetStartAt: TStartAt;
+var
+  S : string;
+begin
+  S := ReadString(_Main, 'StartAt', '1-1');
+  Result.Block := ExtractDelimited(1, S, ['-']).ToInteger-1;
+  Result.Trial := ExtractDelimited(2, S, ['-']).ToInteger-1;
+end;
+
+procedure TConfigurationFile.SetStartAt(AValue: TStartAt);
+begin
+  WriteToMain('StartAt',
+    (AValue.Block+1).ToString + '-' + (AValue.Trial+1).ToString);
+end;
+
 function TConfigurationFile.CurrentBlock: TBlockData;
 begin
-  Result := Block[Counters.CurrentBlock+1];
+  Result := Block[Pool.Counters.CurrentBlock+1];
 end;
 
 function TConfigurationFile.CurrentTrial: TTrialData;
 begin
   Result := Trial[
-    Counters.CurrentBlock+1,
-    Counters.CurrentTrial+1];
+    Pool.Counters.CurrentBlock+1,
+    Pool.Counters.CurrentTrial+1];
 end;
 
 function TConfigurationFile.BeginTableName: string;
@@ -131,7 +149,7 @@ end;
 
 function TConfigurationFile.CurrentBlockSection: string;
 begin
-  Result := BlockSection(Counters.CurrentBlock+1);
+  Result := BlockSection(Pool.Counters.CurrentBlock+1);
 end;
 
 function TConfigurationFile.GetBlock(BlockIndex: integer): TBlockData;

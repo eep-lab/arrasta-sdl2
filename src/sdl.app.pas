@@ -177,11 +177,6 @@ end;
 
 destructor TSDLApplication.Destroy;
 begin
-  {$IFNDEF NO_LCL}
-  SDLText.Free;
-  SDLAudio.Free;
-  {$ENDIF}
-  FEvents.Free;
   inherited Destroy;
 end;
 
@@ -192,6 +187,16 @@ begin
     FEvents.HandlePending;
     Render;
   end;
+  {$IFNDEF NO_LCL}
+  if Assigned(SDLText) then
+    SDLText.Free;
+
+  if Assigned(SDLAudio) then
+    SDLAudio.Free;
+
+  {$ENDIF}
+  if Assigned(FEvents) then
+    FEvents.Free;
   SDL_DestroyRenderer(FSDLRenderer);
   SDL_DestroyWindow(FSDLWindow);
   SDL_Quit;
