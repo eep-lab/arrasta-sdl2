@@ -17,29 +17,57 @@ uses
   picanco.experiments.words.types;
 
 const
-  PlosiveBilabial : TConsonant =
-    (Ord: csPlosiveBilabial; IPA: 'b'; HumanReadable: 'b');
+  PlosiveBilabial : TConsonant = (
+    Ord: csPlosiveBilabial;
+    IPA: 'b';
+    SYM: 'b';
+    HumanReadable: 'b');
 
-  NonSibilantFricative : TConsonant =
-    (Ord: csNonSibilantFricative; IPA: 'f'; HumanReadable: 'f');
+  NonSibilantFricative : TConsonant = (
+    Ord: csNonSibilantFricative;
+    IPA: 'f';
+    SYM: 'f';
+    HumanReadable: 'f');
 
-  LateralApproximantAlveolar : TConsonant =
-    (Ord: csLateralApproximantAlveolar; IPA: 'l'; HumanReadable: 'l');
+  LateralApproximantAlveolar : TConsonant = (
+    Ord: csLateralApproximantAlveolar;
+    IPA: 'l';
+    SYM: 'l';
+    HumanReadable: 'l');
 
-  NasalAlveolar : TConsonant =
-    (Ord: csNasalAlveolar; IPA: 'n'; HumanReadable: 'n');
+  NasalAlveolar : TConsonant = (
+    Ord: csNasalAlveolar;
+    IPA: 'n';
+    SYM: 'n';
+    HumanReadable: 'n');
 
-  OpenFront : TVowel =
-    (Ord: vsOpenFront; IPA: 'a'; HumanReadable: 'a'; HumanReadableStress: 'á');
+  OpenFront : TVowel = (
+    Ord: vsOpenFront;
+    IPA: 'a';
+    SYM: 'aa';
+    HumanReadable: 'a';
+    HumanReadableStress: 'á');
 
-  OpenMidFront : TVowel =
-    (Ord: vsOpenMidFront; IPA: 'ɛ'; HumanReadable: 'e'; HumanReadableStress: 'é');
+  OpenMidFront : TVowel = (
+    Ord: vsOpenMidFront;
+    IPA: 'ɛ';
+    SYM: 'eh';
+    HumanReadable: 'e';
+    HumanReadableStress: 'é');
 
-  CloseFront : TVowel =
-    (Ord: vsCloseFront; IPA: 'i'; HumanReadable: 'i'; HumanReadableStress: 'í');
+  CloseFront : TVowel = (
+    Ord: vsCloseFront;
+    IPA: 'i';
+    SYM: 'ih';
+    HumanReadable: 'i';
+    HumanReadableStress: 'í');
 
-  OpenMidBack : TVowel =
-    (Ord: vsOpenMidBack; IPA: 'ɔ'; HumanReadable: 'o'; HumanReadableStress: 'ó');
+  OpenMidBack : TVowel = (
+    Ord: vsOpenMidBack;
+    IPA: 'ɔ';
+    SYM: 'ao';
+    HumanReadable: 'o';
+    HumanReadableStress: 'ó');
 
 implementation
 

@@ -20,30 +20,43 @@ implementation
 
 uses sdl.app.output, picanco.experiments.words.types, picanco.experiments.words;
 
-function WordToSSML(const AWord : TWord) : string;
+type
+  TPhonemeSet = (phIPA, phSYM);
+
+function WordToSSML(const AWord : TWord;
+  const APhonemeSet : TPhonemeSet = phIPA) : string;
 begin
-  Result := '<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="pt-BR">' +
+  Result :=
+  '<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="pt-BR">' +
     '<voice name="Microsoft Maria Desktop - Portuguese(Brazil)">' +
-      '<prosody rate="medium">' +
-        '<phoneme alphabet="ipa" ph="'+AWord.ToIPA+'">'+AWord.Caption+'</phoneme>.'+
+      '<prosody rate="10%">';
+      case APhonemeSet of
+        phIPA : Result := Result +
+          '<phoneme alphabet="ipa" ph="'+AWord.ToIPA+'">'+AWord.Caption+'</phoneme>';
+        phSYM : Result := Result +
+          '<PRON SYM="'+AWord.ToSYM+'"/>'+AWord.Caption;
+      end;
+  Result := Result +
       '</prosody>'+
     '</voice>'+
   '</speak>';
 end;
 
-procedure Speak(const AWord: TWord);
+procedure Speak(const AWord: TWord; const APhonemeSet: TPhonemeSet);
 var
   LSpVoice: SpVoice;
 begin
   LSpVoice := CoSpVoice.Create;
   try
-    LSpVoice.Speak(WordToSSML(AWord), SVSFDefault);
+    LSpVoice.Speak(WordToSSML(AWord, APhonemeSet), SVSFDefault);
   finally
     LSpVoice := nil;
   end;
 end;
 
-procedure SpeakToFile(const AWord: TWord; AFileName: WideString);
+procedure SpeakToFile(const AWord: TWord;
+  APhonemeSet: TPhonemeSet;
+  AFileName: WideString);
 var
   LSpFileStream: SpFileStream;
   LSpVoice: SpVoice;
@@ -54,7 +67,7 @@ begin
     LSpFileStream.Format.Type_ := SAFT44kHz16BitStereo;
     LSpFileStream.Open(AFileName, SSFMCreateForWrite, False);
     LSpVoice.AudioOutputStream := LSpFileStream;
-    LSpVoice.Speak(WordToSSML(AWord), SVSFDefault);
+    LSpVoice.Speak(WordToSSML(AWord, APhonemeSet), SVSFDefault);
     LSpFileStream.Close;
   finally
     LSpVoice := nil;
@@ -89,13 +102,16 @@ var
   LWord : TWord;
 begin
   for LWord in Words do
-    SpeakToFile(LWord, LWord.Filenames.Audio);
+    SpeakToFile(LWord, phIPA, LWord.Filenames.Audio+'.wav');
 end;
-
-//initialization
+//var i : integer;
+initialization
   //ListAvailableVoices;
-  //Speak(Words[0]);
   //Synthetize;
+  //for i := 0 to High(Words) do begin
+  //  Speak(Words[i], phIPA);
+  //end;
+
 
 end.
 

@@ -50,6 +50,7 @@ type
 implementation
 
 uses sdl.app.audio
+   , session.pool
    , sdl.app.renderer.custom
    , session.constants.mts;
 
@@ -115,7 +116,7 @@ begin
   end else begin
     LAudioPicture := AParameters.Values['AudioPicture'];
   end;
-  FPicture.LoadFromFile(LAudioPicture+'.png');
+  FPicture.LoadFromFile(Pool.AssetsBasePath+LAudioPicture+IMG_EXT);
   FPicture.BoundsRect := ARect;
   FPicture.Parent := TCustomRenderer(AParent);
   FPicture.OnMouseDown := @MouseDown;

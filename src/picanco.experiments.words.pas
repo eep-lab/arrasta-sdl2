@@ -73,20 +73,21 @@ begin
     end;
     for i := Low(AWord.Comparisons) to High(AWord.Comparisons) do begin
       with AWord.Comparisons[i] do begin
-            Audio  := @EmptyWord;
-            Image  := @EmptyWord;
-            Text   := @EmptyWord;
-            Speech := @EmptyWord;
+        Audio  := @EmptyWord;
+        Image  := @EmptyWord;
+        Text   := @EmptyWord;
+        Speech := @EmptyWord;
         if i <= High(AWord.CandidateNegativeWords) then begin
           if i = 0 then begin
-            case AWord.Phase.SampModality of
+            case AWord.Phase.CompModality of
               ModalityA: Audio  := @AWord;
               ModalityB: Image  := @AWord;
               ModalityC: Text   := @AWord;
               ModalityD: Speech := @AWord;
               else
                 raise Exception.Create(
-                  'picanco.experiments.words.SetComparisons: Unknown modality');
+                  'picanco.experiments.words.SetComparisons:'+
+                  'Unknown modality in compararison '+ (i+1).ToString);
             end;
           end else begin
             case AWord.Phase.CompModality of
@@ -103,7 +104,8 @@ begin
               ModalityD: Speech := @EmptyWord;
               else
                 raise Exception.Create(
-                  'picanco.experiments.words.SetComparisons: Unknown modality');
+                  'picanco.experiments.words.SetComparisons:'+
+                  'Unknown modality in compararison '+ (i+1).ToString);
             end;
           end;
         end;
@@ -175,10 +177,10 @@ begin
   EmptyWord.Filenames.Image:='--Empty--';
   EmptyWord.Filenames.Text:='--Empty--';
   EmptyWord.Filenames.Speech:='--Empty--';
-  EmptyWord.Syllab1.Consonant.Ord := csNone;
-  EmptyWord.Syllab1.Vowel.Ord := vsNone;
-  EmptyWord.Syllab2.Consonant.Ord := csNone;
-  EmptyWord.Syllab2.Vowel.Ord := vsNone;
+  EmptyWord.Syllable1.Consonant.Ord := csNone;
+  EmptyWord.Syllable1.Vowel.Ord := vsNone;
+  EmptyWord.Syllable2.Consonant.Ord := csNone;
+  EmptyWord.Syllable2.Vowel.Ord := vsNone;
 
   Consonants := TConsonants.Create;
   Consonants.Add(PlosiveBilabial);
@@ -192,30 +194,30 @@ begin
   Vowels.Add(CloseFront);
   Vowels.Add(OpenMidBack);
 
-  SetLength(Syllabs, Consonants.Count * Vowels.Count);
+  SetLength(Syllables, Consonants.Count * Vowels.Count);
   for i := 0 to Consonants.Count -1 do
     for j := 0 to Vowels.Count-1 do
     begin
-      Syllabs[i * Consonants.Count + j].Consonant := Consonants[i];
-      Syllabs[i * Vowels.Count + j].Vowel := Vowels[j];
+      Syllables[i * Consonants.Count + j].Consonant := Consonants[i];
+      Syllables[i * Vowels.Count + j].Vowel := Vowels[j];
     end;
 
   SetLength(Words, 0);
-  for i := Low(Syllabs) to High(Syllabs) do
-    for j := Low(Syllabs) to High(Syllabs) do
+  for i := Low(Syllables) to High(Syllables) do
+    for j := Low(Syllables) to High(Syllables) do
     begin
-      //if Syllabs[i] = Syllabs[j] then
+      //if Syllables[i] = Syllables[j] then
       //  Continue;
 
-      //if Syllabs[i].Consonant = Syllabs[j].Consonant then
+      //if Syllables[i].Consonant = Syllables[j].Consonant then
       //  Continue;
       //
-      //if Syllabs[i].Vowel = Syllabs[j].Vowel then
+      //if Syllables[i].Vowel = Syllables[j].Vowel then
       //  Continue;
 
       SetLength(Words, Length(Words) + 1);
-      Words[Length(Words) - 1].Syllab1 := Syllabs[i];
-      Words[Length(Words) - 1].Syllab2 := Syllabs[j];
+      Words[Length(Words) - 1].Syllable1 := Syllables[i];
+      Words[Length(Words) - 1].Syllable2 := Syllables[j];
     end;
 
   for i := Low(Words) to High(Words) do begin

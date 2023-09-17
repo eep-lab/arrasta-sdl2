@@ -55,17 +55,17 @@ end;
 procedure TPictureStimulus.Load(AParameters: TStringList; AParent: TObject;
   ARect: TSDL_Rect);
 var
-  LFilename : string;
+  LWordName : string;
 begin
   FPicture := TPicture.Create(Self);
   if IsSample then begin
-    LFilename :=
+    LWordName :=
       AParameters.Values[MTSKeys.Word];
   end else begin
-    LFilename :=
+    LWordName :=
       AParameters.Values[MTSKeys.Comparison+(Index+1).ToString];
   end;
-  FPicture.LoadFromFile(LFilename+IMG_EXT);
+  FPicture.LoadFromFile(LWordName+IMG_EXT);
   FPicture.BoundsRect := ARect;
   FPicture.Parent := TCustomRenderer(AParent);
   FPicture.OnMouseDown := @MouseDown;

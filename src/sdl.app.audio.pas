@@ -59,7 +59,7 @@ var
 
 implementation
 
-uses sdl.app.output, sdl.app.audio.chunk, sdl.app.events.custom;
+uses sdl.app.output, sdl.app.audio.chunk, sdl.app.events.custom, session.pool;
 
 procedure ChannelFinishedCallback(channel : cint); cdecl;
 var
@@ -72,8 +72,8 @@ end;
 
 procedure AllocateDefaultAudioChannels;
 begin
-  SDLAudio.LoadFromFile('acerto.wav');
-  SDLAudio.LoadFromFile('erro.wav');
+  SDLAudio.LoadFromFile(Pool.AssetsBasePath+DirectorySeparator+'acerto.wav');
+  SDLAudio.LoadFromFile(Pool.AssetsBasePath+DirectorySeparator+'erro.wav');
 end;
 
 { TSDLAudio }

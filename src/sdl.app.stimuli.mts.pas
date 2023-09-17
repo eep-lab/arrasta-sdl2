@@ -63,7 +63,7 @@ implementation
 uses
   StrUtils
   , sdl.app.renderer.custom
-  //, sdl.app.trials
+  , sdl.app.graphics.picture
   , sdl.app.output
   , sdl.app.audio
   , sdl.app.grids
@@ -72,6 +72,7 @@ uses
   , sdl.app.stimulus.audio
   , session.constants.trials
   , session.constants.mts
+  , session.pool
   ;
 
 { TMTSStimuli }
@@ -136,9 +137,12 @@ end;
 procedure TMTSStimuli.ComparisonResponse(Sender: TObject);
 var
   LStimulus : TStimulus;
+  LIStimulus : IStimulus;
 begin
   if Sender is TStimulus then begin
     LStimulus := Sender as TStimulus;
+    for LIStimulus in FComparisons do
+      LIStimulus.Stop;
     if FComparisons.IndexOf(LStimulus) <> -1 then begin
       if LStimulus is TAudioStimulus then begin
         FButton.Sibling := TAudioStimulus(LStimulus).Picture;
@@ -270,7 +274,7 @@ begin
 
     if ComparLetter = 'A' then begin
       FButton := TButton.Create(Self);
-      FButton.LoadFromFile('ConfirmButton.png');
+      FButton.LoadFromFile(Pool.AssetsBasePath+'ConfirmButton'+IMG_EXT);
       FButton.Parent := TCustomRenderer(AParent);
       FButton.OnClick:=@ButtonClick;
     end;

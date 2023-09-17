@@ -25,6 +25,7 @@ type
     RootMedia : string;
     BaseFileName : string;
     BaseFilePath : string;
+    AssetsBasePath : string;
     TimeStart : Extended;
     TestMode : Boolean;
     MonitorToShow : Byte;
@@ -46,6 +47,7 @@ initialization
     BaseFilePath := SDL_GetBasePath();
     RootData := BaseFilePath + 'data' + DirectorySeparator;
     RootMedia := BaseFilePath +  'media' + DirectorySeparator;
+    AssetsBasePath:='assets'+ DirectorySeparator;
     ForceDirectories(RootData);
     ForceDirectories(RootMedia);
     MonitorToShow := 0;

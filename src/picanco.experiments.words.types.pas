@@ -69,7 +69,9 @@ type
 
   TConsonant = record
     Ord: TConsonantOrd;
+    // https://learn.microsoft.com/en-us/azure/ai-services/speech-service/speech-ssml-phonetic-sets
     IPA: string;  // International Phonetic Alphabet
+    SYM: string;  // Symbolic and Numerical Representation
     HumanReadable: string;
     procedure Next;
     class operator = (AConsonant1, AConsonant2: TConsonant): boolean;
@@ -82,6 +84,7 @@ type
   TVowel = record
     Ord: TVowelOrd;
     IPA: string;  // International Phonetic Alphabet
+    SYM: string;  // Symbolic and Numerical Representation
     HumanReadable: string;
     HumanReadableStress: string;
     procedure Next;
@@ -90,15 +93,15 @@ type
 
   TVowels = specialize TFPGList<TVowel>;
 
-  { TSyllab }
+  { TSyllable }
 
-  TSyllab = record
+  TSyllable = record
     Consonant: TConsonant;
     Vowel: TVowel;
-    class operator = (ASyllab1, ASyllab2: TSyllab): boolean;
+    class operator = (ASyllable1, ASyllable2: TSyllable): boolean;
   end;
 
-  TSyllabs = array of TSyllab;
+  TSyllables = array of TSyllable;
 
   TWordFilenames = record
     Audio  : string;   // A
@@ -111,8 +114,8 @@ type
 
   PTWord = ^TWord;
   TWord = record
-    Syllab1 : TSyllab;
-    Syllab2 : TSyllab;
+    Syllable1 : TSyllable;
+    Syllable2 : TSyllable;
     Cycle : TCycle;
     Phase : TPhase;
     Overlaps : TOverlaps;
@@ -126,6 +129,7 @@ type
       Speech : PTWord;
     end;
     function ToIPA : string;
+    function ToSym : string;
     function ToHumanReadableText(AHasStress: Boolean = False): string;
     function ToString : string;
     function IsEmpty : Boolean;
@@ -145,7 +149,7 @@ type
 var
   Consonants : TConsonants;
   Vowels : TVowels;
-  Syllabs : TSyllabs;
+  Syllables : TSyllables;
   EmptyWord : TWord;
 
 implementation
@@ -316,17 +320,17 @@ begin
   //AWord.Phase := GetWordPhase(AWord);
 
   AWord.Overlaps := DifferentConsonantsAndVowels;
-  if AWord.Syllab1 = AWord.Syllab2 then begin
+  if AWord.Syllable1 = AWord.Syllable2 then begin
     AWord.Overlaps := EqualConsonantsAndVowels;
     Exit;
   end;
 
-  if AWord.Syllab1.Consonant = AWord.Syllab2.Consonant then begin
+  if AWord.Syllable1.Consonant = AWord.Syllable2.Consonant then begin
     AWord.Overlaps := EqualConsonants;
     Exit;
   end;
 
-  if AWord.Syllab1.Vowel = AWord.Syllab2.Vowel then begin
+  if AWord.Syllable1.Vowel = AWord.Syllable2.Vowel then begin
     AWord.Overlaps := EqualVowels;
   end;
 end;
@@ -367,13 +371,13 @@ begin
   Result := AVowel1.HumanReadable = AVowel2.HumanReadable;
 end;
 
-{ TSyllab }
+{ TSyllable }
 
-class operator TSyllab.=(ASyllab1, ASyllab2: TSyllab): boolean;
+class operator TSyllable.=(ASyllable1, ASyllable2: TSyllable): boolean;
 begin
   Result :=
-    (ASyllab1.Consonant.HumanReadable = ASyllab2.Consonant.HumanReadable) and
-    (ASyllab1.Vowel.HumanReadable = ASyllab2.Vowel.HumanReadable);
+    (ASyllable1.Consonant.HumanReadable = ASyllable2.Consonant.HumanReadable) and
+    (ASyllable1.Vowel.HumanReadable = ASyllable2.Vowel.HumanReadable);
 end;
 
 { TWord }
@@ -381,20 +385,27 @@ end;
 function TWord.ToIPA: string;
 begin
   Result :=
-    Syllab1.Consonant.IPA + Syllab1.Vowel.IPA + '.'+
-    Syllab2.Consonant.IPA + Syllab2.Vowel.IPA + 'ˈ';
+    Syllable1.Consonant.IPA + Syllable1.Vowel.IPA + '.ˈ'+
+    Syllable2.Consonant.IPA + Syllable2.Vowel.IPA;
+end;
+
+function TWord.ToSym: string;
+begin
+  Result :=
+    Syllable1.Consonant.SYM + #32 + Syllable1.Vowel.SYM + #32 + '-' + #32 +
+    Syllable2.Consonant.SYM + #32 + Syllable2.Vowel.SYM + '1';
 end;
 
 function TWord.ToHumanReadableText(AHasStress: Boolean): string;
 begin
   if AHasStress then begin
     Result :=
-      Syllab1.Consonant.HumanReadable + Syllab1.Vowel.HumanReadable +
-      Syllab2.Consonant.HumanReadable + Syllab2.Vowel.HumanReadableStress
+      Syllable1.Consonant.HumanReadable + Syllable1.Vowel.HumanReadable +
+      Syllable2.Consonant.HumanReadable + Syllable2.Vowel.HumanReadableStress
   end else begin
     Result :=
-      Syllab1.Consonant.HumanReadable + Syllab1.Vowel.HumanReadable +
-      Syllab2.Consonant.HumanReadable + Syllab2.Vowel.HumanReadable;
+      Syllable1.Consonant.HumanReadable + Syllable1.Vowel.HumanReadable +
+      Syllable2.Consonant.HumanReadable + Syllable2.Vowel.HumanReadable;
   end;
 end;
 
@@ -405,6 +416,7 @@ begin
   WriteStr(LOverlaps, Overlaps);
   Result :=
     'Word: ' + Caption + LineEnding +
+    'IPA: ' + ToIPA + LineEnding +
     'Overlaps:' + LOverlaps + LineEnding +
     'S-''s: '+ CandidateNegativeWords[0]^.Caption + #32 +
                CandidateNegativeWords[1]^.Caption + #32 +
