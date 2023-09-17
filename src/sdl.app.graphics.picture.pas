@@ -43,12 +43,14 @@ type
     property Sibling : TPicture read FSibling write SetSibling;
   end;
 
+const
+  IMG_EXT = '.png';
 
 implementation
 
 uses
   sdl2_image
-  , sdl.colors
+  //, sdl.colors
   , sdl.app.video.methods
   , sdl.app.output
   , session.pool

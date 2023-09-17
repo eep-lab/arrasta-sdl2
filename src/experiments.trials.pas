@@ -27,18 +27,18 @@ uses
   Classes
   , SysUtils
   , LazFileUtils
-  , StrUtils
+  //, StrUtils
   , session.csv
   , sdl.app.output
   , session.constants.dragdrop
-  , session.fileutils
+  //, session.fileutils
   , session.configurationfile
   , session.configurationfile.writer
   , sdl.app.trials.mts
   , picanco.experiments.words.types
   , picanco.experiments.words
   , picanco.experiments.images
-  , picanco.experiments.audio
+  //, picanco.experiments.audio
   , picanco.experiments.constants
   //, sdl.app.trials.dragdrop
   ;
@@ -155,7 +155,8 @@ begin
       end;
       Writer.WriteBlock;
 
-      LName := LWord.Caption + #32 + LRelation + #32 + LComparisons.ToString + 'C';
+      LName :=
+        LWord.Caption + #32 + LRelation + #32 + LComparisons.ToString + 'C';
       WriteTrials(LName, LRelation, LWord, LComparisons, LHasConsequence);
     end;
   finally

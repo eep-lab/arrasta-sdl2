@@ -46,12 +46,12 @@ type
   end;
 
   TOverlaps = (
-    DifferentConsoantsAndVowels,
-    EqualConsoants,
+    DifferentConsonantsAndVowels,
+    EqualConsonants,
     EqualVowels,
-    EqualConsoantsAndVowels);
+    EqualConsonantsAndVowels);
 
-  TConsoantOrd = (
+  TConsonantOrd = (
     csNone,
     csPlosiveBilabial,
     csNonSibilantFricative,
@@ -65,17 +65,17 @@ type
     vsCloseFront,
     vsOpenMidBack);
 
-  { TConsoant }
+  { TConsonant }
 
-  TConsoant = record
-    Ord: TConsoantOrd;
+  TConsonant = record
+    Ord: TConsonantOrd;
     IPA: string;  // International Phonetic Alphabet
     HumanReadable: string;
     procedure Next;
-    class operator = (AConsoant1, AConsoant2: TConsoant): boolean;
+    class operator = (AConsonant1, AConsonant2: TConsonant): boolean;
   end;
 
-  TConsoants = specialize TFPGList<TConsoant>;
+  TConsonants = specialize TFPGList<TConsonant>;
 
   { TVowel }
 
@@ -93,7 +93,7 @@ type
   { TSyllab }
 
   TSyllab = record
-    Consoant: TConsoant;
+    Consonant: TConsonant;
     Vowel: TVowel;
     class operator = (ASyllab1, ASyllab2: TSyllab): boolean;
   end;
@@ -143,7 +143,7 @@ type
 
 
 var
-  Consoants : TConsoants;
+  Consonants : TConsonants;
   Vowels : TVowels;
   Syllabs : TSyllabs;
   EmptyWord : TWord;
@@ -224,20 +224,20 @@ begin
         case AWord.Overlaps of
           EqualVowels: begin
             if OtherLettersAreDifferent(
-              AIndex, AWord, AWords[i], [1, 3]) then begin // 1,3 consoants
+              AIndex, AWord, AWords[i], [1, 3]) then begin // 1,3 Consonants
                ACandidateWords.Add(@AWords[i]);
             end;
           end;
-          EqualConsoants: begin
+          EqualConsonants: begin
             if OtherLettersAreDifferent(
               AIndex, AWord, AWords[i], [2, 4]) then begin // 2, 4 vowels
                ACandidateWords.Add(@AWords[i]);
             end;
           end;
-          EqualConsoantsAndVowels: begin
+          EqualConsonantsAndVowels: begin
             ACandidateWords.Add(@AWords[i]);
           end;
-          DifferentConsoantsAndVowels: begin
+          DifferentConsonantsAndVowels: begin
             if OtherLettersAreDifferent(
               AIndex, AWord, AWords[i], [1, 2, 3, 4]) then begin
               ACandidateWords.Add(@AWords[i]);
@@ -315,14 +315,14 @@ begin
   AWord.Filenames := GetWordFilenames(AWord.Caption);
   //AWord.Phase := GetWordPhase(AWord);
 
-  AWord.Overlaps := DifferentConsoantsAndVowels;
+  AWord.Overlaps := DifferentConsonantsAndVowels;
   if AWord.Syllab1 = AWord.Syllab2 then begin
-    AWord.Overlaps := EqualConsoantsAndVowels;
+    AWord.Overlaps := EqualConsonantsAndVowels;
     Exit;
   end;
 
-  if AWord.Syllab1.Consoant = AWord.Syllab2.Consoant then begin
-    AWord.Overlaps := EqualConsoants;
+  if AWord.Syllab1.Consonant = AWord.Syllab2.Consonant then begin
+    AWord.Overlaps := EqualConsonants;
     Exit;
   end;
 
@@ -331,9 +331,9 @@ begin
   end;
 end;
 
-{ TConsoant }
+{ TConsonant }
 
-procedure TConsoant.Next;
+procedure TConsonant.Next;
 begin
   case Self.Ord of
     csNone : Exit;
@@ -344,9 +344,9 @@ begin
   end;
 end;
 
-class operator TConsoant.=(AConsoant1, AConsoant2: TConsoant): boolean;
+class operator TConsonant.=(AConsonant1, AConsonant2: TConsonant): boolean;
 begin
-  Result := AConsoant1.HumanReadable = AConsoant2.HumanReadable;
+  Result := AConsonant1.HumanReadable = AConsonant2.HumanReadable;
 end;
 
 { TVowel }
@@ -372,7 +372,7 @@ end;
 class operator TSyllab.=(ASyllab1, ASyllab2: TSyllab): boolean;
 begin
   Result :=
-    (ASyllab1.Consoant.HumanReadable = ASyllab2.Consoant.HumanReadable) and
+    (ASyllab1.Consonant.HumanReadable = ASyllab2.Consonant.HumanReadable) and
     (ASyllab1.Vowel.HumanReadable = ASyllab2.Vowel.HumanReadable);
 end;
 
@@ -381,20 +381,20 @@ end;
 function TWord.ToIPA: string;
 begin
   Result :=
-    Syllab1.Consoant.IPA + Syllab1.Vowel.IPA + '.'+
-    Syllab2.Consoant.IPA + Syllab2.Vowel.IPA + 'ˈ';
+    Syllab1.Consonant.IPA + Syllab1.Vowel.IPA + '.'+
+    Syllab2.Consonant.IPA + Syllab2.Vowel.IPA + 'ˈ';
 end;
 
 function TWord.ToHumanReadableText(AHasStress: Boolean): string;
 begin
   if AHasStress then begin
     Result :=
-      Syllab1.Consoant.HumanReadable + Syllab1.Vowel.HumanReadable +
-      Syllab2.Consoant.HumanReadable + Syllab2.Vowel.HumanReadableStress
+      Syllab1.Consonant.HumanReadable + Syllab1.Vowel.HumanReadable +
+      Syllab2.Consonant.HumanReadable + Syllab2.Vowel.HumanReadableStress
   end else begin
     Result :=
-      Syllab1.Consoant.HumanReadable + Syllab1.Vowel.HumanReadable +
-      Syllab2.Consoant.HumanReadable + Syllab2.Vowel.HumanReadable;
+      Syllab1.Consonant.HumanReadable + Syllab1.Vowel.HumanReadable +
+      Syllab2.Consonant.HumanReadable + Syllab2.Vowel.HumanReadable;
   end;
 end;
 

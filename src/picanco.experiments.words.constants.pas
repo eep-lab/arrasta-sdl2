@@ -17,16 +17,16 @@ uses
   picanco.experiments.words.types;
 
 const
-  PlosiveBilabial : TConsoant =
+  PlosiveBilabial : TConsonant =
     (Ord: csPlosiveBilabial; IPA: 'b'; HumanReadable: 'b');
 
-  NonSibilantFricative : TConsoant =
+  NonSibilantFricative : TConsonant =
     (Ord: csNonSibilantFricative; IPA: 'f'; HumanReadable: 'f');
 
-  LateralApproximantAlveolar : TConsoant =
+  LateralApproximantAlveolar : TConsonant =
     (Ord: csLateralApproximantAlveolar; IPA: 'l'; HumanReadable: 'l');
 
-  NasalAlveolar : TConsoant =
+  NasalAlveolar : TConsonant =
     (Ord: csNasalAlveolar; IPA: 'n'; HumanReadable: 'n');
 
   OpenFront : TVowel =

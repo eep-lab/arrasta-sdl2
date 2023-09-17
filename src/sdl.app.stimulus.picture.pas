@@ -65,7 +65,7 @@ begin
     LFilename :=
       AParameters.Values[MTSKeys.Comparison+(Index+1).ToString];
   end;
-  FPicture.LoadFromFile(LFilename+'.jpg');
+  FPicture.LoadFromFile(LFilename+IMG_EXT);
   FPicture.BoundsRect := ARect;
   FPicture.Parent := TCustomRenderer(AParent);
   FPicture.OnMouseDown := @MouseDown;

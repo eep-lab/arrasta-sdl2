@@ -28,7 +28,6 @@ type
     private
       FFont : PTTF_Font;
       FSDLTexture : PSDL_Texture;
-      FVisible: Boolean;
     protected
       procedure Paint; override;
     public
@@ -36,11 +35,11 @@ type
       procedure Load(S : string;
         FontName : string = 'Picanco_et_al');
       procedure LoadFromFile(AFilename: string;
-        FontName : string = 'Raleway-Regular');
+        AFontName : string = 'Raleway-Regular');
       destructor Destroy; override;
-      procedure Show;
-      procedure Hide;
-      property Visible : Boolean read FVisible write FVisible;
+      //procedure Show;
+      //procedure Hide;
+      //property Visible : Boolean read FVisible write FVisible;
 
   end;
 
@@ -52,7 +51,8 @@ uses sdl.app.video.methods, sdl.app.text, sdl.colors, session.pool;
 
 procedure TText.Paint;
 begin
-  if FVisible then begin
+  inherited Paint;
+  if Visible then begin
     SDL_RenderCopy(PSDLRenderer, FSDLTexture, nil, @FRect);
   end;
 end;
@@ -62,7 +62,7 @@ begin
   inherited Create(AOwner);
   FFont := nil;
   FSDLTexture := nil;
-  FVisible := False;
+  Visible := False;
 end;
 
 procedure TText.Load(S: string; FontName: string);
@@ -74,18 +74,18 @@ var
 begin
   FFont := SDLText.Get(FontName).Font;
   PText := PAnsiChar(S);
-  PSDLSurface := TTF_RenderUTF8_LCD(
-    FFont, PText, clBlack, clWhite);
+  //PSDLSurface := TTF_RenderUTF8_LCD(
+  PSDLSurface := TTF_RenderUTF8_Blended(
+    FFont, PText, clBlack);
   FRect := PSDLSurface^.clip_rect;
   FSDLTexture := SDL_CreateTextureFromSurface(PSDLRenderer, PSDLSurface);
   SDL_FreeSurface(PSDLSurface);
 end;
 
-procedure TText.LoadFromFile(AFilename: string; FontName: string);
+procedure TText.LoadFromFile(AFilename: string; AFontName: string);
 var
   LFile : TStringList;
   LText : string;
-  LFontName : string;
 begin
   LFile := TStringList.Create;
   try
@@ -94,23 +94,13 @@ begin
   finally
     LFile.Free;
   end;
-  Load(LText, LFontName);
+  Load(LText, AFontName);
 end;
 
 destructor TText.Destroy;
 begin
   SDL_DestroyTexture(FSDLTexture);
   inherited Destroy;
-end;
-
-procedure TText.Show;
-begin
-  FVisible := True;
-end;
-
-procedure TText.Hide;
-begin
-  FVisible := False;
 end;
 
 end.

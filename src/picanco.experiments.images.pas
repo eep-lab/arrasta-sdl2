@@ -16,16 +16,17 @@ interface
 uses
   Classes, SysUtils, FileUtil;
 
+
 implementation
 
-uses session.pool, picanco.experiments.constants;
+uses session.pool, sdl.app.graphics.picture, picanco.experiments.constants;
 
 function GetAllImages: TStringList;
 var
   LMediaPath : string = 'base';
 begin
   LMediaPath := ConcatPaths([Pool.RootMedia, LMediaPath]);
-  Result := FindAllFiles(LMediaPath, '*.jpg', False);
+  Result := FindAllFiles(LMediaPath, '*'+IMG_EXT, False);
 end;
 
 procedure CopyImagesToMediaPath(AFileNames: array of string);
@@ -65,14 +66,10 @@ begin
   SetLength(LImages, n);
   for Code in E1WordsWithImagesRange do begin
       SetLength(LImages, Length(LImages)+1);
-      LImages[n] := E1WordsWithImages[Code] + '.jpg';
+      LImages[n] := E1WordsWithImages[Code] + IMG_EXT;
       Inc(n);
   end;
-  if False then begin
-    { do nothing }
-  end else begin
-    CopyImagesToMediaPath(LImages);
-  end;
+  CopyImagesToMediaPath(LImages);
 end;
 
 initialization

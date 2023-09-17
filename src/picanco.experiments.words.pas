@@ -40,6 +40,7 @@ procedure SetComparisons(var AWord: TWord);
 var
   i: Integer;
   Code : TAlphaNumericCode;
+  LWord : PTWord;
   LCandidateNegativeWords : TWordList;
   LCandidateNegativeWordsWithImages : TWordList;
   LCandidateNegativeWordsWithNewImages : TWordList;
@@ -62,10 +63,13 @@ begin
       LCandidateNegativeWords.Add(AWord.CandidateNegativeWords[i]);
     end;
     for Code in E1WordsWithImagesRange do begin
-      LCandidateNegativeWordsWithImages.Add(HashWords[E1WordsWithImages[Code]]);
+      LWord := HashWords[E1WordsWithImages[Code]];
+      if LWord^.Caption <> AWord.Caption then
+        LCandidateNegativeWordsWithImages.Add(LWord);
     end;
     for i := Low(E1WordsWithNewImages) to High(E1WordsWithNewImages) do begin
-      LCandidateNegativeWordsWithNewImages.Add(HashNewWords[E1WordsWithNewImages[i]]);
+      LCandidateNegativeWordsWithNewImages.Add(
+        HashNewWords[E1WordsWithNewImages[i]]);
     end;
     for i := Low(AWord.Comparisons) to High(AWord.Comparisons) do begin
       with AWord.Comparisons[i] do begin
@@ -171,16 +175,16 @@ begin
   EmptyWord.Filenames.Image:='--Empty--';
   EmptyWord.Filenames.Text:='--Empty--';
   EmptyWord.Filenames.Speech:='--Empty--';
-  EmptyWord.Syllab1.Consoant.Ord := csNone;
+  EmptyWord.Syllab1.Consonant.Ord := csNone;
   EmptyWord.Syllab1.Vowel.Ord := vsNone;
-  EmptyWord.Syllab2.Consoant.Ord := csNone;
+  EmptyWord.Syllab2.Consonant.Ord := csNone;
   EmptyWord.Syllab2.Vowel.Ord := vsNone;
 
-  Consoants := TConsoants.Create;
-  Consoants.Add(PlosiveBilabial);
-  Consoants.Add(NonSibilantFricative);
-  Consoants.Add(LateralApproximantAlveolar);
-  Consoants.Add(NasalAlveolar);
+  Consonants := TConsonants.Create;
+  Consonants.Add(PlosiveBilabial);
+  Consonants.Add(NonSibilantFricative);
+  Consonants.Add(LateralApproximantAlveolar);
+  Consonants.Add(NasalAlveolar);
 
   Vowels := TVowels.Create;
   Vowels.Add(OpenFront);
@@ -188,11 +192,11 @@ begin
   Vowels.Add(CloseFront);
   Vowels.Add(OpenMidBack);
 
-  SetLength(Syllabs, Consoants.Count * Vowels.Count);
-  for i := 0 to Consoants.Count -1 do
+  SetLength(Syllabs, Consonants.Count * Vowels.Count);
+  for i := 0 to Consonants.Count -1 do
     for j := 0 to Vowels.Count-1 do
     begin
-      Syllabs[i * Consoants.Count + j].Consoant := Consoants[i];
+      Syllabs[i * Consonants.Count + j].Consonant := Consonants[i];
       Syllabs[i * Vowels.Count + j].Vowel := Vowels[j];
     end;
 
@@ -203,7 +207,7 @@ begin
       //if Syllabs[i] = Syllabs[j] then
       //  Continue;
 
-      //if Syllabs[i].Consoant = Syllabs[j].Consoant then
+      //if Syllabs[i].Consonant = Syllabs[j].Consonant then
       //  Continue;
       //
       //if Syllabs[i].Vowel = Syllabs[j].Vowel then
@@ -245,7 +249,7 @@ end;
 
 procedure Finalize;
 begin
-  Consoants.Free;
+  Consonants.Free;
   Vowels.Free;
   HashWords.Free;
   HashNewWords.Free;
