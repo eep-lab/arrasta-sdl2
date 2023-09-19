@@ -62,7 +62,6 @@ constructor TPicture.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   FSibling := nil;
-  IMG_Init(IMG_INIT_PNG);
 end;
 
 destructor TPicture.Destroy;

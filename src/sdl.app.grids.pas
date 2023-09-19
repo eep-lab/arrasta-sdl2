@@ -45,6 +45,7 @@ type
   { TGrid }
   TGrid = class
     private
+      FFixedComparison: Boolean;
       FFixedSample: Boolean;
       FSeed : integer;
       FCellsCount: integer;
@@ -57,6 +58,7 @@ type
       FSamplesCount: integer;
       procedure SetCellsCount(AValue: integer);
       procedure SetCellsSize(AValue: real);
+      procedure SetFixedComparison(AValue: Boolean);
       procedure SetFixedSample(AValue: Boolean);
       procedure SetGridOrientation(AValue: TGridOrientation);
       procedure SetGridStyle(AGridStyle: TGridStyle);
@@ -71,6 +73,7 @@ type
       property CellsCount : integer read FCellsCount write SetCellsCount;
       property CellsSize : real read FCellsSize write SetCellsSize;
       property FixedSample : Boolean read FFixedSample write SetFixedSample;
+      property FixedComparison : Boolean read FFixedComparison write SetFixedComparison;
       property RandomPositions : TRandomPositions read FRandomPositions;
       property Seed : integer read FSeed write FSeed;
       property Orientation: TGridOrientation read FGridOrientation write SetGridOrientation;
@@ -80,6 +83,7 @@ type
       procedure RandomizePositions;
       function GetRandomGridOrientation : TGridOrientation;
       function RectFromPosition(APosition: integer) : TRect;
+      function PositionFromObject(AObject: TObject) : integer;
   end;
 
 var
@@ -315,9 +319,13 @@ begin
             Result.Add(6);
           end;
         end else begin
-          Result.Add(2);
-          Result.Add(5);
-          Result.Add(8);
+          if FFixedComparison then begin
+            Result.Add(5);
+          end else begin
+            Result.Add(2);
+            Result.Add(5);
+            Result.Add(8);
+          end;
         end;
       end;
       goRightToLeft: begin
@@ -330,9 +338,13 @@ begin
             Result.Add(8);
           end;
         end else begin
-          Result.Add(0);
-          Result.Add(3);
-          Result.Add(6);
+          if FFixedComparison then begin
+            Result.Add(3);
+          end else begin
+            Result.Add(0);
+            Result.Add(3);
+            Result.Add(6);
+          end;
         end;
       end;
       goBottomToTop: begin
@@ -345,9 +357,13 @@ begin
             Result.Add(8);
           end;
         end else begin
-          Result.Add(0);
-          Result.Add(1);
-          Result.Add(2);
+          if FixedComparison then begin
+            Result.Add(1);
+          end else begin
+            Result.Add(0);
+            Result.Add(1);
+            Result.Add(2);
+          end;
         end;
       end;
       goTopToBottom: begin
@@ -360,9 +376,13 @@ begin
             Result.Add(2);
           end;
         end else begin
-          Result.Add(6);
-          Result.Add(7);
-          Result.Add(8);
+          if FFixedComparison then begin
+            Result.Add(7);
+          end else begin
+            Result.Add(6);
+            Result.Add(7);
+            Result.Add(8);
+          end;
         end;
       end;
     end;
@@ -470,7 +490,13 @@ begin
         end else begin
           LatinRowToGridItems(SamplesRows, Samples);
         end;
-        LatinRowToGridItems(ComparisonsRows, Comparisons);
+        if FFixedComparison then begin
+          LGridList := InvalidateGridList(False);
+          Cell := IntToCell(LGridList.First);
+          SecureCopy(Comparisons[Low(Comparisons)], FGrid[Cell[0], Cell[1]]);
+        end else begin
+          LatinRowToGridItems(ComparisonsRows, Comparisons);
+        end;
       end;
     end;
   end;
@@ -491,6 +517,22 @@ begin
   end;
 end;
 
+function TGrid.PositionFromObject(AObject: TObject): integer;
+var
+  i: Integer;
+  Cell: TCell;
+begin
+  Result := -1;
+  for i := 0 to 8 do
+  begin
+    Cell := IntToCell(i);
+    if FGrid[Cell[0], Cell[1]].Item = AObject then begin
+      Result:= i;
+      Exit;
+    end;
+  end;
+end;
+
 procedure TGrid.SetCellsCount(AValue: integer);
 begin
   if FCellsCount=AValue then Exit;
@@ -501,6 +543,12 @@ procedure TGrid.SetCellsSize(AValue: real);
 begin
   if FCellsSize=AValue then Exit;
   FCellsSize:=AValue;
+end;
+
+procedure TGrid.SetFixedComparison(AValue: Boolean);
+begin
+  if FFixedComparison=AValue then Exit;
+  FFixedComparison:=AValue;
 end;
 
 procedure TGrid.SetFixedSample(AValue: Boolean);
@@ -536,6 +584,7 @@ begin
   FCellsCount:=ASeed*ASeed;
   FCellsSize := 6;
   FFixedSample := True;
+  FFixedComparison:=False;
   FGridStyle := gtDistributed;
   FGridOrientation:= goTopToBottom;
   FGrid := GetCentralGrid(FSeed, FCellsSize, DispersionStyle);

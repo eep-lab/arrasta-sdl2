@@ -68,6 +68,7 @@ implementation
 
 uses sdl.app.output
   , sdl.app.video.methods
+  , sdl2_image
 {$IFDEF NO_LCL}
   , sdl.app.renderer.nolcl
 {$ELSE}
@@ -154,6 +155,8 @@ begin
   end;
   Print(Self.ClassName+'.'+{$I %CURRENTROUTINE%}+#32+ATitle);
   if AMonitor > SDL_GetNumVideoDisplays then Exit;
+
+  IMG_Init(IMG_INIT_PNG);
 
   {$IFNDEF NO_LCL}
   // Audio Setup

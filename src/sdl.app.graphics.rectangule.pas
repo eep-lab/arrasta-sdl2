@@ -35,7 +35,6 @@ type
     function GetLeft: cint;
     function GetTop: cint;
     function GetWidth: cint;
-    procedure SetBoundsRect(AValue: TSDL_Rect);
     procedure SetHeight(AValue: cint);
     procedure SetLeft(AValue: cint);
     procedure SetTop(AValue: cint);
@@ -43,6 +42,7 @@ type
   protected
     FRect    : TSDL_Rect;
     function GetBoundsRect: TSDL_Rect; override;
+    procedure SetBoundsRect(AValue : TSDL_Rect); override;
     procedure MouseEnter(Sender: TObject); override;
     procedure MouseExit(Sender: TObject); override;
     procedure Paint; override;

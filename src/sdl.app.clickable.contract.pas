@@ -22,9 +22,11 @@ type
   IClickable = interface
   ['{114591A9-5C68-46EA-ACCE-0A498A16FD9C}']
     function GetSDLMouseButtonDown: TOnMouseButtonDownEvent;
+    function GetSDLMouseButtonUp: TOnMouseButtonUpEvent;
     function GetBoundsRect : TSDL_Rect;
     function PointInside(SDLPoint : TSDL_Point) : Boolean;
     procedure MouseDown(Sender:TObject; Shift: TCustomShiftState; X, Y: Integer);
+    procedure MouseUp(Sender:TObject; Shift: TCustomShiftState; X, Y: Integer);
   end;
 
 implementation

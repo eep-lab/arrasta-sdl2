@@ -78,7 +78,7 @@ begin
   inherited Create(AOwner);
   EventHandler.AssignEvents;
   EventHandler.OnMouseButtonDown := AsIClickable.GetSDLMouseButtonDown;
-  EventHandler.OnMouseButtonUp := AsIMoveable.GetSDLMouseButtonUp;
+  EventHandler.OnMouseButtonUp := AsIClickable.GetSDLMouseButtonUp;
   EventHandler.OnMouseMotion := AsIMoveable.GetSDLMouseMotion;
   FVisible := False;
   FLimitedHoldTimer := TSDLTimer.Create;
@@ -164,13 +164,13 @@ procedure TTrial.MouseUp(Sender: TObject; Shift: TCustomShiftState; X,
 var
   Child : TComponent;
   SDLPoint : TSDL_Point;
-  IChild   : IMoveable;
+  IChild   : IClickable;
 begin
   if Visible then begin
     for Child in FChilds do begin
       SDLPoint.x := X;
       SDLPoint.y := Y;
-      IChild := IMoveable(TCustomRenderer(Child));
+      IChild := IClickable(TCustomRenderer(Child));
       if IChild.PointInside(SDLPoint) then
         IChild.MouseUp(Sender, Shift, X, Y);
     end;
@@ -195,7 +195,7 @@ end;
 procedure TTrial.EndTrialCallBack(Sender: TObject);
 var
   LStimuli : TComponent;
-  LTrial    : TComponent;
+  //LTrial    : TComponent;
 begin
   if Sender is TComponent then begin
     LStimuli := Sender as TComponent;

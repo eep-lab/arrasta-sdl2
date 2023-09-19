@@ -22,28 +22,36 @@ uses
   , sdl.app.stimuli.contract
   , sdl.app.events.abstract
   , sdl.app.audio.contract
-  //, sdl.app.graphics.text
   ;
 
 type
 
-  TStimulusIList = specialize TFPGList<IStimulus>;
+  TModality = (ModalityNone, ModalityA, ModalityB, ModalityC, ModalityD);
+
+  TMTSModality = record
+    Samples     : TModality;
+    Comparisons : TModality;
+  end;
+
+  TIStimulusList = specialize TFPGList<IStimulus>;
 
   { TMTSStimuli }
 
   TMTSStimuli = class sealed (TStimuli, IStimuli)
     private
+      FMTSModality : TMTSModality;
       FHasConsequence : Boolean;
       FButton : TButton;
       FSoundCorrect : ISound;
       FSoundWrong   : ISound;
-      FComparisons : TStimulusIList;
-      FSamples : TStimulusIList;
+      FComparisons : TIStimulusList;
+      FSamples : TIStimulusList;
       procedure DoConsequence(Sender : TObject);
       procedure ConsequenceDone(Sender: TObject);
       procedure StimulusMouseEnter(Sender: TObject);
       procedure StimulusMouseExit(Sender: TObject);
       procedure StimulusMouseDown(Sender: TObject; Shift: TCustomShiftState; X, Y: Integer);
+      procedure StimulusMouseUp(Sender: TObject; Shift: TCustomShiftState; X, Y: Integer);
       procedure ButtonClick(Sender: TObject);
       procedure ComparisonResponse(Sender: TObject);
       procedure SampleResponse(Sender: TObject);
@@ -116,10 +124,16 @@ var
 begin
   if Sender is TAudioStimulus then begin
     LStimulus := Sender as TStimulus;
-    if FComparisons.IndexOf(LStimulus) <> -1 then begin
+    if not LStimulus.IsSample then begin
       FButton.Hide;
     end;
   end;
+end;
+
+procedure TMTSStimuli.StimulusMouseUp(Sender: TObject;
+  Shift: TCustomShiftState; X, Y: Integer);
+begin
+
 end;
 
 procedure TMTSStimuli.ButtonClick(Sender: TObject);
@@ -128,9 +142,10 @@ var
 begin
   if Sender = FButton then begin
     if FButton.Sibling <> nil then begin
+      FButton.Hide;
       LStimulus := FButton.Sibling.Owner as TStimulus;
+      DoConsequence(LStimulus);
     end;
-    DoConsequence(LStimulus);
   end;
 end;
 
@@ -141,16 +156,15 @@ var
 begin
   if Sender is TStimulus then begin
     LStimulus := Sender as TStimulus;
-    for LIStimulus in FComparisons do
-      LIStimulus.Stop;
-    if FComparisons.IndexOf(LStimulus) <> -1 then begin
-      if LStimulus is TAudioStimulus then begin
-        FButton.Sibling := TAudioStimulus(LStimulus).Picture;
-        FButton.Show;
-        Exit;
-      end;
-      DoConsequence(LStimulus);
+    if LStimulus is TAudioStimulus then begin
+      FButton.Sibling := TAudioStimulus(LStimulus).Picture;
+      FButton.Show;
+      Exit;
+    end else begin
+      for LIStimulus in FComparisons do
+        LIStimulus.Stop;
     end;
+    DoConsequence(LStimulus);
   end;
 end;
 
@@ -158,16 +172,17 @@ procedure TMTSStimuli.SampleResponse(Sender: TObject);
 var
   LStimulus: IStimulus;
 begin
-  for LStimulus in FComparisons do
+  for LStimulus in FComparisons do begin
     LStimulus.Start;
+  end;
 end;
 
 
 constructor TMTSStimuli.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
-  FSamples := TStimulusIList.Create;
-  FComparisons := TStimulusIList.Create;
+  FSamples := TIStimulusList.Create;
+  FComparisons := TIStimulusList.Create;
   FButton:= nil;
 end;
 
@@ -197,7 +212,7 @@ var
   ComparLetter : string;
   LSamples      : integer;
   LComparisons  : integer;
-  LCycle : string;
+  //LCycle : string;
 
   procedure NewGridItems(ASamples, AComparisons: integer;
     AGridOrientation: TGridOrientation);
@@ -210,32 +225,32 @@ var
     LCallbacks.OnMouseExit := @StimulusMouseExit;
     LCallbacks.OnMouseEnter := @StimulusMouseEnter;
     LCallbacks.OnMouseDown := @StimulusMouseDown;
+    LCallbacks.OnMouseUp := @StimulusMouseUp;
     LCallbacks.OnResponse  := @ComparisonResponse;
     LParameters := TStringList.Create;
     try
       if not Assigned(Grid) then
         Grid := TGrid.Create(3);
       Grid.FixedSample:=True;
+      if AComparisons = 1 then
+        Grid.FixedComparison:=True;
       Grid.UpdatePositions(ASamples, AComparisons, AGridOrientation);
       with Grid.RandomPositions do begin
-        if High(Comparisons) > Low(Comparisons) then
-          for i := Low(Comparisons) to High(Comparisons) do
-          begin
-            LItem := TStimulusFactory.New(Self, ComparLetter, LCallbacks);
-            LItem.IsSample := False;
-            LItem.Index := i;
+        for i := Low(Comparisons) to High(Comparisons) do begin
+          LItem := TStimulusFactory.New(Self, ComparLetter, LCallbacks);
+          LItem.IsSample := False;
+          LItem.Index := i;
 
-            LParameters.Clear;
-            LItem.Name:=MTSKeys.Comparisons+(i+1).ToString;
-            LItem.Load(AParameters, AParent, Comparisons[i].Rect);
+          LParameters.Clear;
+          LItem.Name:=MTSKeys.Comparisons+(i+1).ToString;
+          LItem.Load(AParameters, AParent, Comparisons[i].Rect);
 
-            Comparisons[i].Item := LItem as TObject;
-            FComparisons.Add(LItem);
-          end;
+          Comparisons[i].Item := LItem as TObject;
+          FComparisons.Add(LItem);
+        end;
 
         LCallbacks.OnResponse := @SampleResponse;
-        for i := low(Samples) to high(Samples) do
-        begin
+        for i := low(Samples) to high(Samples) do begin
           LItem := TStimulusFactory.New(Self, SampleLetter, LCallbacks);
           LItem.IsSample := True;
           LItem.Index := i;
@@ -255,7 +270,6 @@ var
 begin
   if not Assigned(AParent) then
     raise Exception.Create('You must assign a parent.');
-
   FSoundCorrect := SDLAudio.SoundFromName('acerto');
   FSoundWrong   := SDLAudio.SoundFromName('erro');
   FSoundCorrect.SetOnStop(@ConsequenceDone);
@@ -271,16 +285,41 @@ begin
     LRelation := AParameters.Values[Relation];
     SampleLetter := ExtractDelimited(1,LRelation,['-']);
     ComparLetter := ExtractDelimited(2,LRelation,['-']);
+    LSamples := AParameters.Values[Samples].ToInteger;
+    LComparisons := AParameters.Values[Comparisons].ToInteger;
 
-    if ComparLetter = 'A' then begin
+    case SampleLetter of
+      'A' : FMTSModality.Samples := ModalityA;
+      'B' : FMTSModality.Samples := ModalityB;
+      'C' : FMTSModality.Samples := ModalityC;
+      'D' : FMTSModality.Samples := ModalityD;
+      else
+        raise Exception.Create('Unknown Samples modality: ' + SampleLetter);
+    end;
+    case ComparLetter of
+      'A' : FMTSModality.Comparisons := ModalityA;
+      'B' : FMTSModality.Comparisons := ModalityB;
+      'C' : FMTSModality.Comparisons := ModalityC;
+      'D' : FMTSModality.Comparisons := ModalityD;
+      else
+        raise Exception.Create('Unknown Comparisons modality: ' + SampleLetter);
+    end;
+
+    if FMTSModality.Comparisons = ModalityB then begin
       FButton := TButton.Create(Self);
       FButton.LoadFromFile(Pool.AssetsBasePath+'ConfirmButton'+IMG_EXT);
       FButton.Parent := TCustomRenderer(AParent);
       FButton.OnClick:=@ButtonClick;
     end;
 
-    LSamples := AParameters.Values[Samples].ToInteger;
-    LComparisons := AParameters.Values[Comparisons].ToInteger;
+    with SDLAudio.RecorderDevice do begin
+      if FMTSModality.Comparisons = ModalityD then begin
+        LComparisons := 1;
+        Open;
+      end else begin
+        Close;
+      end;
+    end;
   end;
 
   NewGridItems(LSamples, LComparisons, goTopToBottom);

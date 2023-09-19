@@ -14,141 +14,114 @@ unit sdl.app.audio.recorder;
 interface
 
 uses
-  Classes, SDL2, ctypes;
+  Classes, SDL2, ctypes, fgl
+  , sdl.app.audio.recorder.devices
+  , sdl.app.graphics.toggle;
 
 type
 
-  { TAudioDevice }
+  TButtonContainer = specialize TFPGList<TToggleButton>;
 
-  TAudioDevice = class(TThread)
-  protected
-    FBufferBytePosition: Uint32; static;
-    FBufferByteMaxPosition: Uint32; static;
-    FDesiredAudioSpec: TSDL_AudioSpec; static;
-    FRecordingBuffer: PUInt8;
-    FBufferByteSize: Uint32;
-    FAudioSpec: TSDL_AudioSpec; static;
-    FDeviceId: TSDL_AudioDeviceID;
-    procedure AudioCallback(userdata: Pointer; stream: PUInt8; len: Integer); virtual; abstract;
-    procedure Execute; override;
+  { TRecorderDevice }
+
+  TRecorderDevice = class
+  private
+    FRecorder : TAudioRecorderComponent;
+    FPlayback : TAudioPlaybackComponent;
+    FContainer: TButtonContainer;
+    procedure DoTerminated(Sender: TObject);
   public
     constructor Create; reintroduce;
     destructor Destroy; override;
-    function Open: Boolean;
+    procedure Open;
     procedure Close;
-    procedure Stop; virtual;
-    property DeviceId: TSDL_AudioDeviceID read FDeviceId;
-    property AudioSpec: TSDL_AudioSpec read FAudioSpec write FDesiredAudioSpec;
-  end;
-
-  TAudioRecordComponent = class(TAudioDevice)
-  protected
-    procedure AudioCallback(userdata: Pointer; stream: PUInt8; len: Integer); override;
-  end;
-
-  TAudioPlaybackComponent = class(TAudioDevice)
-  protected
-    procedure AudioCallback(userdata: Pointer; stream: PUInt8; len: Integer); override;
+    procedure Append(AButton: TToggleButton);
+    procedure Clear;
+    procedure RadioToggle(AButton: TToggleButton);
+    property Recorder : TAudioRecorderComponent read FRecorder;
+    property Playback : TAudioPlaybackComponent read FPlayback;
   end;
 
 implementation
 
-const
-  MAX_RECORDING_SECONDS = 4;
-  RECORDING_BUFFER_SECONDS = MAX_RECORDING_SECONDS + 1;
+uses SysUtils, sdl.app.output, sdl.app.stimulus, sdl.app.stimulus.contract;
 
-procedure TAudioDevice.Execute;
+{ TRecorderDevice }
+
+procedure TRecorderDevice.DoTerminated(Sender: TObject);
+var
+  LButton : TToggleButton = nil;
 begin
-  FBufferBytePosition := 0;
-  SDL_PauseAudioDevice(FDeviceId, SDL_FALSE);
-  while not Terminated do
-  begin
-    SDL_LockAudioDevice(FDeviceId);
-    if (FBufferBytePosition > FBufferByteMaxPosition) or Terminated then
-    begin
-      SDL_PauseAudioDevice(FDeviceId, SDL_TRUE);
-      Break;
-    end;
-    SDL_UnlockAudioDevice(FDeviceId);
+  if Sender = FRecorder then begin
+    LButton := TToggleButton(FRecorder.Starter);
+    FRecorder.SaveToFile('teste.wav');
+  end;
+
+  if Sender = FPlayback then begin
+    LButton := TToggleButton(FPlayback.Starter);
+  end;
+
+  if Assigned(LButton) then begin
+    RadioToggle(LButton);
   end;
 end;
 
-constructor TAudioDevice.Create;
+constructor TRecorderDevice.Create;
 begin
-  FDeviceId := 0;
-  FillChar(FAudioSpec, SizeOf(FAudioSpec), 0);
+  inherited Create;
+  FContainer := TButtonContainer.Create;
+  FRecorder := TAudioRecorderComponent.Create;
+  FPlayback := TAudioPlaybackComponent.Create;
 end;
 
-destructor TAudioDevice.Destroy;
+destructor TRecorderDevice.Destroy;
 begin
-  Close;
+  FPlayback.Free;
+  FRecorder.Free;
+  FContainer.Free;
   inherited Destroy;
 end;
 
-function TAudioDevice.Open: Boolean;
+procedure TRecorderDevice.Open;
+begin
+  if not FRecorder.Opened then begin
+    FRecorder.Open;
+  end;
+
+  if not FPlayback.Opened then begin
+    FPlayback.Open;
+  end;
+  Recorder.OnTerminate := @DoTerminated;
+  Playback.OnTerminate := @DoTerminated;
+end;
+
+procedure TRecorderDevice.Close;
+begin
+  Recorder.OnTerminate := nil;
+  Playback.OnTerminate := nil;
+end;
+
+procedure TRecorderDevice.Append(AButton: TToggleButton);
+begin
+  FContainer.Add(AButton);
+end;
+
+procedure TRecorderDevice.Clear;
+begin
+  FContainer.Clear;
+end;
+
+procedure TRecorderDevice.RadioToggle(AButton: TToggleButton);
 var
-  LDevice : PAnsiChar;
-  LBytesPerSample: cint;
-  LBytesPerSecond: cint;
-  LIsCapture: TSDL_Bool;
+  LButton : TToggleButton;
 begin
-  Close;
-  if Self is TAudioRecordComponent then begin
-    LIsCapture := SDL_TRUE;
-  end else begin
-    LIsCapture := SDL_FALSE;
+  for LButton in FContainer do begin
+    if LButton = AButton then begin
+      LButton.Enabled := False;
+    end else begin
+      LButton.Enabled := True;
+    end;
   end;
-  FDeviceId := SDL_OpenAudioDevice(nil, LIsCapture,
-    @FDesiredAudioSpec, @FAudioSpec, SDL_AUDIO_ALLOW_FORMAT_CHANGE);
-  Result := FDeviceId <> 0;
-
-  LBytesPerSample := FAudioSpec.channels * (SDL_AUDIO_BITSIZE(FAudioSpec.format) div 8);
-  LBytesPerSecond := FAudioSpec.freq * LBytesPerSample;
-  FBufferByteSize := RECORDING_BUFFER_SECONDS * LBytesPerSecond;
-  FBufferByteMaxPosition := MAX_RECORDING_SECONDS * LBytesPerSecond;
-
-  GetMem(FRecordingBuffer, FBufferByteSize);
-  FillChar(FRecordingBuffer^, FBufferByteSize, 0);
-end;
-
-procedure TAudioDevice.Close;
-begin
-  if FDeviceId <> 0 then
-  begin
-    SDL_CloseAudioDevice(FDeviceId);
-    FDeviceId := 0;
-    FillChar(FAudioSpec, SizeOf(FAudioSpec), 0);
-  end;
-end;
-
-procedure TAudioDevice.Start;
-begin
-  if FDeviceId <> 0 then
-    SDL_PauseAudioDevice(FDeviceId, SDL_FALSE);
-end;
-
-procedure TAudioDevice.Stop;
-begin
-  Terminate;
-  WaitFor;
-end;
-
-procedure TAudioRecordComponent.AudioCallback(userdata: Pointer; stream: PUInt8; len: Integer);
-begin
-  // Copy audio from stream
-  Move(FRecordingBuffer[gBufferBytePosition], stream^, len);
-
-  // Move along buffer
-  Inc(gBufferBytePosition, len);
-end;
-
-procedure TAudioPlaybackComponent.AudioCallback(userdata: Pointer; stream: PUInt8; len: Integer);
-begin
-  // Copy audio to stream
-  Move(stream^, FRecordingBuffer[gBufferBytePosition], len);
-
-  // Move along buffer
-  Inc(gBufferBytePosition, len);
 end;
 
 

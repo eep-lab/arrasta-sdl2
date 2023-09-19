@@ -20,6 +20,7 @@ uses
   , sdl2
   , sdl2_mixer
   , sdl.app.audio.contract
+  , sdl.app.audio.recorder
   ;
 
 type
@@ -30,6 +31,7 @@ type
 
   TSDLAudio = class
   private
+    FRecorderDevice : TRecorderDevice;
     FOnChannelFinished: TMix_Channel_Finished;
     FVolume : int32;
     FChannels : TChannels;
@@ -47,6 +49,7 @@ type
     function RegisterChannel(Sound : ISound) : cint;
     property Volume : int32 read GetSetVolume write FVolume;
     property Playing : Boolean read GetPlaying;
+    property RecorderDevice : TRecorderDevice read FRecorderDevice;
   end;
 
   procedure AllocateDefaultAudioChannels;
@@ -117,12 +120,15 @@ begin
   end;
   Mix_AllocateChannels(1);
   Mix_ChannelFinished(@ChannelFinishedCallback);
+
+  FRecorderDevice := TRecorderDevice.Create;
 end;
 
 destructor TSDLAudio.Destroy;
 var
   IChunk : ISound;
 begin
+  FRecorderDevice.Free;
   for IChunk in FChannels do IChunk.Free;
   Mix_AllocateChannels(0);
   FChannels.Free;

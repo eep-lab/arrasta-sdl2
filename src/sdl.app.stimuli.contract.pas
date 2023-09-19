@@ -15,10 +15,9 @@ unit sdl.app.stimuli.contract;
 
 interface
 
-uses Classes;
+uses Classes, fgl, sdl.app.stimulus.contract;
 
 type
-
   { IStimuli }
 
   IStimuli = interface

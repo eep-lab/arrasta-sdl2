@@ -71,6 +71,7 @@ type
     function GetMouseInside : Boolean; virtual;
     function PointInside(SDLPoint : TSDL_Point) : Boolean;
     function GetBoundsRect : TSDL_Rect; virtual;
+    procedure SetBoundsRect(AValue : TSDL_Rect); virtual; abstract;
     procedure SetMouseInside(AValue : Boolean);
     procedure Paint; virtual; abstract;
     procedure MouseMove(Sender: TObject;

@@ -14,7 +14,9 @@ unit sdl.app.stimuli;
 interface
 
 uses
-  Classes, SysUtils, Controls, Schedules, sdl.app.stimuli.contract;
+  Classes, SysUtils, Controls, Schedules
+  , sdl.app.stimuli.contract
+  , sdl.app.stimulus.contract;
 
 type
 
@@ -34,6 +36,7 @@ type
     procedure SetOnResponse(AValue: TNotifyEvent);
     procedure SetOnStop(AValue : TNotifyEvent);
   protected
+    function ContainerItems : IEnumerable; virtual; abstract;
     procedure DoExpectedResponse; virtual; abstract;
     procedure Load(AParameters: TStringList; AParent: TObject); virtual;
     procedure Start; virtual; abstract;

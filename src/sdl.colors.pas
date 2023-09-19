@@ -28,6 +28,12 @@ const
   clLightBlueShaded2 : TSDL_Color =
     (r: 134; g: 150; b: 254; a: 150);
 
+  clLightRedShaded1 : TSDL_Color =
+    (r: 255; g: 57; b: 71; a: 25);
+
+  clLightGrayShaded1 : TSDL_Color =
+    (r: 128; g: 128; b: 128; a: 100);
+
 implementation
 
 end.
