@@ -220,6 +220,12 @@ begin
   FComparisons.Free;
   if Assigned(FButton) then
     FButton.Free;
+
+  with SDLAudio.RecorderDevice do begin
+    if FMTSModality.Comparisons = ModalityD then begin
+      Close;
+    end;
+  end;
   inherited Destroy;
 end;
 
