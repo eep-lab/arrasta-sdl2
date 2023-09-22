@@ -153,6 +153,7 @@ begin
     Print(SDL_GetError);
     Exit;
   end;
+
   Print(Self.ClassName+'.'+{$I %CURRENTROUTINE%}+#32+ATitle);
   if AMonitor > SDL_GetNumVideoDisplays then Exit;
 

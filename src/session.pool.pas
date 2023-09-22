@@ -14,22 +14,28 @@ unit session.pool;
 interface
 
 uses
-  session.endcriteria, session.counters;
+  session.endcriteria, session.counters, session.counters.all;
 
 type
 
   { TPool }
 
   TPool = class
+    AppName : string;
     RootData : string;
+    RootDataResponses: string;
     RootMedia : string;
     BaseFileName : string;
     BaseFilePath : string;
     AssetsBasePath : string;
+    ResponsesBasePath : string;
     TimeStart : Extended;
     TestMode : Boolean;
     MonitorToShow : Byte;
-    Counters : TCounterManager;
+    Counters : TCounters;
+    Session : TSessionCounters;
+    Trial : TTrialCounters;
+    Block : TBlockCounters;
     EndCriteria : TEndCriteria;
   end;
 var
@@ -41,18 +47,20 @@ uses SysUtils, SDL2, FileUtil;
 
 initialization
   Pool := TPool.Create;
-  with Pool do
-  begin
+  with Pool do begin
+    AppName := 'Stimulus Control';
     BaseFileName := '';
     BaseFilePath := SDL_GetBasePath();
     RootData := BaseFilePath + 'data' + DirectorySeparator;
+    RootDataResponses := '';
     RootMedia := BaseFilePath +  'media' + DirectorySeparator;
     AssetsBasePath:='assets'+ DirectorySeparator;
+    ResponsesBasePath:= 'responses' + DirectorySeparator;
     ForceDirectories(RootData);
     ForceDirectories(RootMedia);
+    ForceDirectories(RootMedia+AssetsBasePath);
     MonitorToShow := 0;
     TestMode := False;
-    Counters := nil;
     EndCriteria := nil;
   end
 

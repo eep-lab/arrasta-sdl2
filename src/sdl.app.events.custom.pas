@@ -23,7 +23,7 @@ type
 
   { TCustomEventHandler }
 
-  TCustomEventHandler = class sealed (TEventHandler)
+  TCustomEventHandler = class sealed(TEventHandler)
     private
       FOnAudioChannelFinished: TOnAudioChannelFinished;
       procedure SetOnAudioChannelFinished(AValue: TOnAudioChannelFinished);
@@ -38,7 +38,10 @@ type
       property OnMouseButtonDown;
       property OnMouseButtonUp;
       property OnKeyDown;
+      property OnKeyUp;
       property OnUserEvent;
+      property OnTextEditing;
+      property OnTextInput;
   end;
 
 var

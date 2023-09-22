@@ -49,7 +49,7 @@ object FormBackground: TFormBackground
     object ButtonLoadConfigurationFile: TButton
       Left = 16
       Height = 26
-      Top = 88
+      Top = 112
       Width = 240
       Caption = 'Carregar Arquivo de Configuração'
       TabOrder = 2
@@ -58,11 +58,20 @@ object FormBackground: TFormBackground
     object ButtonNewConfigurationFile: TButton
       Left = 16
       Height = 26
-      Top = 48
+      Top = 80
       Width = 240
       Caption = 'Novo Arquivo de Configuração'
       TabOrder = 3
       OnClick = ButtonNewConfigurationFileClick
+    end
+    object ButtonNewParticipant: TButton
+      Left = 16
+      Height = 25
+      Top = 48
+      Width = 240
+      Caption = 'Novo Participante'
+      TabOrder = 4
+      OnClick = ButtonNewParticipantClick
     end
   end
   object OpenDialog1: TOpenDialog

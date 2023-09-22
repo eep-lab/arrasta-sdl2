@@ -17,10 +17,12 @@ uses
   Classes, SysUtils
   , fgl
   , SDL2
+  , sdl.app.graphics.rectangule
   , sdl.app.stimulus.contract
-  , sdl.app.choiceable.contract
+  //, sdl.app.choiceable.contract
   , sdl.app.renderer.custom
   , sdl.app.events.abstract
+  , sdl.app.stimulus.types
   ;
 
 type
@@ -31,6 +33,8 @@ type
 
   TStimulus = class(TComponent, IStimulus)
     private
+      FResponseID : Integer;
+      FStimulusID : ShortInt;
       FIndex : integer;
       FIsSample: Boolean;
       FOnMouseDown: TOnMouseEvent;
@@ -39,6 +43,7 @@ type
       FOnMouseMove: TOnMouseEvent;
       FOnMouseUp: TOnMouseEvent;
       FOnResponse: TNotifyEvent;
+      function GetID : TStimulusID;
       procedure SetIsSample(AValue: Boolean);
       procedure SetOnMouseDown(AValue: TOnMouseEvent);
       procedure SetOnMouseEnter(AValue: TNotifyEvent);
@@ -47,6 +52,9 @@ type
       procedure SetOnMouseUp(AValue: TOnMouseEvent);
       procedure SetOnResponse(AValue: TNotifyEvent);
     protected
+      function GetRect: TRectangule; virtual; abstract;
+      function GetStimulusName : string; virtual; abstract;
+      procedure SetRect(AValue: TRectangule); virtual; abstract;
       procedure MouseDown(Sender:TObject; Shift: TCustomShiftState; X, Y: Integer); virtual; abstract;
       procedure MouseUp(Sender:TObject; Shift: TCustomShiftState; X, Y: Integer); virtual; abstract;
       procedure MouseEnter(Sender:TObject); virtual; abstract;
@@ -55,6 +63,7 @@ type
       constructor Create(AOwner : TComponent); override;
       destructor Destroy; override;
       function AsInterface : IStimulus;
+      function IsCorrectResponse : Boolean; virtual; abstract;
       procedure Load(AParameters : TStringList;
         AParent : TObject; ARect: TSDL_Rect); virtual; abstract;
       procedure DoResponse; virtual;
@@ -67,11 +76,14 @@ type
       property OnMouseExit: TNotifyEvent read FOnMouseExit write SetOnMouseExit;
       property OnResponse : TNotifyEvent read FOnResponse write SetOnResponse;
       property IsSample : Boolean read FIsSample write SetIsSample;
-      property Index : integer read FIndex write FIndex;
+      property Index : Integer read FIndex write FIndex;
+      property Rectangule  : TRectangule read GetRect write SetRect;
   end;
 
 
 implementation
+
+uses session.pool;
 
 { TStimulus }
 
@@ -79,6 +91,21 @@ procedure TStimulus.SetIsSample(AValue: Boolean);
 begin
   if FIsSample=AValue then Exit;
   FIsSample:=AValue;
+end;
+
+function TStimulus.GetID: TStimulusID;
+begin
+  Result.SubjcID := Pool.Counters.Subject;
+  Result.SessiID := Pool.Session.ID;
+  Result.BlockID := Pool.Block.ID;
+  Result.TrialID := Pool.Trial.ID;
+  if IsSample then begin
+    Result.StimuID := -FIndex;
+  end else begin
+    Result.StimuID := FIndex;
+  end;
+  Result.RespoID := FResponseID;
+  Result.Name := GetStimulusName;
 end;
 
 procedure TStimulus.SetOnMouseDown(AValue: TOnMouseEvent);
@@ -120,6 +147,7 @@ end;
 constructor TStimulus.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
+  FResponseID := 0;
 end;
 
 destructor TStimulus.Destroy;
@@ -134,6 +162,7 @@ end;
 
 procedure TStimulus.DoResponse;
 begin
+  Inc(FResponseID);
   if Assigned(OnResponse) then
     OnResponse(Self);
 end;

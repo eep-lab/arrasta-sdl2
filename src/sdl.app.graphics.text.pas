@@ -37,6 +37,8 @@ type
       procedure LoadFromFile(AFilename: string;
         AFontName : string = 'Raleway-Regular');
       destructor Destroy; override;
+      procedure Clear;
+
       //procedure Show;
       //procedure Hide;
       //property Visible : Boolean read FVisible write FVisible;
@@ -101,6 +103,11 @@ destructor TText.Destroy;
 begin
   SDL_DestroyTexture(FSDLTexture);
   inherited Destroy;
+end;
+
+procedure TText.Clear;
+begin
+  SDL_DestroyTexture(FSDLTexture);
 end;
 
 end.

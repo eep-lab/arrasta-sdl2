@@ -44,7 +44,7 @@ implementation
 
 function TConfigurationWriter.GetCurrentTrial: integer;
 begin
-  Result := FConfigurationFile.TrialCount[CurrentBlock+1];
+  Result := FConfigurationFile.Trials[CurrentBlock+1];
 end;
 
 procedure TConfigurationWriter.SetStartTrial(AValue: TStartAt);

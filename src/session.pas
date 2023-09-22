@@ -99,8 +99,7 @@ end;
 constructor TSession.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
-  Counters := TCounterManager.Create;
-  Pool.Counters := Counters;
+  Pool.Counters.BeforeBeginSession;
   EndCriteria := TEndCriteria.Create;
   Pool.EndCriteria := EndCriteria;
   FTimer := TSDLTimer.Create;
@@ -112,7 +111,7 @@ end;
 
 destructor TSession.Destroy;
 begin
-  Counters.Free;
+  //Counters.Free;
   EndCriteria.Free;
   FTimer.Free;
   inherited Destroy;

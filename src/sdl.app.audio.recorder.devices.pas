@@ -24,96 +24,134 @@ type
   { TAudioDevice }
 
   TAudioDevice = class (TThread)
-  private
+  strict private
+    FMsg: string;
     FStarter : TObject;
+    FRTLEventMainThread : PRTLEvent;
+    procedure BufferFinished;
+    procedure PrintMessage;
     function GetAudioSpec: TSDL_AudioSpec;
     function GetOpened: Boolean;
-    //procedure SetAudioSpec(AValue: TSDL_AudioSpec);
   protected
     FDesiredAudioSpec: TSDL_AudioSpec;
     FAudioSpec: TSDL_AudioSpec;
-    FDeviceId: TSDL_AudioDeviceID;
+    FDeviceID: TSDL_AudioDeviceID;
     FDevices : TDevices;
     function BytesPerSample : cint;
     function FileSize : cint;
     procedure Execute; override;
     procedure ListDevices(AIsCapture : cint; ADevices: TDevices);
+    procedure StartDevice(AStarter : TObject);
+    procedure DeviceFinished(Sender: TObject); virtual; abstract;
   public
-    constructor Create; virtual; reintroduce;
+    constructor Create;
     destructor Destroy; override;
     function Open: Boolean; virtual; abstract;
-    procedure Close;
-    procedure Stop; virtual;
-    procedure Start(AStarter : TObject); reintroduce;
+    procedure Close; virtual;
+    procedure Log(const AMsg: string; AppendLineEnd: boolean = true);
     property AudioSpec: TSDL_AudioSpec read GetAudioSpec;
-    property DeviceId: TSDL_AudioDeviceID read FDeviceId;
+    property DeviceId: TSDL_AudioDeviceID read FDeviceID;
     property Opened : Boolean read GetOpened;
     property Starter : TObject read FStarter;
+    property Msg : string read FMsg write FMsg;
   end;
 
   { TAudioRecorderComponent }
 
   TAudioRecorderComponent = class sealed (TAudioDevice)
+  private
+    FOnRecordingFinished: TNotifyEvent;
+    procedure SetOnRecordingFinished(AValue: TNotifyEvent);
+  protected
+    procedure DeviceFinished(Sender: TObject); override;
+  public
+    function CanRecord : Boolean;
+    function HasRecording : Boolean;
     function Open: Boolean; override;
-    procedure SaveToFile(AFilename : string);
+    procedure Close; override;
+    procedure SaveToFile(AFilename : string); overload;
+    procedure StartRecording(AStarter : TObject);
+    property OnRecordingFinished : TNotifyEvent read FOnRecordingFinished write SetOnRecordingFinished;
   end;
 
   { TAudioPlaybackComponent }
 
   TAudioPlaybackComponent = class sealed (TAudioDevice)
+  private
+    FOnPlaybackFinished: TNotifyEvent;
+    procedure SetOnPlaybackFinished(AValue: TNotifyEvent);
+  protected
+    procedure DeviceFinished(Sender: TObject); override;
+  public
     function Open: Boolean; override;
+    procedure StartPlayback(AStarter : TObject);
+    property OnPlaybackFinished : TNotifyEvent read FOnPlaybackFinished write SetOnPlaybackFinished;
   end;
 
 implementation
 
-uses SysUtils, sdl.app.output, fpwavformat;
+uses SysUtils, sdl.app.output, fpwavformat
+  //, sdl.app.stimulus.contract
+  , session.loggers.writerow
+  , session.pool;
 
 const
   MAX_RECORDING_SECONDS = 4;
   RECORDING_BUFFER_SECONDS = MAX_RECORDING_SECONDS + 1;
 
+
 var
-  GRecordingBuffer: PUInt8;
+  GPRecordingBuffer: PUInt8 = nil;
   GBufferByteSize: Uint32;
   GBufferBytePosition: Uint32;
   GBufferByteMaxPosition: Uint32;
+  ACriticalSection : TRTLCriticalSection;
 
 procedure TAudioDevice.Execute;
-var
-  T : Uint32;
-begin
-  GBufferBytePosition := 0;
-  SDL_PauseAudioDevice(FDeviceId, 0);
-  while not Terminated do
+  function DoWork : Boolean;
+  var
+    First : Cardinal;
   begin
-    SDL_LockAudioDevice(FDeviceId);
-    T := GBufferBytePosition;
-    if (T > GBufferByteMaxPosition) or Terminated then
-    begin
-      SDL_PauseAudioDevice(FDeviceId, 1);
-      Break;
+    First := GetTickCount64;
+    while not Terminated do begin
+      SDL_LockAudioDevice(FDeviceID);
+      if (GBufferBytePosition > GBufferByteMaxPosition) then begin
+        SDL_PauseAudioDevice(FDeviceID, 1);
+        SDL_UnlockAudioDevice(FDeviceID);
+        Break
+      end;
+      SDL_UnlockAudioDevice(FDeviceID);
+      Sleep(15);
+      //Log(ClassName+':'+ (GetTickCount64 - First).ToString+ ':'+ GBufferBytePosition.ToString);
     end;
-    SDL_UnlockAudioDevice(FDeviceId);
+    EnterCriticalSection(ACriticalSection);
+    Synchronize(@BufferFinished);
+    LeaveCriticalSection(ACriticalSection);
   end;
+begin
+  NameThreadForDebugging(ClassName);
+  FRTLEventMainThread := RTLEventCreate;
+  while not Terminated do begin
+    Log(ClassName+': Waiting for main ...');
+    RTLEventWaitFor(FRTLEventMainThread);
+    Log(ClassName+': Working ...');
+    SDL_PauseAudioDevice(FDeviceID, 0);
+    DoWork;
+  end;
+  Log(ClassName+': Terminated ...');
 end;
 
 procedure AudioRecorderCallback(AUserdata: Pointer;
   AStream: PUInt8; ALen: Integer); cdecl;
 begin
-  // Copy audio from stream
-  Move(AStream^, GRecordingBuffer[GBufferBytePosition], ALen);
-
-  // Move along buffer
+  Move(AStream^, GPRecordingBuffer[GBufferBytePosition], ALen);
   Inc(GBufferBytePosition, ALen);
 end;
 
 procedure AudioPlaybackCallback(AUserdata: Pointer;
   AStream: PUInt8; ALen: Integer); cdecl;
 begin
-  // Copy audio to stream
-  Move(GRecordingBuffer[GBufferBytePosition], AStream^, ALen);
-
-  // Move along buffer
+  Move(GPRecordingBuffer[GBufferBytePosition], AStream^, ALen);
   Inc(GBufferBytePosition, ALen);
 end;
 
@@ -148,31 +186,54 @@ end;
 
 constructor TAudioDevice.Create;
 begin
-  inherited Create(True);
-  Priority := tpNormal;
-  FreeOnTerminate := False;
-  FDeviceId := 0;
+  FDeviceID := 0;
   FillChar(FAudioSpec, SizeOf(FAudioSpec), 0);
   FillChar(FDesiredAudioSpec, SizeOf(FDesiredAudioSpec), 0);
   FDevices := TDevices.Create;
+  FreeOnTerminate := True;
+  inherited Create(False);
 end;
 
 destructor TAudioDevice.Destroy;
 begin
   Close;
   FDevices.Free;
+  RTLEventDestroy(FRTLEventMainThread);
   inherited Destroy;
 end;
 
 procedure TAudioDevice.Close;
 begin
-  if FDeviceId <> 0 then
+  if FDeviceID <> 0 then
   begin
-    SDL_CloseAudioDevice(FDeviceId);
-    FDeviceId := 0;
+    SDL_CloseAudioDevice(FDeviceID);
+    FDeviceID := 0;
     FillChar(FAudioSpec, SizeOf(FAudioSpec), 0);
     FillChar(FDesiredAudioSpec, SizeOf(FDesiredAudioSpec), 0);
   end;
+end;
+
+procedure TAudioDevice.BufferFinished;
+begin
+  DeviceFinished(Self);
+end;
+
+procedure TAudioDevice.PrintMessage;
+begin
+  Print(Msg);
+end;
+
+procedure TAudioDevice.Log(const AMsg: string; AppendLineEnd: boolean);
+var
+  s: String;
+begin
+  EnterCriticalsection(ACriticalSection);
+  s:=AMsg;
+  if AppendLineEnd then
+    s:=s+LineEnding;
+  Msg:=s;
+  Synchronize(@PrintMessage);
+  LeaveCriticalsection(ACriticalSection);
 end;
 
 function TAudioDevice.GetAudioSpec: TSDL_AudioSpec;
@@ -182,7 +243,7 @@ end;
 
 function TAudioDevice.GetOpened: Boolean;
 begin
-  Result := FDeviceId <> 0;
+  Result := FDeviceID <> 0;
 end;
 
 function TAudioDevice.BytesPerSample: cint;
@@ -190,7 +251,7 @@ begin
   Result := FAudioSpec.channels * (SDL_AUDIO_BITSIZE(FAudioSpec.format) div 8);
 end;
 
-function TAudioDevice.FileSize: cint;
+function TAudioDevice.FileSize: cint; // kilobytes
 begin
   with FAudioSpec do begin
     Result := RECORDING_BUFFER_SECONDS *
@@ -199,21 +260,47 @@ begin
   end;
 end;
 
-//procedure TAudioDevice.SetAudioSpec(AValue: TSDL_AudioSpec);
-//begin
-//  FDevices.Data[0] := ;
-//end;
-
-procedure TAudioDevice.Start(AStarter: TObject);
+procedure TAudioDevice.StartDevice(AStarter: TObject);
 begin
+  GBufferBytePosition := 0;
   FStarter := AStarter;
-  inherited Start;
+  RTLEventSetEvent(FRTLEventMainThread);
 end;
 
-procedure TAudioDevice.Stop;
+procedure TAudioRecorderComponent.SetOnRecordingFinished(AValue: TNotifyEvent);
 begin
-  Terminate;
-  WaitFor;
+  if FOnRecordingFinished = AValue then Exit;
+  FOnRecordingFinished := AValue;
+end;
+
+procedure TAudioRecorderComponent.DeviceFinished(Sender: TObject);
+begin
+  if Assigned(OnRecordingFinished) then
+    OnRecordingFinished(Self);
+end;
+
+function TAudioRecorderComponent.CanRecord: Boolean;
+begin
+  Result := Opened and (GBufferBytePosition = 0);
+end;
+
+function TAudioRecorderComponent.HasRecording: Boolean;
+  function EmptyRecording : Boolean;
+  var
+    i : integer = 0;
+    Zeros : array of Byte = nil;
+  begin
+    Result := True;
+    SetLength(Zeros, GBufferByteSize);
+    FillChar(Zeros[0], GBufferByteSize, 0);
+    while (i < GBufferByteMaxPosition) and Result do begin
+      if not CompareMem(GPRecordingBuffer, @Zeros[0], GBufferByteSize) then
+        Result := False;
+      Inc(i, GBufferByteSize);
+    end;
+  end;
+begin
+  Result := not EmptyRecording;
 end;
 
 function TAudioRecorderComponent.Open: Boolean;
@@ -221,7 +308,7 @@ var
   LBytesPerSecond: cint;
 begin
   ListDevices(1, FDevices);
-  FDeviceId := SDL_OpenAudioDevice(FDevices.Keys[0], 1,
+  FDeviceID := SDL_OpenAudioDevice(FDevices.Keys[0], 1,
     FDevices.Data[0], @FAudioSpec, SDL_AUDIO_ALLOW_FREQUENCY_CHANGE);
 
   Print('Name:'+StrPas(FDevices.Keys[0]));
@@ -229,7 +316,7 @@ begin
   Print('Format:' + FAudioSpec.format.ToHexString);
   Print('Samples:' + FAudioSpec.samples.ToString);
   Print('Sample Rate:' + FAudioSpec.freq.ToString);
-  Result := FDeviceId <> 0;
+  Result := FDeviceID <> 0;
   if not Result then begin
     raise
       Exception.Create(TAudioDevice.ClassName+'.Open error: '+SDL_GetError);
@@ -239,9 +326,17 @@ begin
   LBytesPerSecond := FAudioSpec.freq * BytesPerSample;
   GBufferByteSize := RECORDING_BUFFER_SECONDS * LBytesPerSecond;
   GBufferByteMaxPosition := MAX_RECORDING_SECONDS * LBytesPerSecond;
+  GetMem(GPRecordingBuffer, GBufferByteSize);
+end;
 
-  GetMem(GRecordingBuffer, GBufferByteSize);
-  FillChar(GRecordingBuffer^, GBufferByteSize, 0);
+procedure TAudioRecorderComponent.Close;
+begin
+  inherited Close;
+  if Assigned(GPRecordingBuffer) then begin
+    GBufferBytePosition := 0;
+    FreeMem(GPRecordingBuffer, GBufferByteSize);
+    GPRecordingBuffer := nil;
+  end;
 end;
 
 procedure TAudioRecorderComponent.SaveToFile(AFilename: string);
@@ -250,7 +345,7 @@ var
 begin
   LWavWriter := TWavWriter.Create;
   try
-    if LWavWriter.StoreToFile(aFileName) then begin
+    if LWavWriter.StoreToFile(aFileName+'.wav') then begin
       with LWavWriter, FAudioSpec do begin
         fmt.Channels         := channels;
         fmt.SampleRate       := freq;
@@ -259,7 +354,7 @@ begin
           fmt.SampleRate * fmt.Channels * fmt.BitsPerSample div 8;
         fmt.BlockAlign       := fmt.Channels * fmt.BitsPerSample div 8;
       end;
-      LWavWriter.WriteBuf(GRecordingBuffer^, GBufferByteSize);
+      LWavWriter.WriteBuf(GPRecordingBuffer^, GBufferByteSize);
       LWavWriter.FlushHeader;
     end else begin
       Print('Error creating WAV file: ' + AFileName);
@@ -269,19 +364,48 @@ begin
   end;
 end;
 
+procedure TAudioRecorderComponent.StartRecording(AStarter: TObject);
+begin
+  FillChar(GPRecordingBuffer^, GBufferByteSize, 0);
+  inherited StartDevice(AStarter);
+end;
+
+procedure TAudioPlaybackComponent.SetOnPlaybackFinished(AValue: TNotifyEvent);
+begin
+  if FOnPlaybackFinished = AValue then Exit;
+  FOnPlaybackFinished := AValue;
+end;
+
+procedure TAudioPlaybackComponent.DeviceFinished(Sender: TObject);
+begin
+  if Assigned(OnPlaybackFinished) then
+    OnPlaybackFinished(Self);
+end;
+
 function TAudioPlaybackComponent.Open: Boolean;
 begin
   ListDevices(0, FDevices);
   Print(StrPas(FDevices.Keys[0]));
-  FDeviceId := SDL_OpenAudioDevice(FDevices.Keys[0], 0,
-    FDevices.Data[0], @FAudioSpec, SDL_AUDIO_ALLOW_FORMAT_CHANGE);
-  Result := FDeviceId <> 0;
+  FDeviceID := SDL_OpenAudioDevice(FDevices.Keys[0], 0,
+    FDevices.Data[0], @FAudioSpec, SDL_AUDIO_ALLOW_FREQUENCY_CHANGE);
+  Result := FDeviceID <> 0;
   if Result then begin
     { do nothing }
   end else begin
     raise Exception.Create(TAudioDevice.ClassName+'.Open error: '+SDL_GetError);
   end;
 end;
+
+procedure TAudioPlaybackComponent.StartPlayback(AStarter: TObject);
+begin
+  inherited StartDevice(AStarter);
+end;
+
+initialization
+  InitCriticalSection(ACriticalSection);
+
+finalization
+  DoneCriticalsection(ACriticalSection);
 
 
 end.

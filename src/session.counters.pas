@@ -11,81 +11,139 @@ unit session.counters;
 
 {$mode objfpc}{$H+}
 
+{$ModeSwitch advancedrecords}
+
 interface
+
+uses session.counters.consecutive
+  , session.counters.all;
 
 type
 
-  { TCounterManager }
 
-  TCounterManager = class
+  { TCounters }
+
+  TCounters = record
   public
-    SessionTrials : integer;
-    RepeatedBlocks : integer;
-    RepeatedTrials : integer;
-    CurrentBlock : integer;
-    CurrentTrial : integer;
-    BlockCscHits : integer;
-    BlockTrials  : integer;
-    BlockHits    : integer;
-    procedure EndTrial;
+    Subject : Word;
+    Session : TSessionCounters;
+    Block : TBlockCounters;
+    Trial : TTrialCounters;
+    function EndTrial(ARepeatValue : Word; AGoToValue : SmallInt) : Boolean;
+    procedure EndGoToTrial(ATrialID : TTrialID);
     procedure Hit;
     procedure Miss;
-    procedure BeginSess;
-    procedure EndBlock;
+    procedure None;
+    procedure BeforeBeginSession;
+    function EndBlock(ARepeatValue : Word; AGoToValue : SmallInt) : Boolean;
+    procedure EndSession;
   end;
 
 var
-  Counters : TCounterManager;
+  Counters : TCounters;
 
 implementation
 
+uses Classes, SysUtils, session.pool, sdl.app.output;
+
 { TCounterManager }
 
-procedure TCounterManager.BeginSess;
+function GetSubjectIDFromFile : Word;
+var
+  LStringList : TStringList;
 begin
-  CurrentBlock := 0;
-  CurrentTrial := 0;
+  LStringList := TStringList.Create;
+  try
+    try
+      LStringList.LoadFromFile(Pool.BaseFileName+'ID');
+    except
+      on EFileNotFoundException do
+
+    end;
+    Result := LStringList[0].ToInteger;
+  finally
+    LStringList.Free;
+  end;
 end;
 
-procedure TCounterManager.EndBlock;
+procedure TCounters.BeforeBeginSession;
 begin
-  RepeatedBlocks := 0;
-  CurrentTrial := 0;
-  //BlockTrials := 0;
-  Inc(CurrentBlock);
+  Subject := GetSubjectIDFromFile;
+  Session := TSessionCounters.Create;
+  Session.Reset;
+  Block := Session.Block;
+  Trial := Block.Trial;
+
+  Pool.Session := Session;
+  Pool.Block   := Block;
+  Pool.Trial   := Trial;
 end;
 
-procedure TCounterManager.EndTrial;
+function TCounters.EndBlock(ARepeatValue: Word; AGoToValue: SmallInt): Boolean;
 begin
-  Inc(SessionTrials);
-  //Inc(BlockTrials);
-  Inc(CurrentTrial);
+  Result := True;
+  if ARepeatValue > 0 then begin
+    if Session.Block.Consecutives < ARepeatValue then begin
+      Result := False;
+      Session.NextBlockConsecutive;
+      Session.ResetBlockConsecutive;
+    end;
+  end else begin
+    // TODO : AGoToValue
+    Session.NextBlockID(Trial.ID+1);
+  end;
 end;
 
-procedure TCounterManager.Hit;
+procedure TCounters.EndSession;
 begin
-  //Inc(FBlockHits);           //Contador de corretas no Block
-  //Inc(FBlockCscHits);        //Contador de corretas consecutivas do Block
-  //Inc(FBlockCscHitsType1);        //Contador de corretas consecutivas t1
-  //Inc(FBlockCscHitsType2);        //Contador de corretas consecutivas t2
-  //Inc(FBlockCsqHits);        //Contador de corretas consecutivas para liberação de consequências
-  //
-  //if FBlockCscMisses > FBlockHighCscMisses then FBlockHighCscMisses := FBlockCscMisses;
-  //FBlockCscMisses := 0;
-  //if FBlockCscHits > FBlockHighCscHits then FBlockHighCscHits := FBlockCscHits;
+  Session.Free;
 end;
 
-procedure TCounterManager.Miss;
+function TCounters.EndTrial(ARepeatValue: Word; AGoToValue: SmallInt): Boolean;
 begin
-  //FBlockCsqHits := 0; //Para a liberação de consequências
-  //Inc(FBlockMisses);
-  //Inc(FBlockCscMisses);
-  //
-  //if FBlockCscHits > FBlockHighCscHits then FBlockHighCscHits := FBlockCscHits;
-  //FBlockCscHits := 0;
-  //FBlockCscHitsType1 := 0;
-  //FBlockCscHitsType2 := 0;
-  //if FBlockCscMisses > FBlockHighCscMisses then FBlockHighCscMisses := FBlockCscMisses;
+  Result := True;
+  if ARepeatValue > 0 then begin
+    if Session.Block.Trial.Consecutives < ARepeatValue then begin
+      Result := False;
+      Session.NextTrialConsecutive;
+      Session.ResetTrialConsecutive;
+    end;
+  end else begin
+    // TODO : AGoToValue
+    Session.NextTrialID(Trial.ID+1);
+  end;
+end;
+
+procedure TCounters.EndGoToTrial(ATrialID: TTrialID);
+begin
+  if ATrialID = Trial.ID then begin
+    Trial.NextConsecutive;
+  end else begin
+    Trial.NextID(ATrialID);
+  end;
+  //Block.Trial.Count;
+  //Session.Trial.Count;
+end;
+
+procedure TCounters.Hit;
+begin
+  Session.Events.Hit;
+  Block.Events.Hit;
+  Trial.Events.Hit;
+end;
+
+procedure TCounters.Miss;
+begin
+  Session.Events.Miss;
+  Block.Events.Miss;
+  Trial.Events.Miss;
+end;
+
+procedure TCounters.None;
+begin
+  Session.Events.None;
+  Block.Events.None;
+  Trial.Events.None;
 end;
 
 end.

@@ -124,6 +124,7 @@ begin
   DataFilename := CreateLogger(LGData, LFirstFilename, LHeader);
   TimestampsFilename := CreateLogger(LGTimestamps, LFirstFilename, LHeader);
   Pool.BaseFilename := GetBaseFilename;
+  Pool.Session.ID := ExtractFileNameOnly(Pool.BaseFilename).ToInteger;
 end;
 
 class procedure TLogger.SetFooter;

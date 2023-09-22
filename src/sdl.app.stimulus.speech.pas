@@ -17,7 +17,9 @@ uses
   Classes, SysUtils
   , SDL2
   //, fgl
+  , sdl.app.graphics.rectangule
   , sdl.app.stimulus
+  , sdl.app.stimulus.typeable
   , sdl.app.graphics.toggle
   , sdl.app.events.abstract
   , sdl.app.audio
@@ -30,18 +32,25 @@ type
 
   TSpeechStimulus = class(TStimulus)
   private
+    FTextFromVocalResponse : string;
     FRect : TSDL_Rect;
+    FWord : string;
     FRecorder : TAudioRecorderComponent;
     FPlayback : TAudioPlaybackComponent;
     FRecorderButton : TToggleButton;
     FPlaybackButton : TToggleButton;
   protected
+    function GetRect: TRectangule; override;
+    procedure SetRect(AValue: TRectangule); override;
+    function GetStimulusName : string; override;
     //procedure RecorderTerminated(Sender: TObject);
     //procedure PlaybackTerminated(Sender: TObject);
     procedure MouseUp(Sender: TObject; Shift: TCustomShiftState;
       X, Y: Integer); override;
+    //procedure KeyUp;q
   public
     destructor Destroy; override;
+    function IsCorrectResponse : Boolean; override;
     procedure Load(AParameters : TStringList;
         AParent : TObject; ARect: TSDL_Rect); override;
     procedure Start; override;
@@ -51,34 +60,44 @@ type
 implementation
 
 uses session.pool
+   , sdl.app.output
    , sdl.app.renderer.custom
-   , session.constants.mts;
+   , session.constants.mts
+   , session.strutils
+   , session.strutils.mts;
 
 { TSpeechStimulus }
+
+function TSpeechStimulus.GetRect: TRectangule;
+begin
+  Result := FRecorderButton as TRectangule;
+end;
+
+procedure TSpeechStimulus.SetRect(AValue: TRectangule);
+begin
+  // do nothing
+end;
+
+function TSpeechStimulus.GetStimulusName: string;
+begin
+  Result := FWord;
+end;
 
 procedure TSpeechStimulus.MouseUp(Sender: TObject; Shift: TCustomShiftState; X,
   Y: Integer);
 begin
   if Sender = FRecorderButton then begin
-    if FPlayback.Suspended then begin
-      if FRecorder.Suspended then begin
-        FRecorder.Start(FRecorderButton);
-        FRecorderButton.Toggle;
-      end else begin
-        FRecorder.Stop;
-      end;
-      Exit;
+    if FRecorder.CanRecord then begin
+      FRecorder.StartRecording(FRecorderButton);
+      FRecorderButton.Toggle;
     end;
+    Exit;
   end;
 
   if Sender = FPlaybackButton then begin
-    if FRecorder.Finished then begin
-      if FPlayback.Suspended then begin
-        FPlayback.Start(FPlaybackButton);
-        FPlaybackButton.Toggle;
-      end else begin
-        FPlayback.Stop;
-      end;
+    if FRecorder.HasRecording then begin
+      FPlayback.StartPlayback(FPlaybackButton);
+      FPlaybackButton.Toggle;
     end;
   end;
 end;
@@ -89,6 +108,12 @@ begin
   inherited Destroy;
 end;
 
+function TSpeechStimulus.IsCorrectResponse: Boolean;
+begin
+  //Result := LowerCase(FTextFromVocalResponse) = FWord;
+  Result := True;
+end;
+
 procedure TSpeechStimulus.Load(AParameters: TStringList; AParent: TObject;
   ARect: TSDL_Rect);
 const
@@ -97,16 +122,18 @@ const
   LPlayButtonOn  : string = 'PlayButtonOn' +IMG_EXT;
   LPlayButtonOff : string = 'PlayButtonOff'+IMG_EXT;
 begin
+  //inherited Load(AParameters, AParent, ARect);
   FRect := ARect;
+  FWord := GetWordValue(AParameters, IsSample, Index);
+
   SDLAudio.RecorderDevice.Clear;
   FRecorder := SDLAudio.RecorderDevice.Recorder;
   FPlayback := SDLAudio.RecorderDevice.Playback;
 
-  if  FPlayback.Opened then begin
+  if FPlayback.Opened then begin
     FPlaybackButton := TToggleButton.Create(Self);
     FPlaybackButton.LoadFromFile(
-      Pool.AssetsBasePath+LPlayButtonOff,
-      Pool.AssetsBasePath+LPlayButtonOn);
+      Assets(LPlayButtonOff), Assets(LPlayButtonOn));
     FPlaybackButton.BoundsRect := ARect;
     FPlaybackButton.Parent := TCustomRenderer(AParent);
     //FPlaybackButton.OnMouseDown := @MouseDown;
@@ -117,8 +144,7 @@ begin
   if FRecorder.Opened then begin
     FRecorderButton := TToggleButton.Create(Self);
     FRecorderButton.LoadFromFile(
-      Pool.AssetsBasePath+LRecordButtonOff,
-      Pool.AssetsBasePath+LRecordButtonOn);
+      Assets(LRecordButtonOff), Assets(LRecordButtonOn));
     FRecorderButton.BoundsRect := ARect;
     FRecorderButton.Sibling := FPlaybackButton;
     FRecorderButton.Parent := TCustomRenderer(AParent);

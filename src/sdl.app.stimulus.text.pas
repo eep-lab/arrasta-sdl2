@@ -20,6 +20,7 @@ uses
   , sdl.app.graphics.text
   , sdl.app.stimulus
   , sdl.app.events.abstract
+  , session.strutils.mts
   ;
 
 type
@@ -58,15 +59,11 @@ end;
 procedure TTextStimulus.Load(AParameters: TStringList; AParent: TObject;
   ARect: TSDL_Rect);
 var
-  LFilename : string;
+  LWord : string;
 begin
   FText := TText.Create(Self);
-  if IsSample then begin
-    LFilename := AParameters.Values[MTSKeys.Word];
-  end else begin
-    LFilename := AParameters.Values[MTSKeys.Comparison+(Index+1).ToString];
-  end;
-  FText.Load(LFilename);
+  LWord := GetWordValue(AParameters, IsSample, Index);
+  FText.Load(LWord);
   FText.CentralizeWith(ARect);
   FText.Parent := TCustomRenderer(AParent);
   FText.OnMouseDown := @MouseDown;

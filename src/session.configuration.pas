@@ -38,7 +38,6 @@ type
     BkGnd: integer;
     Counter : string;
     TotalTrials: integer;
-    VirtualTrialValue: integer;
     AutoEndSession : Boolean;
     MaxCorrection: integer;
     MaxBlockRepetition: integer;

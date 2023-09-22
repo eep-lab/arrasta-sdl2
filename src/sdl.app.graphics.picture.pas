@@ -27,8 +27,8 @@ type
 
   TPicture = class(TRectangule, IPaintable)
   private
-    FSibling: TPicture;
-    procedure SetSibling(AValue: TPicture);
+    FSibling: TRectangule;
+    procedure SetSibling(AValue: TRectangule);
   protected
     FTexture  : PSDL_Texture;
     procedure MouseMove(Sender: TObject; Shift: TCustomShiftState; X, Y: Integer); override;
@@ -40,7 +40,7 @@ type
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
     procedure LoadFromFile(AFilename: string); virtual;
-    property Sibling : TPicture read FSibling write SetSibling;
+    property Sibling : TRectangule read FSibling write SetSibling;
   end;
 
 const
@@ -70,7 +70,7 @@ begin
   inherited Destroy;
 end;
 
-procedure TPicture.SetSibling(AValue: TPicture);
+procedure TPicture.SetSibling(AValue: TRectangule);
 begin
   if FSibling=AValue then Exit;
   FSibling:=AValue;

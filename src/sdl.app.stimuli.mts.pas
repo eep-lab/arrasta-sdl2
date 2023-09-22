@@ -78,6 +78,7 @@ uses
   , sdl.app.stimulus.factory
   , sdl.app.stimulus
   , sdl.app.stimulus.audio
+  , sdl.app.stimulus.speech
   , session.constants.trials
   , session.constants.mts
   , session.pool
@@ -88,14 +89,31 @@ uses
 procedure TMTSStimuli.DoConsequence(Sender: TObject);
 var
   LStimulus : TStimulus;
+  LIsHit : Boolean = False;
 begin
   if FHasConsequence then begin
-    LStimulus := Sender as TStimulus;
-    if LStimulus = FComparisons[0] then begin
-      FSoundCorrect.Play;
-    end else begin
-      FSoundWrong.Play;
+
+    if Sender is TStimulus then begin
+      LStimulus := Sender as TStimulus;
+
+      if LStimulus is TSpeechStimulus then begin
+        LIsHit := LStimulus.IsCorrectResponse;
+      end else begin
+        LIsHit := LStimulus = FComparisons[0];
+      end;
+
+      if LIsHit then begin
+        FSoundCorrect.Play;
+      end else begin
+        FSoundWrong.Play;
+      end;
     end;
+
+  end else begin
+
+    if Assigned(OnFinalize) then
+      OnFinalize(Self);
+
   end;
 end;
 
@@ -122,7 +140,7 @@ procedure TMTSStimuli.StimulusMouseDown(Sender: TObject;
 var
   LStimulus: TStimulus;
 begin
-  if Sender is TAudioStimulus then begin
+  if (Sender is TAudioStimulus) then begin
     LStimulus := Sender as TStimulus;
     if not LStimulus.IsSample then begin
       FButton.Hide;
@@ -156,14 +174,22 @@ var
 begin
   if Sender is TStimulus then begin
     LStimulus := Sender as TStimulus;
-    if LStimulus is TAudioStimulus then begin
-      FButton.Sibling := TAudioStimulus(LStimulus).Picture;
+    if LStimulus is TSpeechStimulus then begin
+      FButton.Sibling := TSpeechStimulus(LStimulus).Rectangule;
       FButton.Show;
       Exit;
-    end else begin
-      for LIStimulus in FComparisons do
-        LIStimulus.Stop;
     end;
+
+    if LStimulus is TAudioStimulus then begin
+      FButton.Sibling := TAudioStimulus(LStimulus).Rectangule;
+      FButton.Show;
+      Exit;
+    end;
+
+    for LIStimulus in FComparisons do begin
+      LIStimulus.Stop;
+    end;
+
     DoConsequence(LStimulus);
   end;
 end;
@@ -183,6 +209,8 @@ begin
   inherited Create(AOwner);
   FSamples := TIStimulusList.Create;
   FComparisons := TIStimulusList.Create;
+  FMTSModality.Samples := ModalityNone;
+  FMTSModality.Comparisons := ModalityNone;
   FButton:= nil;
 end;
 
@@ -274,10 +302,7 @@ begin
   FSoundWrong   := SDLAudio.SoundFromName('erro');
   FSoundCorrect.SetOnStop(@ConsequenceDone);
   FSoundWrong.SetOnStop(@ConsequenceDone);
-  //FText  := TText.Create(Self);
-  //FText.Load('BOFÁ', 'Hanna_Serif');
-  //FText.Top := 300;
-  //FText.Parent := TCustomRenderer(AParent);
+
   with TrialKeys do begin
     FHasConsequence := AParameters.Values[HasConsequence].ToBoolean;
   end;
@@ -305,7 +330,9 @@ begin
         raise Exception.Create('Unknown Comparisons modality: ' + SampleLetter);
     end;
 
-    if FMTSModality.Comparisons = ModalityB then begin
+    if (FMTSModality.Comparisons = ModalityA) or
+       (FMTSModality.Comparisons = ModalityD)
+    then begin
       FButton := TButton.Create(Self);
       FButton.LoadFromFile(Pool.AssetsBasePath+'ConfirmButton'+IMG_EXT);
       FButton.Parent := TCustomRenderer(AParent);

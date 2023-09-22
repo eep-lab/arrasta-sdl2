@@ -15,7 +15,7 @@ unit sdl.app.stimulus.contract;
 
 interface
 
-uses Classes, SDL2;
+uses Classes, SDL2, sdl.app.stimulus.types;
 
 type
 
@@ -28,6 +28,7 @@ type
     procedure Start;
     procedure Stop;
     procedure DoResponse;
+    function GetID: TStimulusID;
   end;
 
 implementation

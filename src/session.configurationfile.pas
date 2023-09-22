@@ -66,8 +66,8 @@ type
     procedure WriteBlockIfEmpty(ABlock : integer; ABlockSection : TStrings);
     //procedure WriteBlock(ABlock: TBlockData; AlsoAppendTrials: Boolean);
     //procedure WriteTrial(ATrial : TTrialData);
-    property BlockCount : integer read GetBlockCount;
-    property TrialCount[BlockIndex : integer] : integer read GetTrialCount;
+    property Blocks : integer read GetBlockCount;
+    property Trials[BlockIndex : integer] : integer read GetTrialCount;
     property Block[BlockIndex : integer] : TBlockData read GetBlock {write SetBlock};
     property Trial[BlockIndex, TrialIndex : integer] : TTrialData read GetTrial {write SetTrial};
     property StartAt : TStartAt read GetStartAt write SetStartAt;
@@ -127,14 +127,14 @@ end;
 
 function TConfigurationFile.CurrentBlock: TBlockData;
 begin
-  Result := Block[Pool.Counters.CurrentBlock+1];
+  Result := Block[Pool.Block.ID+1];
 end;
 
 function TConfigurationFile.CurrentTrial: TTrialData;
 begin
   Result := Trial[
-    Pool.Counters.CurrentBlock+1,
-    Pool.Counters.CurrentTrial+1];
+    Pool.Block.ID+1,
+    Pool.Trial.ID+1];
 end;
 
 function TConfigurationFile.BeginTableName: string;
@@ -149,7 +149,7 @@ end;
 
 function TConfigurationFile.CurrentBlockSection: string;
 begin
-  Result := BlockSection(Pool.Counters.CurrentBlock+1);
+  Result := BlockSection(Pool.Block.ID+1);
 end;
 
 function TConfigurationFile.GetBlock(BlockIndex: integer): TBlockData;
@@ -162,7 +162,6 @@ begin
       ID := BlockIndex;
       s1 := ReadString(LBlockSection, _NumTrials, '0 0');
       TotalTrials:=StrToIntDef(ExtractDelimited(1,s1,[#32]),0);
-      VirtualTrialValue:= StrToIntDef(ExtractDelimited(2,s1,[#32]),0);
 
       Name:= ReadString(LBlockSection, _Name, '');
       BkGnd:= ReadInteger(LBlockSection, _BkGnd, 0);
@@ -241,9 +240,9 @@ procedure TConfigurationFile.Invalidate;
 var
   i: Integer;
 begin
-  WriteInteger(_Main,_NumBlock,BlockCount);
-  for i := 0 to BlockCount-1 do
-    WriteString(BlockSection(i+1),_NumTrials,TrialCount[i+1].ToString+' 1');
+  WriteInteger(_Main,_NumBlock,Blocks);
+  for i := 0 to Blocks-1 do
+    WriteString(BlockSection(i+1),_NumTrials,Trials[i+1].ToString+' 1');
 end;
 
 procedure TConfigurationFile.ReadPositionsInBlock(ABlock: integer;
@@ -258,7 +257,7 @@ begin
   L.Sorted := True;
   L.Duplicates:=dupIgnore;
   try
-    for i := 0 to TrialCount[ABlock]-1 do
+    for i := 0 to Trials[ABlock]-1 do
       begin
         LTrialSection := TrialSection(ABlock,i+1);
 
@@ -333,13 +332,13 @@ end;
 
 procedure TConfigurationFile.WriteToTrial(ATrial: integer; AStrings: TStrings);
 begin
-  WriteSection(TrialSection(BlockCount,ATrial),AStrings);
+  WriteSection(TrialSection(Blocks,ATrial),AStrings);
 end;
 
 procedure TConfigurationFile.WriteToTrial(ATrial: integer;
   AName, AValue: string);
 begin
-  WriteString(TrialSection(BlockCount,ATrial),AName,AValue);
+  WriteString(TrialSection(Blocks,ATrial),AName,AValue);
 end;
 
 procedure TConfigurationFile.WriteToTrial(ATrial: integer; ABlock: integer;
@@ -365,12 +364,12 @@ var
   LTargetSectionName : string;
   i: integer;
 begin
-  LSelfSectionName := BlockSection(BlockCount+1);
+  LSelfSectionName := BlockSection(Blocks+1);
   LTargetSectionName := BlockSection(ATargetBlock);
   CopySection(LTargetSectionName,LSelfSectionName, ATargetConfigurationFile);
   if AlsoAppendTrials then
-    if ATargetConfigurationFile.TrialCount[ATargetBlock] > 0 then
-      for i := 0 to ATargetConfigurationFile.TrialCount[ATargetBlock]-1 do
+    if ATargetConfigurationFile.Trials[ATargetBlock] > 0 then
+      for i := 0 to ATargetConfigurationFile.Trials[ATargetBlock]-1 do
         WriteTrialFromTarget(ATargetBlock,i+1,ATargetConfigurationFile);
 end;
 
@@ -380,7 +379,7 @@ var
   LSelfSectionName,
   LTargetSectionName : string;
 begin
-  LSelfSectionName := TrialSection(BlockCount, TrialCount[BlockCount]+1);
+  LSelfSectionName := TrialSection(Blocks, Trials[Blocks]+1);
   LTargetSectionName:= TrialSection(ATargetBlock,ATargetTrial);
   CopySection(LTargetSectionName,LSelfSectionName, ATargetConfigurationFile);
 end;
