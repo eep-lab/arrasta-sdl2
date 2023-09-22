@@ -30,7 +30,6 @@ type
 
   TAudioStimulus = class(TStimulus)
   private
-    FRect : TSDL_Rect;
     FSound : ISound;
     FPicture : TPicture;
   protected
@@ -124,7 +123,6 @@ const
 var
   LWord: string;
 begin
-  FRect := ARect;
   FPicture := TPicture.Create(Self);
   FPicture.LoadFromFile(Assets(LAudioPicture));
   FPicture.BoundsRect := ARect;
