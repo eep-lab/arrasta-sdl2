@@ -260,8 +260,13 @@ var
       if not Assigned(Grid) then
         Grid := TGrid.Create(3);
       Grid.FixedSample:=True;
-      if AComparisons = 1 then
+
+      if AComparisons = 1 then begin
         Grid.FixedComparison:=True;
+      end else begin
+        Grid.FixedComparison:=False;
+      end;
+
       Grid.UpdatePositions(ASamples, AComparisons, AGridOrientation);
       with Grid.RandomPositions do begin
         for i := Low(Comparisons) to High(Comparisons) do begin
