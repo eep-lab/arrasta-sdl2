@@ -66,8 +66,6 @@ end;
 class destructor TTrialFactory.Destroy;
 begin
   Registry.Free;
-  if Assigned(CurrentTrial) then
-    CurrentTrial.Free;
 end;
 
 class procedure TTrialFactory.RegisterTrialClass(ATrialKind: string;

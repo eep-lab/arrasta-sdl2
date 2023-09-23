@@ -197,13 +197,14 @@ begin
 
   if Assigned(SDLAudio) then
     SDLAudio.Free;
-
   {$ENDIF}
   if Assigned(FEvents) then
     FEvents.Free;
+
   SDL_DestroyRenderer(FSDLRenderer);
   SDL_DestroyWindow(FSDLWindow);
   SDL_Quit;
+
   Print('Good Bye');
   if Assigned(OnClose) then
     OnClose(Self);

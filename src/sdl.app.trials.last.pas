@@ -15,6 +15,7 @@ interface
 
 uses
   Classes, SysUtils
+  , SDL2
   , session.configuration
   , sdl.app.trials
   , sdl.app.graphics.text
@@ -26,8 +27,10 @@ type
 
   TLastTrial = class sealed (TTrial)
     private
+      FRect : TSDL_Rect;
       FText : TText;
     protected
+      procedure SetBoundsRect(AValue: TSDL_Rect); override;
       procedure SetTrialData(ATrialData: TTrialData); override;
     public
       constructor Create(AOwner: TComponent); override;
@@ -41,6 +44,11 @@ type
 implementation
 
 { TLastTrial }
+
+procedure TLastTrial.SetBoundsRect(AValue: TSDL_Rect);
+begin
+  FRect := AValue;
+end;
 
 procedure TLastTrial.SetTrialData(ATrialData: TTrialData);
 begin

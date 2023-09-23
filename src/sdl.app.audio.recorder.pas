@@ -91,7 +91,19 @@ end;
 
 destructor TRecorderDevice.Destroy;
 begin
-  Close;
+  if FRecorder <> nil then begin
+    FRecorder.Close;
+    FRecorder.OnRecordingFinished := nil;
+    FRecorder.Terminate;
+    FRecorder := nil;
+  end;
+
+  if FPlayback <> nil then begin
+    FPlayback.Close;
+    FPlayback.OnPlaybackFinished := nil;
+    FPlayback.Terminate;
+    FPlayback := nil;
+  end;
   FContainer.Free;
   inherited Destroy;
 end;
@@ -119,14 +131,14 @@ end;
 
 procedure TRecorderDevice.Close;
 begin
-  if Assigned(FRecorder) then begin
+  if FRecorder <> nil then begin
     FRecorder.Close;
     FRecorder.OnRecordingFinished := nil;
     FRecorder.Terminate;
     FRecorder := nil;
   end;
 
-  if Assigned(FPlayback) then begin
+  if FPlayback <> nil then begin
     FPlayback.Close;
     FPlayback.OnPlaybackFinished := nil;
     FPlayback.Terminate;

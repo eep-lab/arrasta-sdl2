@@ -20,6 +20,7 @@ uses
   , sdl.app.events.abstract
   , sdl.app.graphics.animation
   , sdl.app.graphics.picture.dragdrop
+  , sdl.app.grids.types
   , sdl.app.grids
   , sdl.app.audio.contract
   ;

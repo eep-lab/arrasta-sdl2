@@ -74,6 +74,7 @@ uses
   , sdl.app.graphics.picture
   , sdl.app.output
   , sdl.app.audio
+  , sdl.app.grids.types
   , sdl.app.grids
   , sdl.app.stimulus.factory
   , sdl.app.stimulus
@@ -221,9 +222,9 @@ begin
   if Assigned(FButton) then
     FButton.Free;
 
-  with SDLAudio.RecorderDevice do begin
-    if FMTSModality.Comparisons = ModalityD then begin
-      Close;
+  if FMTSModality.Comparisons = ModalityD then begin
+    if Assigned(SDLAudio) then begin
+      SDLAudio.RecorderDevice.Close;
     end;
   end;
   inherited Destroy;
