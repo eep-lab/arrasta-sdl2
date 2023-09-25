@@ -78,7 +78,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir);dependencies\FreeType\include"/>
-            <OtherUnitFiles Value="src;dependencies\epiktimer;src\schedules;dependencies\SDL2-for-Pascal\units;dependencies\EyeLink-for-Pascal\classes;dependencies\EyeLink-for-Pascal\bindings;dependencies\EyeLink-for-Pascal\utils;dependencies\mspeech"/>
+            <OtherUnitFiles Value="src;dependencies\epiktimer;src\schedules;dependencies\SDL2-for-Pascal\units;dependencies\EyeLink-for-Pascal\classes;dependencies\EyeLink-for-Pascal\bindings;dependencies\EyeLink-for-Pascal\utils"/>
             <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
           <Parsing>
@@ -522,14 +522,6 @@
       </Unit>
       <Unit>
         <Filename Value="src\picanco.experiments.constants.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit>
-      <Unit>
-        <Filename Value="src\picanco.experiments.audio.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit>
-      <Unit>
-        <Filename Value="dependencies\mspeech\SpeechLib_TLB.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit>
       <Unit>

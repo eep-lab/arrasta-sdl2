@@ -90,10 +90,7 @@ type
 
 implementation
 
-uses SysUtils, sdl.app.output, fpwavformat
-  //, sdl.app.stimulus.contract
-  , session.loggers.writerow
-  , session.pool;
+uses SysUtils, sdl.app.output;
 
 const
   MAX_RECORDING_SECONDS = 4;

@@ -52,13 +52,13 @@ uses session.intertrial
    ;
 
 var
-  TrialID : integer;
+  TrialUID : integer;
 
 { TTrialFactory }
 
 class constructor TTrialFactory.Create;
 begin
-  TrialID := 0;
+  TrialUID := 0;
   Registry := TTrialRegistry.Create;
   CurrentTrial := nil;
 end;
@@ -89,8 +89,8 @@ begin
       'Trial kind is not registered: %s %s', [TrialData.Kind, TrialClass]);
 
   CurrentTrial := TrialClass.Create(nil);
-  Inc(TrialID);
-  CurrentTrial.Name := 'T'+TrialID.ToString;
+  Inc(TrialUID);
+  CurrentTrial.Name := 'T'+TrialUID.ToString;
   CurrentTrial.OnTrialEnd := InterTrial.OnBegin;
   CurrentTrial.Data := TrialData;
 end;
@@ -99,6 +99,7 @@ class function TTrialFactory.GetLastTrial: ITrial;
 var
   LMockData : TTrialData = (ID:-1; Kind : ''; Parameters:nil);
 begin
+  TrialUID := 0;
   CurrentTrial := TLastTrial.Create(nil);
   CurrentTrial.OnTrialEnd := nil;
   CurrentTrial.Data := LMockData;

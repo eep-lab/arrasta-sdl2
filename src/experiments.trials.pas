@@ -37,8 +37,8 @@ uses
   , sdl.app.trials.mts
   , picanco.experiments.words.types
   , picanco.experiments.words
-  , picanco.experiments.images
-  , picanco.experiments.audio
+  //, picanco.experiments.images
+  //, picanco.experiments.audio
   , picanco.experiments.constants
   //, sdl.app.trials.dragdrop
   ;
