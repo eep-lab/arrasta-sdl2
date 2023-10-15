@@ -19,6 +19,8 @@ uses
   , fgl
   , sdl.app.graphics.text
   , sdl.app.stimulus
+  , sdl.app.events.abstract
+  , session.strutils.mts
   ;
 
 type
@@ -31,7 +33,8 @@ type
     private
       FText : TText;
     protected
-
+      procedure MouseDown(Sender: TObject; Shift: TCustomShiftState;
+        X, Y: Integer); override;
     public
       procedure Load(AParameters : TStringList;
         AParent : TObject; ARect: TSDL_Rect); override;
@@ -41,26 +44,29 @@ type
 
 implementation
 
-uses sdl.app.renderer.custom;
+uses
+  sdl.app.renderer.custom
+  , session.constants.mts;
 
 { TTextStimuli }
 
-//procedure TTextStimulus.DoResponse;
-//begin
-//
-//end;
+procedure TTextStimulus.MouseDown(Sender: TObject; Shift: TCustomShiftState;
+  X, Y: Integer);
+begin
+  DoResponse;
+end;
 
 procedure TTextStimulus.Load(AParameters: TStringList; AParent: TObject;
   ARect: TSDL_Rect);
 var
-  S : string;
+  LWord : string;
 begin
-  with AParameters do begin
-    S := Values['Media'];
-    FText.LoadFromFile(Values['Media'], Values['FontName']);
-  end;
+  FText := TText.Create(Self);
+  LWord := GetWordValue(AParameters, IsSample, Index);
+  FText.Load(LWord);
   FText.CentralizeWith(ARect);
   FText.Parent := TCustomRenderer(AParent);
+  FText.OnMouseDown := @MouseDown;
 end;
 
 procedure TTextStimulus.Start;

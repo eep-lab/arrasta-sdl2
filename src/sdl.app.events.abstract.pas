@@ -26,6 +26,8 @@ type
   TDragDropEvent = procedure(Sender, Source: TObject; X, Y: Integer) of object;
 
   TCustomShiftState = set of TCustomShiftStateEnum;
+  TKeyEvent = procedure(Sender: TObject; var Key: Word; Shift: TCustomShiftStateEnum) of object;
+  TKeyPressEvent = procedure(Sender: TObject; var Key: char) of object;
 
   { events }
   TOnQuitEvent = procedure(const event: TSDL_QuitEvent) of object;

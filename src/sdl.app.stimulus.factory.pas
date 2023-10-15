@@ -47,6 +47,7 @@ implementation
 uses sdl.app.stimulus.picture
    , sdl.app.stimulus.text
    , sdl.app.stimulus.audio
+   , sdl.app.stimulus.speech
    ;
 
 { TStimulusFactory }
@@ -89,5 +90,6 @@ initialization
   TStimulusFactory.RegisterStimulusClass('A', TAudioStimulus);
   TStimulusFactory.RegisterStimulusClass('B', TPictureStimulus);
   TStimulusFactory.RegisterStimulusClass('C', TTextStimulus);
+  TStimulusFactory.RegisterStimulusClass('D', TSpeechStimulus);
 
 end.

@@ -14,7 +14,9 @@ unit sdl.app.stimuli;
 interface
 
 uses
-  Classes, SysUtils, Controls, Schedules, sdl.app.stimuli.contract;
+  Classes, SysUtils, Controls, Schedules
+  , sdl.app.stimuli.contract
+  , sdl.app.stimulus.contract;
 
 type
 
@@ -22,6 +24,7 @@ type
 
   TStimuli = class(TComponent, IStimuli)
   private
+    FOnFinalize: TNotifyEvent;
     FSchedule : TSchedule;
     FOnConsequence: TNotifyEvent;
     FOnResponse: TNotifyEvent;
@@ -29,9 +32,11 @@ type
     procedure Consequence(Sender : TObject);
     procedure Response(Sender : TObject);
     procedure SetOnConsequence(AValue: TNotifyEvent);
+    procedure SetOnFinalize(AValue: TNotifyEvent);
     procedure SetOnResponse(AValue: TNotifyEvent);
     procedure SetOnStop(AValue : TNotifyEvent);
   protected
+    //function ContainerItems : IEnumerable; virtual; abstract;
     procedure DoExpectedResponse; virtual; abstract;
     procedure Load(AParameters: TStringList; AParent: TObject); virtual;
     procedure Start; virtual; abstract;
@@ -47,6 +52,7 @@ type
     property OnStop : TNotifyEvent read FOnStop write SetOnStop;
     property OnConsequence : TNotifyEvent read FOnConsequence write SetOnConsequence;
     property OnResponse : TNotifyEvent read FOnResponse write SetOnResponse;
+    property OnFinalize : TNotifyEvent read FOnFinalize write SetOnFinalize;
   end;
 
 implementation
@@ -67,6 +73,12 @@ procedure TStimuli.SetOnConsequence(AValue: TNotifyEvent);
 begin
   if FOnConsequence=AValue then Exit;
   FOnConsequence:=AValue;
+end;
+
+procedure TStimuli.SetOnFinalize(AValue: TNotifyEvent);
+begin
+  if FOnFinalize=AValue then Exit;
+  FOnFinalize:=AValue;
 end;
 
 procedure TStimuli.SetOnResponse(AValue: TNotifyEvent);

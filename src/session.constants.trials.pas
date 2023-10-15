@@ -16,29 +16,40 @@ interface
 type
 
   TTrialParameters = record
+    Name : string;
+    ReferenceName : string;
+    Kind : string;
+    Instruction : string;
+    Cursor : integer;
+    RepeatTrials : integer;
     LimitedHold : integer;
     InterTrialInterval : integer;
+    HasConsequence : Boolean;
   end;
 
   TTrialKeys = record
     Name : string;
+    ReferenceName : string;
     Cursor : string;
     Kind : string;
+    Instruction : string;
     LimitedHold : string;
     InterTrialInterval : string;
     RepeatTrials : string;
-    ImageFilesExtension: string;
+    HasConsequence : string;
   end;
 
 const
   TrialKeys : TTrialKeys = (
     Name : 'Name';
+    ReferenceName : 'ReferenceName';
     Cursor : 'Cursor';
     Kind : 'Kind';
+    Instruction : 'Instruction';
     LimitedHold : 'LimitedHold';
     InterTrialInterval : 'InterTrialInterval';
     RepeatTrials : 'RepeatTrial';
-    ImageFilesExtension : 'ImageFilesExtension');
+    HasConsequence : 'HasConsequence');
 
 implementation
 

@@ -17,6 +17,7 @@ uses
   Classes, SysUtils
   , session.configuration
   , sdl.app.trials
+  , sdl.app.stimuli.contract
   , sdl.app.stimuli.mts
   ;
 
@@ -28,6 +29,7 @@ type
     private
       FStimuli : TMTSStimuli;
     protected
+      function GetIStimuli: IStimuli; override;
       procedure SetTrialData(ATrialData: TTrialData); override;
     public
       constructor Create(AOwner: TComponent); override;
@@ -42,17 +44,22 @@ implementation
 
 { TMTS }
 
+function TMTS.GetIStimuli: IStimuli;
+begin
+  Result := FStimuli.AsInterface;
+end;
+
 procedure TMTS.SetTrialData(ATrialData: TTrialData);
 begin
   inherited SetTrialData(ATrialData);
-  inherited Show;
+  FStimuli.Load(ATrialData.Parameters, Self);
 end;
 
 constructor TMTS.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   FStimuli := TMTSStimuli.Create(Self);
-  FIStimuli := FStimuli.AsInterface;
+  FStimuli.OnFinalize := @EndTrialCallBack;
 end;
 
 destructor TMTS.Destroy;
@@ -69,11 +76,13 @@ end;
 procedure TMTS.Show;
 begin
   inherited Show;
+  //FIStimuli.Start;
 end;
 
 procedure TMTS.Hide;
 begin
   inherited Hide;
+  //FIStimuli.Stop;
 end;
 
 end.

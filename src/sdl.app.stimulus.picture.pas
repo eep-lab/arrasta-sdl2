@@ -16,9 +16,9 @@ interface
 uses
   Classes, SysUtils
   , SDL2
-  , fgl
   , sdl.app.graphics.picture
   , sdl.app.stimulus
+  , sdl.app.events.abstract
   ;
 
 type
@@ -28,37 +28,42 @@ type
   TPictureStimulus = class(TStimulus)
     private
       FPicture : TPicture;
+    protected
+      procedure MouseDown(Sender: TObject; Shift: TCustomShiftState;
+        X, Y: Integer); override;
     public
       procedure Load(AParameters : TStringList;
         AParent : TObject; ARect: TSDL_Rect); override;
       procedure Start; override;
       procedure Stop; override;
-      procedure DoResponse; override;
   end;
 
 implementation
 
 uses
-   sdl.app.renderer.custom;
-
+   sdl.app.renderer.custom
+   , session.constants.mts
+   , session.strutils.mts;
 
 { TPictureStimulus }
 
-procedure TPictureStimulus.DoResponse;
+procedure TPictureStimulus.MouseDown(Sender: TObject; Shift: TCustomShiftState;
+  X, Y: Integer);
 begin
-
+  DoResponse;
 end;
 
 procedure TPictureStimulus.Load(AParameters: TStringList; AParent: TObject;
   ARect: TSDL_Rect);
 var
-  S : string;
+  LWord : string;
 begin
-  S := AParameters.Values['Media']+'.jpg';
-  FPicture.LoadFromFile(AParameters.Values['Media']+'.jpg');
+  FPicture := TPicture.Create(Self);
+  LWord := GetWordValue(AParameters, IsSample, Index);
+  FPicture.LoadFromFile(LWord+IMG_EXT);
   FPicture.BoundsRect := ARect;
   FPicture.Parent := TCustomRenderer(AParent);
-  FPicture.Show;
+  FPicture.OnMouseDown := @MouseDown;
 end;
 
 procedure TPictureStimulus.Start;

@@ -23,13 +23,14 @@ type
 
   { TCustomEventHandler }
 
-  TCustomEventHandler = class sealed (TEventHandler)
+  TCustomEventHandler = class sealed(TEventHandler)
     private
       FOnAudioChannelFinished: TOnAudioChannelFinished;
       procedure SetOnAudioChannelFinished(AValue: TOnAudioChannelFinished);
       procedure UserEvent(const event: TSDL_UserEvent);
     public
       constructor Create; reintroduce;
+      destructor Destroy; override;
       procedure AssignEvents;
       property OnAudioChannelFinished : TOnAudioChannelFinished read FOnAudioChannelFinished write SetOnAudioChannelFinished;
     public
@@ -37,7 +38,10 @@ type
       property OnMouseButtonDown;
       property OnMouseButtonUp;
       property OnKeyDown;
+      property OnKeyUp;
       property OnUserEvent;
+      property OnTextEditing;
+      property OnTextInput;
   end;
 
 var
@@ -116,6 +120,12 @@ begin
     if not UserEventRegistered(Event) then
       raise Exception.Create('Event not registered:'+IntToStr(Event));
   AssignEvents;
+end;
+
+destructor TCustomEventHandler.Destroy;
+begin
+  FOnAudioChannelFinished:=nil;
+  inherited Destroy;
 end;
 
 procedure TCustomEventHandler.AssignEvents;

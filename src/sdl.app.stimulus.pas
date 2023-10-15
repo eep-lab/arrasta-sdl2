@@ -17,9 +17,12 @@ uses
   Classes, SysUtils
   , fgl
   , SDL2
+  , sdl.app.graphics.rectangule
   , sdl.app.stimulus.contract
-  , sdl.app.choiceable.contract
+  //, sdl.app.choiceable.contract
   , sdl.app.renderer.custom
+  , sdl.app.events.abstract
+  , sdl.app.stimulus.types
   ;
 
 type
@@ -28,16 +31,20 @@ type
 
   { TStimulus }
 
-  TStimulus = class(TComponent, IStimulus, IChoiceable)
+  TStimulus = class(TComponent, IStimulus)
     private
-      FChoices : TChoices;
+      FResponseID : Integer;
+      FStimulusID : ShortInt;
+      FIndex : integer;
+      FIsSample: Boolean;
       FOnMouseDown: TOnMouseEvent;
       FOnMouseEnter: TNotifyEvent;
       FOnMouseExit: TNotifyEvent;
       FOnMouseMove: TOnMouseEvent;
       FOnMouseUp: TOnMouseEvent;
       FOnResponse: TNotifyEvent;
-      function GetTargetChoice: TObject;
+      function GetID : TStimulusID;
+      procedure SetIsSample(AValue: Boolean);
       procedure SetOnMouseDown(AValue: TOnMouseEvent);
       procedure SetOnMouseEnter(AValue: TNotifyEvent);
       procedure SetOnMouseExit(AValue: TNotifyEvent);
@@ -45,37 +52,60 @@ type
       procedure SetOnMouseUp(AValue: TOnMouseEvent);
       procedure SetOnResponse(AValue: TNotifyEvent);
     protected
-
+      function GetRect: TRectangule; virtual; abstract;
+      function GetStimulusName : string; virtual; abstract;
+      procedure SetRect(AValue: TRectangule); virtual; abstract;
+      procedure MouseDown(Sender:TObject; Shift: TCustomShiftState; X, Y: Integer); virtual; abstract;
+      procedure MouseUp(Sender:TObject; Shift: TCustomShiftState; X, Y: Integer); virtual; abstract;
+      procedure MouseEnter(Sender:TObject); virtual; abstract;
+      procedure MouseExit(Sender:TObject); virtual; abstract;
     public
       constructor Create(AOwner : TComponent); override;
       destructor Destroy; override;
+      function AsInterface : IStimulus;
+      function IsCorrectResponse : Boolean; virtual; abstract;
       procedure Load(AParameters : TStringList;
         AParent : TObject; ARect: TSDL_Rect); virtual; abstract;
+      procedure DoResponse; virtual;
       procedure Start; virtual; abstract;
       procedure Stop; virtual; abstract;
-      procedure DoResponse; virtual;
-      procedure AddOrderedChoice(AChoice: TObject);
-      property TargetChoice : TObject read GetTargetChoice;
-      property Choices : TChoices read FChoices;
       property OnMouseMove: TOnMouseEvent read FOnMouseMove write SetOnMouseMove;
       property OnMouseDown: TOnMouseEvent read FOnMouseDown write SetOnMouseDown;
       property OnMouseUp: TOnMouseEvent read FOnMouseUp write SetOnMouseUp;
       property OnMouseEnter: TNotifyEvent read FOnMouseEnter write SetOnMouseEnter;
       property OnMouseExit: TNotifyEvent read FOnMouseExit write SetOnMouseExit;
       property OnResponse : TNotifyEvent read FOnResponse write SetOnResponse;
+      property IsSample : Boolean read FIsSample write SetIsSample;
+      property Index : Integer read FIndex write FIndex;
+      property Rectangule  : TRectangule read GetRect write SetRect;
   end;
 
 
 implementation
 
+uses session.pool;
+
 { TStimulus }
 
-function TStimulus.GetTargetChoice: TObject;
+procedure TStimulus.SetIsSample(AValue: Boolean);
 begin
-  if FChoices.Count > 0 then
-    Result := FChoices[0] as TObject
-  else
-    Result := nil;
+  if FIsSample=AValue then Exit;
+  FIsSample:=AValue;
+end;
+
+function TStimulus.GetID: TStimulusID;
+begin
+  Result.SubjcID := Pool.Counters.Subject;
+  Result.SessiID := Pool.Session.ID;
+  Result.BlockID := Pool.Block.ID;
+  Result.TrialID := Pool.Trial.ID;
+  if IsSample then begin
+    Result.StimuID := -FIndex;
+  end else begin
+    Result.StimuID := FIndex;
+  end;
+  Result.RespoID := FResponseID;
+  Result.Name := GetStimulusName;
 end;
 
 procedure TStimulus.SetOnMouseDown(AValue: TOnMouseEvent);
@@ -117,25 +147,26 @@ end;
 constructor TStimulus.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
-  FChoices := TChoices.Create;
+  FResponseID := 0;
 end;
 
 destructor TStimulus.Destroy;
 begin
   inherited Destroy;
-  FChoices.Free;
+end;
+
+function TStimulus.AsInterface: IStimulus;
+begin
+  Result := Self as IStimulus;
 end;
 
 procedure TStimulus.DoResponse;
 begin
+  Inc(FResponseID);
   if Assigned(OnResponse) then
     OnResponse(Self);
 end;
 
-procedure TStimulus.AddOrderedChoice(AChoice: TObject);
-begin
-  FChoices.Add(AChoice);
-end;
 
 end.
 

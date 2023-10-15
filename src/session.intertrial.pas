@@ -28,7 +28,6 @@ type
     FInterTrial : TTimerItem;
     FDelay : TTimerItem;
     FConsequenceDuration : TTimerItem;
-    FLastTrialHeader : string;
     procedure InterTrialConsequenceBegin;
     procedure InterTrialIntervalBegin;
     function HasDelay : Boolean;
@@ -74,6 +73,7 @@ procedure TInterTrialEvents.TrialEnd(Sender: TObject);
 var
   LTrial : ITrial;
 begin
+  //ITIBegin := TickCount - Pool.TimeStart;
   LTrial := Sender as ITrial;
   //LTrial.Hide;
 
@@ -137,28 +137,28 @@ begin
   end;
 
   if HasInterTrialTime then begin
-    InterTrialIntervalBegin;
+
   end;
 end;
 
 procedure TInterTrialEvents.InterTrialConsequenceBegin;
 begin
-  case TrialResult of
-    'HIT+BLACKOUT':
-      begin
-
-      end;
-    'HIT' :
-      begin
-
-      end;
-
-    'MISS':
-      begin
-
-      end;
-  end;
-  TrialResult := '';
+  //case TrialResult of
+  //  'HIT+BLACKOUT':
+  //    begin
+  //
+  //    end;
+  //  'HIT' :
+  //    begin
+  //
+  //    end;
+  //
+  //  'MISS':
+  //    begin
+  //
+  //    end;
+  //end;
+  //TrialResult := '';
 end;
 
 procedure TInterTrialEvents.InterTrialConsequenceEnd(Sender: TObject);
@@ -170,7 +170,7 @@ end;
 
 procedure TInterTrialEvents.InterTrialIntervalBegin;
 begin
-  ITIBegin := TickCount - Pool.TimeStart;
+  //ITIBegin := TickCount - Pool.TimeStart;
 end;
 
 procedure TInterTrialEvents.InterTrialEnd(Sender: TObject);
@@ -183,9 +183,6 @@ begin
   FDelay.Interval := 0;
   FConsequenceDuration.Interval := 0;
   FInterTrial.Interval := 0;
-
-  ITIEnd := TickCount - Pool.TimeStart;
-  WriteDataRow;
 
   if Assigned(OnEnd) then
     OnEnd(Self);
@@ -206,10 +203,6 @@ begin
   FDelay.OnTimerEvent := @DelayEnd;
   FConsequenceDuration.OnTimerEvent := @InterTrialConsequenceEnd;
   FSerialTimer.OnEndTimeSerie := @InterTrialEnd;
-
-  FLastTrialHeader := '';
-  ITIBegin := 0;
-  ITIEnd := 0;
 end;
 
 destructor TInterTrialEvents.Destroy;

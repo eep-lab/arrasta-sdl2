@@ -36,6 +36,7 @@ type
     function Duration : cuint32;
     function Playing : Boolean;
     function ShortName : string;
+    //function ShortPath : string;
     function AsInterface : ISound;
     procedure LoadFromFile(AFilename : string);
     procedure Play;
@@ -77,6 +78,7 @@ end;
 
 destructor TChunk.Destroy;
 begin
+  SDLAudio.UnregisterChannel(AsInterface);
   Mix_FreeChunk(FChunk);
   inherited Destroy;
 end;
@@ -109,14 +111,12 @@ begin
   FChunk := Mix_LoadWAV(Media);
   if FChunk <> nil then begin
     FFilename := Pool.RootMedia+AFilename;
-    FChannel := SDLAudio.RegisterChannel(AsInterface);
   end;
 end;
 
 procedure TChunk.Play;
 begin
   if Assigned(OnStartPlaying) then OnStartPlaying(Self);
-  if Playing then Stop;
   Mix_PlayChannel(FChannel, FChunk, 0);
 end;
 

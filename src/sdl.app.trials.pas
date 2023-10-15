@@ -23,6 +23,7 @@ uses
   , sdl.app.moveable.contract
   , sdl.app.trials.contract
   , sdl.app.stimuli.contract
+  , sdl.app.stimuli.instruction
   , sdl.app.events.abstract
   , sdl.app.events.custom
   , session.configuration
@@ -35,12 +36,16 @@ type
   TTrial = class(TCustomRenderer, ITrial)
     private
       FLimitedHoldTimer    : TSDLTimer;
+      FTestMode: Boolean;
       FVisible: Boolean;
+      FIStimuli : IStimuli;
     protected
+      FInstruction : TInstructionStimuli;
       FOnTrialEnd : TNotifyEvent;
       FData : TTrialData;
-      FIStimuli : IStimuli;
       procedure Paint; override;
+      procedure EndTrialCallBack(Sender : TObject);
+      procedure EndInstructionCallBack(Sender : TObject);
       procedure MouseMove(Sender:TObject; Shift: TCustomShiftState; X, Y: Integer); override;
       procedure MouseDown(Sender:TObject; Shift: TCustomShiftState; X, Y: Integer); override;
       procedure MouseUp(Sender:TObject; Shift: TCustomShiftState; X, Y: Integer); override;
@@ -48,6 +53,7 @@ type
       procedure SetTrialData(ATrialData: TTrialData); virtual;
       function GetOnTrialEnd: TNotifyEvent;
       function GetTrialData: TTrialData;
+      function GetIStimuli : IStimuli; virtual; abstract;
     public
       constructor Create(AOwner: TComponent); override;
       destructor Destroy; override;
@@ -58,9 +64,11 @@ type
       procedure EndTrial; virtual;
       procedure Show; virtual;
       procedure Hide; virtual;
+      procedure DoExpectedResponse;
       property Visible : Boolean read FVisible;
       property Data : TTrialData read GetTrialData write SetTrialData;
       property OnTrialEnd : TNotifyEvent read GetOnTrialEnd write SetOnTrialEnd;
+      property TestMode : Boolean read FTestMode write FTestMode;
   end;
 
 const
@@ -77,7 +85,7 @@ begin
   inherited Create(AOwner);
   EventHandler.AssignEvents;
   EventHandler.OnMouseButtonDown := AsIClickable.GetSDLMouseButtonDown;
-  EventHandler.OnMouseButtonUp := AsIMoveable.GetSDLMouseButtonUp;
+  EventHandler.OnMouseButtonUp := AsIClickable.GetSDLMouseButtonUp;
   EventHandler.OnMouseMotion := AsIMoveable.GetSDLMouseMotion;
   FVisible := False;
   FLimitedHoldTimer := TSDLTimer.Create;
@@ -163,13 +171,13 @@ procedure TTrial.MouseUp(Sender: TObject; Shift: TCustomShiftState; X,
 var
   Child : TComponent;
   SDLPoint : TSDL_Point;
-  IChild   : IMoveable;
+  IChild   : IClickable;
 begin
   if Visible then begin
     for Child in FChilds do begin
       SDLPoint.x := X;
       SDLPoint.y := Y;
-      IChild := IMoveable(TCustomRenderer(Child));
+      IChild := IClickable(TCustomRenderer(Child));
       if IChild.PointInside(SDLPoint) then
         IChild.MouseUp(Sender, Shift, X, Y);
     end;
@@ -189,6 +197,27 @@ procedure TTrial.EndTrial;
 begin
   Hide;
   DoEndTrial(Pointer(Self));
+end;
+
+procedure TTrial.EndTrialCallBack(Sender: TObject);
+var
+  LStimuli : TComponent;
+  //LTrial    : TComponent;
+begin
+  if Sender is TComponent then begin
+    LStimuli := Sender as TComponent;
+    if LStimuli.Owner.Name = Self.Name then
+      EndTrial;
+  end;
+end;
+
+procedure TTrial.EndInstructionCallBack(Sender: TObject);
+begin
+  if Sender is TInstructionStimuli then begin
+    TInstructionStimuli(Sender).Stop;
+    FIStimuli := GetIStimuli;
+    Show;
+  end;
 end;
 
 procedure TTrial.Paint;
@@ -216,12 +245,20 @@ begin
   if Assigned(Parameters) then begin
     with TrialKeys do begin
       with Parameters do begin
-        FLimitedHoldTimer.Interval := Values[LimitedHold].ToInteger;
+        if not Values[LimitedHold].IsEmpty then begin
+          FLimitedHoldTimer.Interval := Values[LimitedHold].ToInteger;
+        end;
+        if (not Values[Instruction].IsEmpty) and
+           (not TestMode) then begin
+          FInstruction := TInstructionStimuli.Create(Self);
+          FInstruction.OnFinalize := @EndInstructionCallBack;
+          FInstruction.Load(FData.Parameters, Self);
+          FIStimuli := FInstruction;
+        end else begin
+          FIStimuli := GetIStimuli;
+        end;
       end;
     end;
-  end;
-  if Assigned(FIStimuli) then begin
-    FIStimuli.Load(FData.Parameters, Self);
   end;
 end;
 
@@ -247,6 +284,11 @@ begin
   FVisible := False;
   if Assigned(FIStimuli) then FIStimuli.Stop;
   FLimitedHoldTimer.Stop;
+end;
+
+procedure TTrial.DoExpectedResponse;
+begin
+  FIStimuli.DoExpectedResponse;
 end;
 
 end.

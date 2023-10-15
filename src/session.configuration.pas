@@ -10,51 +10,77 @@
 unit session.configuration;
 
 {$mode objfpc}{$H+}
+{$modeswitch AdvancedRecords}
 
 interface
 
 uses Classes, SysUtils;
 
 type
+  TRepeatStyle = (repsNone, repsGlobal, repsConsecutive);
+
+  { TTrialData }
 
   TTrialData = record
     ID : integer;
     Kind: string;
+    ReferenceName: string;
     Parameters: TStringList;
+    class operator = (A, B: TTrialData): Boolean;
   end;
 
   TTrials = array of TTrialData;
 
-  TBlocData = record
+  { TBlockData }
+
+  TBlockData = record
     ID : integer;
     Name: string;
-    ITI: integer;
-    BkGnd: integer;
-    Counter : string;
     TotalTrials: integer;
-    VirtualTrialValue: integer;
+
+    NextBlockOnNotCriterion : integer; // BackUpBlock	: integer;
+    BackUpBlockErrors	: integer;
+    MaxBlockRepetition : integer;
+    MaxBlockRepetitionInSession	: integer;
+    EndSessionOnHitCriterion	: Boolean;
+    NextBlockOnHitCriterion : integer;
+    CrtHitPorcentage : integer;
+
+    Counter : string;
     AutoEndSession : Boolean;
     MaxCorrection: integer;
-    MaxBlcRepetition: integer;
-
-    DefNextBlc: string;
+    BkGnd: integer;
+    ITI: integer;
+    DefNextBlock: string;
     CrtConsecutive: integer;
     CrtHitValue: integer;
     CrtConsecutiveHit: integer;
-    CrtHitPorcentage : integer;
     CrtConsecutiveHitPerType : integer;
     CrtConsecutiveMiss : integer;
     CrtMaxTrials : integer;
     CrtCsqHit : integer;
     Trials: TTrials;
-    NextBlocOnCriteria : integer;
-    NextBlocOnNotCriteria : integer;
+    class operator = (A, B: TBlockData): Boolean;
   end;
 
-  TBlocs = array of TBlocData;
+  TBlocks = array of TBlockData;
 
 implementation
 
+
+{ TTrialData }
+
+class operator TTrialData.=(A, B: TTrialData): Boolean;
+begin
+  Result := A.ID = B.ID;
+end;
+
+{ TBlockData }
+
+class operator TBlockData.=(A, B: TBlockData): Boolean;
+begin
+  Result := A.ID = B.ID;
+end;
 
 end.
 
