@@ -46,6 +46,8 @@ implementation
 uses session.intertrial
    , session.configuration
    , session.configurationfile
+   , session.endcriteria
+   , session.pool
    , sdl.app.trials.mts
    , sdl.app.trials.dragdrop
    , sdl.app.trials.last
@@ -62,8 +64,6 @@ end;
 class destructor TTrialFactory.Destroy;
 begin
   Registry.Free;
-  if Assigned(CurrentTrial) then
-    CurrentTrial.Free;
 end;
 
 class procedure TTrialFactory.RegisterTrialClass(ATrialKind: string;
@@ -76,28 +76,42 @@ class procedure TTrialFactory.Play;
 var
   TrialData : TTrialData;
   TrialClass : TTrialClass;
+  LTestMode : Boolean = True;
 begin
   if Assigned(CurrentTrial) then
+  begin
     FreeAndNil(CurrentTrial);
+  end;
 
   TrialData := ConfigurationFile.CurrentTrial;
-
   if not Registry.TryGetData(TrialData.Kind, TrialClass) then
     raise EArgumentException.CreateFmt(
       'Trial kind is not registered: %s %s', [TrialData.Kind, TrialClass]);
+  EndCriteria.InvalidateTrial(TrialData);
 
   CurrentTrial := TrialClass.Create(nil);
+  CurrentTrial.Name := 'T' + Pool.Trial.UID.ToString;
   CurrentTrial.OnTrialEnd := InterTrial.OnBegin;
-  CurrentTrial.Data := TrialData;
+
+  if LTestMode then begin
+    CurrentTrial.TestMode := True;
+    CurrentTrial.Data := TrialData;
+    CurrentTrial.DoExpectedResponse;
+  end else begin
+    CurrentTrial.Data := TrialData;
+    CurrentTrial.Show;
+  end;
 end;
 
 class function TTrialFactory.GetLastTrial: ITrial;
 var
-  LMockData : TTrialData = (ID:-1; Kind : ''; Parameters:nil);
+  LMockData : TTrialData = (ID: -1 ; Kind : 'TLastTrial';
+    ReferenceName: 'Mock'; Parameters: nil);
 begin
   CurrentTrial := TLastTrial.Create(nil);
   CurrentTrial.OnTrialEnd := nil;
   CurrentTrial.Data := LMockData;
+  CurrentTrial.Show;
   Result := CurrentTrial as ITrial;
 end;
 

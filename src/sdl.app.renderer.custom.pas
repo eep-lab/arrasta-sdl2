@@ -26,6 +26,15 @@ type
   TOnEyeSaccadeEvent = procedure(Sender: TObject) of object;
   TOnMouseEvent = procedure(Sender:TObject; Shift: TCustomShiftState; X, Y: Integer) of object;
 
+  TCallbacks = record
+    OnResponse : TNotifyEvent;
+    OnMouseMove: TOnMouseEvent;
+    OnMouseDown: TOnMouseEvent;
+    OnMouseUp: TOnMouseEvent;
+    OnMouseEnter: TNotifyEvent;
+    OnMouseExit: TNotifyEvent;
+  end;
+
   TChilds = specialize TFPGList<TComponent>;
 
   { TCustomRenderer }
@@ -62,6 +71,7 @@ type
     function GetMouseInside : Boolean; virtual;
     function PointInside(SDLPoint : TSDL_Point) : Boolean;
     function GetBoundsRect : TSDL_Rect; virtual;
+    procedure SetBoundsRect(AValue : TSDL_Rect); virtual; abstract;
     procedure SetMouseInside(AValue : Boolean);
     procedure Paint; virtual; abstract;
     procedure MouseMove(Sender: TObject;

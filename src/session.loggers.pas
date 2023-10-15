@@ -25,11 +25,11 @@ type
       FFilename : string;
       FFileIndex : integer;
       FTextFile : TextFile;
-
     public
       constructor Create(AFilename : string);
       destructor Destroy; override;
-      class function Row(Cols: array of string): string;
+      class function Row(Cols: array of string;
+        ALineEnding : string = LineEnding): string;
       class function GetBaseFilename: string; static;
       class procedure SetHeader(ASessionName: string; AParticipantName: string); static;
       class procedure SetFooter; static;
@@ -47,7 +47,7 @@ uses SysUtils
   , session.pool
   , session.loggers.instances;
 
-const FirstFilename: string = '001';
+const FirstBasename: string = '001';
 
 { TLogger }
 
@@ -68,10 +68,12 @@ constructor TLogger.Create(AFilename: string);
     S := AFilename;
     while FileExistsUTF8(S) do begin
       Inc(i);
-      S := FilePath + StringOfChar(#48, 3 - Length(IntToStr(i))) + IntToStr(i) + LExtension;
+      S := FilePath +
+           StringOfChar(#48, 3 - Length(IntToStr(i))) + IntToStr(i) +
+           LExtension;
     end;
     FFileIndex := i;
-    Result := AFilename;
+    Result := S;
   end;
 begin
   FFilename := FilenameNoOverride(AFilename);
@@ -88,12 +90,12 @@ end;
 class function TLogger.GetBaseFilename: string;
 begin
   if DataFilename = '' then
-    Result := FirstFilename
+    Result := FirstBasename
   else
     Result := ExtractFileNameWithoutExt(DataFilename);
 end;
 
-class function TLogger.Row(Cols: array of string): string;
+class function TLogger.Row(Cols: array of string; ALineEnding: string): string;
 const
   TAB = #9;
 var
@@ -106,20 +108,24 @@ begin
     if i < LastColumn then
       Result := Result + Cols[i]+TAB
     else
-      Result := Result + Cols[i]+LineEnding;
+      Result := Result + Cols[i]+ALineEnding;
 end;
 
-class procedure TLogger.SetHeader(ASessionName: string; AParticipantName: string);
+class procedure TLogger.SetHeader(ASessionName: string;
+  AParticipantName: string);
 var
-  Header : string;
+  LHeader : string;
+  LFirstFilename : string;
 begin
-  FirstFilename := Pool.RootData + FirstFilename;
-  Header := HSUBJECT_NAME + #9 + AParticipantName + LineEnding +
-            HSESSION_NAME + #9 + ASessionName + LineEnding +
-            HBEGIN_TIME + #9 + DateTimeToStr(Date) + #9 + TimeToStr(Time) + LineEnding;
-  DataFilename := CreateLogger(LGData, FirstFilename, Header);
-  TimestampsFilename := CreateLogger(LGTimestamps, FirstFilename, Header);
+  LFirstFilename := Pool.BaseFileName + FirstBasename;
+  LHeader :=
+    HSUBJECT_NAME + #9 + AParticipantName + LineEnding +
+    HSESSION_NAME + #9 + ASessionName + LineEnding +
+    HBEGIN_TIME + #9 + DateTimeToStr(Date) + #9 + TimeToStr(Time) + LineEnding;
+  DataFilename := CreateLogger(LGData, LFirstFilename, LHeader);
+  TimestampsFilename := CreateLogger(LGTimestamps, LFirstFilename, LHeader);
   Pool.BaseFilename := GetBaseFilename;
+  Pool.Session.ID := ExtractFileNameOnly(Pool.BaseFilename).ToInteger;
 end;
 
 class procedure TLogger.SetFooter;

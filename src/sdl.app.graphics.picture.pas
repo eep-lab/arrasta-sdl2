@@ -16,7 +16,7 @@ interface
 uses
   Classes, SysUtils
   , SDL2
-  , sdl.app.choiceable.rectangule
+  , sdl.app.graphics.rectangule
   , sdl.app.paintable.contract
   , sdl.app.events.abstract
   ;
@@ -25,10 +25,12 @@ type
 
   { TPicture }
 
-  TPicture = class(TChoiceableRect, IPaintable)
+  TPicture = class(TRectangule, IPaintable)
   private
-    FTexture  : PSDL_Texture;
+    FSibling: TRectangule;
+    procedure SetSibling(AValue: TRectangule);
   protected
+    FTexture  : PSDL_Texture;
     procedure MouseMove(Sender: TObject; Shift: TCustomShiftState; X, Y: Integer); override;
     procedure MouseDown(Sender: TObject; Shift: TCustomShiftState; X, Y: Integer); override;
     procedure MouseEnter(Sender: TObject); override;
@@ -37,14 +39,18 @@ type
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
-    procedure LoadFromFile(AFilename: string);
+    procedure LoadFromFile(AFilename: string); virtual;
+    property Sibling : TRectangule read FSibling write SetSibling;
   end;
 
+const
+  IMG_EXT = '.png';
 
 implementation
 
 uses
   sdl2_image
+  //, sdl.colors
   , sdl.app.video.methods
   , sdl.app.output
   , session.pool
@@ -55,7 +61,7 @@ uses
 constructor TPicture.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
-  IMG_Init(IMG_INIT_PNG);
+  FSibling := nil;
 end;
 
 destructor TPicture.Destroy;
@@ -64,34 +70,48 @@ begin
   inherited Destroy;
 end;
 
+procedure TPicture.SetSibling(AValue: TRectangule);
+begin
+  if FSibling=AValue then Exit;
+  FSibling:=AValue;
+  CentralizeAtTopWith(FSibling.BoundsRect);
+end;
+
 procedure TPicture.MouseMove(Sender: TObject; Shift: TCustomShiftState; X,
   Y: Integer);
 begin
-  inherited MouseMove(Self, Shift, X, Y);
+  if Visible then
+    inherited MouseMove(Self, Shift, X, Y);
 end;
 
 procedure TPicture.MouseDown(Sender: TObject; Shift: TCustomShiftState; X,
   Y: Integer);
 begin
-  inherited MouseDown(Self, Shift, X, Y);
+  if Visible then
+    inherited MouseDown(Self, Shift, X, Y);
 end;
 
 procedure TPicture.MouseEnter(Sender: TObject);
 begin
-  inherited MouseEnter(Self);
+  if Visible then begin
+    inherited MouseEnter(Self);
+
+  end;
 end;
 
 procedure TPicture.MouseExit(Sender: TObject);
 begin
-  inherited MouseExit(Self);
+  if Visible then begin
+    inherited MouseExit(Self);
+
+  end;
 end;
 
 procedure TPicture.Paint;
 begin
+  inherited Paint;
   if Visible then begin
     SDL_RenderCopy(PSDLRenderer, FTexture, nil, @FRect);
-  end else begin
-    inherited Paint;
   end;
 end;
 

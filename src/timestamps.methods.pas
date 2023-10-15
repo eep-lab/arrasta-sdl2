@@ -89,6 +89,7 @@ var
 
 procedure StartEpiktimer;
 begin
+  ET.Clear;
   ET.Start;
 end;
 

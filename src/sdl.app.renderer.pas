@@ -20,11 +20,12 @@ procedure Render;
 implementation
 
 uses
-  sdl.app.video.methods, sdl.app.trials.factory;
+  sdl.app.video.methods, sdl.app.trials.factory, sdl.colors;
 
 procedure Render;
 begin
-  SDL_SetRenderDrawColor(PSDLRenderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
+  SDL_SetRenderDrawColor(PSDLRenderer,
+    clWhite.r, clWhite.g, clWhite.b, clWhite.a);
   SDL_RenderClear(PSDLRenderer);
 
   TTrialFactory.Paint;

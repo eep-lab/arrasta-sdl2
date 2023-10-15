@@ -16,7 +16,7 @@ interface
 
 uses
   Classes, SysUtils
-  , sdl.app.graphics.picture
+  , sdl.app.choiceable.picture
   , sdl.app.choiceable.rectangule
   , sdl.app.dragdropable.contract
   , sdl.app.events.abstract
@@ -26,7 +26,7 @@ type
 
   { TDragDropablePicture }
 
-  TDragDropablePicture = class(TPicture, IDragDropable)
+  TDragDropablePicture = class(TChoiceablePicture, IDragDropable)
   private
     FDraggable: Boolean;
     FIsDragging : Boolean;

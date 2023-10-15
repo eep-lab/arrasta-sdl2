@@ -17,7 +17,11 @@ uses
   Classes, SysUtils
   , SDL2
   , ctypes
+  {$IFDEF NO_LCL}
+  , sdl.app.events.nolcl
+  {$ELSE}
   , sdl.app.events.custom
+  {$ENDIF}
   ;
 
 type
@@ -27,8 +31,10 @@ type
   TSDLApplication = class
     private
       //FKeyboardState : integer;
+      FTitle : PAnsichar;
       FCurrentMonitorIndex : cint;
       FEvents : TCustomEventHandler;
+      FOnClose: TNotifyEvent;
       FRunning: Boolean;
       FSDLWindow: PSDL_Window;
       FSDLRenderer: PSDL_Renderer;
@@ -41,11 +47,13 @@ type
       procedure SetMouse(AValue: TPoint);
       procedure LoadMonitors;
       procedure KeyDown(const event: TSDL_KeyboardEvent);
+      procedure SetOnClose(AValue: TNotifyEvent);
     public
       constructor Create(ATitle : PAnsiChar = 'Stimulus Control';
         AMonitor : cint = 0); reintroduce;
       destructor Destroy; override;
       procedure Run;
+      procedure SetupVideo(AMonitor : cint = 0);
       procedure SetupEvents;
       {$IFNDEF NO_LCL}
       procedure SetupAudio;
@@ -56,6 +64,7 @@ type
       property Monitor : TSDL_Rect read GetCurrentMonitor;
       property Mouse   : TPoint read GetMouse write SetMouse;
       property Events  : TCustomEventHandler read FEvents;
+      property OnClose : TNotifyEvent read FOnClose write SetOnClose;
   end;
 
 var
@@ -65,6 +74,7 @@ implementation
 
 uses sdl.app.output
   , sdl.app.video.methods
+  , sdl2_image
 {$IFDEF NO_LCL}
   , sdl.app.renderer.nolcl
 {$ELSE}
@@ -92,10 +102,16 @@ procedure TSDLApplication.KeyDown(const event: TSDL_KeyboardEvent);
 begin
   case Event.keysym.sym of
     SDLK_ESCAPE: begin
-    FRunning:=False;
-    Print('SDLK_ESCAPE');
-    end
+      FRunning:=False;
+      Print('SDLK_ESCAPE');
+    end;
   end;
+end;
+
+procedure TSDLApplication.SetOnClose(AValue: TNotifyEvent);
+begin
+  if FOnClose=AValue then Exit;
+  FOnClose:=AValue;
 end;
 
 procedure TSDLApplication.SetMouse(AValue: TPoint);
@@ -136,43 +152,44 @@ end;
 
 constructor TSDLApplication.Create(ATitle: PAnsiChar; AMonitor: cint);
 var
-  LMonitor : TSDL_Rect;
+  LError : string;
 begin
-  FEvents := TCustomEventHandler.Create;
-  if SDL_Init(TSDL_Init(SDL_INIT_VIDEO or SDL_INIT_TIMER or SDL_INIT_AUDIO)) < 0 then begin
-    Print(SDL_GetError);
-    Exit;
-  end;
   Print(Self.ClassName+'.'+{$I %CURRENTROUTINE%}+#32+ATitle);
-  if AMonitor > SDL_GetNumVideoDisplays then Exit;
+  FTitle := ATitle;
+  FEvents := TCustomEventHandler.Create;
+  // errors in the video subsystem may be related to
+  // SDL_VIDEODRIVER system environment variable (particularly on windows)
+  // https://wiki.libsdl.org/SDL2/FAQUsingSDL
+  if SDL_InitSubSystem(SDL_INIT_VIDEO) < 0 then begin
+    LError := SDL_GetError;
+    Print(LError);
+    raise Exception.Create(LError);
+  end;
+  SetupVideo(AMonitor);
+
+  if SDL_InitSubSystem(SDL_INIT_TIMER) < 0 then begin
+    LError := SDL_GetError;
+    Print(LError);
+    raise Exception.Create(LError);
+  end;
+
+  IMG_Init(IMG_INIT_PNG);
 
   {$IFNDEF NO_LCL}
-  // Audio Setup
+  if SDL_InitSubSystem(SDL_INIT_AUDIO) < 0 then begin
+    LError := SDL_GetError;
+    Print(LError);
+    raise Exception.Create(LError);
+  end;
   SDLAudio := TSDLAudio.Create;
 
   // text/font setup
   SDLText  := TSDLText.Create;
   {$ENDIF}
-
-  // Monitor Setup
-  LoadMonitors;
-  FCurrentMonitorIndex := AMonitor;
-  LMonitor := FMonitors[AMonitor];
-  FSDLWindow := SDL_CreateWindow(ATitle, LMonitor.x, LMonitor.y,
-    LMonitor.w, LMonitor.h, SDL_WINDOW_FULLSCREEN);
-
-  FSDLRenderer := SDL_CreateRenderer(FSDLWindow, -1, SDL_RENDERER_ACCELERATED);
-  //FSDLSurface  := SDL_CreateRGBSurface(0, LMonitor.w, LMonitor.h, 32, 128, 128, 128, 255);
-  AssignVariables(FSDLWindow, FSDLRenderer, FSDLSurface);
 end;
 
 destructor TSDLApplication.Destroy;
 begin
-  {$IFNDEF NO_LCL}
-  SDLText.Free;
-  SDLAudio.Free;
-  {$ENDIF}
-  FEvents.Free;
   inherited Destroy;
 end;
 
@@ -183,10 +200,48 @@ begin
     FEvents.HandlePending;
     Render;
   end;
+  {$IFNDEF NO_LCL}
+  if Assigned(SDLText) then
+    SDLText.Free;
+
+  if Assigned(SDLAudio) then
+    SDLAudio.Free;
+  {$ENDIF}
+
+  if Assigned(FEvents) then
+    FEvents.Free;
+
   SDL_DestroyRenderer(FSDLRenderer);
   SDL_DestroyWindow(FSDLWindow);
   SDL_Quit;
+
   Print('Good Bye');
+  if Assigned(OnClose) then
+    OnClose(Self);
+end;
+
+procedure TSDLApplication.SetupVideo(AMonitor: cint);
+var
+  LMonitor : TSDL_Rect;
+begin
+  if AMonitor > SDL_GetNumVideoDisplays then Exit;
+  // Monitor Setup
+  LoadMonitors;
+  FCurrentMonitorIndex := AMonitor;
+
+  LMonitor := FMonitors[AMonitor];
+  FSDLWindow := SDL_CreateWindow(FTitle, LMonitor.x, LMonitor.y,
+    LMonitor.w, LMonitor.h, 0);
+
+  FSDLRenderer := SDL_CreateRenderer(FSDLWindow, -1, SDL_RENDERER_ACCELERATED);
+  //FSDLSurface  := SDL_CreateRGBSurface(0, LMonitor.w, LMonitor.h, 32, 128, 128, 128, 255);
+  AssignVariables(FSDLWindow, FSDLRenderer, FSDLSurface);
+
+  {$IFDEF NO_LCL}
+  sdl.app.renderer.nolcl.Monitor := Self.Monitor;
+  {$ELSE}
+
+  {$ENDIF}
 end;
 
 procedure TSDLApplication.SetupEvents;
@@ -197,7 +252,7 @@ end;
 {$IFNDEF NO_LCL}
 procedure TSDLApplication.SetupAudio;
 begin
-  AllocateAudioChannels;
+  AllocateDefaultAudioChannels;
 end;
 
 procedure TSDLApplication.SetupText;

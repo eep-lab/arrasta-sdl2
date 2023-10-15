@@ -12,7 +12,7 @@ unit session.configurationfile.writer;
 interface
 
 uses
-  Classes, Session.ConfigurationFile;
+  Classes, SysUtils, Session.ConfigurationFile;
 
 type
 
@@ -20,20 +20,24 @@ type
 
   TConfigurationWriter = class
   private
-    FBlocConfig: TStringList;
+    FBlockConfig: TStringList;
     FTrialConfig: TStringList;
-    FCurrentBloc : integer;
+    FCurrentBlock : integer;
     FConfigurationFile: TConfigurationFile;
     function GetCurrentTrial: integer;
+    procedure SetStartTrial(AValue: TStartAt);
   public
     constructor Create(AConfigurationFile: TConfigurationFile); reintroduce;
     destructor Destroy; override;
-    procedure WriteBloc;
+    procedure WriteBlock;
     procedure WriteTrial;
-    property BlocConfig : TStringList read FBlocConfig;
+    procedure WriteInstruction(ABlock, ATrial : integer;
+      AName, AValue : string);
+    property BlockConfig : TStringList read FBlockConfig;
     property TrialConfig: TStringList read FTrialConfig;
-    property CurrentBloc  : integer read FCurrentBloc write FCurrentBloc;
+    property CurrentBlock  : integer read FCurrentBlock write FCurrentBlock;
     property CurrentTrial : integer read GetCurrentTrial;
+    property StartAt : TStartAt write SetStartTrial;
   end;
 
 implementation
@@ -42,7 +46,12 @@ implementation
 
 function TConfigurationWriter.GetCurrentTrial: integer;
 begin
-  Result := FConfigurationFile.TrialCount[CurrentBloc+1];
+  Result := FConfigurationFile.Trials[CurrentBlock];
+end;
+
+procedure TConfigurationWriter.SetStartTrial(AValue: TStartAt);
+begin
+  FConfigurationFile.StartAt:=AValue;
 end;
 
 constructor TConfigurationWriter.Create(AConfigurationFile: TConfigurationFile);
@@ -51,28 +60,28 @@ begin
     raise EFilerError.Create('Configuration file not assigned.');
 
   FConfigurationFile := AConfigurationFile;
-  FBlocConfig := TStringList.Create;
+  FBlockConfig := TStringList.Create;
   FTrialConfig:= TStringList.Create;
-  FCurrentBloc := 0;
+  FCurrentBlock := 0;
 end;
 
 destructor TConfigurationWriter.Destroy;
 begin
   FTrialConfig.Free;
-  FBlocConfig.Free;
+  FBlockConfig.Free;
   FConfigurationFile := nil;
   inherited Destroy;
 end;
 
-procedure TConfigurationWriter.WriteBloc;
+procedure TConfigurationWriter.WriteBlock;
 var
   i: integer;
   LName , LValue: string;
 begin
   with FConfigurationFile do begin
-    for i := 0 to FBlocConfig.Count -1 do begin
-      FBlocConfig.GetNameValue(i, LName, LValue);
-      WriteToBloc(Self.CurrentBloc+1, LName, LValue);
+    for i := 0 to FBlockConfig.Count -1 do begin
+      FBlockConfig.GetNameValue(i, LName, LValue);
+      WriteToBlock(Self.CurrentBlock, LName, LValue);
     end;
   end;
 end;
@@ -82,15 +91,23 @@ var
   i: integer;
   LName, LValue : string;
   LCurrentTrial : integer;
-  LCurrentBloc  : integer;
+  LCurrentBlock  : integer;
 begin
-  LCurrentTrial := CurrentTrial+1;
-  LCurrentBloc  := CurrentBloc+1;
+  LCurrentTrial := CurrentTrial;
+  LCurrentBlock  := CurrentBlock;
   with FConfigurationFile do begin
     for i := 0 to FTrialConfig.Count -1 do begin
       FTrialConfig.GetNameValue(i, LName, LValue);
-      WriteToTrial(LCurrentTrial, LCurrentBloc, LName, LValue);
+      WriteToTrial(LCurrentTrial, LCurrentBlock, LName, LValue);
     end;
+  end;
+end;
+
+procedure TConfigurationWriter.WriteInstruction(ABlock, ATrial: integer; AName,
+  AValue: string);
+begin
+  with FConfigurationFile do begin
+    WriteToInstruction(ABlock, ATrial, AName, AValue);
   end;
 end;
 

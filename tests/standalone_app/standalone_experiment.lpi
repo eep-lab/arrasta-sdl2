@@ -33,6 +33,10 @@
         <Filename Value="..\..\src\sdl.app.renderer.nolcl.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit>
+      <Unit>
+        <Filename Value="..\..\src\sdl.app.events.nolcl.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -44,7 +48,7 @@
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir)"/>
       <Libraries Value="..\.."/>
-      <OtherUnitFiles Value="..\..\dependencies\SDL2-for-Pascal\units;..\..\src;..\..\dependencies\epiktimer;..\..\src\schedules"/>
+      <OtherUnitFiles Value="..\..\dependencies\SDL2-for-Pascal\units;..\..\src;..\..\dependencies\epiktimer;..\..\src\schedules;..\..\dependencies\EyeLink-for-Pascal\classes;..\..\dependencies\EyeLink-for-Pascal\bindings;..\..\dependencies\EyeLink-for-Pascal\utils"/>
       <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <Linking>

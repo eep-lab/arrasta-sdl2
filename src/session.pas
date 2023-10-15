@@ -14,7 +14,7 @@ unit session;
 interface
 
 uses
-  Classes, SysUtils, Session.Blocs, sdl.timer;
+  Classes, SysUtils, session.blocks, sdl.timer;
 
 type
 
@@ -23,11 +23,11 @@ type
   TSession = class(TComponent)
   private
     FTimer : TSDLTimer;
-    FBloc : TBloc;
+    FBlock : TBlock;
     FOnBeforeStart: TNotifyEvent;
     FOnEndSession: TNotifyEvent;
-    procedure PlayBloc;
-    procedure EndBloc(Sender : TObject);
+    procedure PlayBlock;
+    procedure EndBlock(Sender : TObject);
     procedure SetOnBeforeStart(AValue: TNotifyEvent);
     procedure SetOnEndSession(AValue: TNotifyEvent);
     procedure TimerOnTimer(Sender: TObject);
@@ -48,26 +48,28 @@ implementation
 
 uses
   timestamps
-  , session.configurationfile
+  , session.counters
   , session.pool
+  , session.configurationfile
+  , session.endcriteria
   , sdl.app.trials.factory
   ;
 
 { TSession }
 
-procedure TSession.PlayBloc;
+procedure TSession.PlayBlock;
 begin
   if EndCriteria.OfSession then begin
     EndSession;
   end else begin
-    FBloc.BeforePlay;
-    FBloc.Play;
+    FBlock.BeforePlay;
+    FBlock.Play;
   end;
 end;
 
-procedure TSession.EndBloc(Sender: TObject);
+procedure TSession.EndBlock(Sender: TObject);
 begin
-  PlayBloc;
+  PlayBlock;
 end;
 
 procedure TSession.EndSession;
@@ -97,17 +99,21 @@ end;
 constructor TSession.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
+  Pool.Counters.BeforeBeginSession;
+  EndCriteria := TEndCriteria.Create;
+  Pool.EndCriteria := EndCriteria;
   FTimer := TSDLTimer.Create;
   FTimer.OnTimer:=@TimerOnTimer;
   FTimer.Interval := 0;
-  FBloc := TBloc.Create(Self);
-  FBloc.OnEndBloc := @EndBloc;
+  FBlock := TBlock.Create(Self);
+  FBlock.OnEndBlock := @EndBlock;
 end;
 
 destructor TSession.Destroy;
 begin
+  //Counters.Free;
+  EndCriteria.Free;
   FTimer.Free;
-  ConfigurationFile.Free;
   inherited Destroy;
 end;
 
@@ -120,7 +126,7 @@ begin
   {$ENDIF}
   if FTimer.Interval > 0 then
     FTimer.Start;
-  PlayBloc;
+  PlayBlock;
 end;
 
 end.

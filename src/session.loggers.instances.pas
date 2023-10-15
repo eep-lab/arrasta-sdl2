@@ -122,6 +122,7 @@ var
 
   function LoggerFunc:TLogger;
   begin
+
     Result := TLogger.Create(AFilename + Ext(ALogger));
     Result.SaveData(AHeader);
   end;

@@ -20,6 +20,7 @@ uses
   , sdl.app.events.abstract
   , sdl.app.graphics.animation
   , sdl.app.graphics.picture.dragdrop
+  , sdl.app.grids.types
   , sdl.app.grids
   , sdl.app.audio.contract
   ;
@@ -171,6 +172,7 @@ begin
   inherited Load(AParameters, AParent);
   if not Assigned(Grid) then
     Grid := TGrid.Create(3);
+    Grid.FixedSample := False;
   //Cursor := StrToIntDef(AParameters.Values['Cursor'], -1);
   FAnimation.Parent := TCustomRenderer(AParent);
   FSoundRight := SDLAudio.SoundFromName('acerto');
@@ -191,10 +193,8 @@ begin
     FGridOrientation := DragDropToGridOrientation(
       AParameters.Values[DragDropOrientation].ToDragDropOrientation);
   end;
-  with TrialKeys do begin
-    LExt := AParameters.Values[ImageFilesExtension];
-  end;
 
+  LExt := '.jpg';
   NewGridItems(LSamples, LComparisons, FGridOrientation);
   with Grid.RandomPositions do begin
     for i := low(Comparisons) to high(Comparisons) do

@@ -15,7 +15,7 @@ unit sdl.app.audio.contract;
 
 interface
 
-uses ctypes;
+uses Classes, ctypes;
 
 type
 
@@ -26,7 +26,9 @@ type
     function Duration : cuint32;
     function Playing : Boolean;
     function ShortName : string;
+    //function ShortPath : string;
     procedure DoOnStop;
+    procedure SetOnStop(ANotifyEvent: TNotifyEvent);
     procedure LoadFromFile(AFilename : string);
     procedure Play;
     procedure Stop;

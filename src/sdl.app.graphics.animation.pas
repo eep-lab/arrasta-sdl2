@@ -10,6 +10,7 @@ uses
   //, ctypes
   , sdl.app.graphics.rectangule
   , sdl.app.paintable.contract
+  , sdl.app.grids.types
   , sdl.app.grids
   //, sdl.timer
   ;

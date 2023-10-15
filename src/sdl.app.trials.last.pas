@@ -15,9 +15,11 @@ interface
 
 uses
   Classes, SysUtils
+  , SDL2
   , session.configuration
   , sdl.app.trials
   , sdl.app.graphics.text
+  , sdl.app.stimuli.contract
   ;
 
 type
@@ -26,8 +28,11 @@ type
 
   TLastTrial = class sealed (TTrial)
     private
+      FRect : TSDL_Rect;
       FText : TText;
     protected
+      function GetIStimuli: IStimuli; override;
+      procedure SetBoundsRect(AValue: TSDL_Rect); override;
       procedure SetTrialData(ATrialData: TTrialData); override;
     public
       constructor Create(AOwner: TComponent); override;
@@ -42,6 +47,16 @@ implementation
 
 { TLastTrial }
 
+function TLastTrial.GetIStimuli: IStimuli;
+begin
+  Result := nil;
+end;
+
+procedure TLastTrial.SetBoundsRect(AValue: TSDL_Rect);
+begin
+  FRect := AValue;
+end;
+
 procedure TLastTrial.SetTrialData(ATrialData: TTrialData);
 begin
   inherited SetTrialData(ATrialData);
@@ -52,7 +67,9 @@ constructor TLastTrial.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   FText := TText.Create(Self);
-  FText.Load('Fim.', 'Raleway-Regular');
+  FText.FontName := 'Raleway-Regular';
+  FText.FontSize := 150;
+  FText.Load('Fim.');
   FText.Parent := Self;
   FText.Centralize;
   FText.Show;

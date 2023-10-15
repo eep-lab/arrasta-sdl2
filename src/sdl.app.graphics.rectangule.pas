@@ -26,6 +26,8 @@ type
 
   TRectangule = class(TCustomRenderer)
   private
+    FCanShade : Boolean;
+    FShaded : Boolean;
     FOriginalBounds : TSDL_Rect;
     FEdgeColor: TSDL_Color;
     FVisible: Boolean;
@@ -33,7 +35,6 @@ type
     function GetLeft: cint;
     function GetTop: cint;
     function GetWidth: cint;
-    procedure SetBoundsRect(AValue: TSDL_Rect);
     procedure SetHeight(AValue: cint);
     procedure SetLeft(AValue: cint);
     procedure SetTop(AValue: cint);
@@ -41,33 +42,37 @@ type
   protected
     FRect    : TSDL_Rect;
     function GetBoundsRect: TSDL_Rect; override;
+    procedure SetBoundsRect(AValue : TSDL_Rect); override;
+    procedure MouseEnter(Sender: TObject); override;
+    procedure MouseExit(Sender: TObject); override;
     procedure Paint; override;
   public
     constructor Create(AOwner : TComponent); override;
     destructor Destroy; override;
-    procedure Centralize;
-    procedure Show;
-    procedure Hide;
     function IntersectsWith(ARect: TSDL_Rect) : Boolean; overload;
     function IntersectsWith(ARect: TRectangule) : Boolean; overload;
+    procedure Centralize;
+    procedure CentralizeAtTopWith(ARect: TSDL_Rect);
     procedure CentralizeWith(ARect: TSDL_Rect);
+    procedure DoRandomMouseDown;
     procedure Inflate(AValue : cint);
+    procedure Hide;
     procedure ToOriginalBounds;
     procedure SetOriginalBounds;
+    procedure Show;
+    property BoundsRect : TSDL_Rect read GetBoundsRect write SetBoundsRect;
+    property CanShade : Boolean read FCanShade write FCanShade;
+    property EdgeColor: TSDL_Color read FEdgeColor write FEdgeColor;
     property Left   : cint read GetLeft write SetLeft;
+    property Height : cint read GetHeight write SetHeight;
     property Top    : cint read GetTop write SetTop;
     property Width  : cint read GetWidth write SetWidth;
-    property Height : cint read GetHeight write SetHeight;
-    property BoundsRect : TSDL_Rect read GetBoundsRect write SetBoundsRect;
     property Visible : Boolean read FVisible write FVisible;
-    property EdgeColor: TSDL_Color read FEdgeColor write FEdgeColor;
   end;
-
-
 
 implementation
 
-uses sdl.app.video.methods, sdl.colors;
+uses sdl.app.video.methods, sdl.colors, math;
 
 { TStimulus }
 
@@ -125,15 +130,43 @@ begin
   Result:=FRect;
 end;
 
+procedure TRectangule.MouseEnter(Sender: TObject);
+begin
+  if Visible then begin
+    inherited MouseEnter(Sender);
+    FShaded := True;
+  end;
+end;
+
+procedure TRectangule.MouseExit(Sender: TObject);
+begin
+  if Visible then begin
+    inherited MouseExit(Sender);
+    FShaded := False;
+  end;
+end;
+
 procedure TRectangule.Paint;
 begin
-  SDL_SetRenderDrawColor(PSDLRenderer, 128, 128, 128, 255);
-  SDL_RenderFillRect(PSDLRenderer, @FRect);
+  if Visible then begin
+    if FCanShade and FShaded then begin
+      SDL_SetRenderDrawBlendMode(PSDLRenderer, SDL_BLENDMODE_BLEND);
+      with clLightBlueShaded1 do
+        SDL_SetRenderDrawColor(PSDLRenderer, r, g, b, a);
+      SDL_RenderFillRect(PSDLRenderer, @FRect);
+    end;
+  end else begin
+    with clGray do
+      SDL_SetRenderDrawColor(PSDLRenderer, r, g, b, a);
+    SDL_RenderFillRect(PSDLRenderer, @FRect);
+  end;
 end;
 
 constructor TRectangule.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
+  FCanShade:= True;
+  FShaded  := False;
   FVisible := False;
   with FRect do begin
     x := 0;
@@ -183,6 +216,12 @@ begin
   Top  := ARect.y + (ARect.h div 2) - (Height div 2);
 end;
 
+procedure TRectangule.CentralizeAtTopWith(ARect: TSDL_Rect);
+begin
+  Left := ARect.x + (ARect.w div 2) - (Width  div 2);
+  Top  := ARect.y - Height - 5;
+end;
+
 procedure TRectangule.Inflate(AValue: cint);
 begin
   FRect.x := FRect.x - AValue;
@@ -199,6 +238,16 @@ end;
 procedure TRectangule.SetOriginalBounds;
 begin
   FOriginalBounds := FRect;
+end;
+
+procedure TRectangule.DoRandomMouseDown;
+var
+  X : cint;
+  Y : cint;
+begin
+  X := RandomRange(0, Width);
+  Y := RandomRange(0, Height);
+  MouseDown(Self, [], Left+X, Top+Y);
 end;
 
 end.

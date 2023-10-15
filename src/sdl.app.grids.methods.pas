@@ -15,7 +15,8 @@ interface
 
 uses
   Classes, SysUtils
-  , math
+  , Math
+  , sdl.app.grids.types
   ;
 
 function GetCentralRect(AWidth,AHeight,ASize:integer):TRect; overload;
@@ -24,8 +25,44 @@ function GetCentralRect(AWidth,AHeight,ALeftBorder,ATopBorder,
 
 // 0 degrees = rect right; increments clockwise, squares only
 function GetPointFromAngle(AAngle: float; ARect:TRect): TPoint;
+function GetCentralGrid(AN: integer; ASquareSide: real;
+  ADistribute: Boolean): TMatrix;
+procedure InitMonitor;
+function GetCircularCentralGrid(AN: integer; ASquareSide: real): TMatrix;
+
 
 implementation
+
+uses
+  SDL2
+  {$IFNDEF GRIDS_TEST}, sdl.app{$ENDIF}
+  ;
+
+var
+  ScreenInCentimeters : real = 39.624;
+  MonitorWidth : integer;
+  MonitorHeight: integer;
+  BorderTop    : TRect;
+  BorderBottom : TRect;
+  BorderLeft   : TRect;
+  BorderRight  : TRect;
+
+procedure InitMonitor;
+var
+  LRect : TSDL_Rect;
+begin
+  {$IFNDEF GRIDS_TEST}
+  if Assigned(SDLApp) then begin
+    LRect := SDLApp.Monitor;
+  end else begin
+    SDL_GetDisplayBounds(0, @LRect)
+  end;
+  {$ELSE}
+   SDL_GetDisplayBounds(0, @LRect);
+  {$ENDIF}
+  MonitorWidth := LRect.w;
+  MonitorHeight:= LRect.h;
+end;
 
 function GetCentralRect(AWidth, AHeight, ASize:integer): TRect;
 begin
@@ -79,6 +116,178 @@ begin
   Result.X :=  Round((LRadius * cos(DegtoRad(AAngle))) + LCenterX);
   Result.Y :=  Round((LRadius * sin(DegtoRad(AAngle))) + LCenterY);
 end;
+
+{
+  GetPositionFromSegment returns Left or Top position based on:
+    ASegment = Width or Height from which get the Left or Top position.
+    ASteps = Desired number os columns or rows.
+    AStep = Target column or row.
+    AStimulusSide = Width or height of the target stimulus.
+    AInterStimulusSpace = Desired horizontal or vertical space from one stimulus to another.
+}
+function GetPositionFromSegment(ASegment, AStep, ASteps,
+  AStimulusSide, AInterStimulusSpace : integer):integer;
+var
+  LSize : integer;
+begin
+  LSize := AStimulusSide + AInterStimulusSpace;
+  Result := Round((LSize*AStep)-((LSize*ASteps)/2)+((ASegment+AInterStimulusSpace)/2));
+end;
+
+function CmToScreenPixels(AMeasure : real) : integer;
+begin
+  Result := Round(AMeasure*(MonitorWidth/ScreenInCentimeters));
+end;
+
+procedure SetBorders(ASize: integer);
+begin
+  BorderTop := Rect(
+    0,
+    0,
+    MonitorWidth,
+    ASize);
+  BorderBottom := Rect(
+    0,
+    BorderTop.Height + MonitorHeight-(ASize*2),
+    MonitorWidth,
+    MonitorHeight);
+  BorderLeft := Rect(
+    0,
+    0,
+    ASize,
+    MonitorHeight);
+  BorderRight := Rect(
+    BorderLeft.Width + MonitorWidth-(ASize*2),
+    0,
+    MonitorWidth,
+    MonitorHeight);
+end;
+
+{Cria grade quadrada como uma matriz AN x AN. Quando ADistribute = true, a
+distância horizontal e vertical entre os estímulos é diferente, e quando false
+é igual}
+function GetCentralGrid(AN: integer; ASquareSide: real;
+  ADistribute: Boolean): TMatrix;
+var
+  LIndex      : integer = 0;
+  //LSegment    : integer = 0;
+  //LSteps      : integer = 0;
+  //LStep       : integer = 0;
+  LSquareSide : integer = 0;
+  LInterSpaceW : integer = 0;
+  LInterSpaceH : integer = 0;
+  j : integer = 0;
+  i : integer = 0;
+begin
+  Result := Default(TMatrix);
+  SetLength(Result, AN, AN);
+  LSquareSide := CmToScreenPixels(ASquareSide);
+  if ADistribute then begin
+    LInterSpaceW := (MonitorWidth -  (LSquareSide * AN)) div AN;
+    LInterSpaceH := (MonitorHeight - (LSquareSide * AN)) div AN;
+  end else begin
+    if MonitorWidth > MonitorHeight then begin
+      LInterSpaceH := (MonitorHeight - (LSquareSide * AN)) div AN;
+      LInterSpaceW := LInterSpaceH;
+    end else begin
+      LInterSpaceW := (MonitorWidth -  (LSquareSide * AN)) div AN;
+      LInterSpaceH := LInterSpaceW;
+    end;
+  end;
+  for j := Low(Result) to High(Result) do begin
+    for i := Low(Result[j]) to High(Result[j]) do begin
+      with Result[j][i] do begin
+        Index := LIndex;
+        Rect.y := GetPositionFromSegment(
+          MonitorHeight, j, AN, LSquareSide, LInterSpaceH);
+        Rect.x := GetPositionFromSegment(
+          MonitorWidth, i, AN, LSquareSide, LInterSpaceW);
+        Rect.w := LSquareSide;
+        Rect.h := LSquareSide;
+      end;
+      Inc(LIndex);
+    end;
+  end;
+  SetBorders(Result[0][0].Rect.y);
+end;
+
+{Cria grade circular considerando j como modelo central e i como comparações em
+torno de um diâmetro. AN = número de estímulos i; ASquareSide = lado do quadrado
+dos estímulos}
+function GetCircularCentralGrid(AN: integer; ASquareSide: real): TMatrix;
+var
+  LIndex      : integer = 0;
+  //LSegment    : integer = 0;
+  //LSteps      : integer = 0;
+  //LStep       : integer = 0;
+  LSquareSide : integer = 0;
+  LDegree : integer = 0;
+  LDegreeI : integer = 0;
+  LPoint : TPoint;
+  LRect  : TRect;
+  j : integer = 0;
+  i : integer = 0;
+const
+  BaseDegree : integer = 360;
+begin
+  Result := Default(TMatrix);
+  SetLength(Result, 2);
+  SetLength(Result[0], AN);
+  SetLength(Result[1], 1);
+  LSquareSide := CmToScreenPixels(ASquareSide);
+  SetBorders(LSquareSide div 2);
+  LDegree := BaseDegree;
+  LDegreeI := BaseDegree div AN;
+  LRect := GetCentralRect(MonitorWidth, MonitorHeight, LSquareSide div 2);
+  for j := Low(Result) to High(Result) do begin
+    for i := Low(Result[j]) to High(Result[j]) do begin
+      with Result[j][i] do begin
+        case j of
+          0:  begin
+            Index := LIndex;
+            LPoint := GetPointFromAngle(LDegree, LRect);
+            Rect.y := LPoint.Y - (LSquareSide div 2);
+            Rect.x := LPoint.X - (LSquareSide div 2);
+            Rect.w := LSquareSide;
+            Rect.h := LSquareSide;
+            Inc(LDegree, LDegreeI);
+          end;
+
+          1: begin
+            Index := LIndex;
+            Rect.y  := (MonitorHeight div 2) - (LSquareSide div 2);
+            Rect.x := (MonitorWidth div 2) - (LSquareSide div 2);
+            Rect.w := LSquareSide;
+            Rect.h := LSquareSide;
+          end;
+        end;
+      end;
+      Inc(LIndex);
+    end;
+  end;
+end;
+
+
+//{
+//  3x3
+//  0..1..2
+//  3..4..5
+//  6..7..8
+//}
+//function IntToCell(AN: Integer) : TCell;
+//begin
+//  case AN of
+//    0 : Result := [0, 0];
+//    1 : Result := [0, 1];
+//    2 : Result := [0, 2];
+//    3 : Result := [1, 0];
+//    4 : Result := [1, 1];
+//    5 : Result := [1, 2];
+//    6 : Result := [2, 0];
+//    7 : Result := [2, 1];
+//    8 : Result := [2, 2];
+//  end;
+//end;
 
 end.
 
