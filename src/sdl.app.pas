@@ -175,6 +175,8 @@ begin
 
   IMG_Init(IMG_INIT_PNG);
 
+  IMG_Init(IMG_INIT_PNG);
+
   {$IFNDEF NO_LCL}
   if SDL_InitSubSystem(SDL_INIT_AUDIO) < 0 then begin
     LError := SDL_GetError;
@@ -207,7 +209,6 @@ begin
   if Assigned(SDLAudio) then
     SDLAudio.Free;
   {$ENDIF}
-
   if Assigned(FEvents) then
     FEvents.Free;
 

@@ -21,6 +21,8 @@ type
 
   { TTrialData }
 
+  { TTrialData }
+
   TTrialData = record
     ID : integer;
     Kind: string;

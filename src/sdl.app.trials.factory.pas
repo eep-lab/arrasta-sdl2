@@ -53,10 +53,14 @@ uses session.intertrial
    , sdl.app.trials.last
    ;
 
+var
+  TrialUID : integer;
+
 { TTrialFactory }
 
 class constructor TTrialFactory.Create;
 begin
+  TrialUID := 0;
   Registry := TTrialRegistry.Create;
   CurrentTrial := nil;
 end;
@@ -108,6 +112,7 @@ var
   LMockData : TTrialData = (ID: -1 ; Kind : 'TLastTrial';
     ReferenceName: 'Mock'; Parameters: nil);
 begin
+  TrialUID := 0;
   CurrentTrial := TLastTrial.Create(nil);
   CurrentTrial.OnTrialEnd := nil;
   CurrentTrial.Data := LMockData;

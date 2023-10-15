@@ -44,6 +44,8 @@ type
     function OfSession : Boolean;
     function OfBlock : Boolean;
     function OfTrial : Boolean;
+    function Running : Boolean;
+    property RunningAt : TStartAt read GetRunningAt write SetRunningAt;
   end;
 
 var
@@ -53,6 +55,7 @@ implementation
 
 uses
   session.pool
+  , session.counters.all
   , session.loggers.writerow
   ;
 
@@ -60,7 +63,6 @@ uses
 
 constructor TEndCriteria.Create;
 begin
-
 end;
 
 procedure TEndCriteria.InvalidateBlock;
