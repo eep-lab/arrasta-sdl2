@@ -76,7 +76,6 @@ class procedure TTrialFactory.Play;
 var
   TrialData : TTrialData;
   TrialClass : TTrialClass;
-  LTestMode : Boolean = True;
 begin
   if Assigned(CurrentTrial) then
   begin
@@ -93,7 +92,7 @@ begin
   //CurrentTrial.Parent := TSDLRenderer;
   CurrentTrial.Name := 'T' + Pool.Session.Trial.UID.ToString;
   CurrentTrial.OnTrialEnd := InterTrial.OnBegin;
-  CurrentTrial.TestMode := LTestMode;
+  CurrentTrial.TestMode := True;
   CurrentTrial.Data := TrialData;
   CurrentTrial.Show;
 end;

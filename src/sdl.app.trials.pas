@@ -135,7 +135,7 @@ var
   SDLPoint : TSDL_Point;
   IChild : IMoveable;
 begin
-  if Visible then begin
+  if FVisible then begin
     for Child in FChilds do begin
       SDLPoint.x := X;
       SDLPoint.y := Y;
@@ -162,7 +162,7 @@ var
   SDLPoint : TSDL_Point;
   IChild : IClickable;
 begin
-  if Visible then begin
+  if FVisible then begin
     for Child in FChilds do begin
       SDLPoint.x := X;
       SDLPoint.y := Y;
@@ -180,7 +180,7 @@ var
   SDLPoint : TSDL_Point;
   IChild   : IClickable;
 begin
-  if Visible then begin
+  if FVisible then begin
     for Child in FChilds do begin
       SDLPoint.x := X;
       SDLPoint.y := Y;
@@ -243,14 +243,13 @@ begin
   FText.Load(Name);
   FText.Parent := Self;
   FText.Centralize;
-  FVisible := True;
 end;
 
 procedure TTrial.Paint;
 var
   Child : TComponent;
 begin
-  if Visible then begin
+  if FVisible then begin
     for Child in FChilds do
       IPaintable(TCustomRenderer(Child)).Paint;
   end;
@@ -269,22 +268,21 @@ begin
   FData := ATrialData;
   Parameters := FData.Parameters;
   if Assigned(Parameters) then begin
+    FIStimuli := GetIStimuli;
+    FIStimuli.Load(Parameters, Self);
     with TrialKeys do begin
       with Parameters do begin
         if not Values[LimitedHold].IsEmpty then begin
           FLimitedHoldTimer.Interval := Values[LimitedHold].ToInteger;
         end;
-        if Values[Instruction].IsEmpty or TestMode then begin
-          FIStimuli := GetIStimuli;
-        end else begin
+
+        if not Values[Instruction].IsEmpty then begin
           FInstruction := TInstructionStimuli.Create(Self);
           FInstruction.OnFinalize := @EndInstructionCallBack;
           FIStimuli := FInstruction;
+          FIStimuli.Load(Parameters, Self);
         end;
       end;
-    end;
-    if Assigned(FIStimuli) then begin
-      FIStimuli.Load(Parameters, Self);
     end;
   end else begin
     raise Exception.Create('TTrial.SetTrialData: Parameters not assigned.');
@@ -316,7 +314,7 @@ end;
 procedure TTrial.Hide;
 begin
   if TestMode then begin
-
+    // FVisible := False;
   end else begin
     FVisible := False;
     Timestamp(FIStimuli.CustomName+'.Hide');
@@ -327,6 +325,7 @@ end;
 
 procedure TTrial.DoExpectedResponse;
 begin
+  FVisible := True;
   // test mode
   FText.Show;
   FIStimuli.DoExpectedResponse;
