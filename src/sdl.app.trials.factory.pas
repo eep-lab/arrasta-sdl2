@@ -29,21 +29,21 @@ type
 
   TTrialFactory = class sealed
     strict private
-      class var CurrentTrial: TTrial;
       class var Registry: TTrialRegistry;
       class constructor Create;
       class destructor Destroy;
     public
+      class var CurrentTrial: TTrial;
       class procedure RegisterTrialClass(
         ATrialKind: string; ATrialClass: TTrialClass); static;
       class procedure Play; static;
       class function GetLastTrial : ITrial; static;
-      class procedure Paint;
   end;
 
 implementation
 
-uses session.intertrial
+uses Classes
+   , session.intertrial
    , session.configuration
    , session.configurationfile
    , session.endcriteria
@@ -76,7 +76,7 @@ class procedure TTrialFactory.Play;
 var
   TrialData : TTrialData;
   TrialClass : TTrialClass;
-  LTestMode : Boolean = False;
+  LTestMode : Boolean = True;
 begin
   if Assigned(CurrentTrial) then
   begin
@@ -90,17 +90,12 @@ begin
   EndCriteria.InvalidateTrial(TrialData);
 
   CurrentTrial := TrialClass.Create(nil);
+  //CurrentTrial.Parent := TSDLRenderer;
   CurrentTrial.Name := 'T' + Pool.Trial.UID.ToString;
   CurrentTrial.OnTrialEnd := InterTrial.OnBegin;
-
-  if LTestMode then begin
-    CurrentTrial.TestMode := True;
-    CurrentTrial.Data := TrialData;
-    CurrentTrial.DoExpectedResponse;
-  end else begin
-    CurrentTrial.Data := TrialData;
-    CurrentTrial.Show;
-  end;
+  CurrentTrial.TestMode := LTestMode;
+  CurrentTrial.Data := TrialData;
+  CurrentTrial.Show;
 end;
 
 class function TTrialFactory.GetLastTrial: ITrial;
@@ -108,17 +103,17 @@ var
   LMockData : TTrialData = (ID: -1 ; Kind : 'TLastTrial';
     ReferenceName: 'Mock'; Parameters: nil);
 begin
-  CurrentTrial := TLastTrial.Create(nil);
-  CurrentTrial.OnTrialEnd := nil;
-  CurrentTrial.Data := LMockData;
-  CurrentTrial.Show;
-  Result := CurrentTrial as ITrial;
-end;
-
-class procedure TTrialFactory.Paint;
-begin
-  if Assigned(CurrentTrial) then
-    CurrentTrial.AsIPaintable.Paint;
+  LMockData.Parameters := TStringList.Create;
+  try
+    CurrentTrial := TLastTrial.Create(nil);
+    CurrentTrial.OnTrialEnd := nil;
+    //CurrentTrial.Name := 'T' + Pool.Trial.UID.ToString;
+    CurrentTrial.Data := LMockData;
+    CurrentTrial.Show;
+    Result := CurrentTrial as ITrial;
+  finally
+    LMockData.Parameters.Free;
+  end;
 end;
 
 initialization

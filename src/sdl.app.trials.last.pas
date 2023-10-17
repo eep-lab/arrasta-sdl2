@@ -16,10 +16,10 @@ interface
 uses
   Classes, SysUtils
   , SDL2
-  , session.configuration
   , sdl.app.trials
-  , sdl.app.graphics.text
   , sdl.app.stimuli.contract
+  , sdl.app.stimuli
+  , sdl.app.stimuli.last
   ;
 
 type
@@ -28,18 +28,11 @@ type
 
   TLastTrial = class sealed (TTrial)
     private
-      FRect : TSDL_Rect;
-      FText : TText;
+      FStimuli : TStimuli;
     protected
       function GetIStimuli: IStimuli; override;
-      procedure SetBoundsRect(AValue: TSDL_Rect); override;
-      procedure SetTrialData(ATrialData: TTrialData); override;
     public
       constructor Create(AOwner: TComponent); override;
-      destructor Destroy; override;
-      procedure EndTrial; override;
-      procedure Show; override;
-      procedure Hide; override;
   end;
 
 
@@ -49,51 +42,14 @@ implementation
 
 function TLastTrial.GetIStimuli: IStimuli;
 begin
-  Result := nil;
-end;
-
-procedure TLastTrial.SetBoundsRect(AValue: TSDL_Rect);
-begin
-  FRect := AValue;
-end;
-
-procedure TLastTrial.SetTrialData(ATrialData: TTrialData);
-begin
-  inherited SetTrialData(ATrialData);
-  inherited Show;
+  Result := FStimuli.AsInterface;
 end;
 
 constructor TLastTrial.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
-  FText := TText.Create(Self);
-  FText.FontName := 'Raleway-Regular';
-  FText.FontSize := 150;
-  FText.Load('Fim.');
-  FText.Parent := Self;
-  FText.Centralize;
-  FText.Show;
-end;
-
-destructor TLastTrial.Destroy;
-begin
-  { free stuff }
-  inherited Destroy;
-end;
-
-procedure TLastTrial.EndTrial;
-begin
-  inherited EndTrial;
-end;
-
-procedure TLastTrial.Show;
-begin
-  inherited Show;
-end;
-
-procedure TLastTrial.Hide;
-begin
-  inherited Hide;
+  FStimuli := TLastStimuli.Create(Self);
+  FStimuli.OnFinalize := nil;
 end;
 
 end.

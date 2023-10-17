@@ -15,6 +15,14 @@ interface
 
 uses sdl2;
 
+//type
+//
+//  //Assigned to TTrial.Parent;
+//  TSDLRenderer = class
+//    class var Color : TSDL_Color;
+//    class procedure Paint;
+//  end;
+
 procedure Render;
 
 implementation
@@ -28,7 +36,8 @@ begin
     clWhite.r, clWhite.g, clWhite.b, clWhite.a);
   SDL_RenderClear(PSDLRenderer);
 
-  TTrialFactory.Paint;
+  if Assigned(TTrialFactory.CurrentTrial) then
+    TTrialFactory.CurrentTrial.AsIPaintable.Paint;
 
   SDL_RenderPresent(PSDLRenderer);
   SDL_Delay(1000 div 50);

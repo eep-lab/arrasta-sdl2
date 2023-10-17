@@ -26,6 +26,7 @@ uses
   , sdl.app.stimuli.instruction
   , sdl.app.events.abstract
   , sdl.app.events.custom
+  , sdl.app.graphics.text
   , session.configuration
   ;
 
@@ -35,10 +36,14 @@ type
 
   TTrial = class(TCustomRenderer, ITrial)
     private
+      FText : TText;
+      FParent : TCustomRenderer;
       FLimitedHoldTimer    : TSDLTimer;
       FTestMode: Boolean;
       FVisible: Boolean;
       FIStimuli : IStimuli;
+      procedure SetParent(AValue: TCustomRenderer);
+      procedure SetTestMode(AValue: Boolean);
     protected
       FInstruction : TInstructionStimuli;
       FOnTrialEnd : TNotifyEvent;
@@ -68,7 +73,8 @@ type
       property Visible : Boolean read FVisible;
       property Data : TTrialData read GetTrialData write SetTrialData;
       property OnTrialEnd : TNotifyEvent read GetOnTrialEnd write SetOnTrialEnd;
-      property TestMode : Boolean read FTestMode write FTestMode;
+      property TestMode : Boolean read FTestMode write SetTestMode;
+      property Parent : TCustomRenderer read FParent write SetParent;
   end;
 
 const
@@ -88,6 +94,7 @@ begin
   EventHandler.OnMouseButtonUp := AsIClickable.GetSDLMouseButtonUp;
   EventHandler.OnMouseMotion := AsIMoveable.GetSDLMouseMotion;
   FVisible := False;
+  FTestMode := False;
   FLimitedHoldTimer := TSDLTimer.Create;
 end;
 
@@ -220,6 +227,25 @@ begin
   end;
 end;
 
+procedure TTrial.SetParent(AValue: TCustomRenderer);
+begin
+  if FParent = AValue then Exit;
+  FParent := AValue;
+end;
+
+procedure TTrial.SetTestMode(AValue: Boolean);
+begin
+  if FTestMode = AValue then Exit;
+  FTestMode := AValue;
+  FText := TText.Create(Self);
+  FText.FontName := 'Raleway-Regular';
+  FText.FontSize := 50;
+  FText.Load(Name);
+  FText.Parent := Self;
+  FText.Centralize;
+  FVisible := True;
+end;
+
 procedure TTrial.Paint;
 var
   Child : TComponent;
@@ -248,17 +274,20 @@ begin
         if not Values[LimitedHold].IsEmpty then begin
           FLimitedHoldTimer.Interval := Values[LimitedHold].ToInteger;
         end;
-        if (not Values[Instruction].IsEmpty) and
-           (not TestMode) then begin
+        if Values[Instruction].IsEmpty or TestMode then begin
+          FIStimuli := GetIStimuli;
+        end else begin
           FInstruction := TInstructionStimuli.Create(Self);
           FInstruction.OnFinalize := @EndInstructionCallBack;
-          FInstruction.Load(FData.Parameters, Self);
           FIStimuli := FInstruction;
-        end else begin
-          FIStimuli := GetIStimuli;
         end;
       end;
     end;
+    if Assigned(FIStimuli) then begin
+      FIStimuli.Load(Parameters, Self);
+    end;
+  end else begin
+    raise Exception.Create('TTrial.SetTrialData: Parameters not assigned.');
   end;
 end;
 
@@ -274,7 +303,9 @@ end;
 
 procedure TTrial.Show;
 begin
-  if Assigned(FIStimuli) then begin
+  if TestMode then begin
+    DoExpectedResponse;
+  end else begin
     FIStimuli.Start;
     FLimitedHoldTimer.Start;
     FVisible := True;
@@ -284,7 +315,9 @@ end;
 
 procedure TTrial.Hide;
 begin
-  if Assigned(FIStimuli) then begin
+  if TestMode then begin
+
+  end else begin
     FVisible := False;
     Timestamp(FIStimuli.CustomName+'.Hide');
     FIStimuli.Stop;
@@ -294,6 +327,8 @@ end;
 
 procedure TTrial.DoExpectedResponse;
 begin
+  // test mode
+  FText.Show;
   FIStimuli.DoExpectedResponse;
 end;
 

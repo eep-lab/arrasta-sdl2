@@ -30,7 +30,6 @@ type
       FStimuli : TMTSStimuli;
     protected
       function GetIStimuli: IStimuli; override;
-      procedure SetTrialData(ATrialData: TTrialData); override;
     public
       constructor Create(AOwner: TComponent); override;
       destructor Destroy; override;
@@ -47,12 +46,6 @@ implementation
 function TMTS.GetIStimuli: IStimuli;
 begin
   Result := FStimuli.AsInterface;
-end;
-
-procedure TMTS.SetTrialData(ATrialData: TTrialData);
-begin
-  inherited SetTrialData(ATrialData);
-  FStimuli.Load(ATrialData.Parameters, Self);
 end;
 
 constructor TMTS.Create(AOwner: TComponent);
