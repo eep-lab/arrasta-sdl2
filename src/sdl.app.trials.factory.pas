@@ -91,7 +91,7 @@ begin
 
   CurrentTrial := TrialClass.Create(nil);
   //CurrentTrial.Parent := TSDLRenderer;
-  CurrentTrial.Name := 'T' + Pool.Trial.UID.ToString;
+  CurrentTrial.Name := 'T' + Pool.Session.Trial.UID.ToString;
   CurrentTrial.OnTrialEnd := InterTrial.OnBegin;
   CurrentTrial.TestMode := LTestMode;
   CurrentTrial.Data := TrialData;
