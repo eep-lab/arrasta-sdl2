@@ -26,6 +26,7 @@ type
     ButtonLoadConfigurationFile: TButton;
     ButtonNewConfigurationFile: TButton;
     ButtonRunSession: TButton;
+    CheckBoxTestMode: TCheckBox;
     ComboBoxCondition: TComboBox;
     ComboBoxParticipant: TComboBox;
     IniPropStorage1: TIniPropStorage;
@@ -36,6 +37,7 @@ type
     procedure ButtonNewParticipantClick(Sender: TObject);
     procedure ButtonRunSessionClick(Sender: TObject);
     procedure BeginSession(Sender: TObject);
+    procedure CheckBoxTestModeEditingDone(Sender: TObject);
     procedure EndSession(Sender : TObject);
     procedure CloseSDLApp(Sender : TObject);
     procedure FormCreate(Sender: TObject);
@@ -64,6 +66,7 @@ uses
   , session.fileutils
   , experiments
   , sdl.app
+  , sdl.app.trials.factory
   ;
 
 { TFormBackground }
@@ -130,6 +133,11 @@ procedure TFormBackground.BeginSession(Sender: TObject);
 begin
   TLogger.SetHeader(SessionName, ParticipantFolderName);
   CopyFile(ConfigurationFilename, Pool.BaseFilename+'.ini');
+end;
+
+procedure TFormBackground.CheckBoxTestModeEditingDone(Sender: TObject);
+begin
+   TestMode := CheckBoxTestMode.Enabled;
 end;
 
 procedure TFormBackground.EndSession(Sender: TObject);

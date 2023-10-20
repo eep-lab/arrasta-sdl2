@@ -72,7 +72,7 @@ type
 
 implementation
 
-uses sdl.app.video.methods, sdl.colors, math;
+uses sdl.app.video.methods, sdl.colors, math, sdl.app.trials.factory;
 
 { TStimulus }
 
@@ -156,9 +156,11 @@ begin
       SDL_RenderFillRect(PSDLRenderer, @FRect);
     end;
   end else begin
-    with clGray do
-      SDL_SetRenderDrawColor(PSDLRenderer, r, g, b, a);
-    SDL_RenderFillRect(PSDLRenderer, @FRect);
+    if TestMode then begin
+      with clGray do
+        SDL_SetRenderDrawColor(PSDLRenderer, r, g, b, a);
+      SDL_RenderFillRect(PSDLRenderer, @FRect);
+    end;
   end;
 end;
 
@@ -249,6 +251,9 @@ begin
   Y := RandomRange(0, Height);
   MouseDown(Self, [], Left+X, Top+Y);
 end;
+
+initialization
+  TestMode := False;
 
 end.
 

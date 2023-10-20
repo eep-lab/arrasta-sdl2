@@ -40,6 +40,9 @@ type
       class function GetLastTrial : ITrial; static;
   end;
 
+var
+  TestMode : Boolean = False;
+
 implementation
 
 uses Classes
@@ -92,7 +95,7 @@ begin
   //CurrentTrial.Parent := TSDLRenderer;
   CurrentTrial.Name := 'T' + Pool.Session.Trial.UID.ToString;
   CurrentTrial.OnTrialEnd := InterTrial.OnBegin;
-  CurrentTrial.TestMode := True;
+  CurrentTrial.TestMode := TestMode;
   CurrentTrial.Data := TrialData;
   CurrentTrial.Show;
 end;
