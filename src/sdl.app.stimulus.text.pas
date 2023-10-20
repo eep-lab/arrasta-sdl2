@@ -63,7 +63,7 @@ end;
 procedure TTextStimulus.MouseDown(Sender: TObject; Shift: TCustomShiftState;
   X, Y: Integer);
 begin
-  DoResponse;
+  DoResponse(True);
 end;
 
 procedure TTextStimulus.Load(AParameters: TStringList; AParent: TObject;

@@ -69,7 +69,7 @@ type
       function IsCorrectResponse : Boolean; virtual; abstract;
       procedure Load(AParameters : TStringList;
         AParent : TObject; ARect: TSDL_Rect); virtual; abstract;
-      procedure DoResponse; virtual;
+      procedure DoResponse(AHuman : Boolean); virtual;
       procedure Start; virtual; abstract;
       procedure Stop; virtual; abstract;
       property OnMouseMove: TOnMouseEvent read FOnMouseMove write SetOnMouseMove;
@@ -82,6 +82,7 @@ type
       property Index : Integer read FIndex write FIndex;
       property Position : Integer read FPosition write FPosition;
       property Rectangule  : TRectangule read GetRect write SetRect;
+      property ResponseID : integer read FResponseID;
   end;
 
 
@@ -169,10 +170,15 @@ begin
   Result := Self as IStimulus;
 end;
 
-procedure TStimulus.DoResponse;
+procedure TStimulus.DoResponse(AHuman: Boolean);
 begin
   Inc(FResponseID);
-  Timestamp('Stimulus.Response'+#32+GetID.ToString);
+  if AHuman then begin
+    Timestamp('Stimulus.Response.'+GetID.ToString);
+  end else begin
+    Timestamp('Stimulus.Robot.Response.'+GetID.ToString);
+  end;
+
   if Assigned(OnResponse) then
     OnResponse(Self);
 end;

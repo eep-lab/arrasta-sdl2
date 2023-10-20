@@ -27,7 +27,7 @@ type
       AParent : TObject; ARect: TSDL_Rect);
     procedure Start;
     procedure Stop;
-    procedure DoResponse;
+    procedure DoResponse(AHuman : Boolean);
     function GetID: TStimulusID;
     function ToData : string;
   end;
