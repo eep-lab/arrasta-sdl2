@@ -44,7 +44,6 @@ type
       FOnMouseMove: TOnMouseEvent;
       FOnMouseUp: TOnMouseEvent;
       FOnResponse: TNotifyEvent;
-      function GetID : TStimulusID;
       procedure SetIsSample(AValue: Boolean);
       procedure SetOnMouseDown(AValue: TOnMouseEvent);
       procedure SetOnMouseEnter(AValue: TNotifyEvent);
@@ -54,6 +53,7 @@ type
       procedure SetOnResponse(AValue: TNotifyEvent);
     protected
       FWord : string;
+      function GetID : TStimulusID;
       function ToData: string;
       function GetRect: TRectangule; virtual; abstract;
       function GetStimulusName : string; virtual; abstract;

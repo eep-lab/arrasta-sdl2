@@ -1,0 +1,73 @@
+object FormManualSpeechValidation: TFormManualSpeechValidation
+  Left = 357
+  Height = 350
+  Top = 137
+  Width = 420
+  AutoSize = True
+  BorderStyle = bsSingle
+  BorderWidth = 5
+  Caption = 'Manual Speech Validation'
+  ClientHeight = 350
+  ClientWidth = 420
+  SnapOptions.SnapToMonitor = True
+  LCLVersion = '3.99.0.0'
+  object EditSpeech: TEdit
+    AnchorSideLeft.Control = Owner
+    AnchorSideRight.Control = Owner
+    AnchorSideRight.Side = asrBottom
+    Left = 5
+    Height = 23
+    Top = 200
+    Width = 410
+    Alignment = taCenter
+    Anchors = [akTop, akLeft, akRight]
+    TabOrder = 1
+    Text = 'EditSpeech'
+  end
+  object LabelQuestion1: TLabel
+    AnchorSideLeft.Control = Owner
+    AnchorSideTop.Control = Owner
+    AnchorSideRight.Control = Owner
+    AnchorSideRight.Side = asrBottom
+    Left = 5
+    Height = 28
+    Top = 5
+    Width = 410
+    Alignment = taCenter
+    Anchors = [akTop, akLeft, akRight]
+    Caption = 'LabelQuestion1'
+    Font.Height = -20
+    ParentFont = False
+  end
+  object ButtonYes: TButton
+    Left = 288
+    Height = 41
+    Top = 296
+    Width = 120
+    Caption = 'Acerto (Sim)'
+    Color = clGreen
+    ModalResult = 6
+    TabOrder = 0
+  end
+  object ButtonNo: TButton
+    Left = 8
+    Height = 41
+    Top = 296
+    Width = 120
+    Caption = 'Erro (Não)'
+    ModalResult = 7
+    TabOrder = 2
+  end
+  object LabelQuestion2: TLabel
+    AnchorSideLeft.Control = Owner
+    AnchorSideRight.Control = Owner
+    AnchorSideRight.Side = asrBottom
+    Left = 5
+    Height = 15
+    Top = 168
+    Width = 410
+    Alignment = taCenter
+    Anchors = [akTop, akLeft, akRight]
+    Caption = 'Resposta do participante em caso de erro:'
+  end
+end
