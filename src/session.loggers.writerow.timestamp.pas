@@ -5,7 +5,7 @@ unit session.loggers.writerow.timestamp;
 interface
 
 uses
-  session.loggers.instances;
+  session.loggers.types;
 
 procedure Timestamp(AEvent : string);
 procedure InitializeBaseHeader;
