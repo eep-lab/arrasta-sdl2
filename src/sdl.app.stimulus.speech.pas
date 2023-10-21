@@ -19,7 +19,7 @@ uses
   //, fgl
   , sdl.app.graphics.rectangule
   , sdl.app.stimulus
-  , sdl.app.stimulus.typeable
+  //, sdl.app.stimulus.typeable
   , sdl.app.graphics.toggle
   , sdl.app.events.abstract
   , sdl.app.audio
@@ -32,15 +32,15 @@ type
 
   TSpeechStimulus = class(TStimulus)
   private
-    FTextFromVocalResponse : string;
+    //FTextFromVocalResponse : string;
     FRect : TSDL_Rect;
     FRecorder : TAudioRecorderComponent;
     FPlayback : TAudioPlaybackComponent;
     FRecorderButton : TToggleButton;
     FPlaybackButton : TToggleButton;
   protected
+    procedure DoResponse(AHuman: Boolean); override;
     function GetRect: TRectangule; override;
-    procedure SetRect(AValue: TRectangule); override;
     function GetStimulusName : string; override;
     //procedure RecorderTerminated(Sender: TObject);
     //procedure PlaybackTerminated(Sender: TObject);
@@ -58,23 +58,32 @@ type
 
 implementation
 
-uses session.pool
+uses Controls
+   , session.pool
    , sdl.app.output
    , sdl.app.renderer.custom
    , session.constants.mts
    , session.strutils
-   , session.strutils.mts;
+   , session.strutils.mts
+   , session.loggers.writerow.timestamp
+   , forms.modal.speechvalidation
+   ;
 
 { TSpeechStimulus }
+
+procedure TSpeechStimulus.DoResponse(AHuman: Boolean);
+var
+  LName: String;
+begin
+  inherited DoResponse(AHuman);
+  LName := GetID.ToString.Replace(#9, '-').Replace(#32, '-');
+  FRecorder.SaveToFile(Pool.RootDataResponses+LName);
+  FormManualSpeechValidation.ExpectedText := FWord;
+end;
 
 function TSpeechStimulus.GetRect: TRectangule;
 begin
   Result := FRecorderButton as TRectangule;
-end;
-
-procedure TSpeechStimulus.SetRect(AValue: TRectangule);
-begin
-  // do nothing
 end;
 
 function TSpeechStimulus.GetStimulusName: string;
@@ -108,9 +117,14 @@ begin
 end;
 
 function TSpeechStimulus.IsCorrectResponse: Boolean;
+const
+  EQUAL_WORDS = mrYes;
 begin
-  //Result := LowerCase(FTextFromVocalResponse) = FWord;
-  Result := True;
+  Result := FormManualSpeechValidation.ShowModal = EQUAL_WORDS;
+  if not Result then begin
+    Timestamp(
+      'Incorrect.Response' + #9 + FormManualSpeechValidation.EditSpeech.Text);
+  end;
 end;
 
 procedure TSpeechStimulus.Load(AParameters: TStringList; AParent: TObject;

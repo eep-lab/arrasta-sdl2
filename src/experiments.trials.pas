@@ -96,7 +96,6 @@ var
   LBlockID : integer;
   LCycle : integer;
   LBackUpBlock : integer = 0;
-  LEndOnCriteria : Boolean;
   LTrials : integer;
   LHitCriterion : integer;
   LComparisons : integer;
@@ -113,6 +112,7 @@ var
   LStartAt : TStartAt;
   LParser : TCSVRows;
   LRow : TStringList;
+  LHasBlocksFile : Boolean;
 
   function ToAlphaNumericCode(S : string) : TAlphaNumericCode;
   var
@@ -126,7 +126,15 @@ var
   function GetWord(APhase : TPhase; ACode : TAlphaNumericCode) : TWord;
   const
     LCodes = [Low(E1CyclesCodeRange)..High(E1CyclesCodeRange)];
+    LPreCodes = [Low(E1PreTrainingRange)..High(E1PreTrainingRange)];
   begin
+    if ACode in LPreCodes then begin
+      Result := HashPreTrainingWords[UniqueCodeToStr(ACode)]^;
+      Result.Phase := APhase;
+      SetComparisons(Result);
+      Exit;
+    end;
+
     if ACode in LCodes then begin
       Result := HashWords[E1WordPerCycleCode[APhase.Cycle, ACode]]^;
       Result.Phase := APhase;
@@ -149,7 +157,8 @@ begin
   LParser := TCSVRows.Create;
   try
     // parse blocks
-    if BlocksFileExists(AFilename) then begin
+    LHasBlocksFile := BlocksFileExists(AFilename);
+    if LHasBlocksFile then begin
       LParser.Clear;
       LParser.LoadFromFile(InsideBlocksSubFolder(AFilename));
       for LRow in LParser do  begin
@@ -193,13 +202,6 @@ begin
         end;
         Writer.WriteBlock;
       end;
-    end else begin
-      LBlockID := 0;
-      Writer.CurrentBlock := LBlockID;
-      with Writer.BlockConfig do begin
-        Values['Name'] := 'Block ' + LBlockID.ToString;
-      end;
-      Writer.WriteBlock;
     end;
 
     // parse trials
@@ -222,6 +224,15 @@ begin
         LWord := GetWord(LPhase, ToAlphaNumericCode(LCode));
 
         Writer.CurrentBlock := LBlockID;
+        if LHasBlocksFile then begin
+          { do nothing }
+        end else begin
+          with Writer.BlockConfig do begin
+            Values['Name'] := 'Block ' + (LBlockID+1).ToString;
+          end;
+          Writer.WriteBlock;
+        end;
+
         for i := 0 to LTrials -1 do begin
           LName := LTrialID.ToString + #32 + '(' + LWord.Caption + #32 +
             LRelation + #32 + LComparisons.ToString + 'C)';

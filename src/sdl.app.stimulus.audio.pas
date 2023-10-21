@@ -37,6 +37,7 @@ type
     function GetRect: TRectangule; override;
     procedure SetRect(AValue: TRectangule); override;
     procedure SoundFinished(Sender: TObject);
+    procedure SoundStart(Sender: TObject);
     procedure MouseDown(Sender: TObject; Shift: TCustomShiftState;
       X, Y: Integer); override;
     procedure MouseEnter(Sender: TObject); override;
@@ -82,13 +83,20 @@ end;
 
 procedure TAudioStimulus.SoundFinished(Sender: TObject);
 begin
+  Timestamp('Stop.' + GetStimulusName);
   if IsSample then begin
-    Timestamp('Stop.' + GetStimulusName);
-    DoResponse;
-    FSound.SetOnStop(nil);
+    if ResponseID = 0 then begin
+      DoResponse(False);
+      OnResponse := nil;
+    end;
   end else begin
-    DoResponse;
+    DoResponse(False);
   end;
+end;
+
+procedure TAudioStimulus.SoundStart(Sender: TObject);
+begin
+  Timestamp('Start.' + GetStimulusName);
 end;
 
 procedure TAudioStimulus.MouseDown(Sender: TObject; Shift: TCustomShiftState;
@@ -100,7 +108,7 @@ begin
     if Assigned(OnMouseDown) then
       OnMouseDown(Self, Shift, X, Y);
 
-    Timestamp('Start.' + GetStimulusName);
+    Timestamp('Stimulus.Response.' + GetStimulusName);
     FSound.Play;
   end;
 end;
@@ -144,14 +152,14 @@ begin
   FPicture.OnMouseExit := @MouseExit;
 
   FWord := GetWordValue(AParameters, IsSample, Index);
-  FSound := SDLAudio.LoadFromFile(FWord+'.wav');
+  FSound := SDLAudio.LoadFromFile(AudioFile(FWord));
   FSound.SetOnStop(@SoundFinished);
+  FSound.SetOnStart(@SoundStart);
 end;
 
 procedure TAudioStimulus.Start;
 begin
   if IsSample then begin
-    Timestamp('Start.' + GetStimulusName);
     FSound.Play;
     FPicture.Show;
   end else begin

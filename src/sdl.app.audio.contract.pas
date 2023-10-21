@@ -29,6 +29,7 @@ type
     //function ShortPath : string;
     procedure DoOnStop;
     procedure SetOnStop(ANotifyEvent: TNotifyEvent);
+    procedure SetOnStart(ANotifyEvent: TNotifyEvent);
     procedure LoadFromFile(AFilename : string);
     procedure Play;
     procedure Stop;

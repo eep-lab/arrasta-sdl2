@@ -1,4 +1,4 @@
-ID,BackUpBlock,BackUpBlockErrors,MaxBlockRepetition,MaxBlockRepetitionInSession,EndOnHitCriterion,NextBlockOnHitCriterion,HitCriterion
+ID,BackUpBlock,BackUpBlockErrors,MaxBlockRepetition,MaxBlockRepetitionInSession,EndSessionOnHitCriterion,NextBlockOnHitCriterion,HitCriterion
 1,0,0,0,0,0,0,0
 2,1,2,0,0,0,0,0
 3,2,2,0,0,0,0,0

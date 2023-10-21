@@ -13,25 +13,15 @@ unit session.loggers.instances;
 
 interface
 
-uses session.loggers;
+uses session.loggers, session.loggers.types;
 
-type
+function GetSaveDataProc(ALogger: TLoggers): TDataProcedure;
+function GetLogger(var ALogger: TLoggers) : TLogger;
+function CreateLogger(ALogger: TLoggers;
+  AFilename, AHeader : string) : string;
 
-  { TDataProcedure }
-  TDataProcedure = procedure (S : string) of object;
-
-  // LGData have blc, trial data.
-  // LGTimestamps for stm and response data.
-  TLoggers = (LGData, LGTimestamps);
-
-  function GetSaveDataProc(ALogger: TLoggers): TDataProcedure;
-  function GetLogger(ALogger: TLoggers) : TLogger;
-  function CreateLogger(ALogger: TLoggers;
-    AFilename, AHeader : string) : string;
-
-  procedure FreeLogger(ALogger: TLoggers; AFooter : string);
-  function LoggerAlive(Logger : TLoggers) : Boolean;
-  function MockHeader : string;
+procedure FreeLogger(ALogger: TLoggers; AFooter : string);
+function MockHeader : string;
 
 var
   DataFilename : string = '';
@@ -50,11 +40,13 @@ implementation
 
 uses SysUtils
    , session.pool
+   , session.loggers.writerow
+   , session.loggers.writerow.timestamp
    ;
 
 var
-  TimestampsLog : TLogger = nil;
-  DataLog : TLogger = nil;
+  TimestampsLog : TLogger;
+  DataLog : TLogger;
 
 function GetSaveDataProc(ALogger: TLoggers): TDataProcedure;
 var LRegdata : TLogger;
@@ -63,19 +55,8 @@ begin
   Result := @LRegdata.SaveData;
 end;
 
-function GetLogger(ALogger: TLoggers): TLogger;
-var
-  FileName : string;
+function GetLogger(var ALogger: TLoggers): TLogger;
 begin
-  if not LoggerAlive(ALogger) then begin
-    FileName := Pool.RootData + '001';
-    case ALogger of
-      LGTimestamps:
-        TimestampsFilename := CreateLogger(ALogger, FileName, MockHeader);
-      LGData:
-        DataFilename := CreateLogger(ALogger, FileName, MockHeader);
-    end;
-  end;
   case ALogger of
     LGTimestamps: Result := TimestampsLog;
     LGData: Result := DataLog;
@@ -86,19 +67,9 @@ procedure FreeLogger(ALogger: TLoggers; AFooter: string);
 var LRegdata : TLogger;
 begin
   LRegdata := GetLogger(ALogger);
-  with LRegdata do
-    begin
-      SaveData(AFooter);
-      Free;
-    end;
-end;
-
-function LoggerAlive(Logger: TLoggers): Boolean;
-begin
-  case Logger of
-    LGTimestamps: Result := Assigned(TimestampsLog);
-    LGData: Result := Assigned(DataLog);
-  end;
+  LRegdata.SaveData(AFooter);
+  LRegdata.Free;
+  LRegdata := nil;
 end;
 
 function MockHeader: string;
@@ -110,27 +81,23 @@ end;
 
 function CreateLogger(ALogger: TLoggers; AFilename, AHeader: string) : string;
 var
-  LLogger : TLogger;
-
-  function Ext(LG : TLoggers): string;
-  begin
-    case LG of
-      LGTimestamps: Result := '.timestamps';
-      LGData: Result := '.data';
-    end;
-  end;
-
-  function LoggerFunc:TLogger;
-  begin
-
-    Result := TLogger.Create(AFilename + Ext(ALogger));
-    Result.SaveData(AHeader);
-  end;
+  LLogger: TLogger;
 begin
-  LLogger := LoggerFunc;
   case ALogger of
-    LGTimestamps: TimestampsLog := LLogger;
-    LGData: DataLog := LLogger;
+    LGTimestamps: begin
+      TimestampsLog := TLogger.Create(AFilename + '.timestamps');
+      TimestampsLog.SaveData(AHeader);
+      Session.Loggers.WriteRow.Timestamp.SaveData := @TimestampsLog.SaveData;
+      Session.Loggers.WriteRow.Timestamp.InitializeBaseHeader;
+      LLogger := TimestampsLog;
+    end;
+    LGData: begin
+      DataLog := TLogger.Create(AFilename + '.data');
+      DataLog.SaveData(AHeader);
+      Session.Loggers.Writerow.SaveData := @DataLog.SaveData;
+      Session.Loggers.Writerow.InitializeBaseHeader;
+      LLogger := DataLog;
+    end;
   end;
   Result := LLogger.FileName;
 end;

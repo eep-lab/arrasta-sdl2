@@ -60,7 +60,7 @@ end;
 procedure TPictureStimulus.MouseDown(Sender: TObject; Shift: TCustomShiftState;
   X, Y: Integer);
 begin
-  DoResponse;
+  DoResponse(True);
 end;
 
 procedure TPictureStimulus.Load(AParameters: TStringList; AParent: TObject;

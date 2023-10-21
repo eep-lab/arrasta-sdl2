@@ -14,11 +14,12 @@ unit session.loggers.writerow;
 interface
 
 uses
-  Classes, SysUtils;
+  Classes, SysUtils, session.loggers.types;
 
 procedure WriteDataRow;
 
 var
+  SaveData : TDataProcedure = nil;
   BlockName : string;
   TrialName : string;
   //ITIBegin  : Extended;
@@ -26,17 +27,16 @@ var
 
 procedure AppendToTrialHeader(AHeader : string);
 procedure AppendToTrialData(AData : string);
+procedure InitializeBaseHeader;
 
 implementation
 
 uses session.constants
    , timestamps
    , session.loggers
-   , session.loggers.instances
    , session.pool;
 
 var
-  SaveData : TDataProcedure = nil;
   BaseHeader,
   LastTrialHeader,
   TrialHeader,
@@ -85,10 +85,6 @@ var
 const
   EmptyName = '--------';
 begin
-  if not Assigned(SaveData) then begin
-    SaveData := GetSaveDataProc(LGData);
-  end;
-
   if TrialHeader <> LastTrialHeader then begin
     LData := TLogger.Row([BaseHeader, TrialHeader]);
     LastTrialHeader := TrialHeader;
@@ -117,9 +113,6 @@ begin
   TrialData := '';
   TrialHeader := '';
 end;
-
-initialization
-  InitializeBaseHeader;
 
 end.
 

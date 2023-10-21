@@ -16,10 +16,12 @@ interface
 uses picanco.experiments.words.types;
 
 var
+  PreTrainingWords : TWords;
   Words : TWords;
   NewWords : TWords;
   HashWords : THashWords;
   HashNewWords : THashWords;
+  HashPreTrainingWords : THashWords;
 
 
 procedure SetComparisons(var AWord: TWord);
@@ -39,8 +41,8 @@ uses
 procedure SetComparisons(var AWord: TWord);
 var
   i: Integer;
-  Code : TAlphaNumericCode;
-  LWord : PTWord;
+  //Code : TAlphaNumericCode;
+  //LWord : PTWord;
   LCandidateNegativeWords : TWordList;
   LCandidateNegativeComparisons : TWordList;
   LCandidateNegativeWordsWithNewImages : TWordList;
@@ -105,6 +107,24 @@ begin
         LCandidateNegativeComparisons.Add(
           HashWords[E1WordPerCycleCode[AWord.Cycle, R1]]);
       end;
+      X1: begin
+        LCandidateNegativeComparisons.Add(
+          HashPreTrainingWords['X2']);
+        LCandidateNegativeComparisons.Add(
+          HashPreTrainingWords['Y1']);
+        LCandidateNegativeComparisons.Add(
+          HashPreTrainingWords['Y2']);
+      end;
+      X2: begin
+        LCandidateNegativeComparisons.Add(
+          HashPreTrainingWords['X1']);
+        LCandidateNegativeComparisons.Add(
+          HashPreTrainingWords['Y1']);
+        LCandidateNegativeComparisons.Add(
+          HashPreTrainingWords['Y2']);
+      end;
+      else
+        raise EArgumentOutOfRangeException.Create('SetComparisons error');
     end;
 
     for i := Low(E1WordsWithNewImages) to High(E1WordsWithNewImages) do begin
@@ -290,6 +310,16 @@ begin
   HashNewWords := THashWords.Create;
   for i := Low(NewWords) to High(NewWords) do begin
     HashNewWords[NewWords[i].Caption] := @NewWords[i];
+  end;
+
+  SetLength(PreTrainingWords, Length(E1UniqueCodesPreTraining));
+  HashPreTrainingWords := THashWords.Create;
+  for i := Low(E1UniqueCodesPreTraining) to
+           High(E1UniqueCodesPreTraining) do begin
+    PreTrainingWords[i].Caption := UniqueCodeToStr(E1UniqueCodesPreTraining[i]);
+    PreTrainingWords[i].CycleCode := E1UniqueCodesPreTraining[i];
+    SetLength(PreTrainingWords[i].CandidateNegativeWords, MaxComparisons-1);
+    HashPreTrainingWords[PreTrainingWords[i].Caption] := @PreTrainingWords[i];
   end;
 end;
 

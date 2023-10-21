@@ -10,7 +10,7 @@ uses
   athreads,
   {$ENDIF}
   Interfaces, // this includes the LCL widgetset
-  Forms, Forms.Main;
+  Forms, Forms.Main, Forms.Modal.SpeechValidation;
 
 {$R *.res}
 
@@ -20,6 +20,8 @@ begin
   Application.Scaled := True;
   Application.Initialize;
   Application.CreateForm(TFormBackground, FormBackground);
+  Application.CreateForm(
+    TFormManualSpeechValidation, FormManualSpeechValidation);
   Application.Run;
 end.
 

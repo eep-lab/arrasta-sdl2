@@ -30,7 +30,6 @@ type
       FStimuli : TInstructionStimuli;
     protected
       function GetIStimuli: IStimuli; override;
-      procedure SetTrialData(ATrialData: TTrialData); override;
     public
       constructor Create(AOwner: TComponent); override;
       destructor Destroy; override;
@@ -47,11 +46,6 @@ implementation
 function TInstruction.GetIStimuli: IStimuli;
 begin
   Result := FStimuli.AsInterface;
-end;
-
-procedure TInstruction.SetTrialData(ATrialData: TTrialData);
-begin
-  inherited SetTrialData(ATrialData);
 end;
 
 constructor TInstruction.Create(AOwner: TComponent);

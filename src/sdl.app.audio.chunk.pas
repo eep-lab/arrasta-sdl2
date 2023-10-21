@@ -24,11 +24,11 @@ type
   private
     FFilename : string;
     FChannel: cint;
-    FOnStartPlaying: TNotifyEvent;
+    FOnStart: TNotifyEvent;
     FOnStop : TNotifyEvent;
     FChunk : PMix_Chunk;
     procedure DoOnStop;
-    procedure SetOnStartPlaying(AValue: TNotifyEvent);
+    procedure SetOnStart(AValue: TNotifyEvent);
     procedure SetOnStop(AValue: TNotifyEvent);
   public
     constructor Create; reintroduce;
@@ -41,7 +41,7 @@ type
     procedure LoadFromFile(AFilename : string);
     procedure Play;
     procedure Stop;
-    property OnStartPlaying : TNotifyEvent read FOnStartPlaying write SetOnStartPlaying;
+    property OnStart : TNotifyEvent read FOnStart write SetOnStart;
     property OnStop : TNotifyEvent read FOnStop write SetOnStop;
     property Channel : cint read FChannel write FChannel;
   end;
@@ -58,10 +58,10 @@ begin
     OnStop(Self);
 end;
 
-procedure TChunk.SetOnStartPlaying(AValue: TNotifyEvent);
+procedure TChunk.SetOnStart(AValue: TNotifyEvent);
 begin
-  if FOnStartPlaying = AValue then Exit;
-  FOnStartPlaying := AValue;
+  if FOnStart = AValue then Exit;
+  FOnStart := AValue;
 end;
 
 procedure TChunk.SetOnStop(AValue: TNotifyEvent);
@@ -72,7 +72,7 @@ end;
 
 constructor TChunk.Create;
 begin
-  FOnStartPlaying := nil;
+  FOnStart := nil;
   FOnStop := nil;
 end;
 
@@ -116,7 +116,7 @@ end;
 
 procedure TChunk.Play;
 begin
-  if Assigned(OnStartPlaying) then OnStartPlaying(Self);
+  if Assigned(OnStart) then OnStart(Self);
   Mix_PlayChannel(FChannel, FChunk, 0);
 end;
 

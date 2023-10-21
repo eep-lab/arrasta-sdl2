@@ -110,6 +110,8 @@ function CycleCodeFromWord(AWord : string;
 
 function UniqueCodeFromWord(AWord : string): TAlphaNumericCode;
 
+function UniqueCodeToStr(AUniqueCode: TAlphaNumericCode) : string;
+
 implementation
 
 function CycleCodeFromWord(AWord : string;
@@ -157,6 +159,11 @@ begin
       end;
     end;
   end;
+end;
+
+function UniqueCodeToStr(AUniqueCode: TAlphaNumericCode): string;
+begin
+  WriteStr(Result, AUniqueCode);
 end;
 
 end.

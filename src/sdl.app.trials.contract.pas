@@ -15,7 +15,9 @@ unit sdl.app.trials.contract;
 
 interface
 
-uses Classes, Session.Configuration, sdl.app.stimuli.contract;
+uses Classes, Session.Configuration
+  , sdl.app.stimuli.contract
+  , sdl.app.paintable.contract;
 
 type
 
@@ -29,6 +31,7 @@ type
     function GetTrialData: TTrialData;
     function InterTrialInterval : Cardinal;
     function AsITrial : ITrial;
+    function AsIPaintable : IPaintable;
     function GetIStimuli : IStimuli;
     procedure Hide;
     procedure SetOnTrialEnd(ANotifyEvent: TNotifyEvent);

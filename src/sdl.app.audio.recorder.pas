@@ -59,8 +59,7 @@ begin
       if Assigned(FRecorder.Starter) then begin
         LButton := TToggleButton(FRecorder.Starter);
         LStimulus := LButton.Owner as IStimulus;
-        LStimulus.DoResponse;
-        FRecorder.SaveToFile(Pool.RootDataResponses+LStimulus.GetID.ToString);
+        LStimulus.DoResponse(True);
       end;
     end;
 

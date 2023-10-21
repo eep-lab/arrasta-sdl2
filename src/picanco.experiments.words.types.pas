@@ -27,7 +27,7 @@ type
   TModality = (ModalityNone, ModalityA, ModalityB, ModalityC, ModalityD);
 
   TCondition = (
-    ConditionNone,
+    ConditionNone,            // Pre-training
     Condition_AB,             // Audio-To-Picture
     Condition_AC_CD,          // Audio-To-Text   and Text-To-Speech
     Condition_BC_CB_Training, // Picture-To-Text and Text-To-Picture
@@ -120,6 +120,7 @@ type
 
   TAlphaNumericCodes = array of TAlphaNumericCode;
 
+  E1PreTrainingRange = X1..Y2;
   E1CyclesRange = Cycle1..Cycle6;
   E1CyclesCodeRange = T1..A2;
   E1CyclesCodeRangeWithImages = T1..R2;
@@ -456,11 +457,7 @@ begin
     'S-''s: '+ CandidateNegativeWords[0]^.Caption + #32 +
                CandidateNegativeWords[1]^.Caption + #32 +
                CandidateNegativeWords[2]^.Caption + #32 +
-               CandidateNegativeWords[3]^.Caption + LineEnding +
-    'A: '   + Filenames.Audio  + LineEnding +
-    'B: '   + Filenames.Image  + LineEnding +
-    'C: '   + Filenames.Text   + LineEnding +
-    'D: '   + Filenames.Speech;
+               CandidateNegativeWords[3]^.Caption;
 end;
 
 function TWord.IsEmpty: Boolean;

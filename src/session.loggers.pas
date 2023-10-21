@@ -39,14 +39,13 @@ type
       property FileIndex : integer read FFileIndex;
   end;
 
-
 implementation
 
 uses SysUtils
   , DateUtils
   , LazFileUtils
   , session.pool
-  , session.loggers.writerow.timestamp
+  , session.loggers.types
   , session.loggers.instances;
 
 const FirstBasename: string = '001';
@@ -129,8 +128,6 @@ begin
     HBEGIN_TIME + #9 + DateTimeToStr(Date) + #9 + TimeToStr(StartTime) + LineEnding;
   DataFilename := CreateLogger(LGData, LFirstFilename, LHeader);
   TimestampsFilename := CreateLogger(LGTimestamps, LFirstFilename, LHeader);
-  session.loggers.writerow.timestamp.SaveData := GetSaveDataProc(LGTimestamps);
-  session.loggers.writerow.timestamp.InitializeBaseHeader;
   Pool.BaseFilename := GetBaseFilename;
   Pool.Session.ID := ExtractFileNameOnly(Pool.BaseFilename).ToInteger;
 end;

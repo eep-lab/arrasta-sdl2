@@ -41,6 +41,7 @@ type
 
   TCustomRenderer = class(TComponent, IClickable, IPaintable, IMoveable)
   private
+    FRect : TSDL_Rect;
     FMouseInside : Boolean;
     FOnMouseMove: TOnMouseEvent;
     FOnMouseDown: TOnMouseEvent;
@@ -71,7 +72,7 @@ type
     function GetMouseInside : Boolean; virtual;
     function PointInside(SDLPoint : TSDL_Point) : Boolean;
     function GetBoundsRect : TSDL_Rect; virtual;
-    procedure SetBoundsRect(AValue : TSDL_Rect); virtual; abstract;
+    procedure SetBoundsRect(AValue : TSDL_Rect); virtual;
     procedure SetMouseInside(AValue : Boolean);
     procedure Paint; virtual; abstract;
     procedure MouseMove(Sender: TObject;
@@ -189,6 +190,11 @@ end;
 function TCustomRenderer.GetBoundsRect: TSDL_Rect;
 begin
   Result := MonitorFromWindow;
+end;
+
+procedure TCustomRenderer.SetBoundsRect(AValue: TSDL_Rect);
+begin
+  FRect := AValue;
 end;
 
 procedure TCustomRenderer.SetMouseInside(AValue: Boolean);
