@@ -71,6 +71,8 @@ procedure TTextStimulus.Load(AParameters: TStringList; AParent: TObject;
 begin
   FWord := GetWordValue(AParameters, IsSample, Index);
   FText := TText.Create(Self);
+  FText.FontName := 'Picanco_et_al';
+  //FText.FontSize := 50;
   FText.Load(FWord);
   FText.CentralizeWith(ARect);
   FText.Parent := TCustomRenderer(AParent);

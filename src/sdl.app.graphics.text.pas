@@ -118,7 +118,7 @@ begin
   inherited Create(AOwner);
   FWrapped := False;
   FWrappedWidth := 800;
-  FFontName := 'Picanco_et_al';
+  FFontName := '';
   FFont := nil;
   FSDLTexture := nil;
   Visible := False;
@@ -131,6 +131,9 @@ var
   PSDLSurface : PSDL_Surface;
   PText : PAnsiChar;
 begin
+  if S.IsEmpty then begin
+    raise Exception.Create('TText.Load cannot load empty strings');
+  end;
   PText := PAnsiChar(S);
   //PSDLSurface := TTF_RenderUTF8_LCD(
   if Wrapped then begin
