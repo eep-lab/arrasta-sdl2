@@ -345,7 +345,7 @@ var
 begin
   LWavWriter := TWavWriter.Create;
   try
-    if LWavWriter.StoreToFile(aFileName+'.wav') then begin
+    if LWavWriter.StoreToFile(AFileName+'.wav') then begin
       with LWavWriter, FAudioSpec do begin
         fmt.Channels         := channels;
         fmt.SampleRate       := freq;
