@@ -152,7 +152,7 @@ begin
   FPicture.OnMouseExit := @MouseExit;
 
   FWord := GetWordValue(AParameters, IsSample, Index);
-  FSound := SDLAudio.LoadFromFile(FWord+'.wav');
+  FSound := SDLAudio.LoadFromFile(AudioFile(FWord));
   FSound.SetOnStop(@SoundFinished);
   FSound.SetOnStart(@SoundStart);
 end;

@@ -25,9 +25,11 @@ type
     RootData : string;
     RootDataResponses: string;
     RootMedia : string;
+    RootAudio : string;
     BaseFileName : string;
     BaseFilePath : string;
     AssetsBasePath : string;
+    AudioBasePath : string;
     ResponsesBasePath : string;
     TimeStart : Extended;
     TestMode : Boolean;
@@ -46,6 +48,7 @@ implementation
 
 uses SysUtils, SDL2
   , FileUtil
+  , session.strutils
   ;
 
 initialization
@@ -54,14 +57,15 @@ initialization
     AppName := 'Stimulus Control';
     BaseFileName := '';
     BaseFilePath := SDL_GetBasePath();
-    RootData := BaseFilePath + 'data' + DirectorySeparator;
+    RootData := AsPath(BaseFilePath, 'data');
     RootDataResponses := '';
-    RootMedia := BaseFilePath +  'media' + DirectorySeparator;
-    AssetsBasePath:='assets'+ DirectorySeparator;
-    ResponsesBasePath:= 'responses' + DirectorySeparator;
+    RootMedia := AsPath('media');
+    AudioBasePath := AsPath('wav', 'rafael');
+    AssetsBasePath := AsPath('assets');
+    ResponsesBasePath:= AsPath('responses');
     ForceDirectories(RootData);
     ForceDirectories(RootMedia);
-    ForceDirectories(RootMedia+AssetsBasePath);
+    ForceDirectories(AsPath(RootMedia, AssetsBasePath));
     MonitorToShow := 0;
     TestMode := False;
     EndCriteria := nil;

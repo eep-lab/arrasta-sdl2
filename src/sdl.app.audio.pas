@@ -75,8 +75,8 @@ end;
 
 procedure AllocateDefaultAudioChannels;
 begin
-  SDLAudio.LoadFromFile(Pool.AssetsBasePath+DirectorySeparator+'acerto.wav');
-  SDLAudio.LoadFromFile(Pool.AssetsBasePath+DirectorySeparator+'erro.wav');
+  SDLAudio.LoadFromFile(Pool.AssetsBasePath+'acerto.wav');
+  SDLAudio.LoadFromFile(Pool.AssetsBasePath+'erro.wav');
 end;
 
 { TSDLAudio }
