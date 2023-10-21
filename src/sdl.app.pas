@@ -17,6 +17,7 @@ uses
   Classes, SysUtils
   , SDL2
   , ctypes
+  , sdl.app.video.types
   {$IFDEF NO_LCL}
   , sdl.app.events.nolcl
   {$ELSE}
@@ -39,18 +40,18 @@ type
       FSDLWindow: PSDL_Window;
       FSDLRenderer: PSDL_Renderer;
       FSDLSurface : PSDL_Surface;
-      FMonitors : array of TSDL_Rect;
+      FMonitors : TMonitors;
       function GetCurrentMonitor : TSDL_Rect;
       function GetMonitor(i : cint): TSDL_Rect;
       function GetMouse: TPoint;
       procedure SetCurrentMonitor(i : cint);
       procedure SetMouse(AValue: TPoint);
-      procedure LoadMonitors;
       procedure KeyDown(const event: TSDL_KeyboardEvent);
       procedure SetOnClose(AValue: TNotifyEvent);
     public
-      constructor Create(ATitle : PAnsiChar = 'Stimulus Control';
-        AMonitor : cint = 0); reintroduce;
+      class procedure LoadMonitors(var AMonitors: TMonitors);
+      class procedure GetAvailableMonitors(AStrings: TStrings);
+      constructor Create(ATitle : PAnsiChar = 'Stimulus Control'); reintroduce;
       destructor Destroy; override;
       procedure Run;
       procedure SetupVideo(AMonitor : cint = 0);
@@ -86,15 +87,13 @@ uses sdl.app.output
 
 { TSDLApplication }
 
-procedure TSDLApplication.LoadMonitors;
+class procedure TSDLApplication.LoadMonitors(var AMonitors: TMonitors);
 var
   i: Integer;
 begin
-  SetLength(FMonitors, SDL_GetNumVideoDisplays);
-  for i := Low(FMonitors) to High(FMonitors) do begin
-    SDL_GetDisplayBounds(i, @FMonitors[i]);
-    Print('Display'.Join(#32,
-      [i, FMonitors[i].x, FMonitors[i].y, FMonitors[i].w, FMonitors[i].h]));
+  SetLength(AMonitors, SDL_GetNumVideoDisplays);
+  for i := Low(AMonitors) to High(AMonitors) do begin
+    SDL_GetDisplayBounds(i, @AMonitors[i]);
   end;
 end;
 
@@ -130,7 +129,7 @@ end;
 
 procedure TSDLApplication.SetCurrentMonitor(i: cint);
 begin
-  LoadMonitors;
+  LoadMonitors(FMonitors);
   if i > SDL_GetNumVideoDisplays then Exit;
   with FMonitors[i] do begin
     SDL_SetWindowPosition(FSDLWindow, x, y);
@@ -145,12 +144,12 @@ end;
 
 function TSDLApplication.GetMonitor(i: cint): TSDL_Rect;
 begin
-  LoadMonitors;
+  LoadMonitors(FMonitors);
   if i > SDL_GetNumVideoDisplays then Exit;
   Result := FMonitors[i];
 end;
 
-constructor TSDLApplication.Create(ATitle: PAnsiChar; AMonitor: cint);
+constructor TSDLApplication.Create(ATitle: PAnsiChar);
 var
   LError : string;
 begin
@@ -165,7 +164,7 @@ begin
     Print(LError);
     raise Exception.Create(LError);
   end;
-  SetupVideo(AMonitor);
+  LoadMonitors(FMonitors);
 
   if SDL_InitSubSystem(SDL_INIT_TIMER) < 0 then begin
     LError := SDL_GetError;
@@ -219,13 +218,33 @@ begin
     OnClose(Self);
 end;
 
+class procedure TSDLApplication.GetAvailableMonitors(AStrings: TStrings);
+var
+  i: Integer;
+  LMonitors : array of TSDL_Rect;
+  LError: PAnsiChar;
+begin
+  if SDL_InitSubSystem(SDL_INIT_VIDEO) < 0 then begin
+    LError := SDL_GetError;
+    Print(LError);
+    raise Exception.Create(LError);
+  end;
+  LoadMonitors(LMonitors);
+
+  AStrings.Clear;
+  for i := Low(LMonitors) to High(LMonitors) do begin
+    AStrings.Append('Monitor ' + String.Join(#32,
+      [i, '-', LMonitors[i].x, LMonitors[i].y, LMonitors[i].w, LMonitors[i].h]));
+  end;
+  SDL_Quit;
+end;
+
 procedure TSDLApplication.SetupVideo(AMonitor: cint);
 var
   LMonitor : TSDL_Rect;
 begin
   if AMonitor > SDL_GetNumVideoDisplays then Exit;
-  // Monitor Setup
-  LoadMonitors;
+
   FCurrentMonitorIndex := AMonitor;
 
   LMonitor := FMonitors[AMonitor];

@@ -27,6 +27,7 @@ type
     ButtonNewConfigurationFile: TButton;
     ButtonRunSession: TButton;
     CheckBoxTestMode: TCheckBox;
+    ComboBoxMonitor: TComboBox;
     ComboBoxCondition: TComboBox;
     ComboBoxParticipant: TComboBox;
     IniPropStorage1: TIniPropStorage;
@@ -43,6 +44,7 @@ type
     procedure FormCreate(Sender: TObject);
   private
     //FEyeLink : TEyeLink;
+    procedure ToogleControlPanelEnabled;
     function ParticipantFolderName : string;
     function SessionName : string;
     function Validated : Boolean;
@@ -74,8 +76,10 @@ uses
 procedure TFormBackground.ButtonRunSessionClick(Sender: TObject);
 begin
   if not Validated then Exit;
+  ToogleControlPanelEnabled;
 
-  SDLApp := TSDLApplication.Create(@Pool.AppName[1], 0);
+  SDLApp := TSDLApplication.Create(@Pool.AppName[1]);
+  SDLApp.SetupVideo(ComboBoxMonitor.ItemIndex);
   SDLApp.SetupEvents;
   SDLApp.SetupAudio;
   SDLApp.SetupText;
@@ -150,11 +154,42 @@ begin
   TLogger.SetFooter;
   SDLSession.Free;
   SDLApp.Free;
+  ToogleControlPanelEnabled;
 end;
 
 procedure TFormBackground.FormCreate(Sender: TObject);
+var
+  LStringList : TStringList;
+  i: Integer;
 begin
   GetDesignFilesFor(ComboBoxCondition.Items);
+  LStringList := TStringList.Create;
+  try
+    TSDLApplication.GetAvailableMonitors(LStringList);
+    if ComboBoxMonitor.Items.Count = LStringList.Count then begin
+      for i := 0 to ComboBoxMonitor.Items.Count -1 do begin
+        if ComboBoxMonitor.Items[i] <> LStringList[i] then begin
+           ComboBoxMonitor.Items.Clear;
+           ComboBoxMonitor.Items.Assign(LStringList);
+        end;
+      end;
+    end else begin
+      ComboBoxMonitor.Items.Assign(LStringList);
+    end;
+  finally
+    LStringList.Free;
+  end;
+end;
+
+procedure TFormBackground.ToogleControlPanelEnabled;
+var
+  i: Integer;
+begin
+  for i := 0 to ComponentCount -1 do begin
+    if Components[i] is TControl then begin
+      TControl(Components[i]).Enabled := not TControl(Components[i]).Enabled;
+    end;
+  end;
 end;
 
 function TFormBackground.ParticipantFolderName: string;
@@ -225,6 +260,11 @@ function TFormBackground.Validated: Boolean;
 
 begin
   Result := False;
+
+  if ComboBoxMonitor.ItemIndex = -1 then begin
+    ShowMessage('Escolha um monitor.');
+    Exit;
+  end;
 
   if ConfigurationFilename.IsEmpty then begin
     ShowMessage('Crie uma nova sessão ou abra uma pronta.');
