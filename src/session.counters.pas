@@ -29,6 +29,7 @@ type
     Trial : TTrialCounters;
     function EndTrial(ANextTrial: SmallInt) : Boolean;
     function EndBlock(ANextBlock : SmallInt): Boolean;
+    procedure BeforeBeginSession;
     procedure BeforeEndTrial;
     procedure BeforeEndBlock;
     procedure Hit;
@@ -36,7 +37,6 @@ type
     procedure None;
     procedure RandomEvent;
     procedure Reset;
-    procedure BeforeBeginSession;
     procedure EndSession;
   end;
 
@@ -89,6 +89,20 @@ begin
   Block.ID := ConfigurationFile.StartAt.Block;
 end;
 
+procedure TCounters.BeforeEndTrial;
+begin
+  Session.Tree.Block[Block.ID].Trial[Trial.ID].Increment;
+  AppendToTrialData(Session.Block.Trial.Events.Last);
+  AppendToTrialData(Session.Trial.Events.ToData);
+  AppendToTrialData(Grid.ToData);
+  WriteDataRow;
+end;
+
+procedure TCounters.BeforeEndBlock;
+begin
+  Session.Tree.Block[Block.ID].Increment;
+end;
+
 function TCounters.EndBlock(ANextBlock: SmallInt) : Boolean;
 begin
   Result := True;
@@ -107,20 +121,6 @@ begin
   end else begin
     Result := False;
   end;
-end;
-
-procedure TCounters.BeforeEndTrial;
-begin
-  Session.Tree.Block[Block.ID].Trial[Trial.ID].Increment;
-  AppendToTrialData(Session.Block.Trial.Events.Last);
-  AppendToTrialData(Session.Trial.Events.ToData);
-  AppendToTrialData(Grid.ToData);
-  WriteDataRow;
-end;
-
-procedure TCounters.BeforeEndBlock;
-begin
-  Session.Tree.Block[Block.ID].Increment;
 end;
 
 procedure TCounters.EndSession;

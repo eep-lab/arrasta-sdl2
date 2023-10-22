@@ -69,6 +69,7 @@ procedure TIDSessionCounter.Initialize;
 var
   i, j: Integer;
 begin
+  Block := Default(TIDBlockCounts);
   SetLength(Block, ConfigurationFile.TotalBlocks);
   for i := Low(Block) to High(Block) do begin
     Block[i].Count := 0;

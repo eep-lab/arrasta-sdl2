@@ -109,6 +109,7 @@
           </Linking>
           <Other>
             <Verbosity>
+              <ShowAll Value="True"/>
               <ShowHintsForUnusedUnitsInMainSrc Value="True"/>
             </Verbosity>
             <WriteFPCLogo Value="False"/>
@@ -620,6 +621,10 @@
       </Unit>
       <Unit>
         <Filename Value="src\session.loggers.types.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="src\session.trials.reinforcement.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit>
     </Units>

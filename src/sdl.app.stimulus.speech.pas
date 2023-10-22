@@ -117,10 +117,8 @@ begin
 end;
 
 function TSpeechStimulus.IsCorrectResponse: Boolean;
-const
-  EQUAL_WORDS = mrYes;
 begin
-  Result := FormManualSpeechValidation.ShowModal = EQUAL_WORDS;
+  Result := FormManualSpeechValidation.ShowModal = mrYes;
   if not Result then begin
     Timestamp(
       'Incorrect.Response' + #9 + FormManualSpeechValidation.EditSpeech.Text);
