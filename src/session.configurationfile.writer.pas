@@ -29,6 +29,7 @@ type
   public
     constructor Create(AConfigurationFile: TConfigurationFile); reintroduce;
     destructor Destroy; override;
+    procedure Invalidate;
     procedure WriteBlock;
     procedure WriteTrial;
     procedure WriteInstruction(ABlock, ATrial : integer;
@@ -41,6 +42,8 @@ type
   end;
 
 implementation
+
+uses session.configuration, session.trials.reinforcement;
 
 { TConfigurationWriter }
 
@@ -71,6 +74,28 @@ begin
   FBlockConfig.Free;
   FConfigurationFile := nil;
   inherited Destroy;
+end;
+
+procedure TConfigurationWriter.Invalidate;
+var
+  LTrial : integer;
+  LBlock  : integer;
+  LBlockData : TBlockData;
+  LBlockReinforcement : TBlockReinforcement;
+begin
+  with FConfigurationFile do begin
+    for LBlock := 0 to FConfigurationFile.Blocks -1 do begin
+      LBlockData := FConfigurationFile.Block[LBlock];
+      if LBlockData.Reinforcement < 100 then begin
+        LBlockReinforcement :=
+          BlockReinforcement(LBlockData.TotalTrials, LBlockdata.Reinforcement);
+        for LTrial := 0 to FConfigurationFile.Trials[LBlock] -1 do begin
+          WriteToTrial(LTrial, LBlock,
+            'HasConsequence', LBlockReinforcement[LTrial].ToString);
+        end;
+      end;
+    end;
+  end;
 end;
 
 procedure TConfigurationWriter.WriteBlock;

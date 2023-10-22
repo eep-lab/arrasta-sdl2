@@ -39,7 +39,7 @@ uses
   , picanco.experiments.words.types
   , picanco.experiments.words
   , picanco.experiments.images
-  , picanco.experiments.audio
+  //, picanco.experiments.audio
   , picanco.experiments.constants
   //, sdl.app.trials.dragdrop
   ;
@@ -102,7 +102,8 @@ var
   LCondition : integer;
   LBackUpBlockErrors : integer;
   LMaxBlockRepetition : integer;
-  LMaxBlockRepetitionInSession, LNextBlockOnHitCriterion, i: integer;
+  LMaxBlockRepetitionInSession, LNextBlockOnHitCriterion, i,
+    LReinforcement: integer;
   LName : string;
   LRelation : string;
   LCode , LInstruction: string;
@@ -178,6 +179,8 @@ begin
             Values[NextBlockOnHitCriterionKey].ToInteger -1;
           LHitCriterion :=
             Values[CrtHitPorcentageKey].ToInteger;
+          LReinforcement :=
+            Values[ReinforcementKey].ToInteger;
         end;
 
         if not Validated then Exit;
@@ -198,7 +201,10 @@ begin
             LEndOnHitCriterion.ToString;
           Values[NextBlockOnHitCriterionKey] :=
             LNextBlockOnHitCriterion.ToString;
-          Values[CrtHitPorcentageKey] := LHitCriterion.ToString;
+          Values[CrtHitPorcentageKey] :=
+            LHitCriterion.ToString;
+          Values[ReinforcementKey] :=
+            LReinforcement.ToString;
         end;
         Writer.WriteBlock;
       end;
@@ -214,11 +220,10 @@ begin
           LCycle       := Values['Cycle'].ToInteger;
           LCondition   := Values['Condition'].ToInteger;
           LBlockID     := Values['Block'].ToInteger -1;
-          LTrials      := Values['Trials'].ToInteger; // TODO
+          LTrials      := Values['Trials'].ToInteger;
           LComparisons := Values['Comparisons'].ToInteger;
           LRelation    := Values['Relation'];
           LCode        := Values['Code'];
-          LHasConsequence := True;  // TODO
         end;
         LPhase := GetPhase(LCycle, LCondition, LRelation);
         LWord := GetWord(LPhase, ToAlphaNumericCode(LCode));
@@ -237,7 +242,7 @@ begin
           LName := LTrialID.ToString + #32 + '(' + LWord.Caption + #32 +
             LRelation + #32 + LComparisons.ToString + 'C)';
           WriteTrials(
-            LName, LCode, LRelation, LWord, LComparisons, LHasConsequence);
+            LName, LCode, LRelation, LWord, LComparisons);
         end;
       end;
 
@@ -260,7 +265,7 @@ begin
         end;
       end;
     end;
-
+    Writer.Invalidate;
   finally
     Writer.Free;
     LParser.Free;

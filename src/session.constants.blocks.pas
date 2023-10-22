@@ -24,6 +24,7 @@ type
     EndSessionOnHitCriterionKey	: string;
     NextBlockOnHitCriterionKey : string;
     CrtHitPorcentageKey : string;
+    ReinforcementKey : string;
   end;
 
 const
@@ -34,7 +35,8 @@ const
     MaxBlockRepetitionInSessionKey	: 'MaxBlockRepetitionInSession';
     EndSessionOnHitCriterionKey	: 'EndSessionOnHitCriterion';
     NextBlockOnHitCriterionKey : 'NextBlockOnHitCriterion';
-    CrtHitPorcentageKey : 'HitCriterion');
+    CrtHitPorcentageKey : 'HitCriterion';
+    ReinforcementKey: 'Reinforcement');
 
 implementation
 

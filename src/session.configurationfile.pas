@@ -194,6 +194,8 @@ begin
         ReadInteger(LBlockSection, NextBlockOnHitCriterionKey, -1);
       CrtHitPorcentage :=
         ReadInteger(LBlockSection, CrtHitPorcentageKey, 0);
+      Reinforcement :=
+        ReadInteger(LBlockSection, ReinforcementKey, 100);
 
       // old, not active
       ITI:= ReadInteger(LBlockSection, _ITI, 0);

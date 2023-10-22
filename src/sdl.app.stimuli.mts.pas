@@ -48,6 +48,7 @@ type
       FSamples : TIStimulusList;
       procedure DoConsequence(Sender : TObject);
       procedure ConsequenceDone(Sender: TObject);
+      procedure ConsequenceStart(Sender: TObject);
       procedure StimulusMouseEnter(Sender: TObject);
       procedure StimulusMouseExit(Sender: TObject);
       procedure StimulusMouseDown(Sender: TObject; Shift: TCustomShiftState; X, Y: Integer);
@@ -94,33 +95,31 @@ var
   LStimulus : TStimulus;
   LIsHit : Boolean = False;
 begin
-  if FHasConsequence then begin
+  if Sender is TStimulus then begin
+    LStimulus := Sender as TStimulus;
 
-    if Sender is TStimulus then begin
-      LStimulus := Sender as TStimulus;
-
-      if LStimulus is TSpeechStimulus then begin
-        LIsHit := LStimulus.IsCorrectResponse;
-      end else begin
-        LIsHit := LStimulus = FComparisons[0];
-      end;
-
-      if LIsHit then begin
-        Timestamp('Hit.Start');
-        FSoundCorrect.Play;
-        Pool.Counters.Hit;
-      end else begin
-        Timestamp('Miss.Start');
-        FSoundWrong.Play;
-        Pool.Counters.Miss;
-      end;
+    if LStimulus is TSpeechStimulus then begin
+      LIsHit := LStimulus.IsCorrectResponse;
+    end else begin
+      LIsHit := LStimulus = FComparisons[0];
     end;
 
-  end else begin
+    if LIsHit then begin
+      Pool.Counters.Hit;
+    end else begin
+      Pool.Counters.Miss;
+    end;
 
-    if Assigned(OnFinalize) then
-      OnFinalize(Self);
-
+    if FHasConsequence then begin
+      if LIsHit then begin
+        FSoundCorrect.Play;
+      end else begin
+        FSoundWrong.Play;
+      end;
+    end else begin
+      if Assigned(OnFinalize) then
+        OnFinalize(Self);
+    end;
   end;
 end;
 
@@ -138,6 +137,17 @@ begin
   FSoundWrong.SetOnStop(nil);
   if Assigned(OnFinalize) then
     OnFinalize(Self);
+end;
+
+procedure TMTSStimuli.ConsequenceStart(Sender: TObject);
+begin
+  if (Sender as ISound) = FSoundCorrect then begin
+    Timestamp('Hit.Start');
+  end;
+
+  if (Sender as ISound) = FSoundWrong then begin
+    Timestamp('Miss.Start');
+  end;
 end;
 
 procedure TMTSStimuli.StimulusMouseEnter(Sender: TObject);
@@ -354,6 +364,8 @@ begin
     raise Exception.Create('You must assign a parent.');
   FSoundCorrect := SDLAudio.SoundFromName('acerto');
   FSoundWrong   := SDLAudio.SoundFromName('erro');
+  FSoundCorrect.SetOnStart(@ConsequenceStart);
+  FSoundWrong.SetOnStart(@ConsequenceStart);
   FSoundCorrect.SetOnStop(@ConsequenceDone);
   FSoundWrong.SetOnStop(@ConsequenceDone);
 

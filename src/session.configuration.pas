@@ -47,6 +47,7 @@ type
     EndSessionOnHitCriterion	: Boolean;
     NextBlockOnHitCriterion : integer;
     CrtHitPorcentage : integer;
+    Reinforcement : integer;
 
     Counter : string;
     AutoEndSession : Boolean;
