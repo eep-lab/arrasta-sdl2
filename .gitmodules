@@ -19,6 +19,3 @@
 [submodule "dependencies/msgpack-delphi"]
 	path = dependencies/msgpack-delphi
 	url = https://github.com/cpicanco/msgpack-delphi.git
-[submodule "dependencies/dependencies/pupil-fpc"]
-	path = dependencies/dependencies/pupil-fpc
-	url = https://github.com/cpicanco/pupil-fpc.git
