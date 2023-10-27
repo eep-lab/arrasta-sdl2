@@ -41,12 +41,23 @@ uses
   , picanco.experiments.images
   //, picanco.experiments.audio
   , picanco.experiments.constants
+  , picanco.experiments.constants.parser
   //, sdl.app.trials.dragdrop
   ;
 
 var Writer : TConfigurationWriter;
 
-procedure WriteTrials(AName: string; AReferenceName : string;
+procedure WriteInstruction(ABlock: integer; ATrial : integer; AName: string;
+  AValue: string; ADoCalibration : Boolean);
+begin
+  with TrialKeys do begin
+    Writer.WriteInstruction(ABlock, ATrial, AName, AValue);
+    Writer.WriteInstruction(ABlock, ATrial, DoCalibrationKey,
+     BoolToStr(ADoCalibration, True));
+  end;
+end;
+
+procedure WriteMTSTrials(AName: string; AReferenceName : string;
   ARelation: string; AWord: TWord; AComparisons: integer;
   AHasConsequence : Boolean = True; ASamples: integer = 1;
   ARepeatTrials: integer = 1; AHasLimitedHold : Boolean = False);
@@ -56,22 +67,22 @@ var
 begin
   with Writer.TrialConfig do begin
     with TrialKeys do begin
-      Values[ReferenceName] := AReferenceName;
-      Values[Name] := AName;
-      Values[Cursor] := GlobalTrialParameters.Cursor.ToString;
-      Values[Kind] := TMTS.ClassName;
+      Values[ReferenceNameKey] := AReferenceName;
+      Values[NameKey] := AName;
+      Values[CursorKey] := GlobalTrialParameters.Cursor.ToString;
+      Values[KindKey] := TMTS.ClassName;
       if AHasLimitedHold then
-        Values[LimitedHold] := GlobalTrialParameters.LimitedHold.ToString;
-      Values[InterTrialInterval] := GlobalTrialParameters.InterTrialInterval.ToString;
-      Values[RepeatTrials] := ARepeatTrials.ToString;
-      Values[HasConsequence] := AHasConsequence.ToString;
+        Values[LimitedHoldKey] := GlobalTrialParameters.LimitedHold.ToString;
+      Values[InterTrialIntervalKey] := GlobalTrialParameters.InterTrialInterval.ToString;
+      Values[RepeatTrialsKey] := ARepeatTrials.ToString;
+      Values[HasConsequenceKey] := AHasConsequence.ToString;
     end;
 
     with MTSKeys do begin
-      Values[Relation] := ARelation;
-      Values[Samples] := ASamples.ToString;
-      Values[Comparisons] := AComparisons.ToString;
-      Values[Word] := AWord.Caption;
+      Values[RelationKey] := ARelation;
+      Values[SamplesKey] := ASamples.ToString;
+      Values[ComparisonsKey] := AComparisons.ToString;
+      Values[WordKey] := AWord.Caption;
 
       for i := Low(AWord.Comparisons) to High(AWord.Comparisons) do begin
         case AWord.Phase.CompModality of
@@ -82,7 +93,7 @@ begin
           ModalityNone : LWord := EmptyWord; // should never occur
         end;
         if not LWord.IsEmpty then begin
-          Values[Comparison+(i+1).ToString] := LWord.Caption;
+          Values[ComparisonKey+(i+1).ToString] := LWord.Caption;
         end;
       end;
     end;
@@ -107,13 +118,13 @@ var
   LName : string;
   LRelation : string;
   LCode , LInstruction: string;
-  LHasConsequence , LEndOnHitCriterion: Boolean;
+  LEndOnHitCriterion: Boolean;
   LWord : TWord;
   LPhase : TPhase;
   LStartAt : TStartAt;
   LParser : TCSVRows;
   LRow : TStringList;
-  LHasBlocksFile : Boolean;
+  LHasBlocksFile , LDoCalibration: Boolean;
 
   function ToAlphaNumericCode(S : string) : TAlphaNumericCode;
   var
@@ -125,22 +136,26 @@ var
   end;
 
   function GetWord(APhase : TPhase; ACode : TAlphaNumericCode) : TWord;
-  const
-    LCodes = [Low(E1CyclesCodeRange)..High(E1CyclesCodeRange)];
-    LPreCodes = [Low(E1PreTrainingRange)..High(E1PreTrainingRange)];
+  var
+    LCode : string;
   begin
-    if ACode in LPreCodes then begin
-      Result := HashPreTrainingWords[UniqueCodeToStr(ACode)]^;
-      Result.Phase := APhase;
-      SetComparisons(Result);
-      Exit;
+    case ACode of
+      Low(E1PreTrainingRange)..High(E1PreTrainingRange): begin
+        Result := HashPreTrainingWords[UniqueCodeToStr(ACode)]^;
+      end;
+      Low(E1CyclesCodeRange)..High(E1CyclesCodeRange): begin
+       Result := HashWords[E1WordPerCycleCode[APhase.Cycle, ACode]]^;
+      end;
+      Low(E1WordsWithCodesRange)..High(E1WordsWithCodesRange): begin
+       Result := HashWords[E1WordsWithCodes[ACode]]^;
+      end;
+     else begin
+       WriteStr(LCode, ACode);
+       raise Exception.Create('Unknown Word: '+ LCode);
+     end;
     end;
-
-    if ACode in LCodes then begin
-      Result := HashWords[E1WordPerCycleCode[APhase.Cycle, ACode]]^;
-      Result.Phase := APhase;
-      SetComparisons(Result);
-    end;
+    Result.Phase := APhase;
+    SetComparisons(Result);
   end;
 
   function Validated : Boolean;
@@ -151,8 +166,18 @@ var
       raise Exception.Create('Hit porcentage criterion is not valid: '+
         LHitCriterion.ToString);
   end;
+  procedure PopulateBooleanStrings;
+  begin
+    SetLength(TrueBoolStrs, 1);
+    TrueBoolStrs[0] := 'T';
+
+    SetLength(FalseBoolStrs, 1);
+    FalseBoolStrs[0] := 'F';
+  end;
 
 begin
+  PopulateBooleanStrings;
+
   //Format('%.2d', [LCycle])
   Writer := TConfigurationWriter.Create(ConfigurationFile);
   LParser := TCSVRows.Create;
@@ -163,30 +188,30 @@ begin
       LParser.Clear;
       LParser.LoadFromFile(InsideBlocksSubFolder(AFilename));
       for LRow in LParser do  begin
-        with LRow, BlockKeys do begin
-          LBlockID := Values['ID'].ToInteger -1;
+        with LRow, ParserBlockKeys do begin
+          LBlockID := Values['ID'].Trim.ToInteger -1;
           LBackUpBlock :=
-            Values[NextBlockOnNotCriterionKey].ToInteger -1;
+            Values[NextBlockOnNotCriterionKey].Trim.ToInteger -1;
           LBackUpBlockErrors :=
-            Values[BackUpBlockErrorsKey].ToInteger;
+            Values[BackUpBlockErrorsKey].Trim.ToInteger;
           LMaxBlockRepetition :=
-            Values[MaxBlockRepetitionKey].ToInteger;
+            Values[MaxBlockRepetitionKey].Trim.ToInteger;
           LMaxBlockRepetitionInSession :=
-            Values[MaxBlockRepetitionInSessionKey].ToInteger;
+            Values[MaxBlockRepetitionInSessionKey].Trim.ToInteger;
           LEndOnHitCriterion :=
-            Values[EndSessionOnHitCriterionKey].ToBoolean;
+            StrToBool(Values[EndSessionOnHitCriterionKey].Trim);
           LNextBlockOnHitCriterion :=
-            Values[NextBlockOnHitCriterionKey].ToInteger -1;
+            Values[NextBlockOnHitCriterionKey].Trim.ToInteger -1;
           LHitCriterion :=
-            Values[CrtHitPorcentageKey].ToInteger;
+            Values[CrtHitPorcentageKey].Trim.ToInteger;
           LReinforcement :=
-            Values[ReinforcementKey].ToInteger;
+            Values[ReinforcementKey].Trim.ToInteger;
         end;
 
         if not Validated then Exit;
 
         Writer.CurrentBlock := LBlockID;
-        with Writer.BlockConfig, BlockKeys do begin
+        with Writer.BlockConfig, ParserBlockKeys do begin
           Values['Name'] :=
             'Block ' + (LBlockID+1).ToString;
           Values[NextBlockOnNotCriterionKey] :=
@@ -215,15 +240,15 @@ begin
       LParser.Clear;
       LParser.LoadFromFile(InsideBaseFolder(AFilename));
       for LRow in LParser do  begin
-        with LRow do begin
-          LTrialID     := Values['ID'].ToInteger;
-          LCycle       := Values['Cycle'].ToInteger;
-          LCondition   := Values['Condition'].ToInteger;
-          LBlockID     := Values['Block'].ToInteger -1;
-          LTrials      := Values['Trials'].ToInteger;
-          LComparisons := Values['Comparisons'].ToInteger;
-          LRelation    := Values['Relation'];
-          LCode        := Values['Code'];
+        with LRow, ParserMTSKeys  do begin
+          LTrialID     := Values[IDKey].Trim.ToInteger;
+          LCycle       := Values[CycleKey].Trim.ToInteger;
+          LCondition   := Values[ConditionKey].Trim.ToInteger;
+          LBlockID     := Values[BlockKey].Trim.ToInteger -1;
+          LTrials      := Values[TrialsKey].Trim.ToInteger;
+          LComparisons := Values[ComparisonsKey].Trim.ToInteger;
+          LRelation    := Values[RelationKey].Trim;
+          LCode        := Values[CodeKey].Trim;
         end;
         LPhase := GetPhase(LCycle, LCondition, LRelation);
         LWord := GetWord(LPhase, ToAlphaNumericCode(LCode));
@@ -241,7 +266,7 @@ begin
         for i := 0 to LTrials -1 do begin
           LName := LTrialID.ToString + #32 + '(' + LWord.Caption + #32 +
             LRelation + #32 + LComparisons.ToString + 'C)';
-          WriteTrials(
+          WriteMTSTrials(
             LName, LCode, LRelation, LWord, LComparisons);
         end;
       end;
@@ -257,11 +282,12 @@ begin
       LParser.LoadFromFile(InsideInstructionsSubFolder(AFilename));
        for LRow in LParser do  begin
         with LRow, TrialKeys do begin
-          LBlockID     := Values['Block'].ToInteger-1;
-          LTrialID     := Values['Trial'].ToInteger-1;
-          LInstruction := Values[Instruction];
-          Writer.WriteInstruction(LBlockID, LTrialID,
-            Instruction, LInstruction);
+          LBlockID     := Values['Block'].Trim.ToInteger-1;
+          LTrialID     := Values['Trial'].Trim.ToInteger-1;
+          LInstruction := Values[InstructionKey].Trim;
+          LDoCalibration := StrToBool(Values[DoCalibrationKey].Trim);
+          WriteInstruction(LBlockID, LTrialID,
+            InstructionKey, LInstruction, LDoCalibration);
         end;
       end;
     end;

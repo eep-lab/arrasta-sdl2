@@ -16,7 +16,7 @@ interface
 
 type
 
-  TBlockKeys = record
+  TParserBlockKeys = record
     NextBlockOnNotCriterionKey : string; // BackUpBlock	: integer;
     BackUpBlockErrorsKey: string;
     MaxBlockRepetitionKey : string;
@@ -28,7 +28,7 @@ type
   end;
 
 const
-  BlockKeys : TBlockKeys = (
+  ParserBlockKeys : TParserBlockKeys = (
     NextBlockOnNotCriterionKey : 'BackUpBlock'; // BackUpBlock	: integer;
     BackUpBlockErrorsKey: 'BackUpBlockErrors';
     MaxBlockRepetitionKey : 'MaxBlockRepetition';

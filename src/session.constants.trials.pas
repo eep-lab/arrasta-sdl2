@@ -28,28 +28,35 @@ type
   end;
 
   TTrialKeys = record
-    Name : string;
-    ReferenceName : string;
-    Cursor : string;
-    Kind : string;
-    Instruction : string;
-    LimitedHold : string;
-    InterTrialInterval : string;
-    RepeatTrials : string;
-    HasConsequence : string;
+    NameKey : string;
+    ReferenceNameKey : string;
+    CursorKey : string;
+    KindKey : string;
+    InstructionKey : string;
+    DoCalibrationKey : string;
+    LimitedHoldKey : string;
+    InterTrialIntervalKey : string;
+    RepeatTrialsKey : string;
+    HasConsequenceKey : string;
+    IsTrue : string;
+    IsFalse : string;
   end;
+
 
 const
   TrialKeys : TTrialKeys = (
-    Name : 'Name';
-    ReferenceName : 'ReferenceName';
-    Cursor : 'Cursor';
-    Kind : 'Kind';
-    Instruction : 'Instruction';
-    LimitedHold : 'LimitedHold';
-    InterTrialInterval : 'InterTrialInterval';
-    RepeatTrials : 'RepeatTrial';
-    HasConsequence : 'HasConsequence');
+    NameKey : 'Name';
+    ReferenceNameKey : 'ReferenceName';
+    CursorKey : 'Cursor';
+    KindKey : 'Kind';
+    InstructionKey : 'Instruction';
+    DoCalibrationKey : 'DoCalibration';
+    LimitedHoldKey : 'LimitedHold';
+    InterTrialIntervalKey : 'InterTrialInterval';
+    RepeatTrialsKey : 'RepeatTrial';
+    HasConsequenceKey : 'HasConsequence';
+    IsTrue : 'T';
+    IsFalse : 'F');
 
 implementation
 

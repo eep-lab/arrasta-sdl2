@@ -18,9 +18,9 @@ function GetWordValue(AParameters: TStringList; AIsSample: boolean;
   AIndex: integer): string;
 begin
   if AIsSample then begin
-    Result := AParameters.Values[MTSKeys.Word];
+    Result := AParameters.Values[MTSKeys.WordKey];
   end else begin
-    Result := AParameters.Values[MTSKeys.Comparison+(AIndex+1).ToString];
+    Result := AParameters.Values[MTSKeys.ComparisonKey+(AIndex+1).ToString];
   end;
 end;
 

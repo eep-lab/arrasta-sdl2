@@ -89,6 +89,7 @@ implementation
 
 uses StrUtils
   , session.constants
+  , session.constants.trials
   , session.constants.blocks
   , session.pool;
 
@@ -174,7 +175,7 @@ var
   LBlockSection : string;
 begin
   LBlockSection := BlockSection(BlockIndex);
-  with Result, BlockKeys do
+  with Result, ParserBlockKeys do
     begin
       ID := BlockIndex;
       TotalTrials:= Self.Trials[BlockIndex];
@@ -242,25 +243,24 @@ begin
 
   // shuffle trials
   LTrialSection := TrialSection(BlockIndex, i);
-  with Result do
-    begin
-      Id :=  i + 1;
-      Kind := ReadString(LTrialSection, _Kind, '');
-      ReferenceName := ReadString(LTrialSection, 'ReferenceName', '');
-      Parameters := TStringList.Create;
-      Parameters.CaseSensitive := False;
-      Parameters.Duplicates := dupIgnore;
-      ReadSectionValues(LTrialSection, Parameters);
-      LParameters := TStringList.Create;
-      try
-        ReadSectionValues(LInstructionSection, LParameters);
-        for i := 0 to LParameters.Count-1 do begin
-          Parameters.Append(LParameters[i]);
-        end;
-      finally
-        LParameters.Free;
+  with Result, TrialKeys do begin
+    Id :=  i + 1;
+    Kind := ReadString(LTrialSection, _Kind, '');
+    ReferenceName := ReadString(LTrialSection, ReferenceNameKey, '');
+    Parameters := TStringList.Create;
+    Parameters.CaseSensitive := False;
+    Parameters.Duplicates := dupIgnore;
+    ReadSectionValues(LTrialSection, Parameters);
+    LParameters := TStringList.Create;
+    try
+      ReadSectionValues(LInstructionSection, LParameters);
+      for i := 0 to LParameters.Count-1 do begin
+        Parameters.Append(LParameters[i]);
       end;
+    finally
+      LParameters.Free;
     end;
+  end;
 end;
 
 function TConfigurationFile.GetTrialBase(BlockIndex,

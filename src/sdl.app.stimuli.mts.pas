@@ -323,7 +323,7 @@ var
       end;
 
       Grid.UpdatePositions(ASamples, AComparisons, AGridOrientation);
-      with Grid.RandomPositions do begin
+      with Grid.RandomPositions, MTSKeys do begin
         for i := Low(Comparisons) to High(Comparisons) do begin
           LItem := TStimulusFactory.New(Self, ComparLetter, LCallbacks);
           LItem.IsSample := False;
@@ -331,7 +331,7 @@ var
           LItem.Position := Comparisons[i].Position;
 
           LParameters.Clear;
-          LItem.Name:=MTSKeys.Comparisons+(i+1).ToString;
+          LItem.Name:=ComparisonsKey+(i+1).ToString;
           LItem.Load(AParameters, AParent, Comparisons[i].Rect);
 
           Comparisons[i].Item := LItem as TObject;
@@ -345,7 +345,7 @@ var
           LItem.Index := i;
           LItem.Position := Samples[i].Position;
 
-          LItem.Name := MTSKeys.Samples+(i+1).ToString;
+          LItem.Name := SamplesKey+(i+1).ToString;
           LItem.Load(AParameters, AParent, Samples[i].Rect);
 
           Samples[i].Item := LItem as TObject;
@@ -369,15 +369,13 @@ begin
   FSoundCorrect.SetOnStop(@ConsequenceDone);
   FSoundWrong.SetOnStop(@ConsequenceDone);
 
-  with TrialKeys do begin
-    FHasConsequence := AParameters.Values[HasConsequence].ToBoolean;
-  end;
-  with MTSKeys do begin
-    LRelation := AParameters.Values[Relation];
+  with TrialKeys, MTSKeys do begin
+    FHasConsequence := AParameters.Values[HasConsequenceKey].ToBoolean;
+    LRelation := AParameters.Values[RelationKey];
     SampleLetter := ExtractDelimited(1,LRelation,['-']);
     ComparLetter := ExtractDelimited(2,LRelation,['-']);
-    LSamples := AParameters.Values[Samples].ToInteger;
-    LComparisons := AParameters.Values[Comparisons].ToInteger;
+    LSamples := AParameters.Values[SamplesKey].ToInteger;
+    LComparisons := AParameters.Values[ComparisonsKey].ToInteger;
 
     case SampleLetter of
       'A' : FMTSModality.Samples := ModalityA;

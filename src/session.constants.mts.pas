@@ -24,29 +24,29 @@ type
   end;
 
   TMTSKeysGlobal = record
-    Cycle       : string;
-    Condition   : string;
+    CycleKey       : string;
+    ConditionKey   : string;
   end;
 
   TMTSKeys = record
-    Relation    : string;
-    Samples     : string;
-    Comparisons : string;
-    Word        : string;
-    Comparison  : string;
+    RelationKey    : string;
+    SamplesKey     : string;
+    ComparisonsKey : string;
+    WordKey        : string;
+    ComparisonKey  : string;
   end;
 
 const
   MTSKeysGlobal : TMTSKeysGlobal = (
-    Cycle       : 'Cycle';
-    Condition   : 'Condition');
+    CycleKey       : 'Cycle';
+    ConditionKey   : 'Condition');
 
   MTSKeys : TMTSKeys = (
-    Relation    : 'Relation';
-    Samples     : 'Samples';
-    Comparisons : 'Comparisons';
-    Word        : 'Word';
-    Comparison  : 'C');
+    RelationKey    : 'Relation';
+    SamplesKey     : 'Samples';
+    ComparisonsKey : 'Comparisons';
+    WordKey        : 'Word';
+    ComparisonKey  : 'C');
 
 implementation
 
