@@ -17,7 +17,6 @@ uses
   Classes, SysUtils
   , SDL2
   , eye.tracker.types
-  , eye.tracker.contract
   , eye.tracker.client
   , pupil.client;
 
@@ -58,6 +57,9 @@ constructor TPupilEyeTracker.Create;
 begin
   FPupilClient := TPupilClient.Create;
   FPupilClient.OnSurfacesEvent := @SurfaceEvent;
+  FPupilClient.Start;
+  FPupilClient.StartSubscriber;
+  FPupilClient.Subscribe(SUB_SURFACES_EVENT);
   Invalidate;
 end;
 
@@ -76,7 +78,7 @@ procedure TPupilEyeTracker.SurfaceEvent(Sender: TObject;
   AMultiPartMessage: TPupilMessage);
 
 var
-  LGazesOnSurface : TSimpleMsgPack;
+  LGazeOnSurface : TSimpleMsgPack;
   LLastGazes : TGazes = nil;
   Li : integer;
   function NormToScreen(AGaze : TSimpleMsgPack) : TGaze;
@@ -88,11 +90,11 @@ var
 begin
   with AMultiPartMessage.Payload do begin
     if LowerCase(S['name']) = 'screen' then begin
-      LGazesOnSurface := O['gaze_on_surfaces'];
-      if LGazesOnSurface.Count > 0 then begin
-        SetLength(LLastGazes, LGazesOnSurface.Count);
+      LGazeOnSurface := O['gaze_on_surfaces'];
+      if LGazeOnSurface.Count > 0 then begin
+        SetLength(LLastGazes, LGazeOnSurface.Count);
         for Li := Low(LLastGazes) to High(LLastGazes) do begin
-          LLastGazes[Li] := NormToScreen(LGazesOnSurface[Li].O['norm_pos']);
+          LLastGazes[Li] := NormToScreen(LGazeOnSurface[Li].O['norm_pos']);
         end;
         if Assigned(FOnGazeOnScreenEvent) then begin
           FOnGazeOnScreenEvent(Self, LLastGazes);

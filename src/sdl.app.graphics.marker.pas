@@ -140,7 +140,7 @@ end;
 
 procedure TMarker.ToTopLeft;
 begin
-  Top := FParent.y;
+  Top := 0;
   Left := 0;
 end;
 

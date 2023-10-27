@@ -15,7 +15,7 @@ interface
 
 type
 
-  TEyeTrackerCode = (etNone, etPupilLabs, etEyeLink);
+  TEyeTrackerCode = (etNone, etEyeLink, etPupilLabs);
 
   TGaze = record
     X : Integer;

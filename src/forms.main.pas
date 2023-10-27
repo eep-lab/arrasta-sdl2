@@ -80,24 +80,24 @@ begin
   ToogleControlPanelEnabled;
 
   SDLApp := TSDLApplication.Create(@Pool.AppName[1]);
-  case RadioGroupEyeTracker.ItemIndex of
-    1 :  { EyeLink };
-    2 : SDLApp.ShowMarkers := True;
-    else { do nothing };
-  end;
   SDLApp.SetupVideo(ComboBoxMonitor.ItemIndex);
   SDLApp.SetupEvents;
   SDLApp.SetupAudio;
   SDLApp.SetupText;
   SDLApp.OnClose := @CloseSDLApp;
+  case RadioGroupEyeTracker.ItemIndex of
+    1 :  { EyeLink };
+    2 : SDLApp.ShowMarkers := True;
+    else { do nothing };
+  end;
   Pool.App := SDLApp;
+
+  InitializeEyeTracker(RadioGroupEyeTracker.ItemIndex);
 
   SDLSession := TSession.Create(Self);
   SDLSession.OnBeforeStart := @BeginSession;
   SDLSession.OnEndSession  := @EndSession;
   SDLSession.Play;
-
-  InitializeEyeTracker(RadioGroupEyeTracker.ItemIndex);
 
   SDLApp.Run;
 end;
