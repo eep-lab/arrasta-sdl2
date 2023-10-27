@@ -62,6 +62,8 @@ type
       procedure MouseUp(Sender:TObject; Shift: TCustomShiftState; X, Y: Integer); virtual; abstract;
       procedure MouseEnter(Sender:TObject); virtual; abstract;
       procedure MouseExit(Sender:TObject); virtual; abstract;
+      procedure GazeEnter(Sender:TObject); virtual; abstract;
+      procedure GazeExit(Sender:TObject); virtual; abstract;
     public
       constructor Create(AOwner : TComponent); override;
       destructor Destroy; override;

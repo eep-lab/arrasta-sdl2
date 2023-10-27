@@ -45,6 +45,8 @@ type
     procedure SetBoundsRect(AValue : TSDL_Rect); override;
     procedure MouseEnter(Sender: TObject); override;
     procedure MouseExit(Sender: TObject); override;
+    procedure GazeEnter(Sender: TObject); override;
+    procedure GazeExit(Sender: TObject); override;
     procedure Paint; override;
   public
     constructor Create(AOwner : TComponent); override;
@@ -142,6 +144,22 @@ procedure TRectangule.MouseExit(Sender: TObject);
 begin
   if Visible then begin
     inherited MouseExit(Sender);
+    FShaded := False;
+  end;
+end;
+
+procedure TRectangule.GazeEnter(Sender: TObject);
+begin
+  if Visible then begin
+    inherited GazeEnter(Sender);
+    FShaded := True;
+  end;
+end;
+
+procedure TRectangule.GazeExit(Sender: TObject);
+begin
+  if Visible then begin
+    inherited GazeExit(Sender);
     FShaded := False;
   end;
 end;

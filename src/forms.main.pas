@@ -33,6 +33,7 @@ type
     IniPropStorage1: TIniPropStorage;
     OpenDialog1: TOpenDialog;
     Panel1: TPanel;
+    RadioGroupEyeTracker: TRadioGroup;
     procedure ButtonLoadConfigurationFileClick(Sender: TObject);
     procedure ButtonNewConfigurationFileClick(Sender: TObject);
     procedure ButtonNewParticipantClick(Sender: TObject);
@@ -61,7 +62,6 @@ implementation
 
 uses
   FileUtil
-  , StrUtils
   , session
   , session.pool
   , session.loggers
@@ -69,6 +69,7 @@ uses
   , experiments
   , sdl.app
   , sdl.app.trials.factory
+  , eye.tracker
   ;
 
 { TFormBackground }
@@ -79,6 +80,11 @@ begin
   ToogleControlPanelEnabled;
 
   SDLApp := TSDLApplication.Create(@Pool.AppName[1]);
+  case RadioGroupEyeTracker.ItemIndex of
+    1 :  { EyeLink };
+    2 : SDLApp.ShowMarkers := True;
+    else { do nothing };
+  end;
   SDLApp.SetupVideo(ComboBoxMonitor.ItemIndex);
   SDLApp.SetupEvents;
   SDLApp.SetupAudio;
@@ -90,6 +96,8 @@ begin
   SDLSession.OnBeforeStart := @BeginSession;
   SDLSession.OnEndSession  := @EndSession;
   SDLSession.Play;
+
+  InitializeEyeTracker(RadioGroupEyeTracker.ItemIndex);
 
   SDLApp.Run;
 end;

@@ -19,6 +19,7 @@ procedure AssignVariables(APSDLWindow : PSDL_Window;
   APSDLRenderer : PSDL_Renderer; APSDLSurface : PSDL_Surface);
 function MonitorFromWindow : TSDL_Rect;
 procedure Invalidate;
+procedure RaiseWindow;
 
 var
   PSDLRenderer : PSDL_Renderer;
@@ -45,6 +46,11 @@ end;
 procedure Invalidate;
 begin
   SDL_UpdateWindowSurface(PSDLWindow);
+end;
+
+procedure RaiseWindow;
+begin
+  SDL_RaiseWindow(PSDLWindow)
 end;
 
 
