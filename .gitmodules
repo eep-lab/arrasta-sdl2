@@ -10,3 +10,15 @@
 [submodule "media"]
 	path = media
 	url = https://github.com/cpicanco/media.git
+[submodule "dependencies/pupil-fpc"]
+	path = dependencies/pupil-fpc
+	url = https://github.com/cpicanco/pupil-fpc.git
+[submodule "dependencies/fpc-zmq"]
+	path = dependencies/fpc-zmq
+	url = https://github.com/cpicanco/fpc-zmq.git
+[submodule "dependencies/msgpack-delphi"]
+	path = dependencies/msgpack-delphi
+	url = https://github.com/cpicanco/msgpack-delphi.git
+[submodule "dependencies/dependencies/pupil-fpc"]
+	path = dependencies/dependencies/pupil-fpc
+	url = https://github.com/cpicanco/pupil-fpc.git
