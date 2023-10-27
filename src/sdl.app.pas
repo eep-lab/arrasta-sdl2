@@ -44,10 +44,12 @@ type
       function GetCurrentMonitor : TSDL_Rect;
       function GetMonitor(i : cint): TSDL_Rect;
       function GetMouse: TPoint;
+      function GetShowMarkers: Boolean;
       procedure SetCurrentMonitor(i : cint);
       procedure SetMouse(AValue: TPoint);
       procedure KeyDown(const event: TSDL_KeyboardEvent);
       procedure SetOnClose(AValue: TNotifyEvent);
+      procedure SetShowMarkers(AValue: Boolean);
     public
       class procedure LoadMonitors(var AMonitors: TMonitors);
       class procedure GetAvailableMonitors(AStrings: TStrings);
@@ -66,6 +68,7 @@ type
       property Mouse   : TPoint read GetMouse write SetMouse;
       property Events  : TCustomEventHandler read FEvents;
       property OnClose : TNotifyEvent read FOnClose write SetOnClose;
+      property ShowMarkers : Boolean read GetShowMarkers write SetShowMarkers;
   end;
 
 var
@@ -73,9 +76,10 @@ var
 
 implementation
 
-uses sdl.app.output
+uses sdl2_image
+  , sdl.app.output
   , sdl.app.video.methods
-  , sdl2_image
+  , sdl.app.markers
 {$IFDEF NO_LCL}
   , sdl.app.renderer.nolcl
 {$ELSE}
@@ -113,6 +117,17 @@ begin
   FOnClose:=AValue;
 end;
 
+procedure TSDLApplication.SetShowMarkers(AValue: Boolean);
+begin
+  if ShowMarkers = AValue then Exit;
+  if AValue then begin
+    Markers := TMarkers.Create;
+    Markers.LoadFromFile;
+  end else begin
+    FreeAndNil(Markers);
+  end;
+end;
+
 procedure TSDLApplication.SetMouse(AValue: TPoint);
 begin
   SDL_WarpMouseInWindow(Window, AValue.X, AValue.Y)
@@ -125,6 +140,11 @@ begin
   SDL_GetMouseState(@MouseX, @MouseY);
   Result.X := MouseX;
   Result.Y := MouseY;
+end;
+
+function TSDLApplication.GetShowMarkers: Boolean;
+begin
+  Result := Assigned(Markers);
 end;
 
 procedure TSDLApplication.SetCurrentMonitor(i: cint);
@@ -156,6 +176,7 @@ begin
   Print(Self.ClassName+'.'+{$I %CURRENTROUTINE%}+#32+ATitle);
   FTitle := ATitle;
   FEvents := TCustomEventHandler.Create;
+
   // errors in the video subsystem may be related to
   // SDL_VIDEODRIVER system environment variable (particularly on windows)
   // https://wiki.libsdl.org/SDL2/FAQUsingSDL
@@ -189,6 +210,9 @@ end;
 
 destructor TSDLApplication.Destroy;
 begin
+  if Assigned(Markers) then begin
+    Markers.Free;
+  end;
   inherited Destroy;
 end;
 
