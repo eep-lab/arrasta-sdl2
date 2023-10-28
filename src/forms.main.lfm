@@ -1,13 +1,13 @@
 object FormBackground: TFormBackground
-  Left = 437
+  Left = 538
   Height = 523
-  Top = 121
+  Top = 173
   Width = 566
   BorderStyle = bsNone
   Caption = 'Stimulus Control'
   ClientHeight = 523
   ClientWidth = 566
-  SessionProperties = 'CheckBoxTestMode.Checked;ComboBoxCondition.ItemIndex;ComboBoxMonitor.ItemIndex;ComboBoxMonitor.Items;ComboBoxParticipant.ItemIndex;ComboBoxParticipant.Items;OpenDialog1.InitialDir;RadioGroupEyeTracker.ItemIndex'
+  SessionProperties = 'CheckBoxTestMode.Checked;ComboBoxCondition.ItemIndex;ComboBoxMonitor.ItemIndex;ComboBoxMonitor.Items;ComboBoxParticipant.ItemIndex;ComboBoxParticipant.Items;OpenDialog1.InitialDir;RadioGroupEyeTracker.ItemIndex;CheckBoxShowMarkers.Checked'
   LCLVersion = '3.99.0.0'
   WindowState = wsFullScreen
   OnCreate = FormCreate
@@ -105,9 +105,9 @@ object FormBackground: TFormBackground
       Text = 'Monitor'
     end
     object RadioGroupEyeTracker: TRadioGroup
-      Left = 15
+      Left = 16
       Height = 48
-      Top = 256
+      Top = 208
       Width = 241
       AutoFill = True
       Caption = 'Rastreador Ocular'
@@ -128,6 +128,14 @@ object FormBackground: TFormBackground
         'Pupil'
       )
       TabOrder = 8
+    end
+    object CheckBoxShowMarkers: TCheckBox
+      Left = 16
+      Height = 19
+      Top = 264
+      Width = 111
+      Caption = 'Mostrar AprilTags'
+      TabOrder = 9
     end
   end
   object OpenDialog1: TOpenDialog

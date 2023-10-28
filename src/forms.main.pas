@@ -26,6 +26,7 @@ type
     ButtonLoadConfigurationFile: TButton;
     ButtonNewConfigurationFile: TButton;
     ButtonRunSession: TButton;
+    CheckBoxShowMarkers: TCheckBox;
     CheckBoxTestMode: TCheckBox;
     ComboBoxMonitor: TComboBox;
     ComboBoxCondition: TComboBox;
@@ -85,11 +86,8 @@ begin
   SDLApp.SetupAudio;
   SDLApp.SetupText;
   SDLApp.OnClose := @CloseSDLApp;
-  case RadioGroupEyeTracker.ItemIndex of
-    1 :  { EyeLink };
-    2 : SDLApp.ShowMarkers := True;
-    else { do nothing };
-  end;
+  SDLApp.ShowMarkers := CheckBoxShowMarkers.Checked;
+
   Pool.App := SDLApp;
 
   InitializeEyeTracker(RadioGroupEyeTracker.ItemIndex);
