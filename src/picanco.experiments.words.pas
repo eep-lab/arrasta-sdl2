@@ -329,6 +329,7 @@ begin
   Vowels.Free;
   HashWords.Free;
   HashNewWords.Free;
+  HashPreTrainingWords.Free;
 end;
 
 initialization
