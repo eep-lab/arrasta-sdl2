@@ -24,6 +24,10 @@ type
       function GetGazeOnScreenEvent : TGazeOnScreenEvent; virtual; abstract;
       procedure SetGazeOnScreenEvent(
         AGazeOnScreenEvent: TGazeOnScreenEvent); virtual; abstract;
+      procedure StartRecording; virtual; abstract;
+      procedure StopRecording; virtual; abstract;
+      procedure StartCalibration; virtual; abstract;
+      procedure StopCalibration; virtual; abstract;
     public
 
   end;

@@ -34,6 +34,10 @@ type
       function GetGazeOnScreenEvent: TGazeOnScreenEvent; override;
       procedure SetGazeOnScreenEvent(
         AGazeOnScreenEvent: TGazeOnScreenEvent); override;
+      procedure StartRecording; override;
+      procedure StopRecording; override;
+      procedure StartCalibration; override;
+      procedure StopCalibration; override;
     public
       constructor Create;
       destructor Destroy; override;
@@ -51,6 +55,26 @@ procedure TPupilEyeTracker.SetGazeOnScreenEvent(
 begin
   if FOnGazeOnScreenEvent = AGazeOnScreenEvent then Exit;
   FOnGazeOnScreenEvent := AGazeOnScreenEvent;
+end;
+
+procedure TPupilEyeTracker.StartRecording;
+begin
+  FPupilClient.Request(REQ_SHOULD_START_RECORDING);
+end;
+
+procedure TPupilEyeTracker.StopRecording;
+begin
+  FPupilClient.Request(REQ_SHOULD_STOP_RECORDING);
+end;
+
+procedure TPupilEyeTracker.StartCalibration;
+begin
+  FPupilClient.Request(REQ_SHOULD_START_CALIBRATION, True);
+end;
+
+procedure TPupilEyeTracker.StopCalibration;
+begin
+  PupilClient.Request(REQ_SHOULD_STOP_CALIBRATION);
 end;
 
 constructor TPupilEyeTracker.Create;

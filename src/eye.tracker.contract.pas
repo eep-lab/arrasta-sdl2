@@ -20,9 +20,13 @@ uses
 
 type
   IEyeTracker = interface
-  ['{510AF7AB-0F7F-416A-8B97-4CBE13950CB4}']
-    procedure SetGazeOnScreenEvent(AGazeOnScreenEvent: TGazeOnScreenEvent);
+    ['{510AF7AB-0F7F-416A-8B97-4CBE13950CB4}']
     function GetGazeOnScreenEvent : TGazeOnScreenEvent;
+    procedure SetGazeOnScreenEvent(AGazeOnScreenEvent: TGazeOnScreenEvent);
+    procedure StartRecording;
+    procedure StopRecording;
+    procedure StartCalibration;
+    procedure StopCalibration;
   end;
 
 implementation

@@ -143,6 +143,9 @@ end;
 
 procedure TFormBackground.BeginSession(Sender: TObject);
 begin
+  if Assigned(EyeTracker) then begin
+    EyeTracker.StartRecording;
+  end;
   TLogger.SetHeader(SessionName, ParticipantFolderName);
   CopyFile(ConfigurationFilename, Pool.BaseFilename+'.ini');
 end;
@@ -154,7 +157,9 @@ end;
 
 procedure TFormBackground.EndSession(Sender: TObject);
 begin
-
+  if Assigned(EyeTracker) then begin
+    EyeTracker.StopRecording;
+  end;
 end;
 
 procedure TFormBackground.CloseSDLApp(Sender: TObject);
