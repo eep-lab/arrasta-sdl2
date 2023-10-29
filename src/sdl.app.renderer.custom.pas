@@ -127,8 +127,9 @@ uses sdl.app.video.methods;
 procedure TCustomRenderer.SetParent(AParent: TCustomRenderer);
 begin
   if FParent=AParent then Exit;
-  AParent.AddChild(Self);
   FParent:=AParent;
+  if FParent <> nil then
+    FParent.AddChild(Self);
 end;
 
 procedure TCustomRenderer.SetOnMouseEnter(AValue: TNotifyEvent);
@@ -168,7 +169,7 @@ end;
 
 function TCustomRenderer.GetInFront: Boolean;
 begin
-  Result := ZIndex = Parent.FChilds.Count-1;
+  Result := ZIndex = FParent.FChilds.Count-1;
 end;
 
 function TCustomRenderer.GetSDLMouseButtonDown: TOnMouseButtonDownEvent;
@@ -183,7 +184,7 @@ end;
 
 function TCustomRenderer.GetZIndex: integer;
 begin
-  Result := Parent.FChilds.IndexOf(Self);
+  Result := FParent.FChilds.IndexOf(Self);
 end;
 
 procedure TCustomRenderer.SetOnGazeEnter(AValue: TNotifyEvent);
@@ -328,11 +329,12 @@ begin
   FChilds := TChilds.Create;
   FMouseInside := False;
   FGazeInside := False;
-  Parent := nil;
+  FParent := nil;
 end;
 
 destructor TCustomRenderer.Destroy;
 begin
+  FChilds.Clear;
   FChilds.Free;
   inherited Destroy;
 end;
@@ -359,7 +361,7 @@ end;
 
 procedure TCustomRenderer.BringToFront;
 begin
-  Parent.BringChildToFront(Self);
+  FParent.BringChildToFront(Self);
 end;
 
 end.
