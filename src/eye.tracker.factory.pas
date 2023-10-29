@@ -26,7 +26,7 @@ type
 
 implementation
 
-uses eye.tracker.pupil;
+uses eye.tracker.pupil, eye.tracker.eyelink;
 
 { TEyeTrackerFactory }
 
@@ -36,7 +36,7 @@ begin
   case ACode of
     etNone : { do nothing };
     etPupilLabs : Result := TPupilEyeTracker.Create as IEyeTracker;
-    etEyeLink : {Result := TEyeLinkTracker.Create as IEyeTracker};
+    etEyeLink : Result := TEyeLinkEyeTracker.Create as IEyeTracker;
   end;
 end;
 
