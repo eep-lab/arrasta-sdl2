@@ -14,8 +14,7 @@ unit sdl.app.audio;
 interface
 
 uses
-  SysUtils
-  , fgl
+  SysUtils, Generics.Collections
   , ctypes
   , sdl2
   , sdl2_mixer
@@ -25,7 +24,7 @@ uses
 
 type
 
-  TChannels = specialize TFPGList<ISound>;
+  TChannels = specialize TList<ISound>;
 
   { TSDLAudio }
 

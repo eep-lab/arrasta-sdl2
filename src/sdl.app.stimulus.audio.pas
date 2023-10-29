@@ -16,7 +16,6 @@ interface
 uses
   Classes, SysUtils
   , SDL2
-  //, fgl
   , sdl.app.graphics.rectangule
   , sdl.app.audio.contract
   , sdl.app.stimulus
@@ -65,9 +64,9 @@ uses sdl.app.audio
 function TAudioStimulus.GetStimulusName: string;
 begin
   if IsSample then begin
-    Result := 'Audio.Sample' + #9 + FWord;
+    Result := 'Audio.Sample' + #9 + FCustomName;
   end else begin
-    Result := 'Audio.Comparison' + #9 + FWord;
+    Result := 'Audio.Comparison' + #9 + FCustomName;
   end;
 end;
 
@@ -151,8 +150,8 @@ begin
   FPicture.OnMouseEnter := @MouseEnter;
   FPicture.OnMouseExit := @MouseExit;
 
-  FWord := GetWordValue(AParameters, IsSample, Index);
-  FSound := SDLAudio.LoadFromFile(AudioFile(FWord));
+  FCustomName := GetWordValue(AParameters, IsSample, Index);
+  FSound := SDLAudio.LoadFromFile(AudioFile(FCustomName));
   FSound.SetOnStop(@SoundFinished);
   FSound.SetOnStart(@SoundStart);
 end;

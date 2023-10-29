@@ -15,7 +15,6 @@ interface
 
 uses
   Classes, SysUtils
-  , fgl
   , SDL2
   , sdl.app.graphics.rectangule
   , sdl.app.stimulus.contract
@@ -27,7 +26,7 @@ uses
 
 type
 
-  TChoices = specialize TFPGList<TObject>;
+  //TChoices = specialize TFPGList<TObject>;
 
   { TStimulus }
 
@@ -52,7 +51,7 @@ type
       procedure SetOnMouseUp(AValue: TOnMouseEvent);
       procedure SetOnResponse(AValue: TNotifyEvent);
     protected
-      FWord : string;
+      FCustomName : string; {Filename only without extention}
       function GetID : TStimulusID;
       function ToData: string;
       function GetRect: TRectangule; virtual; abstract;
@@ -153,7 +152,7 @@ end;
 
 function TStimulus.ToData: string;
 begin
-  Result := FWord+'-'+Position.ToString;
+  Result := FCustomName+'-'+FPosition.ToString;
 end;
 
 constructor TStimulus.Create(AOwner: TComponent);
@@ -164,6 +163,12 @@ end;
 
 destructor TStimulus.Destroy;
 begin
+  FOnMouseDown := nil;
+  FOnMouseEnter := nil;
+  FOnMouseExit := nil;
+  FOnMouseMove := nil;
+  FOnMouseUp := nil;
+  FOnResponse := nil;
   inherited Destroy;
 end;
 

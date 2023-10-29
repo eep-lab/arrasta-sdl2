@@ -51,9 +51,9 @@ uses
 function TPictureStimulus.GetStimulusName: string;
 begin
   if IsSample then begin
-    Result := 'Picture.Sample' + #9 + FWord;
+    Result := 'Picture.Sample' + #9 + FCustomName;
   end else begin
-    Result := 'Picture.Comparison' + #9 + FWord;
+    Result := 'Picture.Comparison' + #9 + FCustomName;
   end;
 end;
 
@@ -67,8 +67,8 @@ procedure TPictureStimulus.Load(AParameters: TStringList; AParent: TObject;
   ARect: TSDL_Rect);
 begin
   FPicture := TPicture.Create(Self);
-  FWord := GetWordValue(AParameters, IsSample, Index);
-  FPicture.LoadFromFile(FWord+IMG_EXT);
+  FCustomName := GetWordValue(AParameters, IsSample, Index);
+  FPicture.LoadFromFile(FCustomName+IMG_EXT);
   FPicture.BoundsRect := ARect;
   FPicture.Parent := TCustomRenderer(AParent);
   FPicture.OnMouseDown := @MouseDown;
