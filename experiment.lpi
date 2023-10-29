@@ -676,6 +676,10 @@
         <Filename Value="src\sdl.app.lookable.contract.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit>
+      <Unit>
+        <Filename Value="src\eye.tracker.eyelink.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
