@@ -217,7 +217,7 @@ begin
       LIStimulus.Stop;
     end;
 
-    DoConsequence(LStimulus);
+    DoConsequence(Sender as TStimulus);
   end;
 end;
 
