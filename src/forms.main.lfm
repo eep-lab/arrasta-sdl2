@@ -92,7 +92,6 @@ object FormBackground: TFormBackground
       Width = 96
       Caption = 'Modo de Teste'
       TabOrder = 6
-      OnEditingDone = CheckBoxTestModeEditingDone
     end
     object ComboBoxMonitor: TComboBox
       Left = 16

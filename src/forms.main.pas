@@ -40,7 +40,6 @@ type
     procedure ButtonNewParticipantClick(Sender: TObject);
     procedure ButtonRunSessionClick(Sender: TObject);
     procedure BeginSession(Sender: TObject);
-    procedure CheckBoxTestModeEditingDone(Sender: TObject);
     procedure EndSession(Sender : TObject);
     procedure CloseSDLApp(Sender : TObject);
     procedure FormCreate(Sender: TObject);
@@ -79,6 +78,7 @@ procedure TFormBackground.ButtonRunSessionClick(Sender: TObject);
 begin
   if not Validated then Exit;
   ToogleControlPanelEnabled;
+  TestMode := CheckBoxTestMode.Checked;
 
   SDLApp := TSDLApplication.Create(@Pool.AppName[1]);
   SDLApp.SetupVideo(ComboBoxMonitor.ItemIndex);
@@ -146,11 +146,6 @@ begin
   end;
   TLogger.SetHeader(SessionName, ParticipantFolderName);
   CopyFile(ConfigurationFilename, Pool.BaseFilename+'.ini');
-end;
-
-procedure TFormBackground.CheckBoxTestModeEditingDone(Sender: TObject);
-begin
-   TestMode := CheckBoxTestMode.Enabled;
 end;
 
 procedure TFormBackground.EndSession(Sender: TObject);
