@@ -16,7 +16,6 @@ interface
 uses
   Classes, SysUtils
   , SDL2
-  //, fgl
   , sdl.app.graphics.rectangule
   , sdl.app.stimulus
   , sdl.app.typeable.contract

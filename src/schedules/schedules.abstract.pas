@@ -106,10 +106,10 @@ resourcestring
 
 implementation
 
-uses bot, timestamps, fgl;
+uses Generics.Collections, bot, timestamps;
 
 type
-  TIntegerList = specialize TFPGList<integer>;
+  TIntegerList = specialize TList<Integer>;
 
 var
   FleshlerHoffmanLastIndex : integer = -1;

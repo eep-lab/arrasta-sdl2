@@ -26,7 +26,7 @@ procedure PrintLatinSquare(const latinSquare: TLatinSquare);
 
 implementation
 
-uses fgl,  Math;
+uses Math;
 
 function ToArray(const intSet: TIntegerSet): TIntArray;
 var

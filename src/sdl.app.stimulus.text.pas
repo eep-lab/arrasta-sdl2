@@ -16,7 +16,6 @@ interface
 uses
   Classes, SysUtils
   , SDL2
-  , fgl
   , sdl.app.graphics.text
   , sdl.app.stimulus
   , sdl.app.events.abstract
@@ -25,7 +24,7 @@ uses
 
 type
 
-  TTextList = specialize TFPGList<TText>;
+  //TTextList = specialize TList<TText>;
 
   { TTextStimulus }
 
@@ -54,9 +53,9 @@ uses
 function TTextStimulus.GetStimulusName: string;
 begin
   if IsSample then begin
-    Result := 'Text.Sample' + #9 + FWord;
+    Result := 'Text.Sample' + #9 + FCustomName;
   end else begin
-    Result := 'Text.Comparison' + #9 + FWord;
+    Result := 'Text.Comparison' + #9 + FCustomName;
   end;
 end;
 
@@ -69,11 +68,11 @@ end;
 procedure TTextStimulus.Load(AParameters: TStringList; AParent: TObject;
   ARect: TSDL_Rect);
 begin
-  FWord := GetWordValue(AParameters, IsSample, Index);
+  FCustomName := GetWordValue(AParameters, IsSample, Index);
   FText := TText.Create(Self);
   FText.FontName := 'Picanco_et_al';
   //FText.FontSize := 50;
-  FText.Load(FWord);
+  FText.Load(FCustomName);
   FText.CentralizeWith(ARect);
   FText.Parent := TCustomRenderer(AParent);
   FText.OnMouseDown := @MouseDown;
