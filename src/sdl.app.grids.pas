@@ -14,7 +14,7 @@ unit sdl.app.grids;
 interface
 
 uses
-  Classes, SysUtils, fgl, SDL2, Math.LatinSquares, sdl.app.grids.types;
+  Classes, SysUtils, SDL2, Math.LatinSquares, sdl.app.grids.types;
 
 type
 
@@ -23,6 +23,8 @@ type
     private
       FFixedComparison: Boolean;
       FFixedSample: Boolean;
+      FSampleGridList : TGridList;
+      FComparGridList : TGridList;
       FSeed : integer;
       FCellsCount: integer;
       FCellsSize: real;
@@ -39,7 +41,8 @@ type
       procedure SetGridOrientation(AValue: TGridOrientation);
       procedure SetGridStyle(AGridStyle: TGridStyle);
       procedure RandomizeGridList(AGridList: TGridList);
-      function InvalidateGridList(IsSample: Boolean=true): TGridList;
+      procedure InvalidateSampleGridList(AGridList: TGridList);
+      procedure InvalidateComparGridList(AGridList: TGridList);
       function DispersionStyle : Boolean;
       procedure CreatePositions;
     public
@@ -72,7 +75,6 @@ implementation
 
 uses
   Math
-  , sdl.app
   , sdl.app.grids.methods
   , sdl.app.stimulus.contract
   ;
@@ -98,98 +100,100 @@ begin
     AGridList.Exchange(i, RandomRange(0, i + 1));
 end;
 
-function TGrid.InvalidateGridList(IsSample: Boolean): TGridList;
+procedure TGrid.InvalidateSampleGridList(AGridList: TGridList);
 var
-  i : integer;
+  i: Integer;
 begin
-  Result:= TGridList.Create;
-  {
-    3x3
-    0..1..2
-    3..4..5
-    6..7..8
-  }
+  AGridList.Clear;
   case FGridOrientation of
-      goNone: begin
-        for i := 0 to FCellsCount - 1 do Result.Add(i);
-      end;
-      goLeftToRight: begin
-        if IsSample then begin
-          if FFixedSample then begin
-            Result.Add(3);
-          end else begin
-            Result.Add(0);
-            Result.Add(3);
-            Result.Add(6);
-          end;
-        end else begin
-          if FFixedComparison then begin
-            Result.Add(5);
-          end else begin
-            Result.Add(2);
-            Result.Add(5);
-            Result.Add(8);
-          end;
-        end;
-      end;
-      goRightToLeft: begin
-        if IsSample then begin
-          if FFixedSample then begin
-            Result.Add(5);
-          end else begin
-            Result.Add(2);
-            Result.Add(5);
-            Result.Add(8);
-          end;
-        end else begin
-          if FFixedComparison then begin
-            Result.Add(3);
-          end else begin
-            Result.Add(0);
-            Result.Add(3);
-            Result.Add(6);
-          end;
-        end;
-      end;
-      goBottomToTop: begin
-        if IsSample then begin
-          if FFixedSample then begin
-            Result.Add(7);
-          end else begin
-            Result.Add(6);
-            Result.Add(7);
-            Result.Add(8);
-          end;
-        end else begin
-          if FixedComparison then begin
-            Result.Add(1);
-          end else begin
-            Result.Add(0);
-            Result.Add(1);
-            Result.Add(2);
-          end;
-        end;
-      end;
-      goTopToBottom: begin
-        if IsSample then begin
-          if FFixedSample then begin
-            Result.Add(1);
-          end else begin
-            Result.Add(0);
-            Result.Add(1);
-            Result.Add(2);
-          end;
-        end else begin
-          if FFixedComparison then begin
-            Result.Add(7);
-          end else begin
-            Result.Add(6);
-            Result.Add(7);
-            Result.Add(8);
-          end;
-        end;
+    goNone: begin
+      for i := 0 to FCellsCount - 1 do AGridList.Add(i);
+    end;
+    goLeftToRight: begin
+      if FFixedSample then begin
+        AGridList.Add(3);
+      end else begin
+        AGridList.Add(0);
+        AGridList.Add(3);
+        AGridList.Add(6);
       end;
     end;
+    goRightToLeft: begin
+      if FFixedSample then begin
+        AGridList.Add(5);
+      end else begin
+        AGridList.Add(2);
+        AGridList.Add(5);
+        AGridList.Add(8);
+      end;
+    end;
+    goBottomToTop: begin
+      if FFixedSample then begin
+        AGridList.Add(7);
+      end else begin
+        AGridList.Add(6);
+        AGridList.Add(7);
+        AGridList.Add(8);
+      end;
+    end;
+    goTopToBottom: begin
+      if FFixedSample then begin
+        AGridList.Add(1);
+      end else begin
+        AGridList.Add(0);
+        AGridList.Add(1);
+        AGridList.Add(2);
+      end;
+    end;
+  end;
+end;
+
+procedure TGrid.InvalidateComparGridList(AGridList: TGridList);
+var
+  i: Integer;
+begin
+  AGridList.Clear;
+  case FGridOrientation of
+    goNone: begin
+      for i := 0 to FCellsCount - 1 do AGridList.Add(i);
+    end;
+    goLeftToRight: begin
+      if FFixedComparison then begin
+        AGridList.Add(5);
+      end else begin
+        AGridList.Add(2);
+        AGridList.Add(5);
+        AGridList.Add(8);
+      end;
+    end;
+    goRightToLeft: begin
+      if FFixedComparison then begin
+        AGridList.Add(3);
+      end else begin
+        AGridList.Add(0);
+        AGridList.Add(3);
+        AGridList.Add(6);
+      end;
+    end;
+    goBottomToTop: begin
+      if FixedComparison then begin
+        AGridList.Add(1);
+      end else begin
+        AGridList.Add(0);
+        AGridList.Add(1);
+        AGridList.Add(2);
+      end;
+    end;
+    goTopToBottom: begin
+      if FFixedComparison then begin
+        AGridList.Add(7);
+      end else begin
+        AGridList.Add(6);
+        AGridList.Add(7);
+        AGridList.Add(8);
+      end;
+    end;
+  end;
 end;
 
 function TGrid.DispersionStyle: Boolean;
@@ -219,19 +223,30 @@ begin
           // do nothing for now
         end;
         else begin
-          LGridList := InvalidateGridList(True);
-          SamplesRows := TLatinSquare.Create(FSeed);
-          for i := 0 to LGridList.Count-1 do
-            SamplesRows.Signs[i] := LGridList[i];
-          SamplesRows.Invalidate;
-          LGridList.Free;
+          LGridList := TGridList.Create;
+          try
+            InvalidateSampleGridList(LGridList);
+            if Assigned(SamplesRows) then begin
+              SamplesRows.Free;
+            end;
+            SamplesRows := TLatinSquare.Create(FSeed);
+            for i := 0 to LGridList.Count-1 do
+              SamplesRows.Signs[i] := LGridList[i];
+            SamplesRows.Invalidate;
 
-          LGridList := InvalidateGridList(False);
-          ComparisonsRows := TLatinSquare.Create(FSeed);
-          for i := 0 to LGridList.Count-1 do
-            ComparisonsRows.Signs[i] := LGridList[i];
-          ComparisonsRows.Invalidate;
-          LGridList.Free;
+
+            InvalidateComparGridList(LGridList);
+
+            if Assigned(ComparisonsRows) then begin
+              ComparisonsRows.Free;
+            end;
+            ComparisonsRows := TLatinSquare.Create(FSeed);
+            for i := 0 to LGridList.Count-1 do
+              ComparisonsRows.Signs[i] := LGridList[i];
+            ComparisonsRows.Invalidate;
+          finally
+            LGridList.Free;
+          end;
         end;
     end;
   end;
@@ -241,6 +256,7 @@ procedure TGrid.RandomizePositions;
 var
   Cell : TCell;
   LGridList : TGridList;
+  n : integer;
 
   {Change positions only}
   procedure SecureCopy(var A: TGridItem; B : TGridItem);
@@ -271,41 +287,46 @@ var
    i : integer;
   begin
     LLatinRow := ALatinSquare.NextRow;
-    LGridList := TGridList.Create;
+    LGridList.Clear;
     for i in LLatinRow do LGridList.Add(i);
     //RandomizeGridList(LGridList);
     GridListToGridItems(AGridItems);
-    LGridList.Free;
   end;
 
 begin
   with FRandomPositions do begin
-    case FGridOrientation of
-      goNone: begin
-        LGridList:= InvalidateGridList;
-        RandomizeGridList(LGridList);
-        GridListToGridItems(Samples);
-        GridListToGridItems(Comparisons);
-        LGridList.Free;
-      end;
-      else begin
-        if FFixedSample then begin
-          LGridList := InvalidateGridList(True);
-          Samples[Low(Samples)].Position := LGridList.First;
-          Cell := IntToCell(Samples[Low(Samples)].Position);
-          SecureCopy(Samples[Low(Samples)], FGrid[Cell[0], Cell[1]]);
-        end else begin
-          LatinRowToGridItems(SamplesRows, Samples);
+    LGridList := TGridList.Create;
+    try
+      case FGridOrientation of
+        goNone: begin
+          LGridList.Clear;
+          for n := 0 to FCellsCount - 1 do LGridList.Add(n);
+          RandomizeGridList(LGridList);
+          GridListToGridItems(Samples);
+          GridListToGridItems(Comparisons);
         end;
-        if FFixedComparison then begin
-          LGridList := InvalidateGridList(False);
-          Comparisons[Low(Comparisons)].Position := LGridList.First;
-          Cell := IntToCell(Comparisons[Low(Comparisons)].Position);
-          SecureCopy(Comparisons[Low(Comparisons)], FGrid[Cell[0], Cell[1]]);
-        end else begin
-          LatinRowToGridItems(ComparisonsRows, Comparisons);
+        else begin
+          if FFixedSample then begin
+            InvalidateSampleGridList(LGridList);
+            Samples[Low(Samples)].Position := LGridList.First;
+            Cell := IntToCell(Samples[Low(Samples)].Position);
+            SecureCopy(Samples[Low(Samples)], FGrid[Cell[0], Cell[1]]);
+          end else begin
+            LatinRowToGridItems(SamplesRows, Samples);
+          end;
+
+          if FFixedComparison then begin
+            InvalidateComparGridList(LGridList);
+            Comparisons[Low(Comparisons)].Position := LGridList.First;
+            Cell := IntToCell(Comparisons[Low(Comparisons)].Position);
+            SecureCopy(Comparisons[Low(Comparisons)], FGrid[Cell[0], Cell[1]]);
+          end else begin
+            LatinRowToGridItems(ComparisonsRows, Comparisons);
+          end;
         end;
       end;
+    finally
+      LGridList.Free;
     end;
   end;
 end;

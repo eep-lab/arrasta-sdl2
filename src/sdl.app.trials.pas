@@ -111,6 +111,7 @@ end;
 
 destructor TTrial.Destroy;
 begin
+  FData.Parameters.Free;
   EventHandler.OnMouseButtonDown := nil;
   EventHandler.OnMouseButtonUp := nil;
   EventHandler.OnMouseMotion := nil;

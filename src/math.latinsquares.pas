@@ -14,11 +14,11 @@ unit math.latinsquares;
 interface
 
 uses
-  Classes, SysUtils, fgl;
+  Classes, SysUtils, Generics.Collections;
 
 type
 
-  TLatinRow = specialize TFPGList<Integer>;
+  TLatinRow = specialize TList<Integer>;
   TLatinMatrix = array of TLatinRow;
 
   { TLatinSquare }
@@ -30,10 +30,11 @@ type
       FMatrix : TLatinMatrix;
       FCurrentRow : integer;
       procedure NewLatinSquare;
+      procedure SetSigns(AValue: TLatinRow);
     public
       constructor Create(ASize: integer);
       destructor Destroy; override;
-      property Signs : TLatinRow read FSigns write FSigns;
+      property Signs : TLatinRow read FSigns write SetSigns;
       procedure Invalidate;
       function NextRow : TLatinRow;
       function AsString : string;
@@ -74,36 +75,47 @@ var
   end;
 
 begin
-  //LSigns := TLatinRow.Create;
   LRotateS := TLatinRow.Create;
   LJumbled := TLatinRow.Create;
   LSequence := TLatinRow.Create;
+  try
+    Shuffle(LJumbled); //gerar lista de referência; aleatória
+    Shuffle(LRotateS); //gerar lista de rotações; aleatória
 
-  Shuffle(LJumbled); //gerar lista de referência; aleatória
-  Shuffle(LRotateS); //gerar lista de rotações; aleatória
+    //gerar lista de elementos; ordenada
+    if FSigns.Count = 0 then
+      for i := 0 to FSize - 1 do FSigns.Add(i);
+    for i := 0 to FSize - 1 do LSequence.Add(i);
 
-  //gerar lista de elementos; ordenada
-  for i := 0 to FSize - 1 do FSigns.Add(i);
-  for i := 0 to FSize - 1 do LSequence.Add(i);
+    for i := 0 to FSize - 1 do
+      begin
+        //gerar lista de trabalho a partir da lista de referência
+        for k := 0 to FSize - 1 do LSequence[k] := LJumbled[k];
 
-  for i := 0 to FSize - 1 do
-    begin
-      //gerar lista de trabalho a partir da lista de referência
-      for k := 0 to FSize - 1 do LSequence[k] := LJumbled[k];
+        //mover elementos da lista de trabalho
+        Rotate(LSequence, LRotateS[i]);
 
-      //mover elementos da lista de trabalho
-      Rotate(LSequence, LRotateS[i]);
-
-      //preencher Latin Square
-      for j := Low(FMatrix) to High(FMatrix) do
-        FMatrix[j][LSequence[j]-1] := FSigns[i];
-    end;
-
-  //LSigns.Free;
-  LRotateS.Free;
-  LJumbled.Free;
-  LSequence.Free;
+        //preencher Latin Square
+        for j := Low(FMatrix) to High(FMatrix) do
+          FMatrix[j][LSequence[j]-1] := FSigns[i];
+      end;
+  finally
+    LRotateS.Free;
+    LJumbled.Free;
+    LSequence.Free;
+  end;
   FCurrentRow := 0;
+end;
+
+procedure TLatinSquare.SetSigns(AValue: TLatinRow);
+var
+  i: integer;
+begin
+  if FSigns = AValue then Exit;
+  FSigns.Clear;
+  for i := 0 to AValue.Count -1 do begin
+    FSigns.Add(AValue[i]);
+  end;
 end;
 
 constructor TLatinSquare.Create(ASize: integer);

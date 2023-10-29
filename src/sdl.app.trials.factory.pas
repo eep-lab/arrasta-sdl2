@@ -14,7 +14,7 @@ unit sdl.app.trials.factory;
 interface
 
 uses
-  SysUtils, fgl
+  SysUtils, Generics.Collections
   , sdl.app.trials.contract
   , sdl.app.trials
   ;
@@ -23,7 +23,7 @@ type
 
   TTrialClass = class of TTrial;
 
-  TTrialRegistry = specialize TFPGMap<string, TTrialClass>;
+  TTrialRegistry = specialize TDictionary<string, TTrialClass>;
 
   { TTrialFactory }
 
@@ -38,6 +38,7 @@ type
         ATrialKind: string; ATrialClass: TTrialClass); static;
       class procedure Play; static;
       class function GetLastTrial : ITrial; static;
+      class procedure FreeCurrentTrial;
   end;
 
 var
@@ -72,7 +73,7 @@ end;
 class procedure TTrialFactory.RegisterTrialClass(ATrialKind: string;
   ATrialClass: TTrialClass);
 begin
-  Registry[ATrialKind] := ATrialClass;
+  Registry.AddOrSetValue(ATrialKind, ATrialClass);
 end;
 
 class procedure TTrialFactory.Play;
@@ -80,13 +81,10 @@ var
   TrialData : TTrialData;
   TrialClass : TTrialClass;
 begin
-  if Assigned(CurrentTrial) then
-  begin
-    FreeAndNil(CurrentTrial);
-  end;
+  FreeCurrentTrial;
 
   TrialData := ConfigurationFile.CurrentTrial;
-  if not Registry.TryGetData(TrialData.Kind, TrialClass) then
+  if not Registry.TryGetValue(TrialData.Kind, TrialClass) then
     raise EArgumentException.CreateFmt(
       'Trial kind is not registered: %s %s', [TrialData.Kind, TrialClass]);
   EndCriteria.InvalidateTrial(TrialData);
@@ -109,12 +107,19 @@ begin
   try
     CurrentTrial := TLastTrial.Create(nil);
     CurrentTrial.OnTrialEnd := nil;
-    //CurrentTrial.Name := 'T' + Pool.Trial.UID.ToString;
+    CurrentTrial.Name := 'LastTrial';
     CurrentTrial.Data := LMockData;
     CurrentTrial.Show;
     Result := CurrentTrial as ITrial;
   finally
     LMockData.Parameters.Free;
+  end;
+end;
+
+class procedure TTrialFactory.FreeCurrentTrial;
+begin
+  if Assigned(CurrentTrial) then begin
+    FreeAndNil(CurrentTrial);
   end;
 end;
 

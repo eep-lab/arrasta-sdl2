@@ -14,15 +14,14 @@ unit sdl.app.markers;
 interface
 
 uses
-  Classes, SysUtils
+  Classes, SysUtils, Generics.Collections
   , SDL2
-  , fgl
   , sdl.app.graphics.marker
   ;
 
 type
 
-  TMarkerList = specialize TFPGList<TMarker>;
+  TMarkerList = specialize TObjectList<TMarker>;
 
   { TMarkers }
 
@@ -58,9 +57,6 @@ destructor TMarkers.Destroy;
 var
   LMarker : TMarker;
 begin
-  for LMarker in FMarkers do begin
-    LMarker.Free;
-  end;
   FMarkers.Free;
   inherited Destroy;
 end;

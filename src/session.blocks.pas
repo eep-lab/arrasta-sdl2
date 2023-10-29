@@ -33,6 +33,7 @@ type
     procedure EndBlock;
   public
     constructor Create(AOwner : TComponent); override;
+    destructor Destroy; override;
     procedure BeforePlay;
     procedure Play;
     property OnEndBlock : TNotifyEvent read FOnEndBlock write SetOnEndBlock;
@@ -77,6 +78,12 @@ begin
   inherited Create(AOwner);
   InterTrial := TInterTrialEvents.Create(Self);
   InterTrial.OnEnd:=@InterTrialEventsEnd;
+end;
+
+destructor TBlock.Destroy;
+begin
+  TTrialFactory.FreeCurrentTrial;
+  inherited Destroy;
 end;
 
 procedure TBlock.BeforePlay;

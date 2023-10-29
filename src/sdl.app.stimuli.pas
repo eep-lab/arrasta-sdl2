@@ -46,6 +46,7 @@ type
     constructor Create(AOwner : TComponent); overload; override;
     constructor Create(AOwner : TComponent;
       ASchedule : TSchedule); virtual; overload;
+    destructor Destroy; override;
     function AsString : string; virtual;
     function AsInterface: IStimuli;
     property Schedule : TSchedule read FSchedule write SetSchedule;
@@ -106,8 +107,12 @@ end;
 
 procedure TStimuli.SetSchedule(AValue: TSchedule);
 begin
-  if FSchedule=AValue then Exit;
-  FSchedule:=AValue;
+  if FSchedule.AsString=AValue.AsString then Exit;
+  FSchedule.Load(AValue.AsString);
+  with FSchedule do begin
+    OnConsequence:= AValue.OnConsequence;
+    OnResponse:= AValue.OnResponse;
+  end;
 end;
 
 constructor TStimuli.Create(AOwner: TComponent);
@@ -123,7 +128,21 @@ end;
 constructor TStimuli.Create(AOwner : TComponent; ASchedule : TSchedule);
 begin
   inherited Create(AOwner);
-  FSchedule := ASchedule;
+  FSchedule := TSchedule.Create(Self);
+  FSchedule.Load(ASchedule.AsString);
+  with FSchedule do begin
+    OnConsequence:= ASchedule.OnConsequence;
+    OnResponse:= ASchedule.OnResponse;
+  end;
+end;
+
+destructor TStimuli.Destroy;
+begin
+  FOnFinalize := nil;
+  FOnConsequence := nil;
+  FOnResponse := nil;
+  FOnStop := nil;
+  inherited Destroy;
 end;
 
 function TStimuli.AsString: string;

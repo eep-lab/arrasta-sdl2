@@ -269,16 +269,15 @@ var
   LTrialSection : string;
 begin
   LTrialSection := TrialSection(BlockIndex, TrialIndex);
-  with Result do
-    begin
-      Id :=  TrialIndex + 1;
-      Kind := ReadString(LTrialSection, _Kind, '');
-      ReferenceName := ReadString(LTrialSection, 'ReferenceName', '');
-      Parameters := TStringList.Create;
-      Parameters.CaseSensitive := False;
-      Parameters.Duplicates := dupIgnore;
-      ReadSectionValues(LTrialSection, Parameters);
-    end;
+  with Result do begin
+    Id :=  TrialIndex + 1;
+    Kind := ReadString(LTrialSection, _Kind, '');
+    ReferenceName := ReadString(LTrialSection, 'ReferenceName', '');
+    Parameters := TStringList.Create;
+    Parameters.CaseSensitive := False;
+    Parameters.Duplicates := dupIgnore;
+    ReadSectionValues(LTrialSection, Parameters);
+  end;
 end;
 
 procedure TConfigurationFile.CopySection(AFrom, ATo: string;
@@ -325,9 +324,13 @@ var
 begin
   for i := 0 to ACurrentBlock.TotalTrials-1 do begin
     LTrialData := GetTrialBase(ACurrentBlock.ID, i);
-    LItem.ReferenceName := LTrialData.ReferenceName;
-    LItem.ID := i;
-    AReferenceList.Add(LItem);
+    try
+      LItem.ReferenceName := LTrialData.ReferenceName;
+      LItem.ID := i;
+      AReferenceList.Add(LItem);
+    finally
+      LTrialData.Parameters.Free;
+    end;
   end;
 end;
 

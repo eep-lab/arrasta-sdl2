@@ -14,13 +14,13 @@ unit session.counters.mutuallyexclusive;
 interface
 
 uses
-  Classes, SysUtils, fgl, session.counters.consecutive;
+  Classes, SysUtils, Generics.Collections, session.counters.consecutive;
 
 type
 
   TCounterType = (CounterHit, CounterMiss, CounterNone);
 
-  TCounters = specialize TFPGList<TConsecutivesCounter>;
+  TCounters = specialize TObjectList<TConsecutivesCounter>;
 
   { TMutuallyExclusiveCounters }
 
@@ -92,11 +92,6 @@ destructor TMutuallyExclusiveCounters.Destroy;
 var
   LCounter : TConsecutivesCounter;
 begin
-  if FCounters.Count > 0 then begin
-    for LCounter in FCounters do begin
-      LCounter.Free;
-    end;
-  end;
   FCounters.Free;
   inherited Destroy;
 end;
