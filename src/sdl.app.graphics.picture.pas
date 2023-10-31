@@ -28,7 +28,9 @@ type
   TPicture = class(TRectangule, IPaintable)
   private
     FSibling: TRectangule;
+    FStimulus: TObject;
     procedure SetSibling(AValue: TRectangule);
+    procedure SetStimulus(AValue: TObject);
   protected
     FTexture  : PSDL_Texture;
     procedure MouseMove(Sender: TObject; Shift: TCustomShiftState; X, Y: Integer); override;
@@ -37,7 +39,7 @@ type
     procedure MouseExit(Sender: TObject); override;
     procedure Paint; override;
   public
-    constructor Create(AOwner: TComponent); override;
+    constructor Create; override;
     destructor Destroy; override;
     procedure LoadFromFile(AFilename: string); virtual;
     property Sibling : TRectangule read FSibling write SetSibling;
@@ -58,9 +60,9 @@ uses
 
 { TPicture }
 
-constructor TPicture.Create(AOwner: TComponent);
+constructor TPicture.Create;
 begin
-  inherited Create(AOwner);
+  inherited Create;
   FSibling := nil;
 end;
 
@@ -75,6 +77,12 @@ begin
   if FSibling=AValue then Exit;
   FSibling:=AValue;
   CentralizeAtTopWith(FSibling.BoundsRect);
+end;
+
+procedure TPicture.SetStimulus(AValue: TObject);
+begin
+  if FStimulus = AValue then Exit;
+  FStimulus := AValue;
 end;
 
 procedure TPicture.MouseMove(Sender: TObject; Shift: TCustomShiftState; X,

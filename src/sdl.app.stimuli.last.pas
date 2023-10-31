@@ -27,7 +27,7 @@ type
     private
       FText : TText;
     public
-      constructor Create(AOwner : TComponent); override;
+      constructor Create; override;
       destructor Destroy; override;
       function AsInterface : IStimuli;
       procedure DoExpectedResponse; override;
@@ -42,14 +42,15 @@ implementation
 uses sdl.app.renderer.custom;
 { TLastStimuli }
 
-constructor TLastStimuli.Create(AOwner: TComponent);
+constructor TLastStimuli.Create;
 begin
-  inherited Create(AOwner);
-  FText := TText.Create(Self);
+  inherited Create;
+  FText := TText.Create;
 end;
 
 destructor TLastStimuli.Destroy;
 begin
+  FText.Free;
   inherited Destroy;
 end;
 

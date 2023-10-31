@@ -111,7 +111,7 @@ end;
 
 destructor TSession.Destroy;
 begin
-  //Counters.Free;
+  Pool.Counters.BeforeEndSession;
   EndCriteria.Free;
   FTimer.Free;
   inherited Destroy;

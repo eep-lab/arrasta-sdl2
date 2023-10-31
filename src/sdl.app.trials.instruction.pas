@@ -51,13 +51,14 @@ end;
 constructor TInstruction.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
-  FStimuli := TInstructionStimuli.Create(Self);
+  FStimuli := TInstructionStimuli.Create;
+  FStimuli.Trial := Self as TObject;
   FStimuli.OnFinalize := @EndTrialCallBack;
 end;
 
 destructor TInstruction.Destroy;
 begin
-  { free stuff }
+  FStimuli.Free;
   inherited Destroy;
 end;
 

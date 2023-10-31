@@ -31,6 +31,7 @@ type
     AssetsBasePath : string;
     AudioBasePath : string;
     ResponsesBasePath : string;
+    ConfigurationFilename : string;
     TimeStart : Extended;
     TestMode : Boolean;
     MonitorToShow : Byte;
@@ -63,6 +64,7 @@ initialization
     AudioBasePath := AsPath('wav', 'rafael');
     AssetsBasePath := AsPath('assets');
     ResponsesBasePath:= AsPath('responses');
+    ConfigurationFilename := '';
     ForceDirectories(RootData);
     ForceDirectories(RootMedia);
     ForceDirectories(AsPath(RootMedia, AssetsBasePath));

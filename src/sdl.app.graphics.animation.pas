@@ -25,7 +25,7 @@ type
   protected
     procedure Paint; override;
   public
-    constructor Create(AOwner: TComponent); override;
+    constructor Create; override;
     destructor Destroy; override;
     procedure Animate(ASibling : TRectangule);
     procedure Join(ASample, AComparison : TRectangule;
@@ -163,9 +163,9 @@ begin
   // change color
 end;
 
-constructor TAnimation.Create(AOwner: TComponent);
+constructor TAnimation.Create;
 begin
-  inherited Create(AOwner);
+  inherited Create;
   AnimationData.Step := 0.025; // for 50 fps
   //FPenWidth := 6;
   FVisible := False;

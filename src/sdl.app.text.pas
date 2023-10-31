@@ -85,6 +85,7 @@ begin
     for LFilename in TTFFiles do
       LoadFromFile(LFilename);
   finally
+    TTFFiles.Clear;
     TTFFiles.Free;
   end;
 end;

@@ -22,6 +22,7 @@ type
 
   TButton = class(TPicture)
   private
+    FSender : TObject;
     FOnClick: TNotifyEvent;
   protected
     FIsPressed: Boolean;
@@ -29,10 +30,12 @@ type
     procedure MouseUp(Sender: TObject; Shift: TCustomShiftState; X, Y: Integer); override;
     procedure Paint; override;
   public
-    constructor Create(AOwner: TComponent); override;
+    constructor Create; override;
+    destructor Destroy; override;
     procedure Click; virtual;
     procedure LoadFromFile(AFilename: string); override;
     property OnClick: TNotifyEvent read FOnClick write FOnClick;
+    property Sender : TObject read FSender write FSender;
   end;
 
 implementation
@@ -41,10 +44,16 @@ implementation
 
 { TButton }
 
-constructor TButton.Create(AOwner: TComponent);
+constructor TButton.Create;
 begin
-  inherited Create(AOwner);
+  inherited Create;
   FIsPressed := False;
+  FSender := nil;
+end;
+
+destructor TButton.Destroy;
+begin
+  inherited Destroy;
 end;
 
 procedure TButton.MouseDown(Sender: TObject; Shift: TCustomShiftState; X, Y: Integer);

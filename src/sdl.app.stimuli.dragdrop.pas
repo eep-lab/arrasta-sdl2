@@ -14,7 +14,7 @@ unit sdl.app.stimuli.dragdrop;
 interface
 
 uses
-  Classes, SysUtils, fgl
+  Classes, SysUtils, Generics.Collections
   , sdl.app.stimuli.contract
   , sdl.app.stimuli
   , sdl.app.events.abstract
@@ -27,8 +27,8 @@ uses
 
 type
 
-  TDragDropablePictures = specialize TFPGList<TDragDropablePicture>;
-  TAnimations = specialize TFPGList<TAnimation>;
+  TDragDropablePictures = specialize TList<TDragDropablePicture>;
+  TAnimations = specialize TList<TAnimation>;
 
   { TDragDropStimuli }
 
@@ -57,7 +57,7 @@ type
     procedure WrongDragDrop(Sender, Source: TObject; X, Y: Integer);
     procedure Animate(ASample : TDragDropablePicture);
   public
-    constructor Create(AOwner : TComponent); override;
+    constructor Create; override;
     destructor Destroy; override;
     //procedure ResetGrid;
     function AsInterface : IStimuli;
@@ -133,7 +133,7 @@ var
       LComparisons := TDragDropablePictures.Create;
       for i := low(Comparisons) to high(Comparisons) do
       begin
-        LItem := TDragDropablePicture.Create(self);
+        LItem := TDragDropablePicture.Create;
         LItem.BoundsRect := Comparisons[i].Rect;
 
         Comparisons[i].Item := LItem as TObject;
@@ -143,7 +143,7 @@ var
 
       for i := low(Samples) to high(Samples) do
       begin
-        LItem := TDragDropablePicture.Create(Self);
+        LItem := TDragDropablePicture.Create;
         LItem.OnMouseDown := @SetFocus;
         LItem.OnRightDragDrop:=@RightDragDrop;
         LItem.OnWrongDragDrop:=@WrongDragDrop;
@@ -301,7 +301,7 @@ begin
     end;
   end;
 
-  LAnimation := TAnimation.Create(Self);
+  LAnimation := TAnimation.Create;
   //LAnimation.Cursor:=Cursor;
   LAnimation.Join(Sample, Comparison, FGridOrientation);
   LAnimation.Show;
@@ -415,18 +415,20 @@ begin
   //Parent.Invalidate;
 end;
 
-constructor TDragDropStimuli.Create(AOwner: TComponent);
+constructor TDragDropStimuli.Create;
 begin
-  inherited Create(AOwner);
+  inherited Create;
   DragDropLine := TBresenhamLine.Create;
   FSamples := TDragDropablePictures.Create;
   FComparisons := TDragDropablePictures.Create;
-  FAnimation := TAnimation.Create(Self);
+  FAnimation := TAnimation.Create;
   FDoneAnimations := TAnimations.Create;
 end;
 
 destructor TDragDropStimuli.Destroy;
 begin
+  DragDropLine.Free;
+  FAnimation.Free;
   FDoneAnimations.Free;
   FSamples.Free;
   FComparisons.Free;

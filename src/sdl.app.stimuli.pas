@@ -21,20 +21,23 @@ type
 
   { TStimuli }
 
-  TStimuli = class(TComponent, IStimuli)
+  TStimuli = class(TObject, IStimuli)
   private
     FOnFinalize: TNotifyEvent;
     FSchedule : TSchedule;
     FOnConsequence: TNotifyEvent;
     FOnResponse: TNotifyEvent;
     FOnStop: TNotifyEvent;
+    FTrial: TObject;
     procedure Consequence(Sender : TObject);
     procedure Response(Sender : TObject);
     procedure SetOnConsequence(AValue: TNotifyEvent);
     procedure SetOnFinalize(AValue: TNotifyEvent);
     procedure SetOnResponse(AValue: TNotifyEvent);
     procedure SetOnStop(AValue : TNotifyEvent);
+    procedure SetTrial(AValue: TObject);
   protected
+    function GetTrial : TObject;
     function CustomName : string;
     //function ContainerItems : IEnumerable; virtual; abstract;
     procedure DoExpectedResponse; virtual; abstract;
@@ -43,12 +46,12 @@ type
     procedure Stop; virtual; abstract;
     procedure SetSchedule(AValue: TSchedule); virtual;
   public
-    constructor Create(AOwner : TComponent); overload; override;
-    constructor Create(AOwner : TComponent;
-      ASchedule : TSchedule); virtual; overload;
+    constructor Create; virtual; overload;
+    constructor Create(ASchedule : TSchedule); virtual; overload;
     destructor Destroy; override;
     function AsString : string; virtual;
     function AsInterface: IStimuli;
+    property Trial : TObject read GetTrial write SetTrial;
     property Schedule : TSchedule read FSchedule write SetSchedule;
     property OnStop : TNotifyEvent read FOnStop write SetOnStop;
     property OnConsequence : TNotifyEvent read FOnConsequence write SetOnConsequence;
@@ -63,6 +66,11 @@ implementation
 function TStimuli.CustomName: string;
 begin
   Result := Self.ClassName.Replace('T', '', []);
+end;
+
+function TStimuli.GetTrial: TObject;
+begin
+  Result := FTrial;
 end;
 
 procedure TStimuli.Consequence(Sender: TObject);
@@ -99,6 +107,12 @@ begin
   FOnStop:=AValue;
 end;
 
+procedure TStimuli.SetTrial(AValue: TObject);
+begin
+  if FTrial = AValue then Exit;
+  FTrial := AValue;
+end;
+
 procedure TStimuli.Load(AParameters: TStringList; AParent: TObject);
 begin
   if not Assigned(AParent) then
@@ -115,20 +129,19 @@ begin
   end;
 end;
 
-constructor TStimuli.Create(AOwner: TComponent);
+constructor TStimuli.Create;
 begin
-  inherited Create(AOwner);
-  FSchedule := TSchedule.Create(Self);
+  inherited Create;
+  FSchedule := TSchedule.Create(nil);
   with FSchedule do begin
     OnConsequence:= @Self.Consequence;
     OnResponse:= @Self.Response;
   end;
 end;
 
-constructor TStimuli.Create(AOwner : TComponent; ASchedule : TSchedule);
+constructor TStimuli.Create(ASchedule : TSchedule);
 begin
-  inherited Create(AOwner);
-  FSchedule := TSchedule.Create(Self);
+  Create;
   FSchedule.Load(ASchedule.AsString);
   with FSchedule do begin
     OnConsequence:= ASchedule.OnConsequence;
@@ -138,6 +151,7 @@ end;
 
 destructor TStimuli.Destroy;
 begin
+  FSchedule.Free;
   FOnFinalize := nil;
   FOnConsequence := nil;
   FOnResponse := nil;

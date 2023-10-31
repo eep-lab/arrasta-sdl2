@@ -52,12 +52,13 @@ constructor TPupilCalibration.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   FStimuli := TPupilCalibrationStimuli.Create(Self);
+  FStimuli.Trial := Self as TObject;
   FStimuli.OnFinalize := @EndTrialCallBack;
 end;
 
 destructor TPupilCalibration.Destroy;
 begin
-  { free stuff }
+  FStimuli.Free;
   inherited Destroy;
 end;
 

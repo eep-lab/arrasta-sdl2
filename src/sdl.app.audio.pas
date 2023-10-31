@@ -14,38 +14,38 @@ unit sdl.app.audio;
 interface
 
 uses
-  SysUtils, Generics.Collections
+  Classes, SysUtils, Generics.Collections
   , ctypes
   , sdl2
   , sdl2_mixer
   , sdl.app.audio.contract
+  , sdl.app.audio.chunk
   , sdl.app.audio.recorder
   ;
 
 type
 
-  TChannels = specialize TList<ISound>;
+  TChunkList = specialize TObjectList<TChunk>;
 
   { TSDLAudio }
 
   TSDLAudio = class
   private
     FRecorderDevice : TRecorderDevice;
-    FOnChannelFinished: TMix_Channel_Finished;
+    //FOnChannelFinished: TMix_Channel_Finished;
     FVolume : int32;
-    FChannels : TChannels;
+    FChannels : TChunkList;
     function GetPlaying: Boolean;
     function GetSetVolume: int32;
     // Returns the current number of channels without changing anything.
     function AllocatedChannels : cint;
     procedure SDLAudioChannelFinished(const AChannel: cint32);
   public
-    constructor Create; reintroduce;
+    constructor Create;
     destructor Destroy; override;
-    procedure UnregisterChannel(Sound : ISound);
     function LoadFromFile(AFilename : string) : ISound;
     function SoundFromName(AName : string) : ISound;
-    function RegisterChannel(Sound : ISound) : cint;
+    procedure AllocateChannels;
     property Volume : int32 read GetSetVolume write FVolume;
     property Playing : Boolean read GetPlaying;
     property RecorderDevice : TRecorderDevice read FRecorderDevice;
@@ -61,7 +61,7 @@ var
 
 implementation
 
-uses sdl.app.output, sdl.app.audio.chunk, sdl.app.events.custom, session.pool;
+uses sdl.app.output, sdl.app.events.custom, session.pool;
 
 procedure ChannelFinishedCallback(channel : cint); cdecl;
 var
@@ -81,8 +81,11 @@ end;
 { TSDLAudio }
 
 procedure TSDLAudio.SDLAudioChannelFinished(const AChannel: cint32);
+var
+  LSound : ISound;
 begin
-  FChannels[AChannel].DoOnStop;
+  LSound := FChannels[AChannel] as ISound;
+  LSound.DoOnStop;
 end;
 
 function TSDLAudio.GetSetVolume: int32;
@@ -92,15 +95,16 @@ end;
 
 function TSDLAudio.GetPlaying: Boolean;
 var
-  IChunk: ISound;
+  LSound : ISound;
 begin
   Result := False;
   if FChannels.Count = 0 then Exit;
-  for IChunk in FChannels do
-    if IChunk.Playing then begin
+  for LSound in FChannels do begin
+    if LSound.Playing then begin
       Result := True;
       Exit;
     end;
+  end;
 end;
 
 function TSDLAudio.AllocatedChannels: cint;
@@ -110,8 +114,9 @@ end;
 
 constructor TSDLAudio.Create;
 begin
-  EventHandler.OnAudioChannelFinished := @SDLAudioChannelFinished;
-  FChannels := TChannels.Create;
+  inherited Create;
+  SDLEvents.OnAudioChannelFinished := @SDLAudioChannelFinished;
+  FChannels := TChunkList.Create;
   if Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 1048) < 0 then begin
     Print('Audio not initialized:'+Mix_GetError^);
   end else begin
@@ -121,15 +126,12 @@ begin
   Mix_ChannelFinished(@ChannelFinishedCallback);
 
   FRecorderDevice := TRecorderDevice.Create;
+  FRecorderDevice.Open;
 end;
 
 destructor TSDLAudio.Destroy;
-var
-  IChunk : ISound;
 begin
   FRecorderDevice.Free;
-  for IChunk in FChannels do IChunk.Free;
-  Mix_AllocateChannels(0);
   FChannels.Free;
   Mix_CloseAudio;
   inherited Destroy;
@@ -137,40 +139,32 @@ end;
 
 function TSDLAudio.SoundFromName(AName: string): ISound;
 var
-  IChunk : ISound;
+  LSound : ISound;
 begin
   if FChannels.Count = 0 then Exit;
   Result := nil;
-  for IChunk in FChannels do
-    if IChunk.ShortName.ToUpper = AName.ToUpper then begin
-      Result := IChunk;
+  for LSound in FChannels do begin
+    if LSound.ShortName.ToUpper = AName.ToUpper then begin
+      Result := LSound;
       Exit;
     end;
+  end;
   raise EFileNotFoundException.Create('TSDLAudio.SoundFromName'+AName);
 end;
 
 function TSDLAudio.LoadFromFile(AFilename: string): ISound;
 var
-  LChunk : TChunk;
+  LChannel : cint;
 begin
-  LChunk := TChunk.Create;
-  LChunk.LoadFromFile(AFilename);
-  LChunk.Channel := SDLAudio.RegisterChannel(LChunk.AsInterface);
-  Result := LChunk.AsInterface;
+  LChannel := FChannels.Add(TChunk.Create);
+  FChannels.Last.LoadFromFile(AFilename);
+  FChannels.Last.Channel := LChannel;
+  AllocateChannels;
+  Result := FChannels.Last.AsInterface;
 end;
 
-procedure TSDLAudio.UnregisterChannel(Sound: ISound);
+procedure TSDLAudio.AllocateChannels;
 begin
-  FChannels.Remove(Sound);
-  Mix_AllocateChannels(FChannels.Count);
-  if FChannels.Count <> AllocatedChannels then
-    raise Exception.Create(
-      'Error: TSDLAudio.UnregisterChannel incosistency. Audio may not play.');
-end;
-
-function TSDLAudio.RegisterChannel(Sound: ISound) : cint;
-begin
-  Result:= FChannels.Add(Sound);
   if AllocatedChannels < FChannels.Count then begin
     Mix_AllocateChannels(FChannels.Count);
   end;

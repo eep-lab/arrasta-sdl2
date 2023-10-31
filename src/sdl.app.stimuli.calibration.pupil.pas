@@ -34,7 +34,7 @@ type
         APupilMessage : TPupilMessage);
       procedure StartPupilCalibration;
     public
-      constructor Create(AOwner : TComponent); override;
+      constructor Create; override;
       destructor Destroy; override;
       function AsInterface : IStimuli;
       procedure DoExpectedResponse; override;
@@ -77,14 +77,15 @@ begin
   PupilClient.Request(REQ_SHOULD_START_CALIBRATION, True);
 end;
 
-constructor TPupilCalibrationStimuli.Create(AOwner: TComponent);
+constructor TPupilCalibrationStimuli.Create;
 begin
-  inherited Create(AOwner);
-  FText := TText.Create(Self);
+  inherited Create;
+  FText := TText.Create;
 end;
 
 destructor TPupilCalibrationStimuli.Destroy;
 begin
+  FText.Free;
   inherited Destroy;
 end;
 

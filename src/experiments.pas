@@ -18,7 +18,6 @@ uses common.helpers;
 function MakeConfigurationFile(AFilename : string) : string;
 
 var
-  ConfigurationFilename : string = '';
   ITI : integer = 4;
   LimitedHold : integer  = 1;
 
@@ -38,7 +37,7 @@ begin
   GlobalTrialParameters.Cursor := 1;
   Experiments.Trials.WriteToConfigurationFile(AFilename);
   ConfigurationFile.Invalidate;
-  ConfigurationFile.UpdateFile;
+  //ConfigurationFile.UpdateFile;
 end;
 
 end.

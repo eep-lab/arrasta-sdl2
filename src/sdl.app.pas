@@ -34,7 +34,6 @@ type
       //FKeyboardState : integer;
       FTitle : PAnsichar;
       FCurrentMonitorIndex : cint;
-      FEvents : TCustomEventHandler;
       FOnClose: TNotifyEvent;
       FRunning: Boolean;
       FSDLWindow: PSDL_Window;
@@ -42,6 +41,7 @@ type
       FSDLSurface : PSDL_Surface;
       FMonitors : TMonitors;
       function GetCurrentMonitor : TSDL_Rect;
+      function GetEvents: TCustomEventHandler;
       function GetMonitor(i : cint): TSDL_Rect;
       function GetMouse: TPoint;
       function GetShowMarkers: Boolean;
@@ -66,7 +66,7 @@ type
       property Window  : PSDL_Window read FSDLWindow;
       property Monitor : TSDL_Rect read GetCurrentMonitor;
       property Mouse   : TPoint read GetMouse write SetMouse;
-      property Events  : TCustomEventHandler read FEvents;
+      property Events  : TCustomEventHandler read GetEvents;
       property OnClose : TNotifyEvent read FOnClose write SetOnClose;
       property ShowMarkers : Boolean read GetShowMarkers write SetShowMarkers;
   end;
@@ -162,6 +162,11 @@ begin
   Result := FMonitors[FCurrentMonitorIndex];
 end;
 
+function TSDLApplication.GetEvents: TCustomEventHandler;
+begin
+  Result := SDLEvents;
+end;
+
 function TSDLApplication.GetMonitor(i: cint): TSDL_Rect;
 begin
   LoadMonitors(FMonitors);
@@ -175,7 +180,7 @@ var
 begin
   Print(Self.ClassName+'.'+{$I %CURRENTROUTINE%}+#32+ATitle);
   FTitle := ATitle;
-  FEvents := TCustomEventHandler.Create;
+  SDLEvents := TCustomEventHandler.Create;
 
   // errors in the video subsystem may be related to
   // SDL_VIDEODRIVER system environment variable (particularly on windows)
@@ -219,23 +224,26 @@ end;
 procedure TSDLApplication.Run;
 begin
   FRunning:=True;
-  while Running do begin
-    FEvents.HandlePending;
-    Render;
+  try
+    while FRunning do begin
+      SDLEvents.HandlePending;
+      Render;
+    end;
+  finally
+    {$IFNDEF NO_LCL}
+    if Assigned(SDLText) then
+      SDLText.Free;
+
+    if Assigned(SDLAudio) then
+      SDLAudio.Free;
+    {$ENDIF}
+    if Assigned(SDLEvents) then
+      SDLEvents.Free;
+
+    SDL_DestroyRenderer(FSDLRenderer);
+    SDL_DestroyWindow(FSDLWindow);
+    SDL_Quit;
   end;
-  {$IFNDEF NO_LCL}
-  if Assigned(SDLText) then
-    SDLText.Free;
-
-  if Assigned(SDLAudio) then
-    SDLAudio.Free;
-  {$ENDIF}
-  if Assigned(FEvents) then
-    FEvents.Free;
-
-  SDL_DestroyRenderer(FSDLRenderer);
-  SDL_DestroyWindow(FSDLWindow);
-  SDL_Quit;
 
   Print('Good Bye');
   if Assigned(OnClose) then
@@ -288,7 +296,7 @@ end;
 
 procedure TSDLApplication.SetupEvents;
 begin
-  FEvents.OnKeyDown:=@KeyDown;
+  SDLEvents.OnKeyDown:=@KeyDown;
 end;
 
 {$IFNDEF NO_LCL}

@@ -49,7 +49,7 @@ type
     procedure GazeExit(Sender: TObject); override;
     procedure Paint; override;
   public
-    constructor Create(AOwner : TComponent); override;
+    constructor Create; override;
     destructor Destroy; override;
     function IntersectsWith(ARect: TSDL_Rect) : Boolean; overload;
     function IntersectsWith(ARect: TRectangule) : Boolean; overload;
@@ -182,9 +182,9 @@ begin
   end;
 end;
 
-constructor TRectangule.Create(AOwner: TComponent);
+constructor TRectangule.Create;
 begin
-  inherited Create(AOwner);
+  inherited Create;
   FCanShade:= True;
   FShaded  := False;
   FVisible := False;

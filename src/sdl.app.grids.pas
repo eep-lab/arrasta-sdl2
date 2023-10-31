@@ -494,5 +494,8 @@ begin
   RandomizePositions;
 end;
 
+finalization
+  if Assigned(Grid) then Grid.Free;
+
 end.
 

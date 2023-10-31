@@ -51,7 +51,7 @@ type
   end;
 
 var
-  EventHandler : TCustomEventHandler;
+  SDLEvents : TCustomEventHandler;
 
 implementation
 
@@ -137,7 +137,6 @@ var
     (SESSION_TRIALEND, SESSION_ONTIMER, SESSION_CHUNK_STOPPED);
 begin
   inherited Create;
-  EventHandler := Self;
   for Event in SDLUserEvents do
     if not UserEventRegistered(Event) then
       raise Exception.Create('Event not registered:'+IntToStr(Event));

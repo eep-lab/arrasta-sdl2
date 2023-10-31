@@ -49,7 +49,7 @@ type
     procedure SetTrialData(ATrialData: TTrialData); override;
     procedure TrialLimitedHold(Sender: TObject);
   public
-    constructor Create(AOwner: TComponent); override;
+    constructor Create; override;
     destructor Destroy; override;
     procedure EndTrial; override;
     procedure Show; override;
@@ -64,15 +64,16 @@ uses
   , sdl.app.renderer.custom
   ;
 
-constructor TDragDrop.Create(AOwner: TComponent);
+constructor TDragDrop.Create;
 begin
-  inherited Create(AOwner);
+  inherited Create;
 
   FTimer := TSDLTimer.Create;
   FTimer.Interval := 2000;
   FTimer.OnTimer := @TimerEndTrial;
 
-  FStimuli := TDragDropStimuli.Create(Self);
+  FStimuli := TDragDropStimuli.Create;
+  FStimuli.Trial := Self as TObject;
   FStimuli.OnDragDropDone:=@DragDropDone;
 
   //FStimuli.LogEvent := @LogEvent;
@@ -84,7 +85,7 @@ end;
 
 destructor TDragDrop.Destroy;
 begin
-  FStimuli.Stop;
+  FStimuli.Free;
   FTimer.Free;
   inherited Destroy;
 end;
@@ -144,11 +145,11 @@ end;
 procedure TDragDrop.MouseMove(Sender: TObject; Shift: TCustomShiftState; X,
   Y: Integer);
 var
-  Child : TComponent;
+  Child : TObject;
   IChild : IMoveable;
 begin
   if Visible then begin
-    for Child in FChilds do begin
+    for Child in FChildren do begin
       IChild := IMoveable(TCustomRenderer(Child));
       IChild.MouseMove(Sender, Shift, X, Y);
     end;

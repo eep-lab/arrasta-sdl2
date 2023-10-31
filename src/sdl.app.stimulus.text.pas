@@ -36,6 +36,8 @@ type
       procedure MouseDown(Sender: TObject; Shift: TCustomShiftState;
         X, Y: Integer); override;
     public
+      constructor Create; override;
+      destructor Destroy; override;
       procedure Load(AParameters : TStringList;
         AParent : TObject; ARect: TSDL_Rect); override;
       procedure Start; override;
@@ -65,11 +67,22 @@ begin
   DoResponse(True);
 end;
 
+constructor TTextStimulus.Create;
+begin
+  inherited Create;
+  FText := TText.Create;
+end;
+
+destructor TTextStimulus.Destroy;
+begin
+  FText.Free;
+  inherited Destroy;
+end;
+
 procedure TTextStimulus.Load(AParameters: TStringList; AParent: TObject;
   ARect: TSDL_Rect);
 begin
   FCustomName := GetWordValue(AParameters, IsSample, Index);
-  FText := TText.Create(Self);
   FText.FontName := 'Picanco_et_al';
   //FText.FontSize := 50;
   FText.Load(FCustomName);

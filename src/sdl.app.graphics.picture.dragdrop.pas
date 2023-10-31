@@ -47,7 +47,7 @@ type
     procedure MouseExit(Sender: TObject); override;
     procedure Paint; override;
   public
-    constructor Create(AOwner: TComponent); override;
+    constructor Create; override;
     destructor Destroy; override;
     property OnRightDragDrop : TDragDropEvent read FOnRightDragDrop write SetOnRightDragDrop;
     property OnWrongDragDrop : TDragDropEvent read FOnWrongDragDrop write SetOnWrongDragDrop;
@@ -175,9 +175,9 @@ begin
   inherited Paint;
 end;
 
-constructor TDragDropablePicture.Create(AOwner: TComponent);
+constructor TDragDropablePicture.Create;
 begin
-  inherited Create(AOwner);
+  inherited Create;
 
 end;
 

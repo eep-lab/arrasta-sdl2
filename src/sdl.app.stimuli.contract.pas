@@ -24,6 +24,7 @@ type
     ['{6B18F44A-7450-4871-A2BB-A109FC2ED005}']
     function AsInterface : IStimuli;
     function CustomName : string;
+    function GetTrial : TObject;
     procedure DoExpectedResponse;
     procedure Load(AParameters : TStringList; AParent : TObject);
     procedure Start;

@@ -199,7 +199,7 @@ end;
 
 constructor TSchedule.Create(AOwner: TComponent);
 begin
-  Inherited;
+  Inherited Create(AOwner);
   FSchedule := TUnknownSchedule.Create;
   FName := UnknownSchedule;
 end;

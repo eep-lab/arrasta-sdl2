@@ -33,6 +33,8 @@ type
       procedure MouseDown(Sender: TObject; Shift: TCustomShiftState;
         X, Y: Integer); override;
     public
+      constructor Create; override;
+      destructor Destroy; override;
       procedure Load(AParameters : TStringList;
         AParent : TObject; ARect: TSDL_Rect); override;
       procedure Start; override;
@@ -63,10 +65,21 @@ begin
   DoResponse(True);
 end;
 
+constructor TPictureStimulus.Create;
+begin
+  inherited Create;
+  FPicture := TPicture.Create;
+end;
+
+destructor TPictureStimulus.Destroy;
+begin
+  FPicture.Free;
+  inherited Destroy;
+end;
+
 procedure TPictureStimulus.Load(AParameters: TStringList; AParent: TObject;
   ARect: TSDL_Rect);
 begin
-  FPicture := TPicture.Create(Self);
   FCustomName := GetWordValue(AParameters, IsSample, Index);
   FPicture.LoadFromFile(FCustomName+IMG_EXT);
   FPicture.BoundsRect := ARect;

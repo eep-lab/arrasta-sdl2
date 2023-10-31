@@ -35,7 +35,7 @@ type
     procedure MouseExit(Sender: TObject); override;
     procedure Paint; override;
   public
-    constructor Create(AOwner: TComponent); override;
+    constructor Create; override;
     destructor Destroy; override;
     procedure LoadFromFile(AFilename: string);
   end;
@@ -52,9 +52,9 @@ uses
 
 { TChoiceablePicture }
 
-constructor TChoiceablePicture.Create(AOwner: TComponent);
+constructor TChoiceablePicture.Create;
 begin
-  inherited Create(AOwner);
+  inherited Create;
   IMG_Init(IMG_INIT_PNG);
 end;
 

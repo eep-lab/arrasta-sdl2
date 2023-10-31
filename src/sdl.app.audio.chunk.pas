@@ -20,7 +20,7 @@ type
 
   { TChunk }
 
-  TChunk = class(TObject, ISound)
+  TChunk = class(TInterfacedObject, ISound)
   private
     FFilename : string;
     FChannel: cint;
@@ -31,7 +31,7 @@ type
     procedure SetOnStart(AValue: TNotifyEvent);
     procedure SetOnStop(AValue: TNotifyEvent);
   public
-    constructor Create; reintroduce;
+    constructor Create;
     destructor Destroy; override;
     function Duration : cuint32;
     function Playing : Boolean;
@@ -78,7 +78,6 @@ end;
 
 destructor TChunk.Destroy;
 begin
-  SDLAudio.UnregisterChannel(AsInterface);
   Mix_FreeChunk(FChunk);
   inherited Destroy;
 end;

@@ -42,8 +42,8 @@ type
     protected
       procedure Paint; override;
     public
-      constructor Create(AOwner: TComponent); override;
-      procedure Load(S : string);
+      constructor Create; override;
+      procedure Load(AString : string);
       procedure LoadFromFile(AFilename: string);
       destructor Destroy; override;
       procedure Clear;
@@ -113,35 +113,33 @@ begin
   end;
 end;
 
-constructor TText.Create(AOwner: TComponent);
+constructor TText.Create;
 begin
-  inherited Create(AOwner);
-  FWrapped := False;
-  FWrappedWidth := 800;
-  FFontName := '';
-  FFont := nil;
-  FSDLTexture := nil;
-  Visible := False;
+  inherited Create;
+  //FWrapped := False;
+  //FWrappedWidth := 800;
+  //FFontName := '';
+  //FFont := nil;
+  //FSDLTexture := nil;
+  //Visible := False;
 end;
 
-procedure TText.Load(S: string);
+procedure TText.Load(AString: string);
 //const
 //  WrapOnNewLine : cuint32 = 0;
 var
   PSDLSurface : PSDL_Surface;
-  PText : PAnsiChar;
 begin
-  if S.IsEmpty then begin
+  if AString.IsEmpty then begin
     raise Exception.Create('TText.Load cannot load empty strings');
   end;
-  PText := PAnsiChar(S);
   //PSDLSurface := TTF_RenderUTF8_LCD(
   if Wrapped then begin
     PSDLSurface := TTF_RenderUTF8_Blended_Wrapped(
-      FFont, PText, clBlack, WrappedWidth);
+      FFont, PAnsiChar(AString), clBlack, WrappedWidth);
   end else begin
     PSDLSurface := TTF_RenderUTF8_Blended(
-      FFont, PText, clBlack);
+      FFont, PAnsiChar(AString), clBlack);
   end;
   FRect := PSDLSurface^.clip_rect;
   FSDLTexture := SDL_CreateTextureFromSurface(PSDLRenderer, PSDLSurface);
@@ -163,6 +161,7 @@ begin
     LFile.LoadFromFile(AFilename);
     LText := LFile[0];
   finally
+    LFile.Clear;
     LFile.Free;
   end;
   Load(LText);

@@ -70,7 +70,9 @@ end;
 
 destructor TConfigurationWriter.Destroy;
 begin
+  FTrialConfig.Clear;
   FTrialConfig.Free;
+  FBlockConfig.Clear;
   FBlockConfig.Free;
   FConfigurationFile := nil;
   inherited Destroy;

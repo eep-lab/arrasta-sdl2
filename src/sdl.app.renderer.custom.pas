@@ -13,7 +13,7 @@ unit sdl.app.renderer.custom;
 
 interface
 
-uses Classes, SysUtils, SDL2, fgl
+uses Classes, SysUtils, SDL2, Generics.Collections
   , sdl.app.paintable.contract
   , sdl.app.clickable.contract
   , sdl.app.moveable.contract
@@ -36,15 +36,16 @@ type
     OnMouseExit: TNotifyEvent;
   end;
 
-  TChilds = specialize TFPGList<TComponent>;
+  TChildren = specialize TList<TObject>;
 
   { TCustomRenderer }
 
-  TCustomRenderer = class(TComponent, IClickable, IPaintable, IMoveable, ILookable)
+  TCustomRenderer = class(TObject, IClickable, IPaintable, IMoveable, ILookable)
   private
     FOnGazeEnter: TNotifyEvent;
     FOnGazeExit: TNotifyEvent;
     FOnGazeMove: TOnMouseEvent;
+    FOwner: TObject;
     FRect : TSDL_Rect;
     FGazeInside : Boolean;
     FMouseInside : Boolean;
@@ -67,14 +68,15 @@ type
     procedure SetOnMouseExit(AValue: TNotifyEvent);
     procedure SetOnMouseMove(AValue: TOnMouseEvent);
     procedure SetOnMouseUp(AValue: TOnMouseEvent);
+    procedure SetOwner(AValue: TObject);
     procedure SetParent(AParent: TCustomRenderer);
-    procedure AddChild(AChild: TComponent);
+    procedure AddChild(AChild: TObject);
     procedure SDLMouseMotion(const event: TSDL_MouseMotionEvent);
     procedure SDLMouseButtonDown(const event: TSDL_MouseButtonEvent);
     procedure SDLMouseButtonUp(const event: TSDL_MouseButtonEvent);
-    procedure BringChildToFront(AChild : TComponent);
+    procedure BringChildToFront(AChild : TObject);
   protected
-    FChilds : TChilds;
+    FChildren : TChildren;
     function GetGazeInside : Boolean; virtual;
     function GetMouseInside : Boolean; virtual;
     function PointInside(SDLPoint : TSDL_Point) : Boolean;
@@ -96,7 +98,7 @@ type
     procedure MouseEnter(Sender: TObject); virtual;
     procedure MouseExit(Sender: TObject); virtual;
   public
-    constructor Create(AOwner: TComponent); override;
+    constructor Create; virtual;
     destructor Destroy; override;
     function AsIClickable : IClickable;
     function AsIPaintable : IPaintable;
@@ -116,6 +118,7 @@ type
     property MouseInside : Boolean read GetMouseInside write SetMouseInside;
     property ZIndex : integer read GetZIndex;
     property InFront : Boolean read GetInFront;
+    property Owner : TObject read FOwner write SetOwner;
   end;
 
 implementation
@@ -162,6 +165,12 @@ begin
   FOnMouseUp:=AValue;
 end;
 
+procedure TCustomRenderer.SetOwner(AValue: TObject);
+begin
+  if FOwner = AValue then Exit;
+  FOwner := AValue;
+end;
+
 function TCustomRenderer.GetSDLMouseMotion: TOnMouseMotionEvent;
 begin
   Result := @SDLMouseMotion;
@@ -169,7 +178,7 @@ end;
 
 function TCustomRenderer.GetInFront: Boolean;
 begin
-  Result := ZIndex = FParent.FChilds.Count-1;
+  Result := ZIndex = FParent.FChildren.Count-1;
 end;
 
 function TCustomRenderer.GetSDLMouseButtonDown: TOnMouseButtonDownEvent;
@@ -184,7 +193,7 @@ end;
 
 function TCustomRenderer.GetZIndex: integer;
 begin
-  Result := FParent.FChilds.IndexOf(Self);
+  Result := FParent.FChildren.IndexOf(Self);
 end;
 
 procedure TCustomRenderer.SetOnGazeEnter(AValue: TNotifyEvent);
@@ -205,9 +214,9 @@ begin
   FOnGazeMove := AValue;
 end;
 
-procedure TCustomRenderer.AddChild(AChild: TComponent);
+procedure TCustomRenderer.AddChild(AChild: TObject);
 begin
-  FChilds.Add(AChild);
+  FChildren.Add(AChild);
 end;
 
 function TCustomRenderer.GetBoundsRect: TSDL_Rect;
@@ -261,10 +270,10 @@ begin
   MouseUp(Self, GetShiftState, event.x, event.y);
 end;
 
-procedure TCustomRenderer.BringChildToFront(AChild: TComponent);
+procedure TCustomRenderer.BringChildToFront(AChild: TObject);
 begin
-  if FChilds.Count <= 1 then Exit;
-  with FChilds do Add(Extract(AChild));
+  if FChildren.Count <= 1 then Exit;
+  with FChildren do Add(Extract(AChild));
 end;
 
 function TCustomRenderer.GetGazeInside: Boolean;
@@ -323,10 +332,10 @@ begin
     OnMouseExit(Sender);
 end;
 
-constructor TCustomRenderer.Create(AOwner: TComponent);
+constructor TCustomRenderer.Create;
 begin
-  inherited Create(AOwner);
-  FChilds := TChilds.Create;
+  //inherited Create;
+  FChildren := TChildren.Create;
   FMouseInside := False;
   FGazeInside := False;
   FParent := nil;
@@ -334,8 +343,7 @@ end;
 
 destructor TCustomRenderer.Destroy;
 begin
-  FChilds.Clear;
-  FChilds.Free;
+  FChildren.Free;
   inherited Destroy;
 end;
 

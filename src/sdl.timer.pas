@@ -32,7 +32,7 @@ type
     procedure SetInterval(AValue: cuint32);
     procedure SetOnTimer(AValue: TNotifyEvent);
   public
-    constructor Create; reintroduce;
+    constructor Create;
     destructor Destroy; override;
     procedure Start;
     procedure Stop;
@@ -112,6 +112,7 @@ end;
 
 constructor TSDLTimer.Create;
 begin
+  inherited Create;
   FID := -1;
   FInterval := 0;
   FOnTimer := nil;

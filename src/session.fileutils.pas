@@ -25,8 +25,9 @@ procedure AppendFilesTo(var AStimuliArray: TStringArray;
   AExtensions : string = '*.bmp;*.jpg');
 
 procedure GetDesignFilesFor(AStrings : TStrings);
-
+procedure FreeConfigurationFile;
 procedure LoadMessageFromFile(var AMessage : string; AFilename : string);
+
 
 function NewConfigurationFile : string;
 function LoadConfigurationFile(AFilename : string) : string;
@@ -56,6 +57,7 @@ begin
     for i := Low(AStimuliArray) to High(AStimuliArray) do
       AStimuliArray[i] := Files[i];
   finally
+    Files.Clear;
     Files.Free;
   end;
 end;
@@ -93,7 +95,19 @@ begin
     for i := LOldLength to High(AStimuliArray) do
       AStimuliArray[i] := Files[i -LOldLength];
   finally
+    Files.Clear;
     Files.Free;
+  end;
+end;
+
+procedure FreeConfigurationFile;
+begin
+  if Assigned(ConfigurationFile) then begin
+    ConfigurationFile.UpdateFile;
+    CopyFile(Pool.ConfigurationFilename, Pool.BaseFilename+'.ini');
+    ConfigurationFile.Free;
+    ConfigurationFile := nil;
+    Pool.ConfigurationFilename := '';
   end;
 end;
 
@@ -106,6 +120,7 @@ begin
     LStringList.LoadFromFile(AFilename);
     AMessage := LStringList.Text;
   finally
+    LStringList.Clear;
     LStringList.Free;
   end;
 end;
@@ -114,13 +129,12 @@ function NewConfigurationFile : string;
 begin
   //RandSeed := Random(MaxInt);  // Generate a random seed
   RandSeed := 1270036106;
-  NewConfigurationFile := Pool.BaseFilePath + 'last_session.ini';
-  if FileExists(NewConfigurationFile) then
-    DeleteFile(NewConfigurationFile);
+  Result := Pool.BaseFilePath + 'last_session.ini';
+  if FileExists(Result) then
+    DeleteFile(Result);
 
-  if Assigned(ConfigurationFile) then
-    ConfigurationFile.Free;
-  ConfigurationFile := TConfigurationFile.Create(NewConfigurationFile);
+  FreeConfigurationFile;
+  ConfigurationFile := TConfigurationFile.Create(Result);
   ConfigurationFile.CacheUpdates := True;
   ConfigurationFile.WriteInteger(_Main, 'RandSeed', RandSeed);
   ConfigurationFile.Invalidate;
@@ -129,8 +143,7 @@ end;
 function LoadConfigurationFile(AFilename : string) : string;
 begin
   if FileExists(AFilename) then begin
-    if Assigned(ConfigurationFile) then
-      ConfigurationFile.Free;
+    FreeConfigurationFile;
     ConfigurationFile := TConfigurationFile.Create(AFilename);
     ConfigurationFile.CacheUpdates := True;
     Result := AFilename;

@@ -61,6 +61,7 @@ end;
 
 destructor TCSVRowParser.Destroy;
 begin
+  FCurrent.Clear;
   FCurrent.Free;
   inherited Destroy;
 end;

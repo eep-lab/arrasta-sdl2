@@ -89,9 +89,9 @@ begin
       'Trial kind is not registered: %s %s', [TrialData.Kind, TrialClass]);
   EndCriteria.InvalidateTrial(TrialData);
 
-  CurrentTrial := TrialClass.Create(nil);
+  CurrentTrial := TrialClass.Create;
   //CurrentTrial.Parent := TSDLRenderer;
-  CurrentTrial.Name := 'T' + Pool.Session.Trial.UID.ToString;
+  CurrentTrial.Name := 'T' + (Pool.Session.Trial.UID+1).ToString;
   CurrentTrial.OnTrialEnd := InterTrial.OnBegin;
   CurrentTrial.TestMode := TestMode;
   CurrentTrial.Data := TrialData;
@@ -103,23 +103,20 @@ var
   LMockData : TTrialData = (ID: -1 ; Kind : 'TLastTrial';
     ReferenceName: 'Mock'; Parameters: nil);
 begin
-  LMockData.Parameters := TStringList.Create;
-  try
-    CurrentTrial := TLastTrial.Create(nil);
-    CurrentTrial.OnTrialEnd := nil;
-    CurrentTrial.Name := 'LastTrial';
-    CurrentTrial.Data := LMockData;
-    CurrentTrial.Show;
-    Result := CurrentTrial as ITrial;
-  finally
-    LMockData.Parameters.Free;
-  end;
+  //LMockData.Parameters := TStringList.Create;
+  CurrentTrial := TLastTrial.Create;
+  CurrentTrial.OnTrialEnd := nil;
+  CurrentTrial.Name := 'LastTrial';
+  CurrentTrial.Data := LMockData;
+  CurrentTrial.Show;
+  Result := CurrentTrial as ITrial;
 end;
 
 class procedure TTrialFactory.FreeCurrentTrial;
 begin
   if Assigned(CurrentTrial) then begin
-    FreeAndNil(CurrentTrial);
+    CurrentTrial.Free;
+    CurrentTrial := nil;
   end;
 end;
 

@@ -14,12 +14,13 @@ unit sdl.app.trials;
 interface
 
 uses
-  Classes, SysUtils
+  Classes, SysUtils, fgl
   , SDL2
   , sdl.timer
   , sdl.app.renderer.custom
   , sdl.app.trials.contract
   , sdl.app.stimuli.contract
+  , sdl.app.stimuli
   , sdl.app.events.abstract
   , sdl.app.events.custom
   , sdl.app.graphics.text
@@ -29,13 +30,16 @@ uses
 
 type
 
+  TStimuliList = specialize TFPGObjectList<TStimuli>;
+
   { TTrial }
 
   TTrial = class(TCustomRenderer, ITrial)
     private
+      FName: string;
       FText : TText;
       FParent : TCustomRenderer;
-      FLimitedHoldTimer    : TSDLTimer;
+      FLimitedHoldTimer : TSDLTimer;
       FTestMode: Boolean;
       FVisible: Boolean;
       FIStimuli : IStimuli;
@@ -47,6 +51,7 @@ type
       procedure CreateStartersIfRequired(AParameters : TStringList);
       procedure GazeOnScreen(Sender : TObject;  AGazes : TGazes);
     protected
+      FStimuliList : TStimuliList;
       FOnTrialEnd : TNotifyEvent;
       FData : TTrialData;
       procedure Paint; override;
@@ -60,7 +65,7 @@ type
       function GetTrialData: TTrialData;
       function GetIStimuli : IStimuli; virtual; abstract;
     public
-      constructor Create(AOwner: TComponent); override;
+      constructor Create; override;
       destructor Destroy; override;
       function ConsequenceDelay: Cardinal; virtual;
       function ConsequenceInterval: Cardinal; virtual;
@@ -75,6 +80,7 @@ type
       property OnTrialEnd : TNotifyEvent read GetOnTrialEnd write SetOnTrialEnd;
       property TestMode : Boolean read FTestMode write SetTestMode;
       property Parent : TCustomRenderer read FParent write SetParent;
+      property Name : string read FName write FName;
   end;
 
 const
@@ -93,30 +99,35 @@ uses session.constants.trials
 
 { TTrial }
 
-constructor TTrial.Create(AOwner: TComponent);
+constructor TTrial.Create;
 begin
-  inherited Create(AOwner);
-  EventHandler.AssignEvents;
-  EventHandler.OnMouseButtonDown := AsIClickable.GetSDLMouseButtonDown;
-  EventHandler.OnMouseButtonUp := AsIClickable.GetSDLMouseButtonUp;
-  EventHandler.OnMouseMotion := AsIMoveable.GetSDLMouseMotion;
-  EventHandler.OnGazeOnScreen := @GazeOnScreen;
+  inherited Create;
+  SDLEvents.AssignEvents;
+  SDLEvents.OnMouseButtonDown := AsIClickable.GetSDLMouseButtonDown;
+  SDLEvents.OnMouseButtonUp := AsIClickable.GetSDLMouseButtonUp;
+  SDLEvents.OnMouseMotion := AsIMoveable.GetSDLMouseMotion;
+  SDLEvents.OnGazeOnScreen := @GazeOnScreen;
   FICalibration := nil;
   FIInstruction := nil;
   FVisible := False;
   FTestMode := False;
+  FStimuliList := TStimuliList.Create;
+  FText := TText.Create;
   FLimitedHoldTimer := TSDLTimer.Create;
   FLimitedHoldTimer.Interval := 0;
 end;
 
 destructor TTrial.Destroy;
 begin
-  FData.Parameters.Free;
-  EventHandler.OnMouseButtonDown := nil;
-  EventHandler.OnMouseButtonUp := nil;
-  EventHandler.OnMouseMotion := nil;
-  EventHandler.OnUserEvent:=nil;
+  SDLEvents.OnMouseButtonDown := nil;
+  SDLEvents.OnMouseButtonUp := nil;
+  SDLEvents.OnMouseMotion := nil;
+  SDLEvents.OnUserEvent:=nil;
+  FData.Parameters := nil;
+
   FLimitedHoldTimer.Free;
+  FStimuliList.Free;
+  FText.Free;
   inherited Destroy;
 end;
 
@@ -143,12 +154,12 @@ end;
 procedure TTrial.MouseMove(Sender: TObject; Shift: TCustomShiftState; X,
   Y: Integer);
 var
-  Child : TComponent;
+  Child : TObject;
   SDLPoint : TSDL_Point;
   IChild : IMoveable;
 begin
   if FVisible then begin
-    for Child in FChilds do begin
+    for Child in FChildren do begin
       SDLPoint.x := X;
       SDLPoint.y := Y;
       IChild := IMoveable(TCustomRenderer(Child));
@@ -170,12 +181,12 @@ end;
 
 procedure TTrial.MouseDown(Sender:TObject; Shift: TCustomShiftState; X, Y: Integer);
 var
-  Child : TComponent;
+  Child : TObject;
   SDLPoint : TSDL_Point;
   IChild : IClickable;
 begin
   if FVisible then begin
-    for Child in FChilds do begin
+    for Child in FChildren do begin
       SDLPoint.x := X;
       SDLPoint.y := Y;
       IChild := IClickable(TCustomRenderer(Child));
@@ -188,12 +199,12 @@ end;
 procedure TTrial.MouseUp(Sender: TObject; Shift: TCustomShiftState; X,
   Y: Integer);
 var
-  Child : TComponent;
+  Child : TObject;
   SDLPoint : TSDL_Point;
   IChild   : IClickable;
 begin
   if FVisible then begin
-    for Child in FChilds do begin
+    for Child in FChildren do begin
       SDLPoint.x := X;
       SDLPoint.y := Y;
       IChild := IClickable(TCustomRenderer(Child));
@@ -216,17 +227,20 @@ procedure TTrial.EndTrial;
 begin
   Hide;
   DoEndTrial(Pointer(Self));
+  //if Assigned(OnTrialEnd) then begin
+  //  OnTrialEnd(Self);
+  //end;
 end;
 
 procedure TTrial.EndTrialCallBack(Sender: TObject);
 var
-  LStimuli : TComponent;
-  //LTrial    : TComponent;
+  LStimuli : IStimuli;
 begin
-  if Sender is TComponent then begin
-    LStimuli := Sender as TComponent;
-    if LStimuli.Owner.Name = Self.Name then
+  if Sender is IStimuli then begin
+    LStimuli := Sender as IStimuli;
+    if GetIStimuli.CustomName = LStimuli.CustomName then begin
       EndTrial;
+    end;
   end;
 end;
 
@@ -250,7 +264,6 @@ begin
   end;
 end;
 
-
 // todo: refactor starters as an IStimuliList to allow many instructions ...
 procedure TTrial.CreateStartersIfRequired(AParameters: TStringList);
 var
@@ -259,25 +272,27 @@ var
 begin
   with AParameters, TrialKeys do begin
     if StrToBoolDef(Values[InstructionKey], False) then begin
-      LInstruction := TInstructionStimuli.Create(Self);
+      LInstruction := TInstructionStimuli.Create;
       LInstruction.OnFinalize := @EndStarterCallBack;
       FIInstruction := LInstruction;
       FIInstruction.Load(AParameters, Self);
       FIStimuli := FIInstruction;
+      FStimuliList.Add(LInstruction);
     end;
     if StrToBoolDef(Values[DoCalibrationKey], False) then begin
-      LCalibration := TPupilCalibrationStimuli.Create(Self);
+      LCalibration := TPupilCalibrationStimuli.Create;
       LCalibration.OnFinalize := @EndStarterCallBack;
       FICalibration := LCalibration;
       FICalibration.Load(AParameters, Self);
       FIStimuli := LCalibration;
+      FStimuliList.Add(LCalibration);
     end;
   end;
 end;
 
 procedure TTrial.GazeOnScreen(Sender: TObject; AGazes: TGazes);
 var
-  Child : TComponent;
+  Child : TObject;
   SDLPoint : TSDL_Point;
   IChild : ILookable;
   i: Integer;
@@ -285,7 +300,7 @@ begin
   if FVisible then begin
     if Length(AGazes) > 0 then begin
       for i := Low(AGazes) to High(AGazes) do begin
-        for Child in FChilds do begin
+        for Child in FChildren do begin
           SDLPoint.x := AGazes[i].X;
           SDLPoint.y := AGazes[i].Y;
           IChild := ILookable(TCustomRenderer(Child));
@@ -318,7 +333,6 @@ procedure TTrial.SetTestMode(AValue: Boolean);
 begin
   if FTestMode = AValue then Exit;
   FTestMode := AValue;
-  FText := TText.Create(Self);
   FText.FontName := 'Raleway-Regular';
   FText.FontSize := 50;
   FText.Load(Name);
@@ -328,10 +342,10 @@ end;
 
 procedure TTrial.Paint;
 var
-  Child : TComponent;
+  Child : TObject;
 begin
   if FVisible then begin
-    for Child in FChilds do
+    for Child in FChildren do
       IPaintable(TCustomRenderer(Child)).Paint;
   end;
 end;
@@ -343,22 +357,17 @@ begin
 end;
 
 procedure TTrial.SetTrialData(ATrialData: TTrialData);
-var
-  Parameters : TStringList;
 begin
   FData := ATrialData;
-  Parameters := FData.Parameters;
-  if Assigned(Parameters) then begin
-    FIStimuli := GetIStimuli;
-    FIStimuli.Load(Parameters, Self);
-    with Parameters, TrialKeys do begin
+  FIStimuli := GetIStimuli;
+  FIStimuli.Load(FData.Parameters, Self);
+  if Assigned(FData.Parameters) then begin
+    with FData.Parameters, TrialKeys do begin
       if StrToIntDef(Values[LimitedHoldKey], 0) > 0 then begin
         FLimitedHoldTimer.Interval := Values[LimitedHoldKey].ToInteger;
       end;
     end;
-    CreateStartersIfRequired(Parameters);
-  end else begin
-    raise Exception.Create('TTrial.SetTrialData: Parameters not assigned.');
+    CreateStartersIfRequired(FData.Parameters);
   end;
 end;
 

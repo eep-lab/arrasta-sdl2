@@ -42,6 +42,7 @@ type
     procedure MouseEnter(Sender: TObject); override;
     procedure MouseExit(Sender: TObject); override;
   public
+    constructor Create; override;
     destructor Destroy; override;
     procedure Load(AParameters : TStringList;
         AParent : TObject; ARect: TSDL_Rect); override;
@@ -130,10 +131,18 @@ begin
   end;
 end;
 
+constructor TAudioStimulus.Create;
+begin
+  inherited Create;
+  FPicture := TPicture.Create;
+  FPicture.Owner := Self;
+end;
+
 destructor TAudioStimulus.Destroy;
 begin
   //SDLAudio.UnregisterChannel(FSound);
   //FSound.Free;
+  FPicture.Free;
   inherited Destroy;
 end;
 
@@ -142,7 +151,6 @@ procedure TAudioStimulus.Load(AParameters: TStringList; AParent: TObject;
 const
   LAudioPicture : string = 'AudioPicture'+IMG_EXT;
 begin
-  FPicture := TPicture.Create(Self);
   FPicture.LoadFromFile(Assets(LAudioPicture));
   FPicture.BoundsRect := ARect;
   FPicture.Parent := TCustomRenderer(AParent);

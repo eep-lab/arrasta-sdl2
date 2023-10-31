@@ -38,6 +38,7 @@ type
   TToggleButton = class(TRectangule, IPaintable)
   private
     FEnabled: Boolean;
+    FOwner: TObject;
     FShaded : Boolean;
     FCanShade : Boolean;
     FSibling: TToggleButton;
@@ -46,6 +47,7 @@ type
     FIsTexture1 : Boolean;
     FAnimationData : TAnimationData;
     procedure SetEnabled(AValue: Boolean);
+    procedure SetOwner(AValue: TObject);
     procedure SetSibling(AValue: TToggleButton);
   protected
     procedure SetBoundsRect(AValue : TSDL_Rect); override;
@@ -59,10 +61,11 @@ type
     procedure MouseExit(Sender: TObject); override;
     procedure Paint; override;
   public
-    constructor Create(AOwner: TComponent); override;
+    constructor Create; override;
     destructor Destroy; override;
     procedure LoadFromFile(AFilename1, AFilename2: string); virtual;
     procedure Toggle;
+    property Owner : TObject read FOwner write SetOwner;
     property Sibling : TToggleButton read FSibling write SetSibling;
     property Enabled : Boolean read FEnabled write SetEnabled;
   end;
@@ -82,9 +85,8 @@ uses
 
 { TToggleButton }
 
-constructor TToggleButton.Create(AOwner: TComponent);
+constructor TToggleButton.Create;
 begin
-  inherited Create(AOwner);
   FSibling := nil;
   FEnabled := True;
   FCanShade := True;
@@ -120,6 +122,12 @@ begin
     FCanShade := False;
     FIsTexture1 := True;
   end;
+end;
+
+procedure TToggleButton.SetOwner(AValue: TObject);
+begin
+  if FOwner = AValue then Exit;
+  FOwner := AValue;
 end;
 
 procedure TToggleButton.SetBoundsRect(AValue: TSDL_Rect);

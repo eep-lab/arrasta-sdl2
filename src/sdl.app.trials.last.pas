@@ -32,7 +32,8 @@ type
     protected
       function GetIStimuli: IStimuli; override;
     public
-      constructor Create(AOwner: TComponent); override;
+      constructor Create; override;
+      destructor Destroy; override;
   end;
 
 
@@ -45,11 +46,18 @@ begin
   Result := FStimuli.AsInterface;
 end;
 
-constructor TLastTrial.Create(AOwner: TComponent);
+constructor TLastTrial.Create;
 begin
-  inherited Create(AOwner);
-  FStimuli := TLastStimuli.Create(Self);
+  inherited Create;
+  FStimuli := TLastStimuli.Create;
+  FStimuli.Trial := Self as TObject;
   FStimuli.OnFinalize := nil;
+end;
+
+destructor TLastTrial.Destroy;
+begin
+  FStimuli.Free;
+  inherited Destroy;
 end;
 
 end.

@@ -46,6 +46,7 @@ type
       X, Y: Integer); override;
     //procedure KeyUp;q
   public
+    constructor Create; override;
     destructor Destroy; override;
     function IsCorrectResponse : Boolean; override;
     procedure DoResponse(AHuman: Boolean); override;
@@ -109,9 +110,19 @@ begin
   end;
 end;
 
+constructor TSpeechStimulus.Create;
+begin
+  inherited Create;
+  FPlaybackButton := TToggleButton.Create;
+  FPlaybackButton.Owner := Self as TObject;
+  FRecorderButton := TToggleButton.Create;
+  FRecorderButton.Owner := Self as TObject;
+end;
+
 destructor TSpeechStimulus.Destroy;
 begin
-
+  FPlaybackButton.Free;
+  FRecorderButton.Free;
   inherited Destroy;
 end;
 
@@ -141,7 +152,6 @@ begin
   FPlayback := SDLAudio.RecorderDevice.Playback;
 
   if FPlayback.Opened then begin
-    FPlaybackButton := TToggleButton.Create(Self);
     FPlaybackButton.LoadFromFile(
       Assets(LPlayButtonOff), Assets(LPlayButtonOn));
     FPlaybackButton.BoundsRect := ARect;
@@ -152,7 +162,6 @@ begin
   end;
 
   if FRecorder.Opened then begin
-    FRecorderButton := TToggleButton.Create(Self);
     FRecorderButton.LoadFromFile(
       Assets(LRecordButtonOff), Assets(LRecordButtonOn));
     FRecorderButton.BoundsRect := ARect;

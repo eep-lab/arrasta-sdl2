@@ -30,10 +30,12 @@ type
 
   { TStimulus }
 
-  TStimulus = class(TComponent, IStimulus)
+  TStimulus = class(TInterfacedObject, IStimulus)
     private
+      FName: string;
       FPosition: Integer;
       FResponseID : Integer;
+      FStimuli: TObject;
       FStimulusID : ShortInt;
       FIndex : integer;
       FIsSample: Boolean;
@@ -50,6 +52,7 @@ type
       procedure SetOnMouseMove(AValue: TOnMouseEvent);
       procedure SetOnMouseUp(AValue: TOnMouseEvent);
       procedure SetOnResponse(AValue: TNotifyEvent);
+      procedure SetStimuli(AValue: TObject);
     protected
       FCustomName : string; {Filename only without extention}
       function GetID : TStimulusID;
@@ -64,7 +67,7 @@ type
       procedure GazeEnter(Sender:TObject); virtual; abstract;
       procedure GazeExit(Sender:TObject); virtual; abstract;
     public
-      constructor Create(AOwner : TComponent); override;
+      constructor Create; virtual;
       destructor Destroy; override;
       function AsInterface : IStimulus;
       function IsCorrectResponse : Boolean; virtual; abstract;
@@ -81,9 +84,11 @@ type
       property OnResponse : TNotifyEvent read FOnResponse write SetOnResponse;
       property IsSample : Boolean read FIsSample write SetIsSample;
       property Index : Integer read FIndex write FIndex;
+      property Name : string read FName write FName;
       property Position : Integer read FPosition write FPosition;
       property Rectangule  : TRectangule read GetRect write SetRect;
       property ResponseID : integer read FResponseID;
+      property Stimuli : TObject read FStimuli write SetStimuli;
   end;
 
 
@@ -150,14 +155,19 @@ begin
   FOnResponse:=AValue;
 end;
 
+procedure TStimulus.SetStimuli(AValue: TObject);
+begin
+  if FStimuli = AValue then Exit;
+  FStimuli := AValue;
+end;
+
 function TStimulus.ToData: string;
 begin
   Result := FCustomName+'-'+FPosition.ToString;
 end;
 
-constructor TStimulus.Create(AOwner: TComponent);
+constructor TStimulus.Create;
 begin
-  inherited Create(AOwner);
   FResponseID := 0;
 end;
 

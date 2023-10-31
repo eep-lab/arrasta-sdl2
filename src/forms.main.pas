@@ -116,7 +116,7 @@ begin
       LFilename := Items[ItemIndex];
     end;
   end;
-  ConfigurationFilename := Experiments.MakeConfigurationFile(LFilename);
+  Pool.ConfigurationFilename := Experiments.MakeConfigurationFile(LFilename);
 end;
 
 procedure TFormBackground.ButtonNewParticipantClick(Sender: TObject);
@@ -136,7 +136,7 @@ end;
 procedure TFormBackground.ButtonLoadConfigurationFileClick(Sender: TObject);
 begin
   if OpenDialog1.Execute then
-    ConfigurationFilename := LoadConfigurationFile(OpenDialog1.FileName);
+    Pool.ConfigurationFilename := LoadConfigurationFile(OpenDialog1.FileName);
 end;
 
 procedure TFormBackground.BeginSession(Sender: TObject);
@@ -145,18 +145,19 @@ begin
     EyeTracker.StartRecording;
   end;
   TLogger.SetHeader(SessionName, ParticipantFolderName);
-  CopyFile(ConfigurationFilename, Pool.BaseFilename+'.ini');
 end;
 
 procedure TFormBackground.EndSession(Sender: TObject);
 begin
-  if Assigned(EyeTracker) then begin
-    EyeTracker.StopRecording;
-  end;
+
 end;
 
 procedure TFormBackground.CloseSDLApp(Sender: TObject);
 begin
+  FreeConfigurationFile;
+  if Assigned(EyeTracker) then begin
+    EyeTracker.StopRecording;
+  end;
   TLogger.SetFooter;
   SDLSession.Free;
   SDLApp.Free;
@@ -183,6 +184,7 @@ begin
       ComboBoxMonitor.Items.Assign(LStringList);
     end;
   finally
+    LStringList.Clear;
     LStringList.Free;
   end;
 end;
@@ -272,7 +274,7 @@ begin
     Exit;
   end;
 
-  if ConfigurationFilename.IsEmpty then begin
+  if Pool.ConfigurationFilename.IsEmpty then begin
     ShowMessage('Crie uma nova sessão ou abra uma pronta.');
     Exit;
   end;
