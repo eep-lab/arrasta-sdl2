@@ -3,9 +3,13 @@ program experiment;
 {$mode objfpc}{$H+}
 
 uses
-  Interfaces, // this includes the LCL widgetset
-  {$IFDEF UNIX}cthreads,{$ENDIF}
+  {$IFDEF UNIX}
+    {$IFDEF UseCThreads}
+      cthreads, cmem,
+    {$ENDIF}
+  {$ENDIF}
   {$IFDEF HASAMIGA}athreads,{$ENDIF}
+  Interfaces, // this includes the LCL widgetset
   SysUtils,
   Forms, Forms.Main, Forms.Modal.SpeechValidation;
 
@@ -20,7 +24,7 @@ begin
   {$ENDIF}
   Randomize;
   RequireDerivedFormResource:=True;
-  Application.Scaled := True;
+  Application.Scaled:=True;
   Application.Initialize;
   Application.CreateForm(TFormBackground, FormBackground);
   Application.CreateForm(

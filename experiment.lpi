@@ -62,6 +62,9 @@
               <ShowHintsForUnusedUnitsInMainSrc Value="True"/>
             </Verbosity>
             <WriteFPCLogo Value="False"/>
+            <ConfigFile>
+              <WriteConfigFilePath Value="$(ProjOutDir)\fpclaz.cfg"/>
+            </ConfigFile>
             <CustomOptions Value="-dSDL2"/>
             <OtherDefines Count="1">
               <Define0 Value="SDL2"/>
@@ -114,6 +117,9 @@
               <ShowHintsForUnusedUnitsInMainSrc Value="True"/>
             </Verbosity>
             <WriteFPCLogo Value="False"/>
+            <ConfigFile>
+              <WriteConfigFilePath Value="$(ProjOutDir)\fpclaz.cfg"/>
+            </ConfigFile>
             <CustomOptions Value="-dSDL2"/>
             <OtherDefines Count="1">
               <Define0 Value="SDL2"/>
@@ -122,6 +128,9 @@
         </CompilerOptions>
       </Item>
       <Item Name="Linux64">
+        <MacroValues Count="1">
+          <Macro1 Name="LCLWidgetType" Value="gtk2"/>
+        </MacroValues>
         <CompilerOptions>
           <Version Value="11"/>
           <PathDelim Value="\"/>
@@ -129,8 +138,9 @@
             <Filename Value="experiment"/>
           </Target>
           <SearchPaths>
-            <IncludeFiles Value="$(ProjOutDir)"/>
-            <OtherUnitFiles Value="src;dependencies\epiktimer;src\schedules"/>
+            <IncludeFiles Value="$(ProjOutDir);dependencies\FreeType\include"/>
+            <Libraries Value="\usr\lib\x86_64-linux-gnu\"/>
+            <OtherUnitFiles Value="src;dependencies\epiktimer;src\schedules;dependencies\SDL2-for-Pascal\units;dependencies\EyeLink-for-Pascal\classes;dependencies\EyeLink-for-Pascal\bindings;dependencies\EyeLink-for-Pascal\utils;dependencies\mspeech;dependencies\pupil-fpc;dependencies\msgpack-delphi;dependencies\fpc-zmq"/>
             <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
           <Parsing>
@@ -155,9 +165,19 @@
             </Debugging>
           </Linking>
           <Other>
-            <CustomOptions Value="-dSDL2"/>
-            <OtherDefines Count="1">
+            <Verbosity>
+              <ShowAll Value="True"/>
+              <ShowHintsForUnusedUnitsInMainSrc Value="True"/>
+            </Verbosity>
+            <WriteFPCLogo Value="False"/>
+            <ConfigFile>
+              <WriteConfigFilePath Value="$(ProjOutDir)\fpclaz.cfg"/>
+            </ConfigFile>
+            <CustomOptions Value="-dSDL2
+-dUseCThreads"/>
+            <OtherDefines Count="2">
               <Define0 Value="SDL2"/>
+              <Define1 Value="UseCThreads"/>
             </OtherDefines>
           </Other>
         </CompilerOptions>
@@ -712,6 +732,11 @@
         <DebugInfoType Value="dsDwarf3"/>
       </Debugging>
     </Linking>
+    <Other>
+      <ConfigFile>
+        <WriteConfigFilePath Value="$(ProjOutDir)\fpclaz.cfg"/>
+      </ConfigFile>
+    </Other>
   </CompilerOptions>
   <Debugging>
     <Exceptions>
