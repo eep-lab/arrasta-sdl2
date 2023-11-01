@@ -19,3 +19,6 @@
 [submodule "dependencies/msgpack-delphi"]
 	path = dependencies/msgpack-delphi
 	url = https://github.com/cpicanco/msgpack-delphi.git
+[submodule "dependencies/zeromq4-1"]
+	path = dependencies/zeromq4-1
+	url = https://github.com/zeromq/zeromq4-1.git
