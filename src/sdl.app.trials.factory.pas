@@ -52,6 +52,7 @@ uses Classes
    , session.configurationfile
    , session.endcriteria
    , session.pool
+   , sdl.app.output
    , sdl.app.trials.mts
    , sdl.app.trials.dragdrop
    , sdl.app.trials.last
@@ -103,7 +104,8 @@ var
   LMockData : TTrialData = (ID: -1 ; Kind : 'TLastTrial';
     ReferenceName: 'Mock'; Parameters: nil);
 begin
-  //LMockData.Parameters := TStringList.Create;
+  FreeCurrentTrial;
+
   CurrentTrial := TLastTrial.Create;
   CurrentTrial.OnTrialEnd := nil;
   CurrentTrial.Name := 'LastTrial';
