@@ -72,7 +72,6 @@ implementation
 
 uses
   StrUtils
-  , math
   , sdl.app.renderer.custom
   , sdl.app.graphics.picture
   , sdl.app.output
@@ -249,8 +248,6 @@ begin
 end;
 
 destructor TMTSStimuli.Destroy;
-var
-  i : integer;
 begin
   TStimulusFactory.Clear;
   FButton.Free;
