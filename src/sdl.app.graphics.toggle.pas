@@ -81,6 +81,7 @@ uses
   , sdl.app.video.methods
   , sdl.app.output
   , session.pool
+  , sdl.app.testmode
   ;
 
 { TToggleButton }
@@ -240,9 +241,11 @@ begin
       SDL_RenderCopy(PSDLRenderer, FTexture2, nil, @FRect);
     end;
   end else begin
-    with clGray do
-      SDL_SetRenderDrawColor(PSDLRenderer, r, g, b, a);
-    SDL_RenderFillRect(PSDLRenderer, @FRect);
+    if TestMode then begin
+      with clGray do
+        SDL_SetRenderDrawColor(PSDLRenderer, r, g, b, a);
+      SDL_RenderFillRect(PSDLRenderer, @FRect);
+    end;
   end;
 end;
 
