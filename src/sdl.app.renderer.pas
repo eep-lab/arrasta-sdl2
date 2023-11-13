@@ -33,7 +33,7 @@ uses
 procedure Render;
 begin
   SDL_SetRenderDrawColor(PSDLRenderer,
-    clWhite.r, clWhite.g, clWhite.b, clWhite.a);
+    clBackgroud.r, clBackgroud.g, clBackgroud.b, clBackgroud.a);
   SDL_RenderClear(PSDLRenderer);
 
   if Assigned(TTrialFactory.CurrentTrial) then begin

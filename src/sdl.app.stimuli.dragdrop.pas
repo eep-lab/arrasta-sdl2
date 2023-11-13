@@ -23,6 +23,7 @@ uses
   , sdl.app.grids.types
   , sdl.app.grids
   , sdl.app.audio.contract
+  , sdl.app.trials.types
   ;
 
 type
@@ -34,6 +35,7 @@ type
 
   TDragDropStimuli = class(TStimuli, IStimuli)
   private
+    FResult : TTrialResult;
     FSoundRight : ISound;
     FSoundWrong : ISound;
     FOnDragDropDone: TNotifyEvent;
@@ -56,6 +58,8 @@ type
     procedure FreeGridItems;
     procedure WrongDragDrop(Sender, Source: TObject; X, Y: Integer);
     procedure Animate(ASample : TDragDropablePicture);
+  protected
+    function MyResult : TTrialResult; override;
   public
     constructor Create; override;
     destructor Destroy; override;
@@ -323,6 +327,7 @@ begin
     OnRightDragDrop(Sender, Source, X, Y);
 
   if FDragDropDone then begin
+    //FResult := Hit; todo: dragdrop trial have different hit types
     FAnimation.Stop;
     FAnimation.Hide;
     if Assigned(OnDragDropDone) then begin
@@ -413,6 +418,11 @@ begin
   FAnimation.BringToFront;
   ASample.BringToFront;
   //Parent.Invalidate;
+end;
+
+function TDragDropStimuli.MyResult: TTrialResult;
+begin
+  Result := FResult;
 end;
 
 constructor TDragDropStimuli.Create;

@@ -76,7 +76,6 @@ procedure TPicture.SetSibling(AValue: TRectangule);
 begin
   if FSibling=AValue then Exit;
   FSibling:=AValue;
-  CentralizeAtTopWith(FSibling.BoundsRect);
 end;
 
 procedure TPicture.SetStimulus(AValue: TObject);

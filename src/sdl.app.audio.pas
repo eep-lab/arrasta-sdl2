@@ -61,7 +61,7 @@ var
 
 implementation
 
-uses sdl.app.output, sdl.app.events.custom, session.pool;
+uses sdl.app.output, sdl.app.events.custom, session.strutils;
 
 procedure ChannelFinishedCallback(channel : cint); cdecl;
 var
@@ -74,8 +74,9 @@ end;
 
 procedure AllocateDefaultAudioChannels;
 begin
-  SDLAudio.LoadFromFile(Pool.AssetsBasePath+'acerto.wav');
-  SDLAudio.LoadFromFile(Pool.AssetsBasePath+'erro.wav');
+  SDLAudio.LoadFromFile(Assets('acerto'));
+  SDLAudio.LoadFromFile(Assets('erro'));
+  SDLAudio.LoadFromFile(Assets('sample-text-prompt-rafael'));
 end;
 
 { TSDLAudio }
@@ -155,9 +156,10 @@ end;
 function TSDLAudio.LoadFromFile(AFilename: string): ISound;
 var
   LChannel : cint;
+  FEXT : string = '.wav';
 begin
   LChannel := FChannels.Add(TChunk.Create);
-  FChannels.Last.LoadFromFile(AFilename);
+  FChannels.Last.LoadFromFile(AFilename+FEXT);
   FChannels.Last.Channel := LChannel;
   AllocateChannels;
   Result := FChannels.Last.AsInterface;

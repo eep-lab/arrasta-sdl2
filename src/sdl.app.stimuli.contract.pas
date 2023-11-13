@@ -15,7 +15,7 @@ unit sdl.app.stimuli.contract;
 
 interface
 
-uses Classes, sdl.app.stimulus.contract;
+uses Classes, sdl.app.trials.types;
 
 type
   { IStimuli }
@@ -25,6 +25,7 @@ type
     function AsInterface : IStimuli;
     function CustomName : string;
     function GetTrial : TObject;
+    function MyResult : TTrialResult;
     procedure DoExpectedResponse;
     procedure Load(AParameters : TStringList; AParent : TObject);
     procedure Start;

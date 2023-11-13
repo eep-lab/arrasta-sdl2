@@ -68,7 +68,7 @@ uses
   , session.fileutils
   , experiments
   , sdl.app
-  , sdl.app.trials.factory
+  , sdl.app.testmode
   , eye.tracker
   ;
 

@@ -15,7 +15,7 @@ interface
 
 uses
   Classes, SysUtils, Controls, Schedules
-  , sdl.app.stimuli.contract;
+  , sdl.app.stimuli.contract, sdl.app.trials.types;
 
 type
 
@@ -39,6 +39,7 @@ type
   protected
     function GetTrial : TObject;
     function CustomName : string;
+    function MyResult : TTrialResult; virtual;
     //function ContainerItems : IEnumerable; virtual; abstract;
     procedure DoExpectedResponse; virtual; abstract;
     procedure Load(AParameters: TStringList; AParent: TObject); virtual;
@@ -66,6 +67,11 @@ implementation
 function TStimuli.CustomName: string;
 begin
   Result := Self.ClassName.Replace('T', '', []);
+end;
+
+function TStimuli.MyResult: TTrialResult;
+begin
+  Result := none;
 end;
 
 function TStimuli.GetTrial: TObject;

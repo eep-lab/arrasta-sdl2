@@ -167,7 +167,7 @@ end;
 procedure TAudioStimulus.Start;
 begin
   if IsSample then begin
-    FSound.Play;
+    //FSound.Play;
     FPicture.Show;
   end else begin
     FPicture.Show;

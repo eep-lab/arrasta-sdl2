@@ -30,10 +30,8 @@ begin
 end;
 
 function AudioFile(ABasename: string): string;
-const
-  LEXT = '.wav';
 begin
-  Result := Pool.AudioBasePath+ABasename+LEXT;
+  Result := Pool.AudioBasePath+ABasename;
 end;
 
 function AsPath(A: string): string;

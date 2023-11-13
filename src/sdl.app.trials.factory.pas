@@ -41,9 +41,6 @@ type
       class procedure FreeCurrentTrial;
   end;
 
-var
-  TestMode : Boolean = False;
-
 implementation
 
 uses Classes
@@ -53,6 +50,7 @@ uses Classes
    , session.endcriteria
    , session.pool
    , sdl.app.output
+   , sdl.app.testmode
    , sdl.app.trials.mts
    , sdl.app.trials.dragdrop
    , sdl.app.trials.last

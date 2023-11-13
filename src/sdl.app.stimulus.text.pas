@@ -16,6 +16,7 @@ interface
 uses
   Classes, SysUtils
   , SDL2
+  , sdl.app.audio.contract
   , sdl.app.graphics.text
   , sdl.app.stimulus
   , sdl.app.events.abstract
@@ -30,7 +31,9 @@ type
 
   TTextStimulus = class(TStimulus)
     private
+      FPrompt : ISound;
       FText : TText;
+      FHasPrompt : Boolean;
     protected
       function GetStimulusName : string; override;
       procedure MouseDown(Sender: TObject; Shift: TCustomShiftState;
@@ -47,7 +50,8 @@ type
 implementation
 
 uses
-  sdl.app.renderer.custom
+  sdl.app.audio
+  , sdl.app.renderer.custom
   , session.constants.mts;
 
 { TTextStimuli }
@@ -71,10 +75,13 @@ constructor TTextStimulus.Create;
 begin
   inherited Create;
   FText := TText.Create;
+  FPrompt := nil;
+  FHasPrompt := False;
 end;
 
 destructor TTextStimulus.Destroy;
 begin
+  FPrompt := nil;
   FText.Free;
   inherited Destroy;
 end;
@@ -89,10 +96,20 @@ begin
   FText.CentralizeWith(ARect);
   FText.Parent := TCustomRenderer(AParent);
   FText.OnMouseDown := @MouseDown;
+
+  FHasPrompt := HasPrompt(AParameters);
+  if FHasPrompt then begin
+    if IsSample then
+      FPrompt := SDLAudio.SoundFromName('sample-text-prompt-rafael');
+  end;
 end;
 
 procedure TTextStimulus.Start;
 begin
+  if FHasPrompt then begin
+    if IsSample then
+      FPrompt.Play;
+  end;
   FText.Show;
 end;
 

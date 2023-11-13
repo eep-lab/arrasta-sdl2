@@ -34,7 +34,13 @@ const
   clLightGrayShaded1 : TSDL_Color =
     (r: 128; g: 128; b: 128; a: 100);
 
+var
+  clBackgroud : TSDL_Color;
+
 implementation
+
+initialization
+ clBackgroud := clWhite;
 
 end.
 

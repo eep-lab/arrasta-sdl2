@@ -55,6 +55,7 @@ type
     function IntersectsWith(ARect: TRectangule) : Boolean; overload;
     procedure Centralize;
     procedure CentralizeAtTopWith(ARect: TSDL_Rect);
+    procedure CentralizeAtRightWith(ARect: TSDL_Rect);
     procedure CentralizeWith(ARect: TSDL_Rect);
     procedure DoRandomMouseDown;
     procedure Inflate(AValue : cint);
@@ -74,7 +75,7 @@ type
 
 implementation
 
-uses sdl.app.video.methods, sdl.colors, math, sdl.app.trials.factory;
+uses sdl.app.video.methods, sdl.colors, math, sdl.app.testmode;
 
 { TStimulus }
 
@@ -240,6 +241,12 @@ procedure TRectangule.CentralizeAtTopWith(ARect: TSDL_Rect);
 begin
   Left := ARect.x + (ARect.w div 2) - (Width  div 2);
   Top  := ARect.y - Height - 5;
+end;
+
+procedure TRectangule.CentralizeAtRightWith(ARect: TSDL_Rect);
+begin
+  Left := ARect.x + Width + (Width div 2);
+  Top  := ARect.y - (ARect.h div 2) - (Height div 2);
 end;
 
 procedure TRectangule.Inflate(AValue: cint);

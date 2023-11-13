@@ -18,8 +18,9 @@ uses common.helpers;
 function MakeConfigurationFile(AFilename : string) : string;
 
 var
-  ITI : integer = 4;
+  ITI : integer = 2;
   LimitedHold : integer  = 1;
+  Timeout : integer = 3;
 
 implementation
 
@@ -34,6 +35,7 @@ begin
   Result := NewConfigurationFile;
   GlobalTrialParameters.InterTrialInterval := ITI.SecondsToMiliseconds;
   GlobalTrialParameters.LimitedHold := LimitedHold.MinutesToMiliseconds;
+  GlobalTrialParameters.TimeOutInterval := Timeout.SecondsToMiliseconds;
   GlobalTrialParameters.Cursor := 1;
   Experiments.Trials.WriteToConfigurationFile(AFilename);
   ConfigurationFile.Invalidate;

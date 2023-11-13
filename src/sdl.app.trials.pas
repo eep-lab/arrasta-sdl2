@@ -18,6 +18,7 @@ uses
   , SDL2
   , sdl.timer
   , sdl.app.renderer.custom
+  , sdl.app.trials.types
   , sdl.app.trials.contract
   , sdl.app.stimuli.contract
   , sdl.app.stimuli
@@ -45,12 +46,16 @@ type
       FIStimuli : IStimuli;
       FICalibration : IStimuli;
       FIInstruction : IStimuli;
+      FInterTrialInterval : Cardinal;
+      FConsequenceInterval : Cardinal;
       procedure SetParent(AValue: TCustomRenderer);
       procedure SetTestMode(AValue: Boolean);
       procedure EndStarterCallBack(Sender : TObject);
       procedure CreateStartersIfRequired(AParameters : TStringList);
       procedure GazeOnScreen(Sender : TObject;  AGazes : TGazes);
     protected
+      FHasConsequence : Boolean;
+      FResult : TTrialResult;
       FStimuliList : TStimuliList;
       FOnTrialEnd : TNotifyEvent;
       FData : TTrialData;
@@ -64,6 +69,7 @@ type
       function GetOnTrialEnd: TNotifyEvent;
       function GetTrialData: TTrialData;
       function GetIStimuli : IStimuli; virtual; abstract;
+      function MyResult : TTrialResult; virtual;
     public
       constructor Create; override;
       destructor Destroy; override;
@@ -88,13 +94,15 @@ const
 
 implementation
 
-uses session.constants.trials
+uses
+    eye.tracker.client
   , sdl.app.stimuli.instruction
   , sdl.app.stimuli.calibration.pupil
   , sdl.app.paintable.contract
   , sdl.app.clickable.contract
   , sdl.app.moveable.contract
   , sdl.app.lookable.contract
+  , session.constants.trials
   , session.loggers.writerow.timestamp;
 
 { TTrial }
@@ -138,12 +146,23 @@ end;
 
 function TTrial.ConsequenceInterval: Cardinal;
 begin
-  Result := 0;
+  if FTestMode or
+     (FResult = Hit) then begin
+    Result := 0;
+  end else begin
+    if FHasConsequence then begin
+      Result := FConsequenceInterval;
+    end;
+  end;
 end;
 
 function TTrial.InterTrialInterval: Cardinal;
 begin
-  Result := 0;
+  if FTestMode then begin
+    Result := 0;
+  end else begin
+    Result := FInterTrialInterval;
+  end;
 end;
 
 function TTrial.AsITrial: ITrial;
@@ -239,6 +258,7 @@ begin
   if Sender is IStimuli then begin
     LStimuli := Sender as IStimuli;
     if GetIStimuli.CustomName = LStimuli.CustomName then begin
+      FResult := LStimuli.MyResult;
       EndTrial;
     end;
   end;
@@ -279,7 +299,8 @@ begin
       FIStimuli := FIInstruction;
       FStimuliList.Add(LInstruction);
     end;
-    if StrToBoolDef(Values[DoCalibrationKey], False) then begin
+    if TEyeTrackerClient.Exists and
+       StrToBoolDef(Values[DoCalibrationKey], False) then begin
       LCalibration := TPupilCalibrationStimuli.Create;
       LCalibration.OnFinalize := @EndStarterCallBack;
       FICalibration := LCalibration;
@@ -345,8 +366,9 @@ var
   Child : TObject;
 begin
   if FVisible then begin
-    for Child in FChildren do
+    for Child in FChildren do begin
       IPaintable(TCustomRenderer(Child)).Paint;
+    end;
   end;
 end;
 
@@ -363,9 +385,10 @@ begin
   FIStimuli.Load(FData.Parameters, Self);
   if Assigned(FData.Parameters) then begin
     with FData.Parameters, TrialKeys do begin
-      if StrToIntDef(Values[LimitedHoldKey], 0) > 0 then begin
-        FLimitedHoldTimer.Interval := Values[LimitedHoldKey].ToInteger;
-      end;
+      FLimitedHoldTimer.Interval := StrToIntDef(Values[LimitedHoldKey], 0);
+      FInterTrialInterval := StrToIntDef(Values[InterTrialIntervalKey], 0);
+      FConsequenceInterval := StrToIntDef(Values[ConsequenceIntervalKey], 0);
+      FHasConsequence := StrToBoolDef(Values[HasConsequenceKey], True);
     end;
     CreateStartersIfRequired(FData.Parameters);
   end;
@@ -379,6 +402,11 @@ end;
 function TTrial.GetTrialData: TTrialData;
 begin
   Result := FData;
+end;
+
+function TTrial.MyResult: TTrialResult;
+begin
+  Result := FResult;
 end;
 
 procedure TTrial.Show;

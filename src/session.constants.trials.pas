@@ -24,6 +24,7 @@ type
     RepeatTrials : integer;
     LimitedHold : integer;
     InterTrialInterval : integer;
+    TimeOutInterval : integer;
     HasConsequence : Boolean;
   end;
 
@@ -36,6 +37,7 @@ type
     DoCalibrationKey : string;
     LimitedHoldKey : string;
     InterTrialIntervalKey : string;
+    ConsequenceIntervalKey : string;
     RepeatTrialsKey : string;
     HasConsequenceKey : string;
     IsTrue : string;
@@ -53,6 +55,7 @@ const
     DoCalibrationKey : 'DoCalibration';
     LimitedHoldKey : 'LimitedHold';
     InterTrialIntervalKey : 'InterTrialInterval';
+    ConsequenceIntervalKey : 'ConsequenceInterval';
     RepeatTrialsKey : 'RepeatTrial';
     HasConsequenceKey : 'HasConsequence';
     IsTrue : 'T';

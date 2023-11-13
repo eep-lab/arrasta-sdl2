@@ -16,6 +16,7 @@ interface
 uses
   Classes, SysUtils
   , sdl.serialtimer
+  , sdl.app.trials.contract
   ;
 
 type
@@ -24,6 +25,7 @@ type
 
   TInterTrialEvents = class(TComponent)
   private
+    FTrial : ITrial;
     FSerialTimer : TSerialTimer;
     FInterTrial : TTimerItem;
     FDelay : TTimerItem;
@@ -55,9 +57,10 @@ var
 implementation
 
 uses
-  session.loggers.writerow
+    session.loggers.writerow
   , session.pool
-  , sdl.app.trials.contract
+  , sdl.colors
+  , sdl.app.trials.types
   , timestamps
   ;
 
@@ -70,17 +73,13 @@ begin
 end;
 
 procedure TInterTrialEvents.TrialEnd(Sender: TObject);
-var
-  LTrial : ITrial;
 begin
-  //ITIBegin := TickCount - Pool.TimeStart;
-  LTrial := Sender as ITrial;
-  //LTrial.Hide;
+  FTrial := Sender as ITrial;
 
   //Background.Cursor := -1;
-  FDelay.Interval := LTrial.ConsequenceDelay;
-  FConsequenceDuration.Interval := LTrial.ConsequenceInterval;
-  FInterTrial.Interval := LTrial.InterTrialInterval;
+  FDelay.Interval := FTrial.ConsequenceDelay;
+  FConsequenceDuration.Interval := FTrial.ConsequenceInterval;
+  FInterTrial.Interval := FTrial.InterTrialInterval;
 
   if HasDelay then begin
     FSerialTimer.Append(FDelay);
@@ -143,26 +142,15 @@ end;
 
 procedure TInterTrialEvents.InterTrialConsequenceBegin;
 begin
-  //case TrialResult of
-  //  'HIT+BLACKOUT':
-  //    begin
-  //
-  //    end;
-  //  'HIT' :
-  //    begin
-  //
-  //    end;
-  //
-  //  'MISS':
-  //    begin
-  //
-  //    end;
-  //end;
-  //TrialResult := '';
+  case FTrial.MyResult of
+    Miss: clBackgroud := clBlack;
+    else { do nothing }
+  end;
 end;
 
 procedure TInterTrialEvents.InterTrialConsequenceEnd(Sender: TObject);
 begin
+  clBackgroud := clWhite;
   if HasInterTrialTime then begin
     InterTrialIntervalBegin;
   end;

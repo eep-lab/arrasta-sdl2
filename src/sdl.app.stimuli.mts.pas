@@ -21,6 +21,7 @@ uses
   , sdl.app.stimuli
   , sdl.app.stimulus.contract
   , sdl.app.stimulus
+  , sdl.app.trials.types
   , sdl.app.events.abstract
   , sdl.app.audio.contract
   ;
@@ -40,6 +41,7 @@ type
 
   TMTSStimuli = class sealed (TStimuli, IStimuli)
     private
+      FResult : TTrialResult;
       FMTSModality : TMTSModality;
       FHasConsequence : Boolean;
       FButton : TButton;
@@ -47,6 +49,7 @@ type
       FSoundWrong   : ISound;
       FComparisons : TCustomStimulusList;
       FSamples : TCustomStimulusList;
+      function MyResult : TTrialResult; override;
       procedure DoConsequence(Sender : TObject);
       procedure ConsequenceDone(Sender: TObject);
       procedure ConsequenceStart(Sender: TObject);
@@ -90,6 +93,11 @@ uses
 
 { TMTSStimuli }
 
+function TMTSStimuli.MyResult: TTrialResult;
+begin
+  Result := FResult;
+end;
+
 procedure TMTSStimuli.DoConsequence(Sender: TObject);
 var
   LStimulus : TStimulus;
@@ -105,8 +113,10 @@ begin
     end;
 
     if LIsHit then begin
+      FResult := Hit;
       Pool.Counters.Hit;
     end else begin
+      FResult := Miss;
       Pool.Counters.Miss;
     end;
 
@@ -203,12 +213,24 @@ begin
   if Sender is TStimulus then begin
     //Timestamp('Comparison.Response');
     LStimulus := Sender as TStimulus;
-    if (LStimulus is TSpeechStimulus) or
-       (LStimulus is TAudioStimulus) then begin
-      FButton.Sibling := LStimulus.Rectangule;
-      FButton.Sender := Sender;
-      FButton.Show;
-      Exit;
+
+    case FMTSModality.Comparisons of
+      ModalityA: begin { TAudioStimulus }
+        FButton.Sibling := LStimulus.Rectangule;
+        FButton.CentralizeAtTopWith(LStimulus.Rectangule.BoundsRect);
+        FButton.Sender := Sender;
+        FButton.Show;
+        Exit;
+      end;
+
+      ModalityD: begin { TSpeechStimulus }
+        FButton.Sibling := LStimulus.Rectangule;
+        FButton.CentralizeAtRightWith(LStimulus.Rectangule.BoundsRect);
+        FButton.Sender := Sender;
+        FButton.Show;
+        Exit;
+      end;
+      else { do nothing }
     end;
 
     for LIStimulus in FComparisons do begin
@@ -394,16 +416,20 @@ begin
         raise Exception.Create('Unknown Comparisons modality: ' + SampleLetter);
     end;
 
-    if (FMTSModality.Comparisons = ModalityA) or
-       (FMTSModality.Comparisons = ModalityD)
-    then begin
-      FButton.LoadFromFile(Pool.AssetsBasePath+'ConfirmButton'+IMG_EXT);
-      FButton.Parent := TCustomRenderer(AParent);
-      FButton.OnClick:=@ButtonClick;
-    end;
+    case FMTSModality.Comparisons of
+      ModalityA : begin
+        FButton.LoadFromFile(Pool.AssetsBasePath+'ConfirmButton'+IMG_EXT);
+        FButton.Parent := TCustomRenderer(AParent);
+        FButton.OnClick:=@ButtonClick;
+      end;
+      ModalityD : begin
+        FButton.LoadFromFile(Pool.AssetsBasePath+'FinalizeButton'+IMG_EXT);
+        FButton.Parent := TCustomRenderer(AParent);
+        FButton.OnClick:=@ButtonClick;
 
-    if FMTSModality.Comparisons = ModalityD then begin
-      LComparisons := 1;
+        LComparisons := 1;
+      end;
+      else { do nothing }
     end;
   end;
 

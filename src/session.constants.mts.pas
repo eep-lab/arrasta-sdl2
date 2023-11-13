@@ -34,6 +34,7 @@ type
     ComparisonsKey : string;
     WordKey        : string;
     ComparisonKey  : string;
+    HasPromptKey   : string;
   end;
 
 const
@@ -46,7 +47,8 @@ const
     SamplesKey     : 'Samples';
     ComparisonsKey : 'Comparisons';
     WordKey        : 'Word';
-    ComparisonKey  : 'C');
+    ComparisonKey  : 'C';
+    HasPromptKey   : 'HasPrompt');
 
 implementation
 

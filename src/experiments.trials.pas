@@ -67,15 +67,26 @@ var
 begin
   with Writer.TrialConfig do begin
     with TrialKeys do begin
-      Values[ReferenceNameKey] := AReferenceName;
-      Values[NameKey] := AName;
-      Values[CursorKey] := GlobalTrialParameters.Cursor.ToString;
-      Values[KindKey] := TMTS.ClassName;
-      if AHasLimitedHold then
-        Values[LimitedHoldKey] := GlobalTrialParameters.LimitedHold.ToString;
-      Values[InterTrialIntervalKey] := GlobalTrialParameters.InterTrialInterval.ToString;
-      Values[RepeatTrialsKey] := ARepeatTrials.ToString;
-      Values[HasConsequenceKey] := AHasConsequence.ToString;
+      Values[ReferenceNameKey] :=
+        AReferenceName;
+      Values[NameKey] :=
+        AName;
+      Values[CursorKey] :=
+        GlobalTrialParameters.Cursor.ToString;
+      Values[KindKey] :=
+        TMTS.ClassName;
+      if AHasLimitedHold then begin
+        Values[LimitedHoldKey] :=
+          GlobalTrialParameters.LimitedHold.ToString;
+      end;
+      Values[InterTrialIntervalKey] :=
+        GlobalTrialParameters.InterTrialInterval.ToString;
+      Values[ConsequenceIntervalKey] :=
+        GlobalTrialParameters.TimeOutInterval.ToString;
+      Values[RepeatTrialsKey] :=
+        ARepeatTrials.ToString;
+      Values[HasConsequenceKey] :=
+        AHasConsequence.ToString;
     end;
 
     with MTSKeys do begin
