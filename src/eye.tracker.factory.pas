@@ -21,7 +21,7 @@ type
   { TEyeTrackerFactory }
 
   TEyeTrackerFactory = class
-      class function New(ACode : TEyeTrackerCode) : IEyeTracker;
+    class function New(ACode : TEyeTrackerCode) : IEyeTracker;
   end;
 
 implementation
@@ -32,11 +32,10 @@ uses eye.tracker.pupil, eye.tracker.eyelink;
 
 class function TEyeTrackerFactory.New(ACode: TEyeTrackerCode): IEyeTracker;
 begin
-  Result := nil;
   case ACode of
-    etNone : { do nothing };
     etPupilLabs : Result := TPupilEyeTracker.Create as IEyeTracker;
     etEyeLink : Result := TEyeLinkEyeTracker.Create as IEyeTracker;
+    else Result := nil;
   end;
 end;
 

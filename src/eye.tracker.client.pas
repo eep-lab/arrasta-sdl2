@@ -29,10 +29,20 @@ type
       procedure StartCalibration; virtual; abstract;
       procedure StopCalibration; virtual; abstract;
     public
+      class function Exists : Boolean;
 
   end;
 
 implementation
+
+uses eye.tracker;
+
+{ TEyeTrackerClient }
+
+class function TEyeTrackerClient.Exists: Boolean;
+begin
+  Result := EyeTracker <> nil;
+end;
 
 end.
 
