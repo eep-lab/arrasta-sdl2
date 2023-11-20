@@ -15,6 +15,7 @@ interface
 
 uses
   Classes, SysUtils
+  , SDL2
   , sdl.serialtimer
   , sdl.app.trials.contract
   ;
@@ -74,6 +75,7 @@ end;
 
 procedure TInterTrialEvents.TrialEnd(Sender: TObject);
 begin
+  SDL_ShowCursor(SDL_DISABLE);
   FTrial := Sender as ITrial;
 
   //Background.Cursor := -1;
