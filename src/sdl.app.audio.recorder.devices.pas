@@ -14,12 +14,12 @@ unit sdl.app.audio.recorder.devices;
 interface
 
 uses
-  Classes, SDL2, ctypes, fgl, fpwavwriter;
+  Classes, SDL2, ctypes, Generics.Collections, fpwavwriter;
 
 type
 
 
-  TDevices = specialize TFPGMap<PAnsiChar, PSDL_AudioSpec>;
+  TDevices = specialize TDictionary<PAnsiChar, PSDL_AudioSpec>;
 
   { TAudioDevice }
 
@@ -184,7 +184,7 @@ begin
     end else begin
       FDesiredAudioSpec.callback:=@AudioPlaybackCallback;
     end;
-    ADevices[LDeviceName] := @FDesiredAudioSpec;
+    ADevices.Add(LDeviceName, @FDesiredAudioSpec);
   end;
 end;
 
@@ -322,10 +322,10 @@ var
   LBytesPerSecond: cint;
 begin
   ListDevices(1, FDevices);
-  FDeviceID := SDL_OpenAudioDevice(FDevices.Keys[0], 1,
-    FDevices.Data[0], @FAudioSpec, SDL_AUDIO_ALLOW_FREQUENCY_CHANGE);
+  FDeviceID := SDL_OpenAudioDevice(FDevices.Keys.ToArray[0], 1,
+    FDevices.Values.ToArray[0], @FAudioSpec, SDL_AUDIO_ALLOW_FREQUENCY_CHANGE);
 
-  Print('Name:'+StrPas(FDevices.Keys[0]));
+  Print('Name:'+StrPas(FDevices.Keys.ToArray[0]));
   Print('Channels:' + FAudioSpec.channels.ToString);
   Print('Format:' + FAudioSpec.format.ToHexString);
   Print('Samples:' + FAudioSpec.samples.ToString);
@@ -415,9 +415,9 @@ end;
 function TAudioPlaybackComponent.Open: Boolean;
 begin
   ListDevices(0, FDevices);
-  Print(StrPas(FDevices.Keys[0]));
-  FDeviceID := SDL_OpenAudioDevice(FDevices.Keys[0], 0,
-    FDevices.Data[0], @FAudioSpec, SDL_AUDIO_ALLOW_FREQUENCY_CHANGE);
+  Print(StrPas(FDevices.Keys.ToArray[0]));
+  FDeviceID := SDL_OpenAudioDevice(FDevices.Keys.ToArray[0], 0,
+    FDevices.Values.ToArray[0], @FAudioSpec, SDL_AUDIO_ALLOW_FREQUENCY_CHANGE);
   Result := FDeviceID <> 0;
   if Result then begin
     { do nothing }

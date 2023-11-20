@@ -14,9 +14,8 @@ unit sdl.app.text;
 interface
 
 uses
-  Classes, SysUtils
+  Classes, SysUtils, Generics.Collections
   , ctypes
-  , fgl
   , sdl2_ttf
   ;
 
@@ -27,7 +26,7 @@ type
       Font : PTTF_Font;
     end;
 
-    TFontCollection = specialize TFPGMap<string, TFontData>;
+    TFontCollection = specialize TDictionary<string, TFontData>;
 
     { TSDLText }
 
@@ -68,7 +67,7 @@ var
   i : integer;
 begin
   for i := 0 to FFontCollention.Count -1 do begin
-    TTF_CloseFont(FFontCollention.Data[i].Font);
+    TTF_CloseFont(FFontCollention.Values.ToArray[i].Font);
   end;
   FFontCollention.Free;
   inherited Destroy;
@@ -121,7 +120,7 @@ begin
   if LPTTFFont <> nil then begin
     LFontData.Name := ExtractFileNameWithoutExt(ExtractFileNameOnly(AFilename));
     LFontData.Font := LPTTFFont;
-    FFontCollention[LFontData.Name] := LFontData;
+    FFontCollention.Add(LFontData.Name, LFontData);
   end;
 end;
 

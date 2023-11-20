@@ -14,8 +14,7 @@ unit sdl.app.stimulus.factory;
 interface
 
 uses
-  Classes, SysUtils
-  , fgl
+  Classes, SysUtils, Generics.Collections
   , SDL2
   , sdl.app.stimulus.contract
   , sdl.app.stimulus
@@ -26,9 +25,9 @@ type
 
   TStimulusClass = class of TStimulus;
 
-  TStimulusRegistry = specialize TFPGMap<string, TStimulusClass>;
+  TStimulusRegistry = specialize TDictionary<string, TStimulusClass>;
 
-  TStimulusList = specialize TFPGList<TStimulus>;
+  TStimulusList = specialize TList<TStimulus>;
 
   { TStimulusFactory }
 
@@ -82,7 +81,7 @@ end;
 class procedure TStimulusFactory.RegisterStimulusClass(AStimulusKind: string;
   AStimulusClass: TStimulusClass);
 begin
-  Registry[AStimulusKind] := AStimulusClass;
+  Registry.Add(AStimulusKind, AStimulusClass);
 end;
 
 class function TStimulusFactory.New(AOwner: TObject; AStimulusKind: string;
@@ -90,7 +89,7 @@ class function TStimulusFactory.New(AOwner: TObject; AStimulusKind: string;
 var
   StimulusClass : TStimulusClass;
 begin
-  if not Registry.TryGetData(AStimulusKind, StimulusClass) then
+  if not Registry.TryGetValue(AStimulusKind, StimulusClass) then
     raise EArgumentException.CreateFmt(
       'Stimulus kind is not registered: %s %s', [AStimulusKind, StimulusClass]);
   StimulusList.Add(StimulusClass.Create);

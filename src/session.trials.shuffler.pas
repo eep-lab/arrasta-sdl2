@@ -14,7 +14,7 @@ unit session.trials.shuffler;
 
 interface
 
-uses Classes, SysUtils, fgl;
+uses Classes, SysUtils, Generics.Collections;
 
 type
 
@@ -26,11 +26,11 @@ type
     class operator = (A, B: TItem): Boolean;
   end;
 
-  TUniqueCount = specialize TFPGMap<string, integer>;
+  TUniqueCount = specialize TDictionary<string, integer>;
 
-  TReferenceList = specialize TFPGList<TItem>;
+  TReferenceList = specialize TList<TItem>;
 
-  TIntegerList = specialize TFPGList<integer>;
+  TIntegerList = specialize TList<integer>;
 
   { TShuffler }
 
@@ -130,7 +130,7 @@ var
     if LUniqueCount.Count = 0 then Exit;
     AReferenceList.Clear;
     for i := LUniqueCount.Count-1 downto 0 do begin
-      Item.ReferenceName := LUniqueCount.Keys[i];
+      Item.ReferenceName := LUniqueCount.Keys.ToArray[i];
       IndexFromName(Item.ReferenceName, Item.ID);
       AReferenceList.Add(Item);
       LUniqueCount[Item.ReferenceName] := LUniqueCount[Item.ReferenceName] -1;
@@ -150,11 +150,12 @@ begin
   try
     // Count the occurrences of each unique string
     for i := 0 to AList.Count-1 do begin
-      if LUniqueCount.IndexOf(AList[i].ReferenceName) > -1 then
+      if LUniqueCount.ContainsKey(AList[i].ReferenceName) then begin
         LUniqueCount[AList[i].ReferenceName] :=
-          LUniqueCount[AList[i].ReferenceName] + 1
-      else
-        LUniqueCount[AList[i].ReferenceName] := 1;
+          LUniqueCount[AList[i].ReferenceName] + 1;
+      end else begin
+        LUniqueCount.Add(AList[i].ReferenceName, 1);
+      end;
     end;
 
     if (LUniqueCount.Count = 1) or

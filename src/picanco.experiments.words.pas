@@ -164,6 +164,7 @@ begin
                 end;
               end;
 
+              // todo: abcd cbad adcb cdab
               ModalityC: Text   := GetRandomWord(LCandidateNegativeWords);
               ModalityD: Speech := @EmptyWord;
               else
@@ -297,7 +298,7 @@ begin
 
   HashWords := THashWords.Create;
   for i := Low(Words) to High(Words) do begin
-    HashWords[Words[i].Caption] := @Words[i];
+    HashWords.Add(Words[i].Caption, @Words[i]);
   end;
 
   SetLength(NewWords, 0);
@@ -309,7 +310,7 @@ begin
 
   HashNewWords := THashWords.Create;
   for i := Low(NewWords) to High(NewWords) do begin
-    HashNewWords[NewWords[i].Caption] := @NewWords[i];
+    HashNewWords.Add(NewWords[i].Caption, @NewWords[i]);
   end;
 
   SetLength(PreTrainingWords, Length(E1UniqueCodesPreTraining));
@@ -319,7 +320,7 @@ begin
     PreTrainingWords[i].Caption := UniqueCodeToStr(E1UniqueCodesPreTraining[i]);
     PreTrainingWords[i].CycleCode := E1UniqueCodesPreTraining[i];
     SetLength(PreTrainingWords[i].CandidateNegativeWords, MaxComparisons-1);
-    HashPreTrainingWords[PreTrainingWords[i].Caption] := @PreTrainingWords[i];
+    HashPreTrainingWords.Add(PreTrainingWords[i].Caption, @PreTrainingWords[i]);
   end;
 end;
 

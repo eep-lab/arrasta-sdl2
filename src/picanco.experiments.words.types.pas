@@ -14,7 +14,7 @@ unit picanco.experiments.words.types;
 
 interface
 
-uses fgl;
+uses Generics.Collections;
 
 const
   MaxComparisons = 4;
@@ -76,7 +76,7 @@ type
     class operator = (AConsonant1, AConsonant2: TConsonant): boolean;
   end;
 
-  TConsonants = specialize TFPGList<TConsonant>;
+  TConsonants = specialize TList<TConsonant>;
 
   { TVowel }
 
@@ -90,7 +90,7 @@ type
     class operator = (AVowel1, AVowel2: TVowel): boolean;
   end;
 
-  TVowels = specialize TFPGList<TVowel>;
+  TVowels = specialize TList<TVowel>;
 
   { TSyllable }
 
@@ -166,8 +166,8 @@ type
 
   TWords = array of TWord;
   PTWords = array of PTWord;
-  TWordList = specialize TFPGList<PTWord>;
-  THashWords = specialize TFPGMap<string, PTWord>;
+  TWordList = specialize TList<PTWord>;
+  THashWords = specialize TDictionary<string, PTWord>;
 
   procedure InitializeWord(var AWord: TWord);
   function GetRandomWord(var AWords: TWordList): PTWord;
