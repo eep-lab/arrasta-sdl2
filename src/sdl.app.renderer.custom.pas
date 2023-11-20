@@ -14,6 +14,7 @@ unit sdl.app.renderer.custom;
 interface
 
 uses Classes, SysUtils, SDL2, Generics.Collections
+  , session.parameters
   , sdl.app.paintable.contract
   , sdl.app.clickable.contract
   , sdl.app.moveable.contract
@@ -40,7 +41,8 @@ type
 
   { TCustomRenderer }
 
-  TCustomRenderer = class(TObject, IClickable, IPaintable, IMoveable, ILookable)
+  TCustomRenderer = class(TParametricObject,
+    IClickable, IPaintable, IMoveable, ILookable)
   private
     FOnGazeEnter: TNotifyEvent;
     FOnGazeExit: TNotifyEvent;
@@ -334,7 +336,7 @@ end;
 
 constructor TCustomRenderer.Create;
 begin
-  //inherited Create;
+  inherited Create;
   FChildren := TChildren.Create;
   FMouseInside := False;
   FGazeInside := False;

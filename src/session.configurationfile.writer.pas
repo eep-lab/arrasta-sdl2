@@ -22,6 +22,7 @@ type
   private
     FBlockConfig: TStringList;
     FTrialConfig: TStringList;
+    FTrialStartersConfig: TStringList;
     FCurrentBlock : integer;
     FConfigurationFile: TConfigurationFile;
     function GetCurrentTrial: integer;
@@ -32,10 +33,10 @@ type
     procedure Invalidate;
     procedure WriteBlock;
     procedure WriteTrial;
-    procedure WriteInstruction(ABlock, ATrial : integer;
-      AName, AValue : string);
+    procedure WriteStarter(ABlock, ATrial : integer);
     property BlockConfig : TStringList read FBlockConfig;
     property TrialConfig: TStringList read FTrialConfig;
+    property TrialStartersConfig: TStringList read FTrialStartersConfig;
     property CurrentBlock  : integer read FCurrentBlock write FCurrentBlock;
     property CurrentTrial : integer read GetCurrentTrial;
     property StartAt : TStartAt write SetStartTrial;
@@ -64,12 +65,15 @@ begin
 
   FConfigurationFile := AConfigurationFile;
   FBlockConfig := TStringList.Create;
-  FTrialConfig:= TStringList.Create;
+  FTrialConfig := TStringList.Create;
+  FTrialStartersConfig := TStringList.Create;
   FCurrentBlock := 0;
 end;
 
 destructor TConfigurationWriter.Destroy;
 begin
+  FTrialStartersConfig.Clear;
+  FTrialStartersConfig.Free;
   FTrialConfig.Clear;
   FTrialConfig.Free;
   FBlockConfig.Clear;
@@ -130,11 +134,16 @@ begin
   end;
 end;
 
-procedure TConfigurationWriter.WriteInstruction(ABlock, ATrial: integer; AName,
-  AValue: string);
+procedure TConfigurationWriter.WriteStarter(ABlock, ATrial: integer);
+var
+  LName, LValue : string;
+  i: Integer;
 begin
   with FConfigurationFile do begin
-    WriteToInstruction(ABlock, ATrial, AName, AValue);
+    for i := 0 to FTrialStartersConfig.Count -1 do begin
+      FTrialStartersConfig.GetNameValue(i, LName, LValue);
+      WriteToInstruction(ABlock, ATrial, LName, LValue);
+    end;
   end;
 end;
 

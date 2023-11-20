@@ -48,10 +48,12 @@ type
       FIInstruction : IStimuli;
       FInterTrialInterval : Cardinal;
       FConsequenceInterval : Cardinal;
+      FHasInstructions : Boolean;
+      FHasCalibration  : Boolean;
       procedure SetParent(AValue: TCustomRenderer);
       procedure SetTestMode(AValue: Boolean);
       procedure EndStarterCallBack(Sender : TObject);
-      procedure CreateStartersIfRequired(AParameters : TStringList);
+      procedure CreateStartersIfRequired;
       procedure GazeOnScreen(Sender : TObject;  AGazes : TGazes);
     protected
       FHasConsequence : Boolean;
@@ -122,7 +124,28 @@ begin
   FStimuliList := TStimuliList.Create;
   FText := TText.Create;
   FLimitedHoldTimer := TSDLTimer.Create;
+
   FLimitedHoldTimer.Interval := 0;
+  FInterTrialInterval := 0;
+  FConsequenceInterval := 0;
+  FHasConsequence := True;
+  FHasInstructions := False;
+  FHasCalibration := False;
+
+  with TrialKeys do begin
+    RegisterParameter(LimitedHoldKey,
+      @FLimitedHoldTimer.Interval, FLimitedHoldTimer.Interval);
+    RegisterParameter(InterTrialIntervalKey,
+      @FInterTrialInterval, FInterTrialInterval);
+    RegisterParameter(ConsequenceIntervalKey,
+      @FConsequenceInterval, FConsequenceInterval);
+    RegisterParameter(HasConsequenceKey,
+      @FHasConsequence, FHasConsequence);
+    RegisterParameter(HasInstructionKey,
+      @FHasInstructions, FHasInstructions);
+    RegisterParameter(HasCalibrationKey,
+      @FHasCalibration, FHasCalibration);
+  end;
 end;
 
 destructor TTrial.Destroy;
@@ -246,9 +269,6 @@ procedure TTrial.EndTrial;
 begin
   Hide;
   DoEndTrial(Pointer(Self));
-  //if Assigned(OnTrialEnd) then begin
-  //  OnTrialEnd(Self);
-  //end;
 end;
 
 procedure TTrial.EndTrialCallBack(Sender: TObject);
@@ -285,29 +305,27 @@ begin
 end;
 
 // todo: refactor starters as an IStimuliList to allow many instructions ...
-procedure TTrial.CreateStartersIfRequired(AParameters: TStringList);
+procedure TTrial.CreateStartersIfRequired;
 var
   LInstruction : TInstructionStimuli;
   LCalibration : TPupilCalibrationStimuli;
 begin
-  with AParameters, TrialKeys do begin
-    if StrToBoolDef(Values[InstructionKey], False) then begin
-      LInstruction := TInstructionStimuli.Create;
-      LInstruction.OnFinalize := @EndStarterCallBack;
-      FIInstruction := LInstruction;
-      FIInstruction.Load(AParameters, Self);
-      FIStimuli := FIInstruction;
-      FStimuliList.Add(LInstruction);
-    end;
-    if TEyeTrackerClient.Exists and
-       StrToBoolDef(Values[DoCalibrationKey], False) then begin
-      LCalibration := TPupilCalibrationStimuli.Create;
-      LCalibration.OnFinalize := @EndStarterCallBack;
-      FICalibration := LCalibration;
-      FICalibration.Load(AParameters, Self);
-      FIStimuli := LCalibration;
-      FStimuliList.Add(LCalibration);
-    end;
+  if FHasInstructions then begin
+    LInstruction := TInstructionStimuli.Create;
+    LInstruction.OnFinalize := @EndStarterCallBack;
+    FIInstruction := LInstruction;
+    FIInstruction.Load(FData.Parameters, Self);
+    FIStimuli := FIInstruction;
+    FStimuliList.Add(LInstruction);
+  end;
+
+  if TEyeTrackerClient.Exists and FHasCalibration then begin
+    LCalibration := TPupilCalibrationStimuli.Create;
+    LCalibration.OnFinalize := @EndStarterCallBack;
+    FICalibration := LCalibration;
+    FICalibration.Load(FData.Parameters, Self);
+    FIStimuli := LCalibration;
+    FStimuliList.Add(LCalibration);
   end;
 end;
 
@@ -384,13 +402,8 @@ begin
   FIStimuli := GetIStimuli;
   FIStimuli.Load(FData.Parameters, Self);
   if Assigned(FData.Parameters) then begin
-    with FData.Parameters, TrialKeys do begin
-      FLimitedHoldTimer.Interval := StrToIntDef(Values[LimitedHoldKey], 0);
-      FInterTrialInterval := StrToIntDef(Values[InterTrialIntervalKey], 0);
-      FConsequenceInterval := StrToIntDef(Values[ConsequenceIntervalKey], 0);
-      FHasConsequence := StrToBoolDef(Values[HasConsequenceKey], True);
-    end;
-    CreateStartersIfRequired(FData.Parameters);
+    LoadParameters(FData.Parameters);
+    CreateStartersIfRequired;
   end;
 end;
 
@@ -419,6 +432,7 @@ begin
     FVisible := True;
     Timestamp(FIStimuli.CustomName+'.Show');
   end;
+  SDL_ShowCursor(SDL_ENABLE);
 end;
 
 procedure TTrial.Hide;

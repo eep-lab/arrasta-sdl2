@@ -26,20 +26,30 @@ implementation
 
 uses
   session.fileutils
-  , experiments.trials
+  , experiments.base
+  , session.constants.trials
   , session.configurationfile
   ;
 
 function MakeConfigurationFile(AFilename : string): string;
+var
+  LExperimentWriter : TBaseExperimentWriter;
 begin
   Result := NewConfigurationFile;
   GlobalTrialParameters.InterTrialInterval := ITI.SecondsToMiliseconds;
   GlobalTrialParameters.LimitedHold := LimitedHold.MinutesToMiliseconds;
   GlobalTrialParameters.TimeOutInterval := Timeout.SecondsToMiliseconds;
   GlobalTrialParameters.Cursor := 1;
-  Experiments.Trials.WriteToConfigurationFile(AFilename);
+
+  LExperimentWriter :=
+    TBaseExperimentWriter.Create(ConfigurationFile, AFilename);
+  try
+    LExperimentWriter.Write;
+  finally
+    LExperimentWriter.Free;
+  end;
   ConfigurationFile.Invalidate;
-  //ConfigurationFile.UpdateFile;
+  ConfigurationFile.UpdateFile;
 end;
 
 end.

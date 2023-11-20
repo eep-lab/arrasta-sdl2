@@ -28,38 +28,97 @@ type
     HasConsequence : Boolean;
   end;
 
+  TGlobalTrialParameters = record
+    Cursor : integer;
+    LimitedHold : integer;
+    InterTrialInterval : integer;
+    TimeOutInterval : integer;
+    HasConsequence : Boolean;
+  end;
+
+  TParserTrialsSourceKeys = record
+    BlockIDKey : string;
+    TrialIDKey : string;
+    TrialIDSourceKey : string;
+  end;
+
   TTrialKeys = record
     NameKey : string;
     ReferenceNameKey : string;
     CursorKey : string;
     KindKey : string;
-    InstructionKey : string;
-    DoCalibrationKey : string;
     LimitedHoldKey : string;
     InterTrialIntervalKey : string;
     ConsequenceIntervalKey : string;
-    RepeatTrialsKey : string;
+    RepeatTrialKey : string;
     HasConsequenceKey : string;
+    InstructionKey : string;
+    HasInstructionKey : string;
+    HasCalibrationKey : string;
     IsTrue : string;
     IsFalse : string;
   end;
 
+  TParserTrialsBase = record
+    IDKey : string;
+    KindKey : string;
+    RepeatTrialKey : string;
+    CursorKey : string;
+    LimitedHoldKey : string;
+    InterTrialIntervalKey : string;
+    ConsequenceIntervalKey : string;
+    HasConsequenceKey : string;
+  end;
 
 const
+  HeaderName = 'Name';
+  HeaderReferenceName = 'ReferenceName';
+  HeaderKind = 'Kind';
+  HeaderRepeatTrial = 'RepeatTrial';
+  HeaderHasConsequence = 'HasConsequence';
+  HeaderLimitedHold = 'LimitedHold';
+  HeaderCursor = 'Cursor';
+  HeaderInterTrialInterval = 'InterTrialInterval';
+  HeaderConsequenceInterval = 'ConsequenceInterval';
+  HeaderInstruction = 'Instruction';
+  HeaderHasInstruction = 'HasInstruction';
+  HeaderHasCalibration = 'DoCalibration';
+
   TrialKeys : TTrialKeys = (
-    NameKey : 'Name';
-    ReferenceNameKey : 'ReferenceName';
-    CursorKey : 'Cursor';
-    KindKey : 'Kind';
-    InstructionKey : 'Instruction';
-    DoCalibrationKey : 'DoCalibration';
-    LimitedHoldKey : 'LimitedHold';
-    InterTrialIntervalKey : 'InterTrialInterval';
-    ConsequenceIntervalKey : 'ConsequenceInterval';
-    RepeatTrialsKey : 'RepeatTrial';
-    HasConsequenceKey : 'HasConsequence';
+    NameKey : HeaderName;
+    ReferenceNameKey : HeaderName;
+    CursorKey : HeaderCursor;
+    KindKey : HeaderKind;
+    LimitedHoldKey : HeaderLimitedHold;
+    InterTrialIntervalKey : HeaderInterTrialInterval;
+    ConsequenceIntervalKey : HeaderConsequenceInterval;
+    RepeatTrialKey : HeaderRepeatTrial;
+    HasConsequenceKey : HeaderHasConsequence;
+    InstructionKey : HeaderInstruction;
+    HasInstructionKey : HeaderHasInstruction;
+    HasCalibrationKey : HeaderHasCalibration;
     IsTrue : 'T';
     IsFalse : 'F');
+
+  ParserTrialsSourceKeys : TParserTrialsSourceKeys = (
+    BlockIDKey : 'BlockID';
+    TrialIDKey : 'TrialID';
+    TrialIDSourceKey : 'TrialIDSource';
+  );
+
+  ParserTrialsBase : TParserTrialsBase = (
+    IDKey : 'ID';
+    KindKey : HeaderKind;
+    RepeatTrialKey : HeaderRepeatTrial;
+    CursorKey : HeaderCursor;
+    LimitedHoldKey : HeaderLimitedHold;
+    InterTrialIntervalKey : HeaderInterTrialInterval;
+    ConsequenceIntervalKey : HeaderConsequenceInterval;
+    HasConsequenceKey : HeaderHasConsequence;
+  );
+
+var
+  GlobalTrialParameters : TGlobalTrialParameters;
 
 implementation
 
