@@ -13,22 +13,23 @@ unit sdl.app.video.methods;
 
 interface
 
-uses SDL2;
+uses SDL2, SysUtils;
 
 procedure AssignVariables(APSDLWindow : PSDL_Window;
   APSDLRenderer : PSDL_Renderer; APSDLSurface : PSDL_Surface);
 function MonitorFromWindow : TSDL_Rect;
 procedure Invalidate;
 procedure RaiseWindow;
+function WindowDeviceContextHandle : THandle;
+function WindowHandle : THandle;
+function WindowSize : TSDL_Rect;
 
 var
   PSDLRenderer : PSDL_Renderer;
   PSDLSurface  : PSDL_Surface;
+  PSDLWindow   : PSDL_Window;
 
 implementation
-
-var
-  PSDLWindow   : PSDL_Window;
 
 procedure AssignVariables(APSDLWindow: PSDL_Window;
   APSDLRenderer: PSDL_Renderer; APSDLSurface: PSDL_Surface);
@@ -52,6 +53,40 @@ procedure RaiseWindow;
 begin
   SDL_RaiseWindow(PSDLWindow)
 end;
+
+function WindowDeviceContextHandle: THandle;
+var
+  LWindowInfo: TSDL_SysWMinfo;
+begin
+  if Assigned(PSDLWindow) then begin
+    SDL_VERSION(LWindowInfo.version);
+    if SDL_GetWindowWMInfo(PSDLWindow, @LWindowInfo) = SDL_TRUE then begin
+      Result := LWindowInfo.win.hdc;
+    end;
+  end;
+end;
+
+function WindowHandle: THandle;
+var
+  LWindowInfo: TSDL_SysWMinfo;
+begin
+  if Assigned(PSDLWindow) then begin
+    SDL_VERSION(LWindowInfo.version);
+    if SDL_GetWindowWMInfo(PSDLWindow, @LWindowInfo) = SDL_TRUE then begin
+      Result := LWindowInfo.win.window;
+    end;
+  end;
+end;
+
+function WindowSize: TSDL_Rect;
+begin
+  with Result do begin
+    Result.x := 0;
+    Result.y := 0;
+    SDL_GetWindowSize(PSDLWindow, @w, @h)
+  end;
+end;
+
 
 
 end.

@@ -44,12 +44,19 @@ type
       function GetEvents: TCustomEventHandler;
       function GetMonitor(i : cint): TSDL_Rect;
       function GetMouse: TPoint;
-      function GetShowMarkers: Boolean;
       procedure SetCurrentMonitor(i : cint);
       procedure SetMouse(AValue: TPoint);
       procedure KeyDown(const event: TSDL_KeyboardEvent);
       procedure SetOnClose(AValue: TNotifyEvent);
+    {$IFNDEF NO_LCL}
+    private
+      function GetShowMarkers: Boolean;
       procedure SetShowMarkers(AValue: Boolean);
+    public
+      procedure SetupAudio;
+      procedure SetupText;
+      property ShowMarkers : Boolean read GetShowMarkers write SetShowMarkers;
+    {$ENDIF}
     public
       class procedure LoadMonitors(var AMonitors: TMonitors);
       class procedure GetAvailableMonitors(AStrings: TStrings);
@@ -58,17 +65,12 @@ type
       procedure Run;
       procedure SetupVideo(AMonitor : cint = 0);
       procedure SetupEvents;
-      {$IFNDEF NO_LCL}
-      procedure SetupAudio;
-      procedure SetupText;
-      {$ENDIF}
       property Running : Boolean read FRunning write FRunning;
       property Window  : PSDL_Window read FSDLWindow;
       property Monitor : TSDL_Rect read GetCurrentMonitor;
       property Mouse   : TPoint read GetMouse write SetMouse;
       property Events  : TCustomEventHandler read GetEvents;
       property OnClose : TNotifyEvent read FOnClose write SetOnClose;
-      property ShowMarkers : Boolean read GetShowMarkers write SetShowMarkers;
   end;
 
 var
@@ -79,10 +81,10 @@ implementation
 uses sdl2_image
   , sdl.app.output
   , sdl.app.video.methods
-  , sdl.app.markers
 {$IFDEF NO_LCL}
   , sdl.app.renderer.nolcl
 {$ELSE}
+  , sdl.app.markers
   , sdl.app.text
   , sdl.app.audio
   , sdl.app.renderer
@@ -117,6 +119,7 @@ begin
   FOnClose:=AValue;
 end;
 
+{$IFNDEF NO_LCL}
 procedure TSDLApplication.SetShowMarkers(AValue: Boolean);
 begin
   if ShowMarkers = AValue then Exit;
@@ -127,6 +130,7 @@ begin
     FreeAndNil(Markers);
   end;
 end;
+{$ENDIF}
 
 procedure TSDLApplication.SetMouse(AValue: TPoint);
 begin
@@ -142,10 +146,12 @@ begin
   Result.Y := MouseY;
 end;
 
+{$IFNDEF NO_LCL}
 function TSDLApplication.GetShowMarkers: Boolean;
 begin
   Result := Assigned(Markers);
 end;
+{$ENDIF}
 
 procedure TSDLApplication.SetCurrentMonitor(i: cint);
 begin
@@ -215,9 +221,11 @@ end;
 
 destructor TSDLApplication.Destroy;
 begin
+  {$IFNDEF NO_LCL}
   if Assigned(Markers) then begin
     Markers.Free;
   end;
+  {$ENDIF}
   inherited Destroy;
 end;
 
@@ -284,7 +292,7 @@ begin
     LMonitor.w, LMonitor.h, 0);
 
   FSDLRenderer := SDL_CreateRenderer(FSDLWindow, -1, SDL_RENDERER_ACCELERATED);
-  //FSDLSurface  := SDL_CreateRGBSurface(0, LMonitor.w, LMonitor.h, 32, 128, 128, 128, 255);
+  FSDLSurface  := SDL_GetWindowSurface(FSDLWindow);
   AssignVariables(FSDLWindow, FSDLRenderer, FSDLSurface);
 
   {$IFDEF NO_LCL}

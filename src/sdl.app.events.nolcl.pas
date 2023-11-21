@@ -45,7 +45,7 @@ type
   end;
 
 var
-  EventHandler : TCustomEventHandler;
+  SDLEvents : TCustomEventHandler;
 
 implementation
 
@@ -90,7 +90,6 @@ var
     (SESSION_ONTIMER);
 begin
   inherited Create;
-  EventHandler := Self;
   for Event in SDLUserEvents do
     if not UserEventRegistered(Event) then
       raise Exception.Create('Event not registered:'+IntToStr(Event));

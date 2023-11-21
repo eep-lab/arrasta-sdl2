@@ -20,11 +20,18 @@ procedure Render;
 
 var
   Monitor : TSDL_Rect;
+  StartTimestamp : Extended;
+  LFile : file of PSDL_Surface;
 
 implementation
 
 uses
-  sdl.app.video.methods, sdl.colors;
+  Classes,
+  SysUtils
+  , sdl.app.video.writer.windows
+  , sdl.app.video.methods
+  , sdl.colors
+  , timestamps.methods;
 
 var
   LRect : TSDL_Rect = (x: 0; y: 0; w: 200; h: 200);
@@ -41,7 +48,8 @@ begin
   SDL_RenderFillRect(PSDLRenderer, @LRect);
 
   SDL_RenderPresent(PSDLRenderer);
-  SDL_Delay(1000);
+  CheckSynchronize;
+  SDL_Delay(1000 div 30);
 end;
 
 end.
