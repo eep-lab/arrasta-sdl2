@@ -128,7 +128,7 @@ end;
 function NewConfigurationFile : string;
 begin
   //RandSeed := Random(MaxInt);  // Generate a random seed
-  RandSeed := 1270036106;
+  //RandSeed := 1270036106;
   Result := Pool.BaseFilePath + 'last_session.ini';
   if FileExists(Result) then
     DeleteFile(Result);
@@ -136,7 +136,7 @@ begin
   FreeConfigurationFile;
   ConfigurationFile := TConfigurationFile.Create(Result);
   ConfigurationFile.CacheUpdates := True;
-  ConfigurationFile.WriteInteger(_Main, 'RandSeed', RandSeed);
+  //ConfigurationFile.WriteInteger(_Main, 'RandSeed', RandSeed);
   ConfigurationFile.Invalidate;
 end;
 

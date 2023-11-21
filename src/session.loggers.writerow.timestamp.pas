@@ -15,7 +15,7 @@ var
 
 implementation
 
-uses SysUtils, session.pool, timestamps, session.loggers;
+uses SysUtils, session.pool, timestamps, timestamps.methods, session.loggers;
 
 procedure InitializeBaseHeader;
 begin
@@ -31,7 +31,7 @@ procedure Timestamp(AEvent : string);
 var
   LTimestamp : string;
 begin
-  LTimestamp := TimestampToStr(TickCount - Pool.TimeStart);
+  LTimestamp := (ClockMonotonic - Pool.TimeStart).ToString;
   SaveData(TLogger.Row([
     LTimestamp,
     (Pool.Session.Trial.UID + 1).ToString,

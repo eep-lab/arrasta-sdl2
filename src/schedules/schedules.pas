@@ -14,7 +14,7 @@ unit Schedules;
 
 interface
 
-uses Classes, Schedules.Abstract;
+uses Classes, Schedules.Abstract, timestamps.types;
 
 type
 
@@ -75,9 +75,9 @@ type
     procedure Load(ASchedule : string); overload;
     procedure Load(AScheduleName : TScheduleName;
       AParameter1: Cardinal = 0; AParameter2: Cardinal = 0); overload;
-    function Start : Extended;
-    function Stop : Extended;
-    function Pause : Extended;
+    function Start : TLargerFloat;
+    function Stop : TLargerFloat;
+    function Pause : TLargerFloat;
     function GetInterval : Cardinal;
     procedure Postpone;
     procedure UseFleshlerHoffmanIntervals;
@@ -409,7 +409,7 @@ begin
   SetParameters(AParameter1, AParameter2);
 end;
 
-function TSchedule.Start : Extended;
+function TSchedule.Start : TLargerFloat;
 begin
   if FName = UnknownSchedule then begin
      raise Exception.Create(RSErrorUnknownScheduleAction) at
@@ -420,7 +420,7 @@ begin
   end;
 end;
 
-function TSchedule.Stop : Extended;
+function TSchedule.Stop : TLargerFloat;
 begin
   if FName = UnknownSchedule then begin
      raise Exception.Create(RSErrorUnknownScheduleAction) at
@@ -431,7 +431,7 @@ begin
   end;
 end;
 
-function TSchedule.Pause : Extended;
+function TSchedule.Pause : TLargerFloat;
 begin
   if FName = UnknownSchedule then begin
      raise Exception.Create(RSErrorUnknownScheduleAction) at

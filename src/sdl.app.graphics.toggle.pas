@@ -19,14 +19,15 @@ uses
   , sdl.app.graphics.rectangule
   , sdl.app.paintable.contract
   , sdl.app.events.abstract
+  , timestamps.types
   ;
 
 type
 
   TAnimationData = record
-    Acum: double;
+    Acum: TLargerFloat;
     Growing: boolean;
-    Step: double;
+    Step: TLargerFloat;
     Alpha : byte;
     FixedAlpha : integer;
     MinAlpha : integer;
@@ -183,8 +184,8 @@ end;
 
 procedure TToggleButton.Paint;
 var
-  TempSize: Double;
-  function easeInOutQuad(t: double): double;
+  TempSize: TLargerFloat;
+  function easeInOutQuad(t: TLargerFloat): TLargerFloat;
   begin
     if t < 0.5 then
       Result := 2 * t * t

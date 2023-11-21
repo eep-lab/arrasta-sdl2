@@ -40,14 +40,15 @@ implementation
 uses
   LazFileUtils
   , sdl.app.video.methods
+  , timestamps.types
   ;
 
 type
 
   TAnimationData = record
-    Acum: double;
+    Acum: TLargerFloat;
     Growing: boolean;
-    Step: double;
+    Step: TLargerFloat;
     FixedHeight : integer;
     MinHeight : integer;
     MaxHeight : integer;
@@ -62,8 +63,8 @@ var
 
 procedure TAnimation.Paint;
 var
-  TempSize: double;
-  function easeInOutQuad(t: double): double;
+  TempSize: TLargerFloat;
+  function easeInOutQuad(t: TLargerFloat): TLargerFloat;
   begin
     if t < 0.5 then
       Result := 2 * t * t

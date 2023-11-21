@@ -10,121 +10,53 @@
 unit timestamps.methods;
 
 {$mode objfpc}{$H+}
+{$MODESWITCH TYPEHELPERS}
 
 interface
 
-uses
-  SysUtils
+uses  SysUtils, timestamps.types;
 
-{$ifdef LINUX}
-  , Linux
-  , UnixType
-{$endif}
 
-{$ifdef WINDOWS}
-  , epiktimer
-{$endif}
+function GetLatency(AStart, ALatency : TLargerFloat) : string;
+function Elapsed : TLargerFloat;
 
-{$ifdef DARWIN}
-  , ctypes
-  , MachTime
-{$endif}
-  ;
+type
 
-  function GetCustomTick : Extended;
-
-{$ifdef LINUX}
-  function GetMonotonicTime : timespec;
-  function GetMonotonicTimeRaw : timespec;
-  function GetClockResolution : string; // granularity
-{$endif}
-
-{$ifdef WINDOWS}
-  procedure StartEpiktimer;
-{$endif}
+  TLargerFloatHelper = type helper for TLargerFloat
+    function Elapsed: TLargerFloat;
+    function ToString: string;
+  end;
 
 implementation
 
-{$ifdef LINUX}
-function GetCustomTick: Extended;
-var
-  tp: timespec;
-  a, b : Extended;
+uses session.pool, timestamps;
+
+function GetLatency(AStart, ALatency: TLargerFloat): string;
 begin
-  clock_gettime(CLOCK_MONOTONIC, @tp);
-  a := Extended(tp.tv_sec);
-  b := Extended(tp.tv_nsec) * 1e-9;
-  Result := a+b;
+  if ALatency > 0 then begin
+      Result := (ALatency - AStart).ToString;
+    end else begin
+      Result := 'NA';
+    end;
+end;
+
+function Elapsed: TLargerFloat;
+begin
+  Result := ClockMonotonic - Pool.TimeStart;
+end;
+
+{ TLargerFloatHelper }
+
+function TLargerFloatHelper.Elapsed: TLargerFloat;
+begin
+  Result := Self - Pool.TimeStart;
+end;
+
+function TLargerFloatHelper.ToString: string;
+begin
+  Result := FloatToStrF(Self, ffFixed, 0, 9);
 end;
 
 
-function GetMonotonicTime: timespec;
-var
-  tp: timespec;
-begin
-  clock_gettime(CLOCK_MONOTONIC, @tp);
-  Result := tp;
-end;
-
-function GetMonotonicTimeRaw: timespec;
-var
-  tp: timespec;
-begin
-  clock_gettime(CLOCK_MONOTONIC_RAW, @tp);
-  Result := tp;
-end;
-
-function GetClockResolution: string;
-var
-  tp: timespec;
-begin
-  clock_getres(CLOCK_MONOTONIC, @tp);
-  Result := IntToStr(tp.tv_sec) + '.' + FloatToStr(tp.tv_nsec * 1e-9);
-end;
-{$endif}
-
-{$ifdef WINDOWS}
-var
-  ET: TEpikTimer;
-
-procedure StartEpiktimer;
-begin
-  ET.Clear;
-  ET.Start;
-end;
-
-
-function GetCustomTick: Extended;
-begin
-  Result := ET.GetSystemTicks * 1e-7;
-end;
-
-initialization
-  ET := TEpikTimer.Create(nil);
-  ET.Clear;
-
-finalization
-  ET.Free;
-{$endif}
-
-{$ifdef DARWIN}
-{credits: https://github.com/pupil-labs/pyuvc/blob/master/pyuvc-source/darwin_time.pxi}
-
-var
-  timeConvert: Extended = 0.0;
-
-//function get_sys_time_monotonic: Extended;
-function GetCustomTick : Extended;
-var
-  timeBase: mach_timebase_info_data_t;
-begin
-  if timeConvert = 0.0 then begin
-    mach_timebase_info(@timeBase);
-    timeConvert := (timeBase.numer / timeBase.denom) / 1000000000.0;
-  end;
-  Result := mach_absolute_time() * timeConvert;
-end;
-
-{$endif}
 end.
 
