@@ -313,11 +313,11 @@
         <IsPartOfProject Value="True"/>
       </Unit>
       <Unit>
-        <Filename Value="src\timestamps.pas"/>
+        <Filename Value="src\timestamps.methods.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit>
       <Unit>
-        <Filename Value="src\timestamps.methods.pas"/>
+        <Filename Value="src\timestamps.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit>
       <Unit>
@@ -347,6 +347,7 @@
       <Unit>
         <Filename Value="dependencies\epiktimer\epiktimer.pas"/>
         <IsPartOfProject Value="True"/>
+        <UnitName Value="EpikTimer"/>
       </Unit>
       <Unit>
         <Filename Value="src\experiments.pas"/>
@@ -751,6 +752,10 @@
       </Unit>
       <Unit>
         <Filename Value="src\session.constants.trials.starters.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="src\timestamps.types.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit>
     </Units>
