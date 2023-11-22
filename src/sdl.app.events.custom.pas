@@ -14,7 +14,10 @@ unit sdl.app.events.custom;
 interface
 
 uses
-  Classes, SysUtils, ctypes, sdl2, sdl.app.events.abstract;
+  Classes, SysUtils, ctypes
+  , sdl2
+  , sdl.app.events.abstract
+  , eye.tracker.types;
 
 type
 
@@ -26,13 +29,16 @@ type
   TCustomEventHandler = class sealed(TEventHandler)
     private
       FOnAudioChannelFinished: TOnAudioChannelFinished;
+      function GetOnGazeOnScreen: TGazeOnScreenEvent;
       procedure SetOnAudioChannelFinished(AValue: TOnAudioChannelFinished);
+      procedure SetOnGazeOnScreen(AValue: TGazeOnScreenEvent);
       procedure UserEvent(const event: TSDL_UserEvent);
     public
       constructor Create; reintroduce;
       destructor Destroy; override;
       procedure AssignEvents;
       property OnAudioChannelFinished : TOnAudioChannelFinished read FOnAudioChannelFinished write SetOnAudioChannelFinished;
+      property OnGazeOnScreen : TGazeOnScreenEvent read GetOnGazeOnScreen write SetOnGazeOnScreen;
     public
       property OnMouseMotion;
       property OnMouseButtonDown;
@@ -45,11 +51,11 @@ type
   end;
 
 var
-  EventHandler : TCustomEventHandler;
+  SDLEvents : TCustomEventHandler;
 
 implementation
 
-uses sdl.app.trials, sdl.timer, sdl.app.audio;
+uses sdl.app.trials, sdl.timer, sdl.app.audio, eye.tracker;
 
 { TCustomEventHandler }
 
@@ -58,6 +64,22 @@ procedure TCustomEventHandler.SetOnAudioChannelFinished(
 begin
   if FOnAudioChannelFinished=AValue then Exit;
   FOnAudioChannelFinished:=AValue;
+end;
+
+function TCustomEventHandler.GetOnGazeOnScreen: TGazeOnScreenEvent;
+begin
+  Result := nil;
+  if Assigned(EyeTracker) then begin
+    Result := EyeTracker.GetGazeOnScreenEvent;
+  end;
+end;
+
+procedure TCustomEventHandler.SetOnGazeOnScreen(AValue: TGazeOnScreenEvent);
+begin
+  if Assigned(EyeTracker) then begin
+    if OnGazeOnScreen = AValue then Exit;
+    EyeTracker.SetGazeOnScreenEvent(AValue);
+  end;
 end;
 
 procedure TCustomEventHandler.UserEvent(const event: TSDL_UserEvent);
@@ -115,7 +137,6 @@ var
     (SESSION_TRIALEND, SESSION_ONTIMER, SESSION_CHUNK_STOPPED);
 begin
   inherited Create;
-  EventHandler := Self;
   for Event in SDLUserEvents do
     if not UserEventRegistered(Event) then
       raise Exception.Create('Event not registered:'+IntToStr(Event));

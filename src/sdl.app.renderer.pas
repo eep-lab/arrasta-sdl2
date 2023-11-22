@@ -28,16 +28,21 @@ procedure Render;
 implementation
 
 uses
-  sdl.app.video.methods, sdl.app.trials.factory, sdl.colors;
+  sdl.app.video.methods, sdl.app.trials.factory, sdl.colors, sdl.app.markers;
 
 procedure Render;
 begin
   SDL_SetRenderDrawColor(PSDLRenderer,
-    clWhite.r, clWhite.g, clWhite.b, clWhite.a);
+    clBackgroud.r, clBackgroud.g, clBackgroud.b, clBackgroud.a);
   SDL_RenderClear(PSDLRenderer);
 
-  if Assigned(TTrialFactory.CurrentTrial) then
+  if Assigned(TTrialFactory.CurrentTrial) then begin
     TTrialFactory.CurrentTrial.AsIPaintable.Paint;
+  end;
+
+  if Assigned(Markers) then begin
+    Markers.Paint;
+  end;
 
   SDL_RenderPresent(PSDLRenderer);
   SDL_Delay(1000 div 50);

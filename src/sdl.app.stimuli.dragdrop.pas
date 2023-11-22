@@ -14,7 +14,7 @@ unit sdl.app.stimuli.dragdrop;
 interface
 
 uses
-  Classes, SysUtils, fgl
+  Classes, SysUtils, Generics.Collections
   , sdl.app.stimuli.contract
   , sdl.app.stimuli
   , sdl.app.events.abstract
@@ -23,17 +23,19 @@ uses
   , sdl.app.grids.types
   , sdl.app.grids
   , sdl.app.audio.contract
+  , sdl.app.trials.types
   ;
 
 type
 
-  TDragDropablePictures = specialize TFPGList<TDragDropablePicture>;
-  TAnimations = specialize TFPGList<TAnimation>;
+  TDragDropablePictures = specialize TList<TDragDropablePicture>;
+  TAnimations = specialize TList<TAnimation>;
 
   { TDragDropStimuli }
 
   TDragDropStimuli = class(TStimuli, IStimuli)
   private
+    FResult : TTrialResult;
     FSoundRight : ISound;
     FSoundWrong : ISound;
     FOnDragDropDone: TNotifyEvent;
@@ -56,8 +58,10 @@ type
     procedure FreeGridItems;
     procedure WrongDragDrop(Sender, Source: TObject; X, Y: Integer);
     procedure Animate(ASample : TDragDropablePicture);
+  protected
+    function MyResult : TTrialResult; override;
   public
-    constructor Create(AOwner : TComponent); override;
+    constructor Create; override;
     destructor Destroy; override;
     //procedure ResetGrid;
     function AsInterface : IStimuli;
@@ -133,7 +137,7 @@ var
       LComparisons := TDragDropablePictures.Create;
       for i := low(Comparisons) to high(Comparisons) do
       begin
-        LItem := TDragDropablePicture.Create(self);
+        LItem := TDragDropablePicture.Create;
         LItem.BoundsRect := Comparisons[i].Rect;
 
         Comparisons[i].Item := LItem as TObject;
@@ -143,7 +147,7 @@ var
 
       for i := low(Samples) to high(Samples) do
       begin
-        LItem := TDragDropablePicture.Create(Self);
+        LItem := TDragDropablePicture.Create;
         LItem.OnMouseDown := @SetFocus;
         LItem.OnRightDragDrop:=@RightDragDrop;
         LItem.OnWrongDragDrop:=@WrongDragDrop;
@@ -301,7 +305,7 @@ begin
     end;
   end;
 
-  LAnimation := TAnimation.Create(Self);
+  LAnimation := TAnimation.Create;
   //LAnimation.Cursor:=Cursor;
   LAnimation.Join(Sample, Comparison, FGridOrientation);
   LAnimation.Show;
@@ -323,6 +327,7 @@ begin
     OnRightDragDrop(Sender, Source, X, Y);
 
   if FDragDropDone then begin
+    //FResult := Hit; todo: dragdrop trial have different hit types
     FAnimation.Stop;
     FAnimation.Hide;
     if Assigned(OnDragDropDone) then begin
@@ -415,18 +420,25 @@ begin
   //Parent.Invalidate;
 end;
 
-constructor TDragDropStimuli.Create(AOwner: TComponent);
+function TDragDropStimuli.MyResult: TTrialResult;
 begin
-  inherited Create(AOwner);
+  Result := FResult;
+end;
+
+constructor TDragDropStimuli.Create;
+begin
+  inherited Create;
   DragDropLine := TBresenhamLine.Create;
   FSamples := TDragDropablePictures.Create;
   FComparisons := TDragDropablePictures.Create;
-  FAnimation := TAnimation.Create(Self);
+  FAnimation := TAnimation.Create;
   FDoneAnimations := TAnimations.Create;
 end;
 
 destructor TDragDropStimuli.Destroy;
 begin
+  DragDropLine.Free;
+  FAnimation.Free;
   FDoneAnimations.Free;
   FSamples.Free;
   FComparisons.Free;

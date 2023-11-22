@@ -31,7 +31,7 @@ type
     protected
       function GetIStimuli: IStimuli; override;
     public
-      constructor Create(AOwner: TComponent); override;
+      constructor Create; override;
       destructor Destroy; override;
       procedure EndTrial; override;
       procedure Show; override;
@@ -43,22 +43,24 @@ implementation
 
 { TMTS }
 
-function TMTS.GetIStimuli: IStimuli;
+constructor TMTS.Create;
 begin
-  Result := FStimuli.AsInterface;
-end;
-
-constructor TMTS.Create(AOwner: TComponent);
-begin
-  inherited Create(AOwner);
-  FStimuli := TMTSStimuli.Create(Self);
+  inherited Create;
+  FStimuli := TMTSStimuli.Create;
+  FStimuli.Trial:= Self;
   FStimuli.OnFinalize := @EndTrialCallBack;
 end;
 
 destructor TMTS.Destroy;
 begin
   { free stuff }
+  FStimuli.Free;
   inherited Destroy;
+end;
+
+function TMTS.GetIStimuli: IStimuli;
+begin
+  Result := FStimuli.AsInterface;
 end;
 
 procedure TMTS.EndTrial;

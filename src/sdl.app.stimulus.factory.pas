@@ -14,8 +14,7 @@ unit sdl.app.stimulus.factory;
 interface
 
 uses
-  Classes, SysUtils
-  , fgl
+  Classes, SysUtils, Generics.Collections
   , SDL2
   , sdl.app.stimulus.contract
   , sdl.app.stimulus
@@ -26,19 +25,23 @@ type
 
   TStimulusClass = class of TStimulus;
 
-  TStimulusRegistry = specialize TFPGMap<string, TStimulusClass>;
+  TStimulusRegistry = specialize TDictionary<string, TStimulusClass>;
+
+  TStimulusList = specialize TList<TStimulus>;
 
   { TStimulusFactory }
 
   TStimulusFactory = class sealed
     strict private
       class var Registry: TStimulusRegistry;
+      class var StimulusList : TStimulusList;
       class constructor Create;
       class destructor Destroy;
     public
+      class procedure Clear;
       class procedure RegisterStimulusClass(
         AStimulusKind: string; AStimulusClass: TStimulusClass); static;
-      class function New(AOwner: TComponent; AStimulusKind: string;
+      class function New(AOwner: TObject; AStimulusKind: string;
         ACallbacks : TCallbacks) : TStimulus; static;
   end;
 
@@ -55,28 +58,43 @@ uses sdl.app.stimulus.picture
 class constructor TStimulusFactory.Create;
 begin
   Registry := TStimulusRegistry.Create;
+  StimulusList := TStimulusList.Create;
 end;
 
 class destructor TStimulusFactory.Destroy;
 begin
+  Clear;
+  StimulusList.Free;
   Registry.Free;
+end;
+
+class procedure TStimulusFactory.Clear;
+var
+  Stimulus : TStimulus;
+begin
+  for Stimulus in StimulusList do begin
+    Stimulus.Free;
+  end;
+  StimulusList.Clear;
 end;
 
 class procedure TStimulusFactory.RegisterStimulusClass(AStimulusKind: string;
   AStimulusClass: TStimulusClass);
 begin
-  Registry[AStimulusKind] := AStimulusClass;
+  Registry.Add(AStimulusKind, AStimulusClass);
 end;
 
-class function TStimulusFactory.New(AOwner: TComponent; AStimulusKind: string;
+class function TStimulusFactory.New(AOwner: TObject; AStimulusKind: string;
   ACallbacks: TCallbacks): TStimulus;
 var
   StimulusClass : TStimulusClass;
 begin
-  if not Registry.TryGetData(AStimulusKind, StimulusClass) then
+  if not Registry.TryGetValue(AStimulusKind, StimulusClass) then
     raise EArgumentException.CreateFmt(
       'Stimulus kind is not registered: %s %s', [AStimulusKind, StimulusClass]);
-  Result := StimulusClass.Create(AOwner);
+  StimulusList.Add(StimulusClass.Create);
+  Result := StimulusList.Last;
+  Result.Stimuli := AOwner;
   Result.OnResponse:=ACallbacks.OnResponse;
   Result.OnMouseDown:=ACallbacks.OnMouseDown;
   Result.OnMouseEnter:=ACallbacks.OnMouseEnter;

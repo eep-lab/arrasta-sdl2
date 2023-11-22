@@ -11,73 +11,80 @@ unit timestamps;
 
 {$mode objfpc}{$H+}
 
+
 interface
 
-uses  SysUtils;
-{$IFDEF WINDOWS}
-procedure StartEpikTimer;
-{$ENDIF}
-function GetLatency(AStart, ALatency : Extended) : string;
-function Elapsed : Extended;
-function GetTimeStampF : string; overload;
-function GetTimeStampF(ATimestamp:Extended): string; overload;
-function TickCount : Extended;
-function TimestampToStr(ATimestamp: Extended) : string;
-function TimestampToStrDelta(ATimestamp: Extended) : string;
+uses
+  SysUtils, timestamps.types
+
+{$ifdef LINUX}
+  , Linux
+  , UnixType
+{$endif}
+
+{$ifdef WINDOWS}
+  , Windows
+{$endif}
+
+{$ifdef DARWIN}
+  , ctypes
+  , MachTime
+{$endif}
+  ;
+
+function ClockMonotonic : TLargerFloat;
 
 implementation
 
-uses
-    session.pool
-    , timestamps.methods;
-
-{$IFDEF WINDOWS}
-procedure StartEpikTimer;
+{$ifdef LINUX}
+function ClockMonotonic: TLargerFloat;
+var
+  tp: timespec;
+  a, b : TLargerFloat;
 begin
-  timestamps.methods.StartEpiktimer;
-  Pool.TimeStart := TickCount;
+  clock_gettime(CLOCK_MONOTONIC, @tp);
+  a := TLargerFloat(tp.tv_sec);
+  b := TLargerFloat(tp.tv_nsec) * 1e-9;
+  Result := a+b;
 end;
-{$ENDIF}
+{$endif}
 
-function GetLatency(AStart, ALatency: Extended): string;
-begin
-  if ALatency > 0 then begin
-      Result := TimestampToStr(ALatency - AStart);
-    end else begin
-      Result := 'NA';
-    end;
-end;
+{$ifdef WINDOWS}
+var
+  PerSecond : TLargeInteger;
 
-function Elapsed: Extended;
+function ClockMonotonic: TLargerFloat;
+var
+  Count : TLargeInteger;
 begin
-  Result := GetCustomTick - Pool.TimeStart;
-end;
-
-function GetTimeStampF: string;
-begin
-  Result:=FloatToStrF(GetCustomTick,ffFixed,0,9)
+  QueryPerformanceCounter(Count);
+  Result := Count / PerSecond;
 end;
 
-function GetTimeStampF(ATimestamp: Extended): string;
+
+initialization
+   QueryPerformanceFrequency(PerSecond);
+{$endif}
+
+{$ifdef DARWIN}
+{credits: https://github.com/pupil-labs/pyuvc/blob/master/pyuvc-source/darwin_time.pxi}
+
+var
+  timeConvert: TLargerFloat = 0.0;
+
+//function get_sys_time_monotonic: TLargerFloat;
+function ClockMonotonic : TLargerFloat;
+var
+  timeBase: mach_timebase_info_data_t;
 begin
-  Result:=FloatToStrF(GetCustomTick-ATimestamp,ffFixed,0,9)
+  if timeConvert = 0.0 then begin
+    mach_timebase_info(@timeBase);
+    timeConvert := (timeBase.numer / timeBase.denom) / 1000000000.0;
+  end;
+  Result := mach_absolute_time() * timeConvert;
 end;
 
-function TickCount: Extended;
-begin
-  Result := GetCustomTick;
-end;
-
-function TimestampToStr(ATimestamp: Extended): string;
-begin
-  Result:=FloatToStrF(ATimestamp,ffFixed,0,9)
-end;
-
-function TimestampToStrDelta(ATimestamp : Extended) : string;
-begin
-  Result:=FloatToStrF(Pool.TimeStart - ATimestamp,ffFixed,0,9)
-end;
-
+{$endif}
 
 end.
 

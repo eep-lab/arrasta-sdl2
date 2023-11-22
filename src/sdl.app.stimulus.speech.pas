@@ -16,7 +16,6 @@ interface
 uses
   Classes, SysUtils
   , SDL2
-  //, fgl
   , sdl.app.graphics.rectangule
   , sdl.app.stimulus
   //, sdl.app.stimulus.typeable
@@ -39,7 +38,6 @@ type
     FRecorderButton : TToggleButton;
     FPlaybackButton : TToggleButton;
   protected
-    procedure DoResponse(AHuman: Boolean); override;
     function GetRect: TRectangule; override;
     function GetStimulusName : string; override;
     //procedure RecorderTerminated(Sender: TObject);
@@ -48,8 +46,10 @@ type
       X, Y: Integer); override;
     //procedure KeyUp;q
   public
+    constructor Create; override;
     destructor Destroy; override;
     function IsCorrectResponse : Boolean; override;
+    procedure DoResponse(AHuman: Boolean); override;
     procedure Load(AParameters : TStringList;
         AParent : TObject; ARect: TSDL_Rect); override;
     procedure Start; override;
@@ -78,7 +78,7 @@ begin
   inherited DoResponse(AHuman);
   LName := GetID.ToString.Replace(#9, '-').Replace(#32, '-');
   FRecorder.SaveToFile(Pool.RootDataResponses+LName);
-  FormManualSpeechValidation.ExpectedText := FWord;
+  FormManualSpeechValidation.ExpectedText := FCustomName;
 end;
 
 function TSpeechStimulus.GetRect: TRectangule;
@@ -88,7 +88,7 @@ end;
 
 function TSpeechStimulus.GetStimulusName: string;
 begin
-  Result := 'Speech' + #9 + FWord;
+  Result := 'Speech' + #9 + FCustomName;
 end;
 
 procedure TSpeechStimulus.MouseUp(Sender: TObject; Shift: TCustomShiftState; X,
@@ -110,9 +110,19 @@ begin
   end;
 end;
 
+constructor TSpeechStimulus.Create;
+begin
+  inherited Create;
+  FPlaybackButton := TToggleButton.Create;
+  FPlaybackButton.Owner := Self as TObject;
+  FRecorderButton := TToggleButton.Create;
+  FRecorderButton.Owner := Self as TObject;
+end;
+
 destructor TSpeechStimulus.Destroy;
 begin
-
+  FPlaybackButton.Free;
+  FRecorderButton.Free;
   inherited Destroy;
 end;
 
@@ -135,14 +145,13 @@ const
 begin
   //inherited Load(AParameters, AParent, ARect);
   FRect := ARect;
-  FWord := GetWordValue(AParameters, IsSample, Index);
+  FCustomName := GetWordValue(AParameters, IsSample, Index);
 
   SDLAudio.RecorderDevice.Clear;
   FRecorder := SDLAudio.RecorderDevice.Recorder;
   FPlayback := SDLAudio.RecorderDevice.Playback;
 
   if FPlayback.Opened then begin
-    FPlaybackButton := TToggleButton.Create(Self);
     FPlaybackButton.LoadFromFile(
       Assets(LPlayButtonOff), Assets(LPlayButtonOn));
     FPlaybackButton.BoundsRect := ARect;
@@ -153,7 +162,6 @@ begin
   end;
 
   if FRecorder.Opened then begin
-    FRecorderButton := TToggleButton.Create(Self);
     FRecorderButton.LoadFromFile(
       Assets(LRecordButtonOff), Assets(LRecordButtonOn));
     FRecorderButton.BoundsRect := ARect;

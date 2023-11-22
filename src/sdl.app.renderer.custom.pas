@@ -13,10 +13,12 @@ unit sdl.app.renderer.custom;
 
 interface
 
-uses Classes, SysUtils, SDL2, fgl
+uses Classes, SysUtils, SDL2, Generics.Collections
+  , session.parameters
   , sdl.app.paintable.contract
   , sdl.app.clickable.contract
   , sdl.app.moveable.contract
+  , sdl.app.lookable.contract
   , sdl.app.events.abstract
   ;
 
@@ -35,13 +37,19 @@ type
     OnMouseExit: TNotifyEvent;
   end;
 
-  TChilds = specialize TFPGList<TComponent>;
+  TChildren = specialize TList<TObject>;
 
   { TCustomRenderer }
 
-  TCustomRenderer = class(TComponent, IClickable, IPaintable, IMoveable)
+  TCustomRenderer = class(TParametricObject,
+    IClickable, IPaintable, IMoveable, ILookable)
   private
+    FOnGazeEnter: TNotifyEvent;
+    FOnGazeExit: TNotifyEvent;
+    FOnGazeMove: TOnMouseEvent;
+    FOwner: TObject;
     FRect : TSDL_Rect;
+    FGazeInside : Boolean;
     FMouseInside : Boolean;
     FOnMouseMove: TOnMouseEvent;
     FOnMouseDown: TOnMouseEvent;
@@ -54,27 +62,35 @@ type
     function GetSDLMouseButtonDown: TOnMouseButtonDownEvent;
     function GetSDLMouseButtonUp  : TOnMouseButtonUpEvent;
     function GetZIndex: integer;
+    procedure SetOnGazeEnter(AValue: TNotifyEvent);
+    procedure SetOnGazeExit(AValue: TNotifyEvent);
+    procedure SetOnGazeMove(AValue: TOnMouseEvent);
     procedure SetOnMouseDown(AValue: TOnMouseEvent);
     procedure SetOnMouseEnter(AValue: TNotifyEvent);
     procedure SetOnMouseExit(AValue: TNotifyEvent);
     procedure SetOnMouseMove(AValue: TOnMouseEvent);
     procedure SetOnMouseUp(AValue: TOnMouseEvent);
+    procedure SetOwner(AValue: TObject);
     procedure SetParent(AParent: TCustomRenderer);
-    procedure AddChild(AChild: TComponent);
-    procedure EyeLinkFixation(Sender: TObject);
-    procedure EyeLinkSaccade(Sender: TObject);
+    procedure AddChild(AChild: TObject);
     procedure SDLMouseMotion(const event: TSDL_MouseMotionEvent);
     procedure SDLMouseButtonDown(const event: TSDL_MouseButtonEvent);
     procedure SDLMouseButtonUp(const event: TSDL_MouseButtonEvent);
-    procedure BringChildToFront(AChild : TComponent);
+    procedure BringChildToFront(AChild : TObject);
   protected
-    FChilds : TChilds;
+    FChildren : TChildren;
+    function GetGazeInside : Boolean; virtual;
     function GetMouseInside : Boolean; virtual;
     function PointInside(SDLPoint : TSDL_Point) : Boolean;
     function GetBoundsRect : TSDL_Rect; virtual;
     procedure SetBoundsRect(AValue : TSDL_Rect); virtual;
     procedure SetMouseInside(AValue : Boolean);
+    procedure SetGazeInside(AValue : Boolean);
     procedure Paint; virtual; abstract;
+    procedure GazeEnter(Sender: TObject); virtual;
+    procedure GazeExit(Sender: TObject); virtual;
+    procedure GazeMove(Sender: TObject;
+      Shift: TCustomShiftState; X,Y: Integer); virtual;
     procedure MouseMove(Sender: TObject;
       Shift: TCustomShiftState; X,Y: Integer); virtual;
     procedure MouseDown(Sender: TObject;
@@ -84,16 +100,18 @@ type
     procedure MouseEnter(Sender: TObject); virtual;
     procedure MouseExit(Sender: TObject); virtual;
   public
-    constructor Create(AOwner: TComponent); override;
+    constructor Create; virtual;
     destructor Destroy; override;
     function AsIClickable : IClickable;
     function AsIPaintable : IPaintable;
     function AsIMoveable : IMoveable;
+    function AsILookable : ILookable;
     procedure BringToFront;
     property Parent : TCustomRenderer read FParent write SetParent;
     property BoundsRect : TSDL_Rect read GetBoundsRect;
-    //property OnEyeFixation :
-    //property OnEyeSaccade  :
+    property OnGazeEnter : TNotifyEvent read FOnGazeEnter write SetOnGazeEnter;
+    property OnGazeExit : TNotifyEvent read FOnGazeExit write SetOnGazeExit;
+    property OnGazeMove : TOnMouseEvent read FOnGazeMove write SetOnGazeMove;
     property OnMouseMove : TOnMouseEvent read FOnMouseMove write SetOnMouseMove;
     property OnMouseDown : TOnMouseEvent read FOnMouseDown write SetOnMouseDown;
     property OnMouseUp   : TOnMouseEvent read FOnMouseUp write SetOnMouseUp;
@@ -102,6 +120,7 @@ type
     property MouseInside : Boolean read GetMouseInside write SetMouseInside;
     property ZIndex : integer read GetZIndex;
     property InFront : Boolean read GetInFront;
+    property Owner : TObject read FOwner write SetOwner;
   end;
 
 implementation
@@ -113,8 +132,9 @@ uses sdl.app.video.methods;
 procedure TCustomRenderer.SetParent(AParent: TCustomRenderer);
 begin
   if FParent=AParent then Exit;
-  AParent.AddChild(Self);
   FParent:=AParent;
+  if FParent <> nil then
+    FParent.AddChild(Self);
 end;
 
 procedure TCustomRenderer.SetOnMouseEnter(AValue: TNotifyEvent);
@@ -147,6 +167,12 @@ begin
   FOnMouseUp:=AValue;
 end;
 
+procedure TCustomRenderer.SetOwner(AValue: TObject);
+begin
+  if FOwner = AValue then Exit;
+  FOwner := AValue;
+end;
+
 function TCustomRenderer.GetSDLMouseMotion: TOnMouseMotionEvent;
 begin
   Result := @SDLMouseMotion;
@@ -154,7 +180,7 @@ end;
 
 function TCustomRenderer.GetInFront: Boolean;
 begin
-  Result := ZIndex = Parent.FChilds.Count-1;
+  Result := ZIndex = FParent.FChildren.Count-1;
 end;
 
 function TCustomRenderer.GetSDLMouseButtonDown: TOnMouseButtonDownEvent;
@@ -169,22 +195,30 @@ end;
 
 function TCustomRenderer.GetZIndex: integer;
 begin
-  Result := Parent.FChilds.IndexOf(Self);
+  Result := FParent.FChildren.IndexOf(Self);
 end;
 
-procedure TCustomRenderer.AddChild(AChild: TComponent);
+procedure TCustomRenderer.SetOnGazeEnter(AValue: TNotifyEvent);
 begin
-  FChilds.Add(AChild);
+  if FOnGazeEnter = AValue then Exit;
+  FOnGazeEnter := AValue;
 end;
 
-procedure TCustomRenderer.EyeLinkFixation(Sender: TObject);
+procedure TCustomRenderer.SetOnGazeExit(AValue: TNotifyEvent);
 begin
-
+  if FOnGazeExit = AValue then Exit;
+  FOnGazeExit := AValue;
 end;
 
-procedure TCustomRenderer.EyeLinkSaccade(Sender: TObject);
+procedure TCustomRenderer.SetOnGazeMove(AValue: TOnMouseEvent);
 begin
+  if FOnGazeMove = AValue then Exit;
+  FOnGazeMove := AValue;
+end;
 
+procedure TCustomRenderer.AddChild(AChild: TObject);
+begin
+  FChildren.Add(AChild);
 end;
 
 function TCustomRenderer.GetBoundsRect: TSDL_Rect;
@@ -203,26 +237,50 @@ begin
   FMouseInside:=AValue;
 end;
 
-procedure TCustomRenderer.SDLMouseButtonDown(const event: TSDL_MouseButtonEvent);
-var
-  Shift : TCustomShiftState;
+procedure TCustomRenderer.SetGazeInside(AValue: Boolean);
 begin
-  Shift := GetShiftState;
-  MouseDown(Self, Shift, event.x, event.y);
+  if FGazeInside=AValue then Exit;
+  FGazeInside:=AValue;
+end;
+
+procedure TCustomRenderer.GazeEnter(Sender: TObject);
+begin
+  if Assigned(OnGazeEnter) then
+    OnGazeEnter(Sender);
+end;
+
+procedure TCustomRenderer.GazeExit(Sender: TObject);
+begin
+  if Assigned(OnGazeExit) then
+    OnGazeExit(Sender);
+end;
+
+procedure TCustomRenderer.GazeMove(Sender: TObject; Shift: TCustomShiftState;
+  X, Y: Integer);
+begin
+  if Assigned(OnGazeMove) then
+    OnGazeMove(Sender, GetShiftState, X, Y);
+end;
+
+procedure TCustomRenderer.SDLMouseButtonDown(const event: TSDL_MouseButtonEvent);
+begin
+  MouseDown(Self, GetShiftState, event.x, event.y);
 end;
 
 procedure TCustomRenderer.SDLMouseButtonUp(const event: TSDL_MouseButtonEvent);
-var
-  Shift: TCustomShiftState;
 begin
-  Shift := GetShiftState;
-  MouseUp(Self, Shift, event.x, event.y);
+  MouseUp(Self, GetShiftState, event.x, event.y);
 end;
 
-procedure TCustomRenderer.BringChildToFront(AChild: TComponent);
+procedure TCustomRenderer.BringChildToFront(AChild: TObject);
 begin
-  if FChilds.Count <= 1 then Exit;
-  with FChilds do Add(Extract(AChild));
+  if FChildren.Count <= 1 then Exit;
+  with FChildren do Add(Extract(AChild));
+end;
+
+function TCustomRenderer.GetGazeInside: Boolean;
+begin
+  Result := FGazeInside;
 end;
 
 function TCustomRenderer.GetMouseInside: Boolean;
@@ -239,11 +297,8 @@ begin
 end;
 
 procedure TCustomRenderer.SDLMouseMotion(const event: TSDL_MouseMotionEvent);
-var
-  Shift: TCustomShiftState;
 begin
-  Shift := GetShiftState;
-  MouseMove(Self, Shift, event.x, event.y);
+  MouseMove(Self, GetShiftState, event.x, event.y);
 end;
 
 procedure TCustomRenderer.MouseMove(Sender: TObject; Shift: TCustomShiftState;
@@ -279,17 +334,18 @@ begin
     OnMouseExit(Sender);
 end;
 
-constructor TCustomRenderer.Create(AOwner: TComponent);
+constructor TCustomRenderer.Create;
 begin
-  inherited Create(AOwner);
-  FChilds := TChilds.Create;
+  inherited Create;
+  FChildren := TChildren.Create;
   FMouseInside := False;
-  Parent := nil;
+  FGazeInside := False;
+  FParent := nil;
 end;
 
 destructor TCustomRenderer.Destroy;
 begin
-  FChilds.Free;
+  FChildren.Free;
   inherited Destroy;
 end;
 
@@ -308,9 +364,14 @@ begin
   Result := Self as IMoveable;
 end;
 
+function TCustomRenderer.AsILookable: ILookable;
+begin
+  Result := Self as ILookable;
+end;
+
 procedure TCustomRenderer.BringToFront;
 begin
-  Parent.BringChildToFront(Self);
+  FParent.BringChildToFront(Self);
 end;
 
 end.

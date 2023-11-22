@@ -1,7 +1,7 @@
-ID,Cycle,Condition,Block,Trials,Relation,Code,Comparisons
-101,0,0,1,1,B-B,X1,1
-102,0,0,2,2,B-B,X1,2
-103,0,0,3,1,B-B,X2,1
-104,0,0,4,2,B-B,X2,2
-105,0,0,5,2,B-B,X1,2
-106,0,0,5,2,B-B,X2,2
+BlockID,TrialID,TrialIDSource
+1,85,mts-pseudowords
+2,86,mts-pseudowords
+3,87,mts-pseudowords
+4,88,mts-pseudowords
+5,89,mts-pseudowords
+5,90,mts-pseudowords

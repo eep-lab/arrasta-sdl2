@@ -14,39 +14,28 @@ unit session.constants.mts;
 interface
 
 type
-  TMTSParameters = record
-    Cycle       : integer;
-    Condition   : integer;
-    Samples     : integer;
-    Comparisons : integer;
-    Relation    : string;
-    Word        : string;
-  end;
-
-  TMTSKeysGlobal = record
-    Cycle       : string;
-    Condition   : string;
-  end;
-
   TMTSKeys = record
-    Relation    : string;
-    Samples     : string;
-    Comparisons : string;
-    Word        : string;
-    Comparison  : string;
+    RelationKey    : string;
+    SamplesKey     : string;
+    SampleKey      : string;
+    ComparisonsKey : string;
+    ComparisonKey  : string;
+    HasPromptKey   : string;
   end;
 
 const
-  MTSKeysGlobal : TMTSKeysGlobal = (
-    Cycle       : 'Cycle';
-    Condition   : 'Condition');
+  HeaderSample = 'S';
+  HeaderCompasisons = 'Comparisons';
+  HeaderCompasison = 'C';
+  HeaderRelation = 'Relation';
 
   MTSKeys : TMTSKeys = (
-    Relation    : 'Relation';
-    Samples     : 'Samples';
-    Comparisons : 'Comparisons';
-    Word        : 'Word';
-    Comparison  : 'C');
+    RelationKey    : HeaderRelation;
+    SamplesKey     : 'Samples';
+    SampleKey      : HeaderSample;
+    ComparisonsKey : HeaderCompasisons;
+    ComparisonKey  : HeaderCompasison;
+    HasPromptKey   : 'HasPrompt');
 
 implementation
 

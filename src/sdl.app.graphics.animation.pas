@@ -25,7 +25,7 @@ type
   protected
     procedure Paint; override;
   public
-    constructor Create(AOwner: TComponent); override;
+    constructor Create; override;
     destructor Destroy; override;
     procedure Animate(ASibling : TRectangule);
     procedure Join(ASample, AComparison : TRectangule;
@@ -40,14 +40,15 @@ implementation
 uses
   LazFileUtils
   , sdl.app.video.methods
+  , timestamps.types
   ;
 
 type
 
   TAnimationData = record
-    Acum: double;
+    Acum: TLargerFloat;
     Growing: boolean;
-    Step: double;
+    Step: TLargerFloat;
     FixedHeight : integer;
     MinHeight : integer;
     MaxHeight : integer;
@@ -62,8 +63,8 @@ var
 
 procedure TAnimation.Paint;
 var
-  TempSize: double;
-  function easeInOutQuad(t: double): double;
+  TempSize: TLargerFloat;
+  function easeInOutQuad(t: TLargerFloat): TLargerFloat;
   begin
     if t < 0.5 then
       Result := 2 * t * t
@@ -163,9 +164,9 @@ begin
   // change color
 end;
 
-constructor TAnimation.Create(AOwner: TComponent);
+constructor TAnimation.Create;
 begin
-  inherited Create(AOwner);
+  inherited Create;
   AnimationData.Step := 0.025; // for 50 fps
   //FPenWidth := 6;
   FVisible := False;

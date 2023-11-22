@@ -34,7 +34,7 @@ type
       procedure InstructionMouseDown(Sender: TObject;
         Shift: TCustomShiftState; X, Y: Integer);
     public
-      constructor Create(AOwner : TComponent); override;
+      constructor Create; override;
       destructor Destroy; override;
       function AsInterface : IStimuli;
       procedure DoExpectedResponse; override;
@@ -56,14 +56,14 @@ begin
   DoExpectedResponse;
 end;
 
-constructor TInstructionStimuli.Create(AOwner: TComponent);
+constructor TInstructionStimuli.Create;
 begin
-  inherited Create(AOwner);
-
+  FText := TText.Create;
 end;
 
 destructor TInstructionStimuli.Destroy;
 begin
+  FText.Free;
   inherited Destroy;
 end;
 
@@ -84,7 +84,6 @@ var
 begin
   inherited Load(AParameters, AParent);
   Monitor := Pool.App.Monitor;
-  FText := TText.Create(Self);
   FText.OnMouseDown := @InstructionMouseDown;
   FText.FontName := 'Raleway-Regular';
   FText.FontSize := 50;

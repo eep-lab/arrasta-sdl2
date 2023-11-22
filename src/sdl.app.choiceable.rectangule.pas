@@ -33,7 +33,7 @@ type
   protected
 
   public
-    constructor Create(AOwner: TComponent); override;
+    constructor Create; override;
     destructor Destroy; override;
     procedure AddOrderedChoice(AChoice: TObject);
     property TargetChoice : TObject read GetTargetChoice;
@@ -52,9 +52,9 @@ begin
     Result := nil;
 end;
 
-constructor TChoiceableRect.Create(AOwner: TComponent);
+constructor TChoiceableRect.Create;
 begin
-  inherited Create(AOwner);
+  inherited Create;
   FChoices := TChoices.Create;
 end;
 

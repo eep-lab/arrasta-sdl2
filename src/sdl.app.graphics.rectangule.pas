@@ -45,14 +45,17 @@ type
     procedure SetBoundsRect(AValue : TSDL_Rect); override;
     procedure MouseEnter(Sender: TObject); override;
     procedure MouseExit(Sender: TObject); override;
+    procedure GazeEnter(Sender: TObject); override;
+    procedure GazeExit(Sender: TObject); override;
     procedure Paint; override;
   public
-    constructor Create(AOwner : TComponent); override;
+    constructor Create; override;
     destructor Destroy; override;
     function IntersectsWith(ARect: TSDL_Rect) : Boolean; overload;
     function IntersectsWith(ARect: TRectangule) : Boolean; overload;
     procedure Centralize;
     procedure CentralizeAtTopWith(ARect: TSDL_Rect);
+    procedure CentralizeAtRightWith(ARect: TSDL_Rect);
     procedure CentralizeWith(ARect: TSDL_Rect);
     procedure DoRandomMouseDown;
     procedure Inflate(AValue : cint);
@@ -72,7 +75,7 @@ type
 
 implementation
 
-uses sdl.app.video.methods, sdl.colors, math, sdl.app.trials.factory;
+uses sdl.app.video.methods, sdl.colors, math, sdl.app.testmode;
 
 { TStimulus }
 
@@ -146,6 +149,22 @@ begin
   end;
 end;
 
+procedure TRectangule.GazeEnter(Sender: TObject);
+begin
+  if Visible then begin
+    inherited GazeEnter(Sender);
+    FShaded := True;
+  end;
+end;
+
+procedure TRectangule.GazeExit(Sender: TObject);
+begin
+  if Visible then begin
+    inherited GazeExit(Sender);
+    FShaded := False;
+  end;
+end;
+
 procedure TRectangule.Paint;
 begin
   if Visible then begin
@@ -164,9 +183,9 @@ begin
   end;
 end;
 
-constructor TRectangule.Create(AOwner: TComponent);
+constructor TRectangule.Create;
 begin
-  inherited Create(AOwner);
+  inherited Create;
   FCanShade:= True;
   FShaded  := False;
   FVisible := False;
@@ -222,6 +241,12 @@ procedure TRectangule.CentralizeAtTopWith(ARect: TSDL_Rect);
 begin
   Left := ARect.x + (ARect.w div 2) - (Width  div 2);
   Top  := ARect.y - Height - 5;
+end;
+
+procedure TRectangule.CentralizeAtRightWith(ARect: TSDL_Rect);
+begin
+  Left := ARect.x + Width + (Width div 2);
+  Top  := ARect.y - (ARect.h div 2) - (Height div 2);
 end;
 
 procedure TRectangule.Inflate(AValue: cint);

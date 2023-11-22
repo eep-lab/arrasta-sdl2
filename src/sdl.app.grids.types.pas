@@ -4,7 +4,7 @@ unit sdl.app.grids.types;
 
 interface
 
-uses SDL2, fgl, Math.LatinSquares;
+uses SDL2, Generics.Collections, Math.LatinSquares;
 
 type
   TGridStyle =
@@ -15,7 +15,7 @@ type
 
    TCell = array [0..1] of Integer;
 
-   TGridList = specialize TFPGList<Integer>;
+   TGridList = specialize TList<Integer>;
    TGridItem = record
      Index : integer;
      Position : integer;

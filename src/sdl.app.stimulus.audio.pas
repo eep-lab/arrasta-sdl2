@@ -16,7 +16,6 @@ interface
 uses
   Classes, SysUtils
   , SDL2
-  //, fgl
   , sdl.app.graphics.rectangule
   , sdl.app.audio.contract
   , sdl.app.stimulus
@@ -43,6 +42,7 @@ type
     procedure MouseEnter(Sender: TObject); override;
     procedure MouseExit(Sender: TObject); override;
   public
+    constructor Create; override;
     destructor Destroy; override;
     procedure Load(AParameters : TStringList;
         AParent : TObject; ARect: TSDL_Rect); override;
@@ -65,9 +65,9 @@ uses sdl.app.audio
 function TAudioStimulus.GetStimulusName: string;
 begin
   if IsSample then begin
-    Result := 'Audio.Sample' + #9 + FWord;
+    Result := 'Audio.Sample' + #9 + FCustomName;
   end else begin
-    Result := 'Audio.Comparison' + #9 + FWord;
+    Result := 'Audio.Comparison' + #9 + FCustomName;
   end;
 end;
 
@@ -131,10 +131,18 @@ begin
   end;
 end;
 
+constructor TAudioStimulus.Create;
+begin
+  inherited Create;
+  FPicture := TPicture.Create;
+  FPicture.Owner := Self;
+end;
+
 destructor TAudioStimulus.Destroy;
 begin
   //SDLAudio.UnregisterChannel(FSound);
   //FSound.Free;
+  FPicture.Free;
   inherited Destroy;
 end;
 
@@ -143,7 +151,6 @@ procedure TAudioStimulus.Load(AParameters: TStringList; AParent: TObject;
 const
   LAudioPicture : string = 'AudioPicture'+IMG_EXT;
 begin
-  FPicture := TPicture.Create(Self);
   FPicture.LoadFromFile(Assets(LAudioPicture));
   FPicture.BoundsRect := ARect;
   FPicture.Parent := TCustomRenderer(AParent);
@@ -151,8 +158,8 @@ begin
   FPicture.OnMouseEnter := @MouseEnter;
   FPicture.OnMouseExit := @MouseExit;
 
-  FWord := GetWordValue(AParameters, IsSample, Index);
-  FSound := SDLAudio.LoadFromFile(AudioFile(FWord));
+  FCustomName := GetWordValue(AParameters, IsSample, Index);
+  FSound := SDLAudio.LoadFromFile(AudioFile(FCustomName));
   FSound.SetOnStop(@SoundFinished);
   FSound.SetOnStart(@SoundStart);
 end;
@@ -160,7 +167,7 @@ end;
 procedure TAudioStimulus.Start;
 begin
   if IsSample then begin
-    FSound.Play;
+    //FSound.Play;
     FPicture.Show;
   end else begin
     FPicture.Show;

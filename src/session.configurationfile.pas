@@ -29,6 +29,7 @@ type
 
   TConfigurationFile = class(TIniFile)
   private
+    FCurrentTrialParameters : TStringList;
     FPositions : TShuffler;
     FBlockCount : integer;
     FTrialCount: integer;
@@ -57,6 +58,7 @@ type
     function BeginTableName : string;
     function EndTableName : string;
     procedure Invalidate;
+    procedure AppendSectionValues(ASection : string; AParameters : TStringList);
     procedure NewTrialOrder(ACurrentBlock : TBlockData);
     procedure ReadPositionsInBlock(ABlock:integer; APositionsList : TStrings);
     procedure WriteToBlock(ABlock : integer;AName, AValue: string);
@@ -89,6 +91,7 @@ implementation
 
 uses StrUtils
   , session.constants
+  , session.constants.trials
   , session.constants.blocks
   , session.pool;
 
@@ -174,7 +177,7 @@ var
   LBlockSection : string;
 begin
   LBlockSection := BlockSection(BlockIndex);
-  with Result, BlockKeys do
+  with Result, ParserBlockKeys do
     begin
       ID := BlockIndex;
       TotalTrials:= Self.Trials[BlockIndex];
@@ -227,7 +230,6 @@ function TConfigurationFile.GetTrial(BlockIndex, TrialIndex: integer): TTrialDat
 var
   LTrialSection : string;
   LInstructionSection : string;
-  LParameters : TStringList;
   i : integer;
 begin
   i := FPositions.Value(TrialIndex);
@@ -242,25 +244,15 @@ begin
 
   // shuffle trials
   LTrialSection := TrialSection(BlockIndex, i);
-  with Result do
-    begin
-      Id :=  i + 1;
-      Kind := ReadString(LTrialSection, _Kind, '');
-      ReferenceName := ReadString(LTrialSection, 'ReferenceName', '');
-      Parameters := TStringList.Create;
-      Parameters.CaseSensitive := False;
-      Parameters.Duplicates := dupIgnore;
-      ReadSectionValues(LTrialSection, Parameters);
-      LParameters := TStringList.Create;
-      try
-        ReadSectionValues(LInstructionSection, LParameters);
-        for i := 0 to LParameters.Count-1 do begin
-          Parameters.Append(LParameters[i]);
-        end;
-      finally
-        LParameters.Free;
-      end;
-    end;
+  FCurrentTrialParameters.Clear;
+  with Result, TrialKeys do begin
+    Id :=  i + 1;
+    Kind := ReadString(LTrialSection, _Kind, '');
+    ReferenceName := ReadString(LTrialSection, ReferenceNameKey, '');
+    ReadSectionValues(LTrialSection, FCurrentTrialParameters);
+    AppendSectionValues(LInstructionSection, FCurrentTrialParameters);
+    Parameters := FCurrentTrialParameters;
+  end;
 end;
 
 function TConfigurationFile.GetTrialBase(BlockIndex,
@@ -269,16 +261,15 @@ var
   LTrialSection : string;
 begin
   LTrialSection := TrialSection(BlockIndex, TrialIndex);
-  with Result do
-    begin
-      Id :=  TrialIndex + 1;
-      Kind := ReadString(LTrialSection, _Kind, '');
-      ReferenceName := ReadString(LTrialSection, 'ReferenceName', '');
-      Parameters := TStringList.Create;
-      Parameters.CaseSensitive := False;
-      Parameters.Duplicates := dupIgnore;
-      ReadSectionValues(LTrialSection, Parameters);
-    end;
+  with Result do begin
+    Id :=  TrialIndex + 1;
+    Kind := ReadString(LTrialSection, _Kind, '');
+    ReferenceName := ReadString(LTrialSection, 'ReferenceName', '');
+    Parameters := TStringList.Create;
+    Parameters.CaseSensitive := False;
+    Parameters.Duplicates := dupIgnore;
+    ReadSectionValues(LTrialSection, Parameters);
+  end;
 end;
 
 procedure TConfigurationFile.CopySection(AFrom, ATo: string;
@@ -299,6 +290,7 @@ begin
         AConfigurationFile.ReadSectionValues(LTargetSectionName,LSection);
         WriteSection(LSelfSectionName,LSection);
       finally
+        LSection.Clear;
         LSection.Free;
       end;
     end;
@@ -325,9 +317,14 @@ var
 begin
   for i := 0 to ACurrentBlock.TotalTrials-1 do begin
     LTrialData := GetTrialBase(ACurrentBlock.ID, i);
-    LItem.ReferenceName := LTrialData.ReferenceName;
-    LItem.ID := i;
-    AReferenceList.Add(LItem);
+    try
+      LItem.ReferenceName := LTrialData.ReferenceName;
+      LItem.ID := i;
+      AReferenceList.Add(LItem);
+    finally
+      LTrialData.Parameters.Clear;
+      LTrialData.Parameters.Free;
+    end;
   end;
 end;
 
@@ -338,6 +335,23 @@ begin
   WriteInteger(_Main, _NumBlock, Blocks);
   for i := 0 to Blocks-1 do
     WriteString(BlockSection(i),_NumTrials, Trials[i].ToString+' 1');
+end;
+
+procedure TConfigurationFile.AppendSectionValues(ASection: string;
+  AParameters: TStringList);
+var
+  LParameters : TStringList;
+  i: Integer;
+begin
+  LParameters := TStringList.Create;
+  try
+    ReadSectionValues(ASection, LParameters);
+    for i := 0 to LParameters.Count-1 do begin
+      AParameters.Append(LParameters[i]);
+    end;
+  finally
+    LParameters.Free;
+  end;
 end;
 
 procedure TConfigurationFile.NewTrialOrder(ACurrentBlock : TBlockData);
@@ -398,6 +412,7 @@ begin
       end;
 
   finally
+    L.Clear;
     L.Free;
   end;
 end;
@@ -421,10 +436,14 @@ begin
   FBlockCount := 0;
   GetBlockCount;
   FPositions := TShuffler.Create;
+  FCurrentTrialParameters := TStringList.Create;
+  FCurrentTrialParameters.CaseSensitive := False;
+  FCurrentTrialParameters.Duplicates := dupIgnore;
 end;
 
 destructor TConfigurationFile.Destroy;
 begin
+  FCurrentTrialParameters.Free;
   FPositions.Free;
   inherited Destroy;
 end;

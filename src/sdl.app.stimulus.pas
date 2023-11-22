@@ -15,7 +15,6 @@ interface
 
 uses
   Classes, SysUtils
-  , fgl
   , SDL2
   , sdl.app.graphics.rectangule
   , sdl.app.stimulus.contract
@@ -27,14 +26,16 @@ uses
 
 type
 
-  TChoices = specialize TFPGList<TObject>;
+  //TChoices = specialize TFPGList<TObject>;
 
   { TStimulus }
 
-  TStimulus = class(TComponent, IStimulus)
+  TStimulus = class(TInterfacedObject, IStimulus)
     private
+      FName: string;
       FPosition: Integer;
       FResponseID : Integer;
+      FStimuli: TObject;
       FStimulusID : ShortInt;
       FIndex : integer;
       FIsSample: Boolean;
@@ -51,8 +52,9 @@ type
       procedure SetOnMouseMove(AValue: TOnMouseEvent);
       procedure SetOnMouseUp(AValue: TOnMouseEvent);
       procedure SetOnResponse(AValue: TNotifyEvent);
+      procedure SetStimuli(AValue: TObject);
     protected
-      FWord : string;
+      FCustomName : string; {Filename only without extention}
       function GetID : TStimulusID;
       function ToData: string;
       function GetRect: TRectangule; virtual; abstract;
@@ -62,8 +64,10 @@ type
       procedure MouseUp(Sender:TObject; Shift: TCustomShiftState; X, Y: Integer); virtual; abstract;
       procedure MouseEnter(Sender:TObject); virtual; abstract;
       procedure MouseExit(Sender:TObject); virtual; abstract;
+      procedure GazeEnter(Sender:TObject); virtual; abstract;
+      procedure GazeExit(Sender:TObject); virtual; abstract;
     public
-      constructor Create(AOwner : TComponent); override;
+      constructor Create; virtual;
       destructor Destroy; override;
       function AsInterface : IStimulus;
       function IsCorrectResponse : Boolean; virtual; abstract;
@@ -80,9 +84,11 @@ type
       property OnResponse : TNotifyEvent read FOnResponse write SetOnResponse;
       property IsSample : Boolean read FIsSample write SetIsSample;
       property Index : Integer read FIndex write FIndex;
+      property Name : string read FName write FName;
       property Position : Integer read FPosition write FPosition;
       property Rectangule  : TRectangule read GetRect write SetRect;
       property ResponseID : integer read FResponseID;
+      property Stimuli : TObject read FStimuli write SetStimuli;
   end;
 
 
@@ -149,19 +155,30 @@ begin
   FOnResponse:=AValue;
 end;
 
-function TStimulus.ToData: string;
+procedure TStimulus.SetStimuli(AValue: TObject);
 begin
-  Result := FWord+'-'+Position.ToString;
+  if FStimuli = AValue then Exit;
+  FStimuli := AValue;
 end;
 
-constructor TStimulus.Create(AOwner: TComponent);
+function TStimulus.ToData: string;
 begin
-  inherited Create(AOwner);
+  Result := FCustomName+'-'+FPosition.ToString;
+end;
+
+constructor TStimulus.Create;
+begin
   FResponseID := 0;
 end;
 
 destructor TStimulus.Destroy;
 begin
+  FOnMouseDown := nil;
+  FOnMouseEnter := nil;
+  FOnMouseExit := nil;
+  FOnMouseMove := nil;
+  FOnMouseUp := nil;
+  FOnResponse := nil;
   inherited Destroy;
 end;
 

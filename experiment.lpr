@@ -4,20 +4,27 @@ program experiment;
 
 uses
   {$IFDEF UNIX}
-  cthreads,
+    {$IFDEF UseCThreads}
+      cthreads, cmem,
+    {$ENDIF}
   {$ENDIF}
-  {$IFDEF HASAMIGA}
-  athreads,
-  {$ENDIF}
+  {$IFDEF HASAMIGA}athreads,{$ENDIF}
   Interfaces, // this includes the LCL widgetset
+  SysUtils,
   Forms, Forms.Main, Forms.Modal.SpeechValidation;
 
 {$R *.res}
 
 begin
+  if FileExists('heaptrc.txt') then begin
+    DeleteFile('heaptrc.txt');
+  end;
+  {$IF Declared(heaptrc)}
+  SetHeapTraceOutput('heaptrc.txt');
+  {$ENDIF}
   Randomize;
   RequireDerivedFormResource:=True;
-  Application.Scaled := True;
+  Application.Scaled:=True;
   Application.Initialize;
   Application.CreateForm(TFormBackground, FormBackground);
   Application.CreateForm(

@@ -16,7 +16,7 @@ interface
 uses
   Classes, SysUtils
   , SDL2
-  , fgl
+  , sdl.app.audio.contract
   , sdl.app.graphics.text
   , sdl.app.stimulus
   , sdl.app.events.abstract
@@ -25,18 +25,22 @@ uses
 
 type
 
-  TTextList = specialize TFPGList<TText>;
+  //TTextList = specialize TList<TText>;
 
   { TTextStimulus }
 
   TTextStimulus = class(TStimulus)
     private
+      FPrompt : ISound;
       FText : TText;
+      FHasPrompt : Boolean;
     protected
       function GetStimulusName : string; override;
       procedure MouseDown(Sender: TObject; Shift: TCustomShiftState;
         X, Y: Integer); override;
     public
+      constructor Create; override;
+      destructor Destroy; override;
       procedure Load(AParameters : TStringList;
         AParent : TObject; ARect: TSDL_Rect); override;
       procedure Start; override;
@@ -46,7 +50,8 @@ type
 implementation
 
 uses
-  sdl.app.renderer.custom
+  sdl.app.audio
+  , sdl.app.renderer.custom
   , session.constants.mts;
 
 { TTextStimuli }
@@ -54,9 +59,9 @@ uses
 function TTextStimulus.GetStimulusName: string;
 begin
   if IsSample then begin
-    Result := 'Text.Sample' + #9 + FWord;
+    Result := 'Text.Sample' + #9 + FCustomName;
   end else begin
-    Result := 'Text.Comparison' + #9 + FWord;
+    Result := 'Text.Comparison' + #9 + FCustomName;
   end;
 end;
 
@@ -66,21 +71,45 @@ begin
   DoResponse(True);
 end;
 
+constructor TTextStimulus.Create;
+begin
+  inherited Create;
+  FText := TText.Create;
+  FPrompt := nil;
+  FHasPrompt := False;
+end;
+
+destructor TTextStimulus.Destroy;
+begin
+  FPrompt := nil;
+  FText.Free;
+  inherited Destroy;
+end;
+
 procedure TTextStimulus.Load(AParameters: TStringList; AParent: TObject;
   ARect: TSDL_Rect);
 begin
-  FWord := GetWordValue(AParameters, IsSample, Index);
-  FText := TText.Create(Self);
+  FCustomName := GetWordValue(AParameters, IsSample, Index);
   FText.FontName := 'Picanco_et_al';
   //FText.FontSize := 50;
-  FText.Load(FWord);
+  FText.Load(FCustomName);
   FText.CentralizeWith(ARect);
   FText.Parent := TCustomRenderer(AParent);
   FText.OnMouseDown := @MouseDown;
+
+  FHasPrompt := HasPrompt(AParameters);
+  if FHasPrompt then begin
+    if IsSample then
+      FPrompt := SDLAudio.SoundFromName('sample-text-prompt-rafael');
+  end;
 end;
 
 procedure TTextStimulus.Start;
 begin
+  if FHasPrompt then begin
+    if IsSample then
+      FPrompt.Play;
+  end;
   FText.Show;
 end;
 

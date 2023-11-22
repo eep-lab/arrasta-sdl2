@@ -53,6 +53,7 @@ begin
         CopyFile(SrcFile, DstFile);
     end;
   finally
+    AllImages.Clear;
     AllImages.Free;
   end;
 end;

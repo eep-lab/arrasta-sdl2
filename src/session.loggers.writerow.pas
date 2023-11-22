@@ -22,8 +22,8 @@ var
   SaveData : TDataProcedure = nil;
   BlockName : string;
   TrialName : string;
-  //ITIBegin  : Extended;
-  //ITIEnd    : Extended;
+  //ITIBegin  : TLargerFloat;
+  //ITIEnd    : TLargerFloat;
 
 procedure AppendToTrialHeader(AHeader : string);
 procedure AppendToTrialData(AData : string);
@@ -33,6 +33,7 @@ implementation
 
 uses session.constants
    , timestamps
+   , timestamps.methods
    , session.loggers
    , session.pool;
 
@@ -100,7 +101,7 @@ begin
 
   // write data
   LData := TLogger.Row([LData +
-    TimestampToStr(TickCount - Pool.TimeStart),
+    (ClockMonotonic - Pool.TimeStart).ToString,
     (Pool.Session.Trial.UID + 1).ToString,
     (Pool.Session.Block.UID + 1).ToString,
     (Pool.Session.Block.Trial.UID + 1).ToString,

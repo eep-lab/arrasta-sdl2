@@ -111,7 +111,7 @@ end;
 
 destructor TSession.Destroy;
 begin
-  //Counters.Free;
+  Pool.Counters.BeforeEndSession;
   EndCriteria.Free;
   FTimer.Free;
   inherited Destroy;
@@ -120,10 +120,7 @@ end;
 procedure TSession.Play;
 begin
   if Assigned(OnBeforeStart) then OnBeforeStart(Self);
-  Pool.TimeStart := TickCount;
-  {$IFDEF WINDOWS}
-  StartEpikTimer;
-  {$ENDIF}
+  Pool.TimeStart := ClockMonotonic;
   if FTimer.Interval > 0 then
     FTimer.Start;
   PlayBlock;

@@ -14,28 +14,37 @@ unit session.csv;
 interface
 
 uses
-  Classes, SysUtils, csvdocument, session.csv.enumerator;
+  Classes, SysUtils
+  , csvdocument
+  , session.parameters
+  , session.csv.enumerator
+  , session.csv.document;
 
 type
 
   { TCSVRows }
 
-  TCSVRows = class(IEnumerable)
+  TCSVRows = class(TParametricObject, IEnumerable)
   private
-    FCSVDocument: TCSVDocument;
+    FCSVDocument: TCustomCSVDocument;
+    function GetCurrentIndex: integer;
+    procedure SetCurrentIndex(AValue: integer);
   public
-    constructor Create;
+    constructor Create; virtual;
     destructor Destroy; override;
     function GetEnumerator: IEnumerator;
     procedure LoadFromFile(AFilename : string);
     procedure Clear;
+    property CurrentIndex : integer read GetCurrentIndex write SetCurrentIndex;
   end;
 
   function InsideBaseFolder(AFilename : string) : string;
   function InsideBlocksSubFolder(AFilename : string) : string;
+  function InsideTrialsSubFolder(AFilename : string) : string;
   function InsideInstructionsSubFolder(AFilename : string) : string;
   function BaseFileExists(AFilename : string) : Boolean;
   function BlocksFileExists(AFilename : string) : Boolean;
+  function TrialsFileExists(AFilename : string) : Boolean;
   function InstructionsFileExist(AFilename : string) : Boolean;
 
 implementation
@@ -47,6 +56,7 @@ const
   LDefaultFolder = 'design';
   LDefaultInstructionsFolder = 'instructions';
   LDefaultBlocksFolder = 'blocks';
+  LDefaultTrialsSourceFolder = 'trials';
 
 function InsideBaseFolder(AFilename: string): string;
 begin
@@ -60,6 +70,14 @@ begin
   Result := Pool.BaseFilePath +
             LDefaultFolder+DirectorySeparator+
             LDefaultBlocksFolder+DirectorySeparator+
+            AFilename+LDefaultExtention;
+end;
+
+function InsideTrialsSubFolder(AFilename: string): string;
+begin
+  Result := Pool.BaseFilePath +
+            LDefaultFolder+DirectorySeparator+
+            LDefaultTrialsSourceFolder+DirectorySeparator+
             AFilename+LDefaultExtention;
 end;
 
@@ -81,15 +99,30 @@ begin
   Result := FileExistsUTF8(InsideBlocksSubFolder(AFilename));
 end;
 
+function TrialsFileExists(AFilename: string): Boolean;
+begin
+  Result := FileExistsUTF8(InsideTrialsSubFolder(AFilename));
+end;
+
 function InstructionsFileExist(AFilename: string): Boolean;
 begin
   Result := FileExistsUTF8(InsideInstructionsSubFolder(AFilename));
 end;
 
+function TCSVRows.GetCurrentIndex: integer;
+begin
+  Result := FCSVDocument.CurrentIndex;
+end;
+
+procedure TCSVRows.SetCurrentIndex(AValue: integer);
+begin
+  FCSVDocument.CurrentIndex := AValue;
+end;
+
 constructor TCSVRows.Create;
 begin
   inherited Create;
-  FCSVDocument := TCSVDocument.Create;
+  FCSVDocument := TCustomCSVDocument.Create;
 end;
 
 destructor TCSVRows.Destroy;

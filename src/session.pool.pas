@@ -14,13 +14,18 @@ unit session.pool;
 interface
 
 uses
-  sdl.app, session.endcriteria, session.counters, session.counters.all;
+  sdl.app
+  , session.endcriteria
+  , session.counters
+  , session.counters.all
+  , timestamps.types;
 
 type
 
   { TPool }
 
   TPool = class
+  public
     AppName : string;
     RootData : string;
     RootDataResponses: string;
@@ -31,7 +36,8 @@ type
     AssetsBasePath : string;
     AudioBasePath : string;
     ResponsesBasePath : string;
-    TimeStart : Extended;
+    ConfigurationFilename : string;
+    TimeStart : TLargerFloat;
     TestMode : Boolean;
     MonitorToShow : Byte;
     Counters : TCounters;
@@ -63,6 +69,7 @@ initialization
     AudioBasePath := AsPath('wav', 'rafael');
     AssetsBasePath := AsPath('assets');
     ResponsesBasePath:= AsPath('responses');
+    ConfigurationFilename := '';
     ForceDirectories(RootData);
     ForceDirectories(RootMedia);
     ForceDirectories(AsPath(RootMedia, AssetsBasePath));

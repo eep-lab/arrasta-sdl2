@@ -30,6 +30,7 @@ type
     function EndTrial(ANextTrial: SmallInt) : Boolean;
     function EndBlock(ANextBlock : SmallInt): Boolean;
     procedure BeforeBeginSession;
+    procedure BeforeEndSession;
     procedure BeforeEndTrial;
     procedure BeforeEndBlock;
     procedure Hit;
@@ -69,6 +70,7 @@ begin
     end;
     Result := LStringList[0].ToInteger;
   finally
+    LStringList.Clear;
     LStringList.Free;
   end;
 end;
@@ -87,6 +89,11 @@ begin
 
   Trial.ID := ConfigurationFile.StartAt.Trial;
   Block.ID := ConfigurationFile.StartAt.Block;
+end;
+
+procedure TCounters.BeforeEndSession;
+begin
+  Session.Free;
 end;
 
 procedure TCounters.BeforeEndTrial;

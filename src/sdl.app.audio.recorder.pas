@@ -31,7 +31,7 @@ type
     FContainer: TButtonContainer;
     procedure DoFinished(Sender: TObject);
   public
-    constructor Create; reintroduce;
+    constructor Create;
     destructor Destroy; override;
     procedure Open;
     procedure Close;
@@ -79,44 +79,21 @@ constructor TRecorderDevice.Create;
 begin
   inherited Create;
   FContainer := TButtonContainer.Create;
-  if FRecorder = nil then begin
-    FRecorder := TAudioRecorderComponent.Create;
-  end;
-
-  if FPlayback = nil then begin
-    FPlayback := TAudioPlaybackComponent.Create;
-  end;
+  FRecorder := TAudioRecorderComponent.Create;
+  FRecorder.Start;
+  FPlayback := TAudioPlaybackComponent.Create;
+  FPlayback.Start;
 end;
 
 destructor TRecorderDevice.Destroy;
 begin
-  if FRecorder <> nil then begin
-    FRecorder.Close;
-    FRecorder.OnRecordingFinished := nil;
-    FRecorder.Terminate;
-    FRecorder := nil;
-  end;
-
-  if FPlayback <> nil then begin
-    FPlayback.Close;
-    FPlayback.OnPlaybackFinished := nil;
-    FPlayback.Terminate;
-    FPlayback := nil;
-  end;
+  Close;
   FContainer.Free;
   inherited Destroy;
 end;
 
 procedure TRecorderDevice.Open;
 begin
-  if FRecorder = nil then begin
-    FRecorder := TAudioRecorderComponent.Create;
-  end;
-
-  if FPlayback = nil then begin
-    FPlayback := TAudioPlaybackComponent.Create;
-  end;
-
   if not FRecorder.Opened then begin
     FRecorder.Open;
   end;
@@ -128,21 +105,15 @@ begin
   FPlayback.OnPlaybackFinished := @DoFinished;
 end;
 
-procedure TRecorderDevice.Close;
+procedure TRecorderDevice.Close; // todo: fix memory leak here
 begin
-  if FRecorder <> nil then begin
-    FRecorder.Close;
-    FRecorder.OnRecordingFinished := nil;
-    FRecorder.Terminate;
-    FRecorder := nil;
-  end;
+  FRecorder.OnRecordingFinished := nil;
+  FRecorder.Close;
+  FRecorder.Terminate;
 
-  if FPlayback <> nil then begin
-    FPlayback.Close;
-    FPlayback.OnPlaybackFinished := nil;
-    FPlayback.Terminate;
-    FPlayback := nil;
-  end;
+  FPlayback.OnPlaybackFinished := nil;
+  FPlayback.Close;
+  FPlayback.Terminate;
 end;
 
 procedure TRecorderDevice.Append(AButton: TToggleButton);

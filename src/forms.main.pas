@@ -26,6 +26,7 @@ type
     ButtonLoadConfigurationFile: TButton;
     ButtonNewConfigurationFile: TButton;
     ButtonRunSession: TButton;
+    CheckBoxShowMarkers: TCheckBox;
     CheckBoxTestMode: TCheckBox;
     ComboBoxMonitor: TComboBox;
     ComboBoxCondition: TComboBox;
@@ -33,12 +34,12 @@ type
     IniPropStorage1: TIniPropStorage;
     OpenDialog1: TOpenDialog;
     Panel1: TPanel;
+    RadioGroupEyeTracker: TRadioGroup;
     procedure ButtonLoadConfigurationFileClick(Sender: TObject);
     procedure ButtonNewConfigurationFileClick(Sender: TObject);
     procedure ButtonNewParticipantClick(Sender: TObject);
     procedure ButtonRunSessionClick(Sender: TObject);
     procedure BeginSession(Sender: TObject);
-    procedure CheckBoxTestModeEditingDone(Sender: TObject);
     procedure EndSession(Sender : TObject);
     procedure CloseSDLApp(Sender : TObject);
     procedure FormCreate(Sender: TObject);
@@ -61,14 +62,14 @@ implementation
 
 uses
   FileUtil
-  , StrUtils
   , session
   , session.pool
   , session.loggers
   , session.fileutils
   , experiments
   , sdl.app
-  , sdl.app.trials.factory
+  , sdl.app.testmode
+  , eye.tracker
   ;
 
 { TFormBackground }
@@ -77,6 +78,7 @@ procedure TFormBackground.ButtonRunSessionClick(Sender: TObject);
 begin
   if not Validated then Exit;
   ToogleControlPanelEnabled;
+  TestMode := CheckBoxTestMode.Checked;
 
   SDLApp := TSDLApplication.Create(@Pool.AppName[1]);
   SDLApp.SetupVideo(ComboBoxMonitor.ItemIndex);
@@ -84,7 +86,11 @@ begin
   SDLApp.SetupAudio;
   SDLApp.SetupText;
   SDLApp.OnClose := @CloseSDLApp;
+  SDLApp.ShowMarkers := CheckBoxShowMarkers.Checked;
+
   Pool.App := SDLApp;
+
+  InitializeEyeTracker(RadioGroupEyeTracker.ItemIndex);
 
   SDLSession := TSession.Create(Self);
   SDLSession.OnBeforeStart := @BeginSession;
@@ -110,7 +116,7 @@ begin
       LFilename := Items[ItemIndex];
     end;
   end;
-  ConfigurationFilename := Experiments.MakeConfigurationFile(LFilename);
+  Pool.ConfigurationFilename := Experiments.MakeConfigurationFile(LFilename);
 end;
 
 procedure TFormBackground.ButtonNewParticipantClick(Sender: TObject);
@@ -130,18 +136,15 @@ end;
 procedure TFormBackground.ButtonLoadConfigurationFileClick(Sender: TObject);
 begin
   if OpenDialog1.Execute then
-    ConfigurationFilename := LoadConfigurationFile(OpenDialog1.FileName);
+    Pool.ConfigurationFilename := LoadConfigurationFile(OpenDialog1.FileName);
 end;
 
 procedure TFormBackground.BeginSession(Sender: TObject);
 begin
+  if Assigned(EyeTracker) then begin
+    EyeTracker.StartRecording;
+  end;
   TLogger.SetHeader(SessionName, ParticipantFolderName);
-  CopyFile(ConfigurationFilename, Pool.BaseFilename+'.ini');
-end;
-
-procedure TFormBackground.CheckBoxTestModeEditingDone(Sender: TObject);
-begin
-   TestMode := CheckBoxTestMode.Enabled;
 end;
 
 procedure TFormBackground.EndSession(Sender: TObject);
@@ -151,6 +154,10 @@ end;
 
 procedure TFormBackground.CloseSDLApp(Sender: TObject);
 begin
+  FreeConfigurationFile;
+  if Assigned(EyeTracker) then begin
+    EyeTracker.StopRecording;
+  end;
   TLogger.SetFooter;
   SDLSession.Free;
   SDLApp.Free;
@@ -177,6 +184,7 @@ begin
       ComboBoxMonitor.Items.Assign(LStringList);
     end;
   finally
+    LStringList.Clear;
     LStringList.Free;
   end;
 end;
@@ -266,7 +274,7 @@ begin
     Exit;
   end;
 
-  if ConfigurationFilename.IsEmpty then begin
+  if Pool.ConfigurationFilename.IsEmpty then begin
     ShowMessage('Crie uma nova sessão ou abra uma pronta.');
     Exit;
   end;

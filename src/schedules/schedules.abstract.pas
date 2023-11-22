@@ -15,7 +15,7 @@ unit Schedules.Abstract;
 interface
 
 uses
-  Classes, SysUtils, ExtCtrls;
+  Classes, SysUtils, ExtCtrls, timestamps.types;
 
 type
 
@@ -23,10 +23,10 @@ type
     MustUpdate   : Boolean;
     Enabled      : Boolean;
     TimerEnabled : Boolean;
-    Interval     : Extended;
-    Elapsed      : Extended;
-    Started      : Extended;
-    Paused       : Extended;
+    Interval     : TLargerFloat;
+    Elapsed      : TLargerFloat;
+    Started      : TLargerFloat;
+    Paused       : TLargerFloat;
   end;
 
   TRandomIntervalType = (ritRandomAmplitude, ritFleshlerHoffman);
@@ -77,10 +77,10 @@ type
     destructor Destroy; override;
     procedure DoResponse; virtual; abstract;
     procedure Reset; virtual; abstract;
-    function Start : Extended;
-    function Stop : Extended;
-    function Pause : Extended;
-    function Resume : Extended;
+    function Start : TLargerFloat;
+    function Stop : TLargerFloat;
+    function Pause : TLargerFloat;
+    function Resume : TLargerFloat;
     function NextInterval : Cardinal;
     procedure PostponeLastInterval;
     property OnConsequence : TNotifyEvent read FOnConsequence write SetOnConsequence;
@@ -106,10 +106,10 @@ resourcestring
 
 implementation
 
-uses bot, timestamps, fgl;
+uses Generics.Collections, bot, timestamps;
 
 type
-  TIntegerList = specialize TFPGList<integer>;
+  TIntegerList = specialize TList<Integer>;
 
 var
   FleshlerHoffmanLastIndex : integer = -1;
@@ -201,7 +201,7 @@ end;
 
 procedure TSchedules.SetPaused(AValue : Boolean);
 var
-  LElapsed      : Extended;
+  LElapsed      : TLargerFloat;
 begin
   FPausedState.Enabled := AValue;
   if Assigned(FTimer) then begin
@@ -209,14 +209,14 @@ begin
       if FPausedState.Enabled then begin
         StopClock;
         FPausedState.TimerEnabled := True;
-        FPausedState.Paused := TickCount;
+        FPausedState.Paused := ClockMonotonic;
       end else begin
         { should be unreachable }
       end;
     end else begin
       if FPausedState.Enabled then begin
         FPausedState.TimerEnabled := False;
-        FPausedState.Paused := TickCount;
+        FPausedState.Paused := ClockMonotonic;
       end else begin
         if FPausedState.TimerEnabled then begin
           FPausedState.Elapsed := FPausedState.Elapsed +
@@ -230,7 +230,7 @@ begin
           FPausedState.MustUpdate := True;
           StartClock;
         end else begin
-          FPausedState.Started := TickCount;
+          FPausedState.Started := ClockMonotonic;
         end;
       end;
     end;
@@ -247,7 +247,7 @@ end;
 procedure TSchedules.StartClock;
 begin
   FTimer.Enabled := True;
-  FPausedState.Started := TickCount;
+  FPausedState.Started := ClockMonotonic;
 end;
 
 procedure TSchedules.StopClock;
@@ -332,7 +332,7 @@ begin
   inherited Destroy;
 end;
 
-function TSchedules.Start : Extended;
+function TSchedules.Start : TLargerFloat;
 begin
   if Paused then begin
     Result := Resume;
@@ -342,12 +342,12 @@ begin
       StartClock;
       Result := FPausedState.Started;
     end else begin
-      Result := TickCount;
+      Result := ClockMonotonic;
     end;
   end;
 end;
 
-function TSchedules.Stop : Extended;
+function TSchedules.Stop : TLargerFloat;
 begin
   with FPausedState do begin
     Enabled := False;
@@ -359,17 +359,17 @@ begin
   end;
 
   Enabled := False;
-  Result := TickCount;
+  Result := ClockMonotonic;
 end;
 
-function TSchedules.Pause : Extended;
+function TSchedules.Pause : TLargerFloat;
 begin
   if Paused then Exit;
   Paused := True;
   Result := FPausedState.Paused;
 end;
 
-function TSchedules.Resume : Extended;
+function TSchedules.Resume : TLargerFloat;
 begin
   if Paused then begin
     Paused := False;

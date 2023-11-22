@@ -16,7 +16,6 @@ interface
 uses
   Classes, SysUtils
   , SDL2
-  //, fgl
   , sdl.app.graphics.rectangule
   , sdl.app.stimulus
   , sdl.app.typeable.contract
@@ -57,7 +56,7 @@ type
     procedure KeyUp(Sender: TObject; Key: TSDL_KeyCode; Shift: TCustomShiftState); virtual;
     procedure KeyPress(Sender: TObject; var Key: char); virtual;
   public
-    constructor Create(AOwner : TComponent); override;
+    constructor Create; override;
     destructor Destroy; override;
     function AsTypeable : ITypeable;
     function IsCorrectResponse : Boolean; override;
@@ -190,21 +189,24 @@ begin
 
 end;
 
-constructor TTypeableStimulus.Create(AOwner: TComponent);
+constructor TTypeableStimulus.Create;
 begin
-  inherited Create(AOwner);
+  inherited Create;
+  FText := TText.Create;
+  FText.Owner := Self;
   //EventHandler.OnKeyDown := AsTypeable.GetSDLKeyDown;
-  EventHandler.OnKeyUp := AsTypeable.GetSDLKeyUp;
-  EventHandler.OnTextInput := AsTypeable.GetSDLTextInputEvent;
+  SDLEvents.OnKeyUp := AsTypeable.GetSDLKeyUp;
+  SDLEvents.OnTextInput := AsTypeable.GetSDLTextInputEvent;
   //EventHandler.OnTextEditing := AsTypeable.GetSDLTextEditingEvent;
 end;
 
 destructor TTypeableStimulus.Destroy;
 begin
-  EventHandler.OnKeyUp := nil;
-  EventHandler.OnKeyDown := nil;
-  EventHandler.OnTextInput := nil;
-  EventHandler.OnTextEditing := nil;
+  FText.Free;
+  SDLEvents.OnKeyUp := nil;
+  SDLEvents.OnKeyDown := nil;
+  SDLEvents.OnTextInput := nil;
+  SDLEvents.OnTextEditing := nil;
   inherited Destroy;
 end;
 
@@ -225,7 +227,6 @@ begin
     h := h div 2;
     w := w * 2;
   end;
-  FText := TText.Create(Self);
   FText.Load('teste');
   FText.CentralizeWith(FRect);
   FText.Parent := TCustomRenderer(AParent);

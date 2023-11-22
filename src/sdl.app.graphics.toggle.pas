@@ -19,14 +19,15 @@ uses
   , sdl.app.graphics.rectangule
   , sdl.app.paintable.contract
   , sdl.app.events.abstract
+  , timestamps.types
   ;
 
 type
 
   TAnimationData = record
-    Acum: double;
+    Acum: TLargerFloat;
     Growing: boolean;
-    Step: double;
+    Step: TLargerFloat;
     Alpha : byte;
     FixedAlpha : integer;
     MinAlpha : integer;
@@ -38,6 +39,7 @@ type
   TToggleButton = class(TRectangule, IPaintable)
   private
     FEnabled: Boolean;
+    FOwner: TObject;
     FShaded : Boolean;
     FCanShade : Boolean;
     FSibling: TToggleButton;
@@ -46,6 +48,7 @@ type
     FIsTexture1 : Boolean;
     FAnimationData : TAnimationData;
     procedure SetEnabled(AValue: Boolean);
+    procedure SetOwner(AValue: TObject);
     procedure SetSibling(AValue: TToggleButton);
   protected
     procedure SetBoundsRect(AValue : TSDL_Rect); override;
@@ -59,10 +62,11 @@ type
     procedure MouseExit(Sender: TObject); override;
     procedure Paint; override;
   public
-    constructor Create(AOwner: TComponent); override;
+    constructor Create; override;
     destructor Destroy; override;
     procedure LoadFromFile(AFilename1, AFilename2: string); virtual;
     procedure Toggle;
+    property Owner : TObject read FOwner write SetOwner;
     property Sibling : TToggleButton read FSibling write SetSibling;
     property Enabled : Boolean read FEnabled write SetEnabled;
   end;
@@ -78,13 +82,13 @@ uses
   , sdl.app.video.methods
   , sdl.app.output
   , session.pool
+  , sdl.app.testmode
   ;
 
 { TToggleButton }
 
-constructor TToggleButton.Create(AOwner: TComponent);
+constructor TToggleButton.Create;
 begin
-  inherited Create(AOwner);
   FSibling := nil;
   FEnabled := True;
   FCanShade := True;
@@ -120,6 +124,12 @@ begin
     FCanShade := False;
     FIsTexture1 := True;
   end;
+end;
+
+procedure TToggleButton.SetOwner(AValue: TObject);
+begin
+  if FOwner = AValue then Exit;
+  FOwner := AValue;
 end;
 
 procedure TToggleButton.SetBoundsRect(AValue: TSDL_Rect);
@@ -174,8 +184,8 @@ end;
 
 procedure TToggleButton.Paint;
 var
-  TempSize: Double;
-  function easeInOutQuad(t: double): double;
+  TempSize: TLargerFloat;
+  function easeInOutQuad(t: TLargerFloat): TLargerFloat;
   begin
     if t < 0.5 then
       Result := 2 * t * t
@@ -232,9 +242,11 @@ begin
       SDL_RenderCopy(PSDLRenderer, FTexture2, nil, @FRect);
     end;
   end else begin
-    with clGray do
-      SDL_SetRenderDrawColor(PSDLRenderer, r, g, b, a);
-    SDL_RenderFillRect(PSDLRenderer, @FRect);
+    if TestMode then begin
+      with clGray do
+        SDL_SetRenderDrawColor(PSDLRenderer, r, g, b, a);
+      SDL_RenderFillRect(PSDLRenderer, @FRect);
+    end;
   end;
 end;
 

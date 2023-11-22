@@ -1,34 +1,47 @@
 program standalone_experiment;
 uses
-  {$IFNDEF NO_LCL}Interfaces,{$ENDIF}
-  sdl.app
-  , eyelink.classes
-  {$IFDEF NO_LCL}, sdl.app.renderer.nolcl{$ENDIF}
+  Interfaces,
+  Classes, SysUtils, sdl.app
+  , timestamps.methods
+  //, eyelink.classes
+  {$IFDEF NO_LCL}
+  , sdl.app.renderer.nolcl
+  , sdl.app.video.writer.windows
+  {$ENDIF}
   ;
 var
   SDLApp : TSDLApplication;
-  EyeLink : TEyeLink;
-
+  //EyeLink : TEyeLink;
 begin
-  EyeLink := TEyeLink.Create(nil);
-  EyeLink.InitializeLibraryAndConnectToDevice;
-  EyeLink.DataReceiveFile;
+  WriteLn('Renderer fps reference: ', 1000 div 50);
+  //EyeLink := TEyeLink.Create(nil);
+  //EyeLink.InitializeLibraryAndConnectToDevice;
+  //EyeLink.DataReceiveFile;
+  StartEpikTimer;
+  StartTimestamp := ET.Elapsed;
 
-  //SDLApp := TSDLApplication.Create;
   //EyeLink := TEyeLink.Create(nil);
   //EyeLink.InitializeLibraryAndConnectToDevice;
   //EyeLink.HostApp := SDLApp;
   //EyeLink.DoTrackerSetup;
   //EyeLink.OpenDataFile;
-  //try
-  //  Monitor := SDLApp.Monitor;
-  //  SDLApp.SetupEvents;
-  //  SDLApp.Run;
-  //finally
-  //  EyeLink.ReceiveDataFile;
-  //  EyeLink.Free;
-  //  SDLApp.Free;
-  //end;
+
+  SDLApp := TSDLApplication.Create;
+  try
+    SDLApp.SetupVideo(0);
+    SDLApp.SetupEvents;
+    Sleep(50);
+    VideoWriter := TVideoWriter.Create(SDLApp.Monitor);
+    VideoWriter.StartRecording;
+    SDLApp.Run;
+  finally
+    //EyeLink.ReceiveDataFile;
+    //EyeLink.Free;
+    VideoWriter.MainThreadSynchronize;
+    VideoWriter.Stop;
+    //CheckSynchronize;
+    SDLApp.Free;
+  end;
   ReadLn;
 end.
 

@@ -14,6 +14,9 @@ unit session.constants;
 interface
 
 const
+  DefaultPupilAddress = '127.0.1.1:50020';
+
+const
   clDarkGreen = $006400;
 
 const

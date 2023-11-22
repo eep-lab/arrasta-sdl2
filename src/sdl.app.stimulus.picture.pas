@@ -33,6 +33,8 @@ type
       procedure MouseDown(Sender: TObject; Shift: TCustomShiftState;
         X, Y: Integer); override;
     public
+      constructor Create; override;
+      destructor Destroy; override;
       procedure Load(AParameters : TStringList;
         AParent : TObject; ARect: TSDL_Rect); override;
       procedure Start; override;
@@ -51,9 +53,9 @@ uses
 function TPictureStimulus.GetStimulusName: string;
 begin
   if IsSample then begin
-    Result := 'Picture.Sample' + #9 + FWord;
+    Result := 'Picture.Sample' + #9 + FCustomName;
   end else begin
-    Result := 'Picture.Comparison' + #9 + FWord;
+    Result := 'Picture.Comparison' + #9 + FCustomName;
   end;
 end;
 
@@ -63,12 +65,23 @@ begin
   DoResponse(True);
 end;
 
+constructor TPictureStimulus.Create;
+begin
+  inherited Create;
+  FPicture := TPicture.Create;
+end;
+
+destructor TPictureStimulus.Destroy;
+begin
+  FPicture.Free;
+  inherited Destroy;
+end;
+
 procedure TPictureStimulus.Load(AParameters: TStringList; AParent: TObject;
   ARect: TSDL_Rect);
 begin
-  FPicture := TPicture.Create(Self);
-  FWord := GetWordValue(AParameters, IsSample, Index);
-  FPicture.LoadFromFile(FWord+IMG_EXT);
+  FCustomName := GetWordValue(AParameters, IsSample, Index);
+  FPicture.LoadFromFile(FCustomName+IMG_EXT);
   FPicture.BoundsRect := ARect;
   FPicture.Parent := TCustomRenderer(AParent);
   FPicture.OnMouseDown := @MouseDown;
