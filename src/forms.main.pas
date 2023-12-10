@@ -72,7 +72,7 @@ uses
   , session.pool
   , session.loggers
   , session.fileutils
-  , experiments
+  , session.csv.experiments
   , sdl.app
   , sdl.app.testmode
   , eye.tracker
@@ -126,7 +126,7 @@ begin
       LFilename := Items[ItemIndex];
     end;
   end;
-  Pool.ConfigurationFilename := Experiments.MakeConfigurationFile(LFilename);
+  Pool.ConfigurationFilename := MakeConfigurationFile(LFilename);
 end;
 
 procedure TFormBackground.ButtonNewParticipantClick(Sender: TObject);

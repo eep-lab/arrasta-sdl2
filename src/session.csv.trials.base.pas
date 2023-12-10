@@ -24,6 +24,7 @@ type
       FInterTrialInterval : integer;
       FConsequenceInterval : integer;
       FRepeatTrial : integer;
+      FTrialCount : integer;
       FHasConsequence : Boolean;
     protected
       FKind : string;
@@ -31,7 +32,7 @@ type
     public
       constructor Create; override;
       property TrialID : integer read FTrialID;
-      property TrialCount : integer read FRepeatTrial;
+      property TrialCount : integer read FTrialCount;
       property Values[const AKey: string]: string read GetValue write SetValue;
   end;
 
@@ -53,6 +54,7 @@ begin
   FTrialID := 0;
   FKind := '';
   FRepeatTrial := 1;
+  FTrialCount := 1;
   FCursor := GlobalTrialParameters.Cursor;
   FLimitedHold := GlobalTrialParameters.LimitedHold;
   FInterTrialInterval := GlobalTrialParameters.InterTrialInterval;
@@ -66,6 +68,8 @@ begin
       @FKind, FKind);
     RegisterParameter(RepeatTrialKey,
       @FRepeatTrial, FRepeatTrial);
+    RegisterParameter(TrialCountKey,
+      @FTrialCount, FTrialCount);
     RegisterParameter(CursorKey,
       @FCursor, FCursor);
     RegisterParameter(LimitedHoldKey,

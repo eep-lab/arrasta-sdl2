@@ -43,6 +43,7 @@ type
     InterTrialIntervalKey : string;
     ConsequenceIntervalKey : string;
     RepeatTrialKey : string;
+    TrialCountKey : string;
     HasConsequenceKey : string;
     InstructionKey : string;
     HasInstructionKey : string;
@@ -55,6 +56,7 @@ type
     IDKey : string;
     KindKey : string;
     RepeatTrialKey : string;
+    TrialCountKey : string;
     CursorKey : string;
     LimitedHoldKey : string;
     InterTrialIntervalKey : string;
@@ -67,6 +69,7 @@ const
   HeaderReferenceName = 'ReferenceName';
   HeaderKind = 'Kind';
   HeaderRepeatTrial = 'RepeatTrial';
+  HeaderTrialCount = 'Trials';
   HeaderHasConsequence = 'HasConsequence';
   HeaderLimitedHold = 'LimitedHold';
   HeaderCursor = 'Cursor';
@@ -85,6 +88,7 @@ const
     InterTrialIntervalKey : HeaderInterTrialInterval;
     ConsequenceIntervalKey : HeaderConsequenceInterval;
     RepeatTrialKey : HeaderRepeatTrial;
+    TrialCountKey : HeaderTrialCount;
     HasConsequenceKey : HeaderHasConsequence;
     InstructionKey : HeaderInstruction;
     HasInstructionKey : HeaderHasInstruction;
@@ -102,6 +106,7 @@ const
     IDKey : 'ID';
     KindKey : HeaderKind;
     RepeatTrialKey : HeaderRepeatTrial;
+    TrialCountKey : HeaderTrialCount;
     CursorKey : HeaderCursor;
     LimitedHoldKey : HeaderLimitedHold;
     InterTrialIntervalKey : HeaderInterTrialInterval;

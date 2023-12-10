@@ -350,7 +350,7 @@
         <UnitName Value="EpikTimer"/>
       </Unit>
       <Unit>
-        <Filename Value="src\experiments.pas"/>
+        <Filename Value="src\session.csv.experiments.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit>
       <Unit>

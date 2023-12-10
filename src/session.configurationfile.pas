@@ -331,10 +331,13 @@ end;
 procedure TConfigurationFile.Invalidate;
 var
   i: Integer;
+  s: string;
 begin
   WriteInteger(_Main, _NumBlock, Blocks);
-  for i := 0 to Blocks-1 do
-    WriteString(BlockSection(i),_NumTrials, Trials[i].ToString+' 1');
+  for i := 0 to Blocks-1 do begin
+    s:= Trials[i].ToString;
+    WriteString(BlockSection(i),_NumTrials, s);
+  end;
 end;
 
 procedure TConfigurationFile.AppendSectionValues(ASection: string;
