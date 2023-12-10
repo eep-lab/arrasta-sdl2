@@ -16,9 +16,14 @@ interface
 uses
   Classes, SysUtils, SpeechLib_TLB;
 
+
 implementation
 
-uses sdl.app.output, picanco.experiments.words.types, picanco.experiments.words;
+uses
+  sdl.app.output
+  , media.audio
+  , picanco.experiments.words.types
+  , picanco.experiments.words;
 
 type
   TPhonemeSet = (phIPA, phSYM);
@@ -42,59 +47,16 @@ begin
   '</speak>';
 end;
 
-procedure Speak(const AWord: TWord; const APhonemeSet: TPhonemeSet);
-var
-  LSpVoice: SpVoice;
+procedure SpeakWord(const AWord: TWord; const APhonemeSet: TPhonemeSet);
 begin
-  LSpVoice := CoSpVoice.Create;
-  try
-    LSpVoice.Speak(WordToSSML(AWord, APhonemeSet), SVSFDefault);
-  finally
-    LSpVoice := nil;
-  end;
+  Speak(WordToSSML(AWord, APhonemeSet));
 end;
 
-procedure SpeakToFile(const AWord: TWord;
+procedure SpeakWordToFile(const AWord: TWord;
   APhonemeSet: TPhonemeSet;
   AFileName: WideString);
-var
-  LSpFileStream: SpFileStream;
-  LSpVoice: SpVoice;
 begin
-  LSpFileStream := CoSpFileStream.Create;
-  LSpVoice := CoSpVoice.Create;
-  try
-    LSpFileStream.Format.Type_ := SAFT44kHz16BitStereo;
-    LSpFileStream.Open(AFileName, SSFMCreateForWrite, False);
-    LSpVoice.AudioOutputStream := LSpFileStream;
-    LSpVoice.Speak(WordToSSML(AWord, APhonemeSet), SVSFDefault);
-    LSpFileStream.Close;
-  finally
-    LSpVoice := nil;
-    LSpFileStream := nil;
-  end;
-end;
-
-procedure ListAvailableVoices;
-var
-  LSpVoice: SpVoice;
-  TokenEnum: ISpeechObjectTokens;
-  Token: ISpeechObjectToken;
-  AttrValue: WideString;
-  i: Integer;
-begin
-  LSpVoice := CoSpVoice.Create;
-  try
-    TokenEnum := LSpVoice.GetVoices('', '');
-    for i := 0 to TokenEnum.Count-1 do
-    begin
-      Token := TokenEnum.Item(i);
-      AttrValue := Token.GetDescription(0);
-      Print(AttrValue);
-    end;
-  finally
-    LSpVoice := nil;
-  end;
+  SpeakToFile(WordToSSML(AWord, APhonemeSet));
 end;
 
 procedure Synthetize;
@@ -104,6 +66,7 @@ begin
   for LWord in Words do
     SpeakToFile(LWord, phIPA, LWord.Filenames.Audio+'.wav');
 end;
+
 //var i : integer;
 initialization
   //ListAvailableVoices;

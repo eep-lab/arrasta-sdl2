@@ -24,7 +24,10 @@ procedure AppendFilesTo(var AStimuliArray: TStringArray;
   AFolder: string;
   AExtensions : string = '*.bmp;*.jpg');
 
+procedure GetAudioFoldersFor(AStrings : TStrings);
 procedure GetDesignFilesFor(AStrings : TStrings);
+procedure GetFontFilesFor(AStrings : TStrings);
+
 procedure FreeConfigurationFile;
 procedure LoadMessageFromFile(var AMessage : string; AFilename : string);
 
@@ -62,6 +65,21 @@ begin
   end;
 end;
 
+procedure GetAudioFoldersFor(AStrings : TStrings);
+var
+  i : integer;
+  LDefaultFolder : string;
+const
+  LFolder = 'media';
+  LSubfolder = 'wav';
+begin
+  LDefaultFolder := ConcatPaths([LFolder, LSubfolder]);
+  FindAllDirectories(AStrings, LDefaultFolder, False);
+  for i := 0 to AStrings.Count - 1 do begin
+    AStrings[i] := AStrings[i].Replace(LFolder+DirectorySeparator, '');
+  end;
+end;
+
 procedure GetDesignFilesFor(AStrings : TStrings);
 var
   i : integer;
@@ -70,6 +88,25 @@ const
   LDefaultFolder    = 'design';
 begin
   FindAllFiles(AStrings, LDefaultFolder, LDefaultExtension, False);
+  if AStrings.Count > 0 then begin
+    for i := 0 to AStrings.Count -1 do begin
+      AStrings[i] :=
+        ExtractFileNameWithoutExt(ExtractFileNameOnly(AStrings[i]));
+    end;
+  end;
+end;
+
+procedure GetFontFilesFor(AStrings: TStrings);
+var
+  i : integer;
+  LDefaultFolder : string;
+const
+  LExtension = '*.ttf';
+  LFolder    = 'media';
+  LSubFolder = 'fonts';
+begin
+  LDefaultFolder := ConcatPaths([LFolder, LSubFolder]);
+  FindAllFiles(AStrings, LDefaultFolder, LExtension, False);
   if AStrings.Count > 0 then begin
     for i := 0 to AStrings.Count -1 do begin
       AStrings[i] :=

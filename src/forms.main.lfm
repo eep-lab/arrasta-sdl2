@@ -83,7 +83,7 @@ object FormBackground: TFormBackground
       ItemHeight = 15
       ReadOnly = True
       TabOrder = 5
-      Text = 'Condição'
+      Text = 'Programa de ensino/avaliação'
     end
     object CheckBoxTestMode: TCheckBox
       Left = 16
@@ -135,6 +135,15 @@ object FormBackground: TFormBackground
       Width = 111
       Caption = 'Mostrar AprilTags'
       TabOrder = 9
+    end
+    object ButtonMisc: TButton
+      Left = 16
+      Height = 26
+      Top = 176
+      Width = 241
+      Caption = 'Configurações globais'
+      TabOrder = 10
+      OnClick = ButtonMiscClick
     end
   end
   object OpenDialog1: TOpenDialog

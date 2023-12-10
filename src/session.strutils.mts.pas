@@ -14,9 +14,13 @@ function GetWordValue(const AParameters: TStringList; AIsSample : boolean;
 
 function HasPrompt(const AParameters: TStringList) : Boolean;
 
+function GetTotalLoopsValue(const AParameters: TStringList) : integer;
+
 implementation
 
-uses session.constants.mts;
+uses
+  session.constants.mts,
+  session.constants.trials.dapaap;
 
 function GetWordValue(const AParameters: TStringList; AIsSample: boolean;
   AIndex: integer): string;
@@ -30,7 +34,12 @@ end;
 
 function HasPrompt(const AParameters: TStringList): Boolean;
 begin
-  StrToBooldef(AParameters.Values[MTSKeys.HasPromptKey], True);
+  Result := StrToBooldef(AParameters.Values[MTSKeys.HasPromptKey], True);
+end;
+
+function GetTotalLoopsValue(const AParameters: TStringList): integer;
+begin
+  Result := StrToIntDef(AParameters.Values[ParserTrialsDAPAAP.TotalLoopsKey], 0);
 end;
 
 end.

@@ -37,7 +37,7 @@ type
 
 implementation
 
-uses session.constants.trials;
+uses session.constants.trials, session.parameters.global;
 
 { TCSVTrialsBase }
 

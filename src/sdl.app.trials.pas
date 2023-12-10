@@ -302,6 +302,11 @@ begin
     FIStimuli := GetIStimuli;
     Show;
   end;
+
+  //with FStimuliList do
+  //  if Count > 0 then begin
+  //    FIStimuli := Extract(Last);
+  //  end;
 end;
 
 // todo: refactor starters as an IStimuliList to allow many instructions ...
@@ -428,7 +433,9 @@ begin
     DoExpectedResponse;
   end else begin
     FIStimuli.Start;
-    FLimitedHoldTimer.Start;
+    if FLimitedHoldTimer.Interval > 0 then begin
+      FLimitedHoldTimer.Start;
+    end;
     FVisible := True;
     Timestamp(FIStimuli.CustomName+'.Show');
   end;

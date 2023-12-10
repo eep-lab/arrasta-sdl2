@@ -28,14 +28,6 @@ type
     HasConsequence : Boolean;
   end;
 
-  TGlobalTrialParameters = record
-    Cursor : integer;
-    LimitedHold : integer;
-    InterTrialInterval : integer;
-    TimeOutInterval : integer;
-    HasConsequence : Boolean;
-  end;
-
   TParserTrialsSourceKeys = record
     BlockIDKey : string;
     TrialIDKey : string;
@@ -116,9 +108,6 @@ const
     ConsequenceIntervalKey : HeaderConsequenceInterval;
     HasConsequenceKey : HeaderHasConsequence;
   );
-
-var
-  GlobalTrialParameters : TGlobalTrialParameters;
 
 implementation
 

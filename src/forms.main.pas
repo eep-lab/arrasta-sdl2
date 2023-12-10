@@ -22,6 +22,7 @@ type
   { TFormBackground }
 
   TFormBackground = class(TForm)
+    ButtonMisc: TButton;
     ButtonNewParticipant: TButton;
     ButtonLoadConfigurationFile: TButton;
     ButtonNewConfigurationFile: TButton;
@@ -36,6 +37,7 @@ type
     Panel1: TPanel;
     RadioGroupEyeTracker: TRadioGroup;
     procedure ButtonLoadConfigurationFileClick(Sender: TObject);
+    procedure ButtonMiscClick(Sender: TObject);
     procedure ButtonNewConfigurationFileClick(Sender: TObject);
     procedure ButtonNewParticipantClick(Sender: TObject);
     procedure ButtonRunSessionClick(Sender: TObject);
@@ -45,6 +47,7 @@ type
     procedure FormCreate(Sender: TObject);
   private
     //FEyeLink : TEyeLink;
+    procedure AssignGlobalVariables;
     procedure ToogleControlPanelEnabled;
     function ParticipantFolderName : string;
     function SessionName : string;
@@ -62,7 +65,10 @@ implementation
 
 uses
   FileUtil
+  , common.helpers
+  , forms.main.misc
   , session
+  , session.parameters.global
   , session.pool
   , session.loggers
   , session.fileutils
@@ -72,11 +78,15 @@ uses
   , eye.tracker
   ;
 
+{ ToDo: show next designed session of selected participant.
+        for data in data folder get next session of last session}
+
 { TFormBackground }
 
 procedure TFormBackground.ButtonRunSessionClick(Sender: TObject);
 begin
   if not Validated then Exit;
+  AssignGlobalVariables;
   ToogleControlPanelEnabled;
   TestMode := CheckBoxTestMode.Checked;
 
@@ -139,6 +149,11 @@ begin
     Pool.ConfigurationFilename := LoadConfigurationFile(OpenDialog1.FileName);
 end;
 
+procedure TFormBackground.ButtonMiscClick(Sender: TObject);
+begin
+  FormMisc.ShowModal;
+end;
+
 procedure TFormBackground.BeginSession(Sender: TObject);
 begin
   if Assigned(EyeTracker) then begin
@@ -187,6 +202,26 @@ begin
     LStringList.Clear;
     LStringList.Free;
   end;
+end;
+
+procedure TFormBackground.AssignGlobalVariables;
+begin
+  GlobalTrialParameters.Cursor := 1;
+
+  with GlobalTrialParameters, FormMisc.ComboBoxFontName do
+    FontName := Items[ItemIndex];
+
+  with GlobalTrialParameters, FormMisc.SpinEditInterTrialInterval do
+    InterTrialInterval := Value.SecondsToMiliseconds;
+
+  with GlobalTrialParameters, FormMisc.SpinEditLimitedHold do
+    LimitedHold := Value.MinutesToMiliseconds;
+
+  with GlobalTrialParameters, FormMisc.SpinEditTimeOut do
+    TimeOutInterval := Value.SecondsToMiliseconds;
+
+  with GlobalTrialParameters, FormMisc.ComboBoxAudioFolder do
+    Pool.AudioBasePath := Items[ItemIndex];
 end;
 
 procedure TFormBackground.ToogleControlPanelEnabled;

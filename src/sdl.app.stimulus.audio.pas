@@ -18,8 +18,10 @@ uses
   , SDL2
   , sdl.app.graphics.rectangule
   , sdl.app.audio.contract
+  , sdl.app.audio.loops
   , sdl.app.stimulus
   , sdl.app.graphics.picture
+  , sdl.app.graphics.text
   , sdl.app.events.abstract
   ;
 
@@ -29,8 +31,10 @@ type
 
   TAudioStimulus = class(TStimulus)
   private
+    FLoops : TSoundLoop;
     FSound : ISound;
     FPicture : TPicture;
+    FText    : TText;
   protected
     function GetStimulusName : string; override;
     function GetRect: TRectangule; override;
@@ -54,6 +58,7 @@ implementation
 
 uses sdl.app.audio
    , sdl.app.renderer.custom
+   , session.parameters.global
    , session.loggers.writerow.timestamp
    , session.pool
    , session.constants.mts
@@ -136,12 +141,16 @@ begin
   inherited Create;
   FPicture := TPicture.Create;
   FPicture.Owner := Self;
+  FLoops := TSoundLoop.Create;
+  FText := TText.Create;
 end;
 
 destructor TAudioStimulus.Destroy;
 begin
   //SDLAudio.UnregisterChannel(FSound);
   //FSound.Free;
+  FText.Free;
+  FLoops.Free;
   FPicture.Free;
   inherited Destroy;
 end;
@@ -151,17 +160,27 @@ procedure TAudioStimulus.Load(AParameters: TStringList; AParent: TObject;
 const
   LAudioPicture : string = 'AudioPicture'+IMG_EXT;
 begin
-  FPicture.LoadFromFile(Assets(LAudioPicture));
-  FPicture.BoundsRect := ARect;
-  FPicture.Parent := TCustomRenderer(AParent);
-  FPicture.OnMouseDown := @MouseDown;
-  FPicture.OnMouseEnter := @MouseEnter;
-  FPicture.OnMouseExit := @MouseExit;
-
   FCustomName := GetWordValue(AParameters, IsSample, Index);
+  if HasPrompt(AParameters) then begin
+    FText.FontName := GlobalTrialParameters.FontName;
+    //FText.FontSize := 50;
+    FText.Load(FCustomName);
+    FText.CentralizeWith(ARect);
+    FText.Parent := TCustomRenderer(AParent);
+    FText.OnMouseDown := @MouseDown;
+  end else begin
+    FPicture.LoadFromFile(Assets(LAudioPicture));
+    FPicture.BoundsRect := ARect;
+    FPicture.Parent := TCustomRenderer(AParent);
+    FPicture.OnMouseDown := @MouseDown;
+    FPicture.OnMouseEnter := @MouseEnter;
+    FPicture.OnMouseExit := @MouseExit;
+  end;
+
   FSound := SDLAudio.LoadFromFile(AudioFile(FCustomName));
   FSound.SetOnStop(@SoundFinished);
   FSound.SetOnStart(@SoundStart);
+  FLoops.Sound := FSound;
 end;
 
 procedure TAudioStimulus.Start;

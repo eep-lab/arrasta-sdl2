@@ -1,0 +1,102 @@
+object FormMisc: TFormMisc
+  Left = 819
+  Height = 240
+  Top = 317
+  Width = 470
+  Caption = 'Configurações globais'
+  ChildSizing.LeftRightSpacing = 20
+  ChildSizing.HorizontalSpacing = 20
+  ChildSizing.EnlargeHorizontal = crsHomogenousChildResize
+  ChildSizing.Layout = cclLeftToRightThenTopToBottom
+  ChildSizing.ControlsPerLine = 2
+  ClientHeight = 240
+  ClientWidth = 470
+  SessionProperties = 'ComboBoxFontName.ItemIndex;SpinEditInterTrialInterval.Value;SpinEditLimitedHold.Value;SpinEditTimeOut.Value;ComboBoxAudioFolder.ItemIndex'
+  LCLVersion = '3.99.0.0'
+  OnCreate = FormCreate
+  object LabelLimitedHold: TLabel
+    Left = 20
+    Height = 23
+    Top = 0
+    Width = 251
+    Caption = 'Tempo da tentativa (minutos)'
+  end
+  object SpinEditLimitedHold: TSpinEdit
+    Left = 291
+    Height = 23
+    Top = 0
+    Width = 159
+    MaxValue = 5
+    TabOrder = 0
+  end
+  object LabelInterTrialInterval: TLabel
+    Left = 20
+    Height = 23
+    Top = 23
+    Width = 251
+    Caption = 'Intervalo entre tentativas (segundos)'
+  end
+  object SpinEditInterTrialInterval: TSpinEdit
+    Left = 291
+    Height = 23
+    Top = 23
+    Width = 159
+    MaxValue = 60
+    TabOrder = 1
+    Value = 2
+  end
+  object LabelTimeOut: TLabel
+    Left = 20
+    Height = 23
+    Top = 46
+    Width = 251
+    Caption = 'Time-out (segundos)'
+  end
+  object SpinEditTimeOut: TSpinEdit
+    Left = 291
+    Height = 23
+    Top = 46
+    Width = 159
+    MaxValue = 120
+    TabOrder = 3
+    Value = 3
+  end
+  object LabelFont: TLabel
+    Left = 20
+    Height = 23
+    Top = 69
+    Width = 251
+    Caption = 'Fonte das palavras escritas'
+  end
+  object ComboBoxFontName: TComboBox
+    Left = 291
+    Height = 23
+    Top = 69
+    Width = 159
+    ItemHeight = 15
+    TabOrder = 2
+    Text = 'Nome da fonte'
+  end
+  object LabelAudioFolder: TLabel
+    Left = 20
+    Height = 23
+    Top = 92
+    Width = 251
+    Caption = 'Pasta com os sons das palavras'
+  end
+  object ComboBoxAudioFolder: TComboBox
+    Left = 291
+    Height = 23
+    Top = 92
+    Width = 159
+    ItemHeight = 15
+    TabOrder = 4
+    Text = 'Nome da pasta'
+  end
+  object IniPropStorage1: TIniPropStorage
+    StoredValues = <>
+    IniFileName = 'configurations_global.ini'
+    Left = 376
+    Top = 189
+  end
+end

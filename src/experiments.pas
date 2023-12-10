@@ -13,21 +13,15 @@ unit experiments;
 
 interface
 
-uses common.helpers;
-
 function MakeConfigurationFile(AFilename : string) : string;
-
-var
-  ITI : integer = 2;
-  LimitedHold : integer  = 1;
-  Timeout : integer = 3;
 
 implementation
 
 uses
   session.fileutils
-  , experiments.base
+  , session.csv.experiments.base
   , session.constants.trials
+  , session.parameters.global
   , session.configurationfile
   ;
 
@@ -36,10 +30,6 @@ var
   LExperimentWriter : TBaseExperimentWriter;
 begin
   Result := NewConfigurationFile;
-  GlobalTrialParameters.InterTrialInterval := ITI.SecondsToMiliseconds;
-  GlobalTrialParameters.LimitedHold := LimitedHold.MinutesToMiliseconds;
-  GlobalTrialParameters.TimeOutInterval := Timeout.SecondsToMiliseconds;
-  GlobalTrialParameters.Cursor := 1;
 
   LExperimentWriter :=
     TBaseExperimentWriter.Create(ConfigurationFile, AFilename);
