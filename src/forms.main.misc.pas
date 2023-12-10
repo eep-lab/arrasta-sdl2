@@ -13,9 +13,11 @@ type
   { TFormMisc }
 
   TFormMisc = class(TForm)
+    ComboBoxFixedSamplePosition: TComboBox;
     ComboBoxAudioFolder: TComboBox;
     ComboBoxFontName: TComboBox;
     IniPropStorage1: TIniPropStorage;
+    LabelFixedSamplePosition: TLabel;
     LabelAudioFolder: TLabel;
     LabelTimeOut: TLabel;
     LabelLimitedHold: TLabel;

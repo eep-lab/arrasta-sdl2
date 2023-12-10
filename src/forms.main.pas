@@ -74,6 +74,7 @@ uses
   , session.fileutils
   , session.csv.experiments
   , sdl.app
+  , sdl.app.grids.types
   , sdl.app.testmode
   , eye.tracker
   ;
@@ -222,6 +223,27 @@ begin
 
   with GlobalTrialParameters, FormMisc.ComboBoxAudioFolder do
     Pool.AudioBasePath := Items[ItemIndex];
+
+  with GlobalTrialParameters, FormMisc.ComboBoxFixedSamplePosition do begin
+    GridOrientation := goCustom;
+    case ItemIndex of
+      1: begin // centralize sample, use 4 corners for comparisions
+        FixedSamplePosition := 4;
+        SetLength(ComparisonPositions, 4);
+        ComparisonPositions[0] := 0;
+        ComparisonPositions[1] := 2;
+        ComparisonPositions[2] := 6;
+        ComparisonPositions[3] := 8;
+      end
+      else begin // upper sample, use 3 bottom positions for comparisons
+        FixedSamplePosition := 1;
+        SetLength(ComparisonPositions, 3);
+        ComparisonPositions[0] := 6;
+        ComparisonPositions[1] := 7;
+        ComparisonPositions[2] := 8;
+      end;
+    end;
+  end;
 end;
 
 procedure TFormBackground.ToogleControlPanelEnabled;

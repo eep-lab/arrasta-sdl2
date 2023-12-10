@@ -101,6 +101,7 @@ begin
   Result.OnMouseExit:=ACallbacks.OnMouseExit;
   Result.OnMouseMove:=ACallbacks.OnMouseMove;
   Result.OnMouseUp:=ACallbacks.OnMouseUp;
+  Result.OnNoResponse:=ACallbacks.OnNoResponse;
 end;
 
 

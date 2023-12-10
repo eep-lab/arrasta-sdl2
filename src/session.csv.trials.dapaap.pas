@@ -42,7 +42,7 @@ procedure TCSVDAPAAPTrials.AfterLoadingParameters(Sender: TObject);
 begin
   Comparisons := 2;
   FName := TrialID.ToString + #32 + '(' + FSample + #32 +
-      Relation + #32 + Comparisons.ToString + 'C)';
+      Relation + #32 + FSubset + ')';
   FRefName := FSample;
 end;
 

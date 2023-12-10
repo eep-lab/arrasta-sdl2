@@ -75,6 +75,7 @@ implementation
 
 uses
   Math
+  , session.parameters.global
   , sdl.app.grids.methods
   , sdl.app.stimulus.contract
   ;
@@ -103,46 +104,49 @@ end;
 procedure TGrid.InvalidateSampleGridList(AGridList: TGridList);
 var
   i: Integer;
+  LOrientation : string;
 begin
+  WriteStr(LOrientation, FGridOrientation);
+  LOrientation :=
+    'Not implemented with '+ LOrientation + ' orientation and ' +
+    'fixed sample = ' + FFixedSample.ToString;
   AGridList.Clear;
-  case FGridOrientation of
-    goNone: begin
-      for i := 0 to FCellsCount - 1 do AGridList.Add(i);
+
+  if FFixedSample then begin
+    case FGridOrientation of
+      goCustom :
+        AGridList.Add(GlobalTrialParameters.FixedSamplePosition);
+      else begin
+        raise ENotImplemented.Create(LOrientation)
+      end;
     end;
-    goLeftToRight: begin
-      if FFixedSample then begin
-        AGridList.Add(3);
-      end else begin
+  end else begin
+    case FGridOrientation of
+      goNone: begin
+        for i := 0 to FCellsCount - 1 do AGridList.Add(i);
+      end;
+      goLeftToRight: begin
         AGridList.Add(0);
         AGridList.Add(3);
         AGridList.Add(6);
       end;
-    end;
-    goRightToLeft: begin
-      if FFixedSample then begin
-        AGridList.Add(5);
-      end else begin
+      goRightToLeft: begin
         AGridList.Add(2);
         AGridList.Add(5);
         AGridList.Add(8);
       end;
-    end;
-    goBottomToTop: begin
-      if FFixedSample then begin
-        AGridList.Add(7);
-      end else begin
+      goBottomToTop: begin
         AGridList.Add(6);
         AGridList.Add(7);
         AGridList.Add(8);
       end;
-    end;
-    goTopToBottom: begin
-      if FFixedSample then begin
-        AGridList.Add(1);
-      end else begin
+      goTopToBottom: begin
         AGridList.Add(0);
         AGridList.Add(1);
         AGridList.Add(2);
+      end;
+      goCustom : begin
+        raise ENotImplemented.Create(LOrientation)
       end;
     end;
   end;
@@ -153,44 +157,38 @@ var
   i: Integer;
 begin
   AGridList.Clear;
-  case FGridOrientation of
-    goNone: begin
-      for i := 0 to FCellsCount - 1 do AGridList.Add(i);
-    end;
-    goLeftToRight: begin
-      if FFixedComparison then begin
-        AGridList.Add(5);
-      end else begin
+  if FFixedComparison then begin
+    raise ENotImplemented.Create('Fixed Comparison is not implemented.');
+  end else begin
+    case FGridOrientation of
+      goNone: begin
+        for i := 0 to FCellsCount - 1 do AGridList.Add(i);
+      end;
+      goLeftToRight: begin
         AGridList.Add(2);
         AGridList.Add(5);
         AGridList.Add(8);
       end;
-    end;
-    goRightToLeft: begin
-      if FFixedComparison then begin
-        AGridList.Add(3);
-      end else begin
+      goRightToLeft: begin
         AGridList.Add(0);
         AGridList.Add(3);
         AGridList.Add(6);
       end;
-    end;
-    goBottomToTop: begin
-      if FixedComparison then begin
-        AGridList.Add(1);
-      end else begin
+      goBottomToTop: begin
         AGridList.Add(0);
         AGridList.Add(1);
         AGridList.Add(2);
       end;
-    end;
-    goTopToBottom: begin
-      if FFixedComparison then begin
-        AGridList.Add(7);
-      end else begin
+      goTopToBottom: begin
         AGridList.Add(6);
         AGridList.Add(7);
         AGridList.Add(8);
+      end;
+      goCustom: begin
+        with GlobalTrialParameters do
+          for i := Low(ComparisonPositions) to High(ComparisonPositions) do begin
+            AGridList.Add(ComparisonPositions[i]);
+          end;
       end;
     end;
   end;
@@ -220,8 +218,36 @@ begin
         Comparisons[i].Index := -1;
     case FGridOrientation of
         goNone: begin
-          // do nothing for now
+          { do nothing }
         end;
+
+        goCustom: begin
+          LGridList := TGridList.Create;
+          try
+            //InvalidateSampleGridList(LGridList);
+            //if Assigned(SamplesRows) then begin
+            //  SamplesRows.Free;
+            //end;
+            //SamplesRows := TLatinSquare.Create(FSeed);
+            //for i := 0 to LGridList.Count-1 do
+            //  SamplesRows.Signs[i] := LGridList[i];
+            //SamplesRows.Invalidate;
+
+
+            InvalidateComparGridList(LGridList);
+
+            if Assigned(ComparisonsRows) then begin
+              ComparisonsRows.Free;
+            end;
+            ComparisonsRows := TLatinSquare.Create(LGridList.Count);
+            for i := 0 to LGridList.Count-1 do
+              ComparisonsRows.Signs[i] := LGridList[i];
+            ComparisonsRows.Invalidate;
+          finally
+            LGridList.Free;
+          end;
+        end;
+
         else begin
           LGridList := TGridList.Create;
           try
@@ -305,11 +331,27 @@ begin
           GridListToGridItems(Samples);
           GridListToGridItems(Comparisons);
         end;
+
+        goCustom: begin
+          if FFixedSample then begin
+            Cell := IntToCell(GlobalTrialParameters.FixedSamplePosition);
+            SecureCopy(Samples[Low(Samples)], FGrid[Cell[0], Cell[1]]);
+          end else begin
+            raise ENotImplemented.Create(
+              'Random sample positions with custom grid orientation.');
+          end;
+
+          if FFixedComparison then begin
+             raise ENotImplemented.Create(
+              'Fixed comparison positions with custom grid orientation.');
+          end else begin
+            LatinRowToGridItems(ComparisonsRows, Comparisons);
+          end;
+        end;
+
         else begin
           if FFixedSample then begin
-            InvalidateSampleGridList(LGridList);
-            Samples[Low(Samples)].Position := LGridList.First;
-            Cell := IntToCell(Samples[Low(Samples)].Position);
+            Cell := IntToCell(GlobalTrialParameters.FixedSamplePosition);
             SecureCopy(Samples[Low(Samples)], FGrid[Cell[0], Cell[1]]);
           end else begin
             LatinRowToGridItems(SamplesRows, Samples);

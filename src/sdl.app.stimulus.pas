@@ -33,6 +33,7 @@ type
   TStimulus = class(TInterfacedObject, IStimulus)
     private
       FName: string;
+      FOnNoResponse: TNotifyEvent;
       FPosition: Integer;
       FResponseID : Integer;
       FStimuli: TObject;
@@ -51,6 +52,7 @@ type
       procedure SetOnMouseExit(AValue: TNotifyEvent);
       procedure SetOnMouseMove(AValue: TOnMouseEvent);
       procedure SetOnMouseUp(AValue: TOnMouseEvent);
+      procedure SetOnNoResponse(AValue: TNotifyEvent);
       procedure SetOnResponse(AValue: TNotifyEvent);
       procedure SetStimuli(AValue: TObject);
     protected
@@ -76,6 +78,7 @@ type
       procedure DoResponse(AHuman : Boolean); virtual;
       procedure Start; virtual; abstract;
       procedure Stop; virtual; abstract;
+      property OnNoResponse : TNotifyEvent read FOnNoResponse write SetOnNoResponse;
       property OnMouseMove: TOnMouseEvent read FOnMouseMove write SetOnMouseMove;
       property OnMouseDown: TOnMouseEvent read FOnMouseDown write SetOnMouseDown;
       property OnMouseUp: TOnMouseEvent read FOnMouseUp write SetOnMouseUp;
@@ -147,6 +150,12 @@ procedure TStimulus.SetOnMouseUp(AValue: TOnMouseEvent);
 begin
   if FOnMouseUp=AValue then Exit;
   FOnMouseUp:=AValue;
+end;
+
+procedure TStimulus.SetOnNoResponse(AValue: TNotifyEvent);
+begin
+  if FOnNoResponse = AValue then Exit;
+  FOnNoResponse := AValue;
 end;
 
 procedure TStimulus.SetOnResponse(AValue: TNotifyEvent);

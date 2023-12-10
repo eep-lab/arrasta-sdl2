@@ -35,6 +35,7 @@ type
     OnMouseUp: TOnMouseEvent;
     OnMouseEnter: TNotifyEvent;
     OnMouseExit: TNotifyEvent;
+    OnNoResponse: TNotifyEvent;
   end;
 
   TChildren = specialize TList<TObject>;

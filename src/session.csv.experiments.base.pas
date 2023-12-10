@@ -60,6 +60,7 @@ begin
   FWriter := TConfigurationWriter.Create(AConfigurationFile);
   FDesignFilename := ADesignFilename;
   FMultiTrialType := False;
+  PopulateBooleanStrings;
 end;
 
 destructor TBaseExperimentWriter.Destroy;
@@ -87,10 +88,10 @@ begin
       LBlockParser.Clear;
       LBlockParser.LoadFromFile(InsideBlocksSubFolder(FDesignFilename));
       for LRow in LBlockParser do begin
-        Print(LineEnding+LineEnding+LRow.Text+LineEnding+LineEnding);
+        //Print(LineEnding+LineEnding+LRow.Text+LineEnding+LineEnding);
         LBlockParser.LoadParameters(LRow);
         LBlockParser.AssignParameters(FWriter.BlockConfig);
-        Print(LineEnding+LineEnding+FWriter.BlockConfig.Text+LineEnding+LineEnding);
+        //Print(LineEnding+LineEnding+FWriter.BlockConfig.Text+LineEnding+LineEnding);
         FWriter.CurrentBlock := LBlockParser.ID;
         FWriter.WriteBlock;
       end;

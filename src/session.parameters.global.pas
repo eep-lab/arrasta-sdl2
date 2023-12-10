@@ -5,7 +5,7 @@ unit session.parameters.global;
 interface
 
 uses
-  Classes, SysUtils;
+  Classes, SysUtils, sdl.app.grids.types;
 
 type
 
@@ -16,6 +16,9 @@ type
     TimeOutInterval : integer;
     HasConsequence : Boolean;
     FontName : string;
+    FixedSamplePosition : UInt8;
+    ComparisonPositions : array of UInt8;
+    GridOrientation : TGridOrientation;
   end;
 
 var

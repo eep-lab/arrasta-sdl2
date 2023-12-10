@@ -60,6 +60,7 @@ type
       procedure ButtonClick(Sender: TObject);
       procedure ComparisonResponse(Sender: TObject);
       procedure SampleResponse(Sender: TObject);
+      procedure NoResponse(Sender: TObject);
     public
       constructor Create; override;
       destructor Destroy; override;
@@ -210,6 +211,9 @@ var
   LStimulus : TStimulus;
   LIStimulus : IStimulus;
 begin
+  for LIStimulus in FSamples do begin
+    LIStimulus.Stop;
+  end;
   if Sender is TStimulus then begin
     //Timestamp('Comparison.Response');
     LStimulus := Sender as TStimulus;
@@ -254,6 +258,15 @@ begin
     LStimulus.Start;
   end;
   Timestamp('Comparison.Start');
+end;
+
+procedure TMTSStimuli.NoResponse(Sender: TObject);
+begin
+  FResult := None;
+  Pool.Counters.None;
+  //Pool.Counters.Miss;
+  if Assigned(OnFinalize) then
+    OnFinalize(Self);
 end;
 
 
@@ -336,6 +349,7 @@ var
     LCallbacks.OnMouseDown := @StimulusMouseDown;
     LCallbacks.OnMouseUp := @StimulusMouseUp;
     LCallbacks.OnResponse  := @ComparisonResponse;
+    LCallbacks.OnNoResponse := @NoResponse;
 
     if not Assigned(Grid) then begin
       Grid := TGrid.Create(3);
@@ -433,7 +447,7 @@ begin
     end;
   end;
 
-  NewGridItems(LSamples, LComparisons, goTopToBottom);
+  NewGridItems(LSamples, LComparisons, goCustom);
 end;
 
 procedure TMTSStimuli.Start;

@@ -11,7 +11,7 @@ object FormMisc: TFormMisc
   ChildSizing.ControlsPerLine = 2
   ClientHeight = 240
   ClientWidth = 470
-  SessionProperties = 'ComboBoxFontName.ItemIndex;SpinEditInterTrialInterval.Value;SpinEditLimitedHold.Value;SpinEditTimeOut.Value;ComboBoxAudioFolder.ItemIndex'
+  SessionProperties = 'ComboBoxAudioFolder.ItemIndex;ComboBoxFontName.ItemIndex;SpinEditInterTrialInterval.Value;SpinEditLimitedHold.Value;SpinEditTimeOut.Value;ComboBoxFixedSamplePosition.ItemIndex'
   LCLVersion = '3.99.0.0'
   OnCreate = FormCreate
   object LabelLimitedHold: TLabel
@@ -92,6 +92,27 @@ object FormMisc: TFormMisc
     ItemHeight = 15
     TabOrder = 4
     Text = 'Nome da pasta'
+  end
+  object LabelFixedSamplePosition: TLabel
+    Left = 20
+    Height = 23
+    Top = 115
+    Width = 251
+    Caption = 'Posição fixa do modelo'
+  end
+  object ComboBoxFixedSamplePosition: TComboBox
+    Left = 291
+    Height = 23
+    Top = 115
+    Width = 159
+    ItemHeight = 15
+    ItemIndex = 1
+    Items.Strings = (
+      'No topo'
+      'No centro'
+    )
+    TabOrder = 5
+    Text = 'No centro'
   end
   object IniPropStorage1: TIniPropStorage
     StoredValues = <>

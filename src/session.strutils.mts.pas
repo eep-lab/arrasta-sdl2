@@ -45,7 +45,7 @@ end;
 
 function GetTotalLoopsValue(const AParameters: TStringList): integer;
 begin
-  Result := StrToIntDef(AParameters.Values[ParserTrialsDAPAAP.TotalLoopsKey], 0);
+  Result := StrToIntDef(AParameters.Values[ParserTrialsDAPAAP.TotalLoopsKey], 1);
 end;
 
 end.
