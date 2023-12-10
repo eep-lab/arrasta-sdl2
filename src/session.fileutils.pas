@@ -41,6 +41,7 @@ uses
   FileUtil
   , LazFileUtils
   , session.pool
+  , session.strutils
   , session.constants
   , session.configurationfile
   ;
@@ -76,7 +77,8 @@ begin
   LDefaultFolder := ConcatPaths([LFolder, LSubfolder]);
   FindAllDirectories(AStrings, LDefaultFolder, False);
   for i := 0 to AStrings.Count - 1 do begin
-    AStrings[i] := AStrings[i].Replace(LFolder+DirectorySeparator, '');
+    AStrings[i] :=
+      AsPath(AStrings[i].Replace(LFolder+DirectorySeparator, ''));
   end;
 end;
 

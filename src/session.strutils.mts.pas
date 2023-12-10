@@ -13,6 +13,7 @@ function GetWordValue(const AParameters: TStringList; AIsSample : boolean;
   AIndex : integer = -1) : string;
 
 function HasPrompt(const AParameters: TStringList) : Boolean;
+function HasDAPAAPPrompt(const AParameters: TStringList) : Boolean;
 
 function GetTotalLoopsValue(const AParameters: TStringList) : integer;
 
@@ -35,6 +36,11 @@ end;
 function HasPrompt(const AParameters: TStringList): Boolean;
 begin
   Result := StrToBooldef(AParameters.Values[MTSKeys.HasPromptKey], True);
+end;
+
+function HasDAPAAPPrompt(const AParameters: TStringList): Boolean;
+begin
+  Result := StrToBooldef(AParameters.Values[MTSKeys.HasPromptKey], False);
 end;
 
 function GetTotalLoopsValue(const AParameters: TStringList): integer;

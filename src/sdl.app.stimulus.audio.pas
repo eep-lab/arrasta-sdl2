@@ -161,7 +161,7 @@ const
   LAudioPicture : string = 'AudioPicture'+IMG_EXT;
 begin
   FCustomName := GetWordValue(AParameters, IsSample, Index);
-  if HasPrompt(AParameters) then begin
+  if HasDAPAAPPrompt(AParameters) then begin
     FText.FontName := GlobalTrialParameters.FontName;
     //FText.FontSize := 50;
     FText.Load(FCustomName);
