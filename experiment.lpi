@@ -703,7 +703,7 @@
         <IsPartOfProject Value="True"/>
       </Unit>
       <Unit>
-        <Filename Value="src\experiments.base.pas"/>
+        <Filename Value="src\session.csv.experiments.base.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit>
       <Unit>
@@ -731,7 +731,7 @@
         <IsPartOfProject Value="True"/>
       </Unit>
       <Unit>
-        <Filename Value="src\session.csv.trials.daats.pas"/>
+        <Filename Value="src\session.csv.trials.dapaap.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit>
       <Unit>
@@ -756,6 +756,37 @@
       </Unit>
       <Unit>
         <Filename Value="src\timestamps.types.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="src\forms.main.misc.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="FormMisc"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+      </Unit>
+      <Unit>
+        <Filename Value="src\dafny.experiments.audio.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="src\media.audio.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="src\experiments.constants.trials.dapaap.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="src\session.constants.trials.dapaap.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="src\sdl.app.audio.loops.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="src\session.parameters.global.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit>
     </Units>

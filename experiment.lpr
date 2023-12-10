@@ -11,7 +11,7 @@ uses
   {$IFDEF HASAMIGA}athreads,{$ENDIF}
   Interfaces, // this includes the LCL widgetset
   SysUtils,
-  Forms, Forms.Main, Forms.Modal.SpeechValidation;
+  Forms, Forms.Main, Forms.Modal.SpeechValidation, Forms.Main.Misc;
 
 {$R *.res}
 
@@ -29,6 +29,8 @@ begin
   Application.CreateForm(TFormBackground, FormBackground);
   Application.CreateForm(
     TFormManualSpeechValidation, FormManualSpeechValidation);
+  Application.CreateForm(
+    TFormMisc, FormMisc);
   Application.Run;
 end.
 
