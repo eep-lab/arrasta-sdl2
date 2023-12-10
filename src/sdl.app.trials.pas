@@ -315,23 +315,23 @@ var
   LInstruction : TInstructionStimuli;
   LCalibration : TPupilCalibrationStimuli;
 begin
-  //if FHasInstructions then begin
-  //  LInstruction := TInstructionStimuli.Create;
-  //  LInstruction.OnFinalize := @EndStarterCallBack;
-  //  FIInstruction := LInstruction;
-  //  FIInstruction.Load(FData.Parameters, Self);
-  //  FIStimuli := FIInstruction;
-  //  FStimuliList.Add(LInstruction);
-  //end;
-  //
-  //if TEyeTrackerClient.Exists and FHasCalibration then begin
-  //  LCalibration := TPupilCalibrationStimuli.Create;
-  //  LCalibration.OnFinalize := @EndStarterCallBack;
-  //  FICalibration := LCalibration;
-  //  FICalibration.Load(FData.Parameters, Self);
-  //  FIStimuli := LCalibration;
-  //  FStimuliList.Add(LCalibration);
-  //end;
+  if FHasInstructions then begin
+    LInstruction := TInstructionStimuli.Create;
+    LInstruction.OnFinalize := @EndStarterCallBack;
+    FIInstruction := LInstruction;
+    FIInstruction.Load(FData.Parameters, Self);
+    FIStimuli := FIInstruction;
+    FStimuliList.Add(LInstruction);
+  end;
+
+  if TEyeTrackerClient.Exists and FHasCalibration then begin
+    LCalibration := TPupilCalibrationStimuli.Create;
+    LCalibration.OnFinalize := @EndStarterCallBack;
+    FICalibration := LCalibration;
+    FICalibration.Load(FData.Parameters, Self);
+    FIStimuli := LCalibration;
+    FStimuliList.Add(LCalibration);
+  end;
 end;
 
 procedure TTrial.GazeOnScreen(Sender: TObject; AGazes: TGazes);
