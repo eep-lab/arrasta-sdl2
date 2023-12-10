@@ -40,7 +40,12 @@ uses
 
 procedure TCSVDAPAAPTrials.AfterLoadingParameters(Sender: TObject);
 begin
-  Comparisons := 2;
+  inherited AfterLoadingParameters(Sender);
+  if FComparison2.IsEmpty then begin
+    Comparisons := 1;
+  end else begin
+    Comparisons := 2;
+  end;
   FName := TrialID.ToString + #32 + '(' + FSample + #32 +
       Relation + #32 + FSubset + ')';
   FRefName := FSample;

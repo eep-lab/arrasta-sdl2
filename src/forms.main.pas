@@ -115,6 +115,7 @@ procedure TFormBackground.ButtonNewConfigurationFileClick(Sender: TObject);
 var
   LFilename : string;
 begin
+  AssignGlobalVariables;
   if ComboBoxCondition.Items.Count = 0 then begin
     ShowMessage('A pasta de condições (design) está vazia.');
     Exit;
@@ -146,6 +147,7 @@ end;
 
 procedure TFormBackground.ButtonLoadConfigurationFileClick(Sender: TObject);
 begin
+  AssignGlobalVariables;
   if OpenDialog1.Execute then
     Pool.ConfigurationFilename := LoadConfigurationFile(OpenDialog1.FileName);
 end;
@@ -211,6 +213,9 @@ begin
 
   with GlobalTrialParameters, FormMisc.ComboBoxFontName do
     FontName := Items[ItemIndex];
+
+  with GlobalTrialParameters, FormMisc.SpinEditFontSize do
+    FontSize := Value;
 
   with GlobalTrialParameters, FormMisc.SpinEditInterTrialInterval do
     InterTrialInterval := Value.SecondsToMiliseconds;

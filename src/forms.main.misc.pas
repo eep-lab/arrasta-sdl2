@@ -17,12 +17,14 @@ type
     ComboBoxAudioFolder: TComboBox;
     ComboBoxFontName: TComboBox;
     IniPropStorage1: TIniPropStorage;
+    LabelFontsize: TLabel;
     LabelFixedSamplePosition: TLabel;
     LabelAudioFolder: TLabel;
     LabelTimeOut: TLabel;
     LabelLimitedHold: TLabel;
     LabelInterTrialInterval: TLabel;
     LabelFont: TLabel;
+    SpinEditFontSize: TSpinEdit;
     SpinEditTimeOut: TSpinEdit;
     SpinEditLimitedHold: TSpinEdit;
     SpinEditInterTrialInterval: TSpinEdit;

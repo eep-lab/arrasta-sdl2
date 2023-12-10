@@ -44,7 +44,17 @@ uses session.constants.trials, session.parameters.global;
 
 procedure TCSVTrialsBase.AfterLoadingParameters(Sender: TObject);
 begin
+  if FInterTrialInterval = -1 then begin
+    FInterTrialInterval := GlobalTrialParameters.InterTrialInterval;
+  end;
 
+  if FLimitedHold = -1 then begin
+    FLimitedHold := GlobalTrialParameters.LimitedHold;
+  end;
+
+  if FConsequenceInterval = -1 then begin
+    FConsequenceInterval := GlobalTrialParameters.TimeOutInterval;
+  end;
 end;
 
 constructor TCSVTrialsBase.Create;
@@ -56,9 +66,9 @@ begin
   FRepeatTrial := 1;
   FTrialCount := 1;
   FCursor := GlobalTrialParameters.Cursor;
-  FLimitedHold := GlobalTrialParameters.LimitedHold;
-  FInterTrialInterval := GlobalTrialParameters.InterTrialInterval;
-  FConsequenceInterval := GlobalTrialParameters.TimeOutInterval;
+  FLimitedHold := -1;
+  FInterTrialInterval := -1;
+  FConsequenceInterval := -1;
   FHasConsequence := True;
 
   with ParserTrialsBase do begin

@@ -19,6 +19,7 @@ type
     FixedSamplePosition : UInt8;
     ComparisonPositions : array of UInt8;
     GridOrientation : TGridOrientation;
+    FontSize : integer;
   end;
 
 var
