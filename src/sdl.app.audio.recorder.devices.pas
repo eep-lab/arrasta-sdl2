@@ -98,14 +98,12 @@ implementation
 uses SysUtils, sdl.app.output, fpwavformat
   //, sdl.app.stimulus.contract
   , session.loggers.writerow
+  , session.parameters.global
   , session.pool;
 
-const
-  MAX_RECORDING_SECONDS = 4;
-  RECORDING_BUFFER_SECONDS = MAX_RECORDING_SECONDS + 1;
-
-
 var
+  MAX_RECORDING_SECONDS : UInt8;
+  RECORDING_BUFFER_SECONDS : UInt8;
   GPRecordingBuffer: PUInt8 = nil;
   GBufferByteSize: Uint32;
   GBufferBytePosition: Uint32;
@@ -191,6 +189,8 @@ end;
 constructor TAudioDevice.Create;
 begin
   inherited Create(False);
+  MAX_RECORDING_SECONDS := GlobalTrialParameters.RecordingSeconds;
+  RECORDING_BUFFER_SECONDS := MAX_RECORDING_SECONDS + 1;
   FDeviceID := 0;
   FillChar(FAudioSpec, SizeOf(FAudioSpec), 0);
   FillChar(FDesiredAudioSpec, SizeOf(FDesiredAudioSpec), 0);

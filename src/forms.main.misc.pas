@@ -13,10 +13,15 @@ type
   { TFormMisc }
 
   TFormMisc = class(TForm)
+    CheckBoxShowModalFormForSpeechResponses: TCheckBox;
+    ComboBoxAudioPromptForText: TComboBox;
     ComboBoxFixedSamplePosition: TComboBox;
     ComboBoxAudioFolder: TComboBox;
     ComboBoxFontName: TComboBox;
     IniPropStorage1: TIniPropStorage;
+    LabelRecordingSeconds: TLabel;
+    LabelAudioPromptForText: TLabel;
+    LabelShowModal: TLabel;
     LabelFontsize: TLabel;
     LabelFixedSamplePosition: TLabel;
     LabelAudioFolder: TLabel;
@@ -24,6 +29,7 @@ type
     LabelLimitedHold: TLabel;
     LabelInterTrialInterval: TLabel;
     LabelFont: TLabel;
+    SpinEditRecordingSeconds: TSpinEdit;
     SpinEditFontSize: TSpinEdit;
     SpinEditTimeOut: TSpinEdit;
     SpinEditLimitedHold: TSpinEdit;
@@ -48,6 +54,7 @@ uses session.fileutils;
 
 procedure TFormMisc.FormCreate(Sender: TObject);
 begin
+  GetAudioFilesFor(ComboBoxAudioPromptForText.Items);
   GetAudioFoldersFor(ComboBoxAudioFolder.Items);
   GetFontFilesFor(ComboBoxFontName.Items);
 end;

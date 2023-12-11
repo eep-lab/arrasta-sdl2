@@ -25,6 +25,7 @@ procedure AppendFilesTo(var AStimuliArray: TStringArray;
   AExtensions : string = '*.bmp;*.jpg');
 
 procedure GetAudioFoldersFor(AStrings : TStrings);
+procedure GetAudioFilesFor(AStrings : TStrings);
 procedure GetDesignFilesFor(AStrings : TStrings);
 procedure GetFontFilesFor(AStrings : TStrings);
 
@@ -79,6 +80,23 @@ begin
   for i := 0 to AStrings.Count - 1 do begin
     AStrings[i] :=
       AsPath(AStrings[i].Replace(LFolder+DirectorySeparator, ''));
+  end;
+end;
+
+procedure GetAudioFilesFor(AStrings: TStrings);
+var
+  i : integer;
+  LDefaultFolder : string;
+const
+  LDefaultExtension = '*.wav';
+  LFolder = 'media';
+  LSubfolder = 'assets';
+begin
+  LDefaultFolder := ConcatPaths([LFolder, LSubfolder]);
+  FindAllFiles(AStrings, LDefaultFolder, LDefaultExtension, False);
+  for i := 0 to AStrings.Count - 1 do begin
+    AStrings[i] :=
+      ExtractFileNameWithoutExt(ExtractFileNameOnly(AStrings[i]));
   end;
 end;
 

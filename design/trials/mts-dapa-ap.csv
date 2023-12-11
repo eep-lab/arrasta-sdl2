@@ -161,3 +161,15 @@ ID,Relation,TotalLoops,Trials,HasPrompt,Subset,S1,C2
 160,A-C,3,3,F,vowel,pag,pog
 161,A-C,3,3,T,vowel,pog,pag
 162,A-C,3,3,T,vowel,pag,pog
+163,C-D,1,2,T,onset,mat,
+164,C-D,1,2,T,onset,mup,
+165,C-D,1,2,T,onset,sup,
+166,C-D,1,2,T,rime,mog,
+167,C-D,1,2,T,rime,nib,
+168,C-D,1,2,T,rime,tib,
+169,C-D,1,2,T,coda,bog,
+170,C-D,1,2,T,coda,fek,
+171,C-D,1,2,T,coda,jep,
+172,C-D,1,2,T,coda,rot,
+173,C-D,1,2,T,vowel,kag,
+174,C-D,1,2,T,vowel,pag,

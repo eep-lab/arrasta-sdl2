@@ -158,7 +158,14 @@ var
 begin
   AGridList.Clear;
   if FFixedComparison then begin
-    raise ENotImplemented.Create('Fixed Comparison is not implemented.');
+    case FGridOrientation of
+      goCustom :
+        AGridList.Add(GlobalTrialParameters.FixedComparisonPosition);
+      else begin
+        raise ENotImplemented.Create(
+          'Fixed comparison not implemented with this orientation.')
+      end;
+    end;
   end else begin
     case FGridOrientation of
       goNone: begin
@@ -342,8 +349,8 @@ begin
           end;
 
           if FFixedComparison then begin
-             raise ENotImplemented.Create(
-              'Fixed comparison positions with custom grid orientation.');
+            Cell := IntToCell(GlobalTrialParameters.FixedComparisonPosition);
+            SecureCopy(Comparisons[Low(Comparisons)], FGrid[Cell[0], Cell[1]]);
           end else begin
             LatinRowToGridItems(ComparisonsRows, Comparisons);
           end;

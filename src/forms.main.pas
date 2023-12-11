@@ -210,12 +210,25 @@ end;
 procedure TFormBackground.AssignGlobalVariables;
 begin
   GlobalTrialParameters.Cursor := 1;
+  GlobalTrialParameters.FixedComparisonPosition := 7;
+
+
+
+  with GlobalTrialParameters,
+       FormMisc.CheckBoxShowModalFormForSpeechResponses do
+    ShowModalFormForSpeechResponses := Checked;
+
+  with GlobalTrialParameters, FormMisc.ComboBoxAudioPromptForText do
+    AudioPromptForText := Items[ItemIndex];
 
   with GlobalTrialParameters, FormMisc.ComboBoxFontName do
     FontName := Items[ItemIndex];
 
   with GlobalTrialParameters, FormMisc.SpinEditFontSize do
     FontSize := Value;
+
+  with GlobalTrialParameters, FormMisc.SpinEditRecordingSeconds do
+    RecordingSeconds := Value;
 
   with GlobalTrialParameters, FormMisc.SpinEditInterTrialInterval do
     InterTrialInterval := Value.SecondsToMiliseconds;

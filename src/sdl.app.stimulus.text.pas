@@ -101,7 +101,8 @@ begin
   FHasPrompt := HasPrompt(AParameters);
   if FHasPrompt then begin
     if IsSample then
-      FPrompt := SDLAudio.SoundFromName('sample-text-prompt-rafael');
+      FPrompt := SDLAudio.SoundFromName(
+        GlobalTrialParameters.AudioPromptForText);
   end;
 end;
 

@@ -66,6 +66,7 @@ uses Controls
    , session.strutils
    , session.strutils.mts
    , session.loggers.writerow.timestamp
+   , session.parameters.global
    , forms.modal.speechvalidation
    ;
 
@@ -128,7 +129,11 @@ end;
 
 function TSpeechStimulus.IsCorrectResponse: Boolean;
 begin
-  Result := FormManualSpeechValidation.ShowModal = mrYes;
+  if GlobalTrialParameters.ShowModalFormForSpeechResponses then begin
+    Result := FormManualSpeechValidation.ShowModal = mrYes;
+  end else begin
+    Result := True;
+  end;
   if not Result then begin
     Timestamp(
       'Incorrect.Response' + #9 + FormManualSpeechValidation.EditSpeech.Text);
