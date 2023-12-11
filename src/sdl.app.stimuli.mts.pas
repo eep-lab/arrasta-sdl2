@@ -211,8 +211,15 @@ var
   LStimulus : TStimulus;
   LIStimulus : IStimulus;
 begin
-  for LIStimulus in FSamples do begin
-    LIStimulus.Stop;
+  case FMTSModality.Samples of
+    ModalityA: begin
+      for LIStimulus in FSamples do begin
+        LIStimulus.Stop;
+      end;
+    end;
+    else begin
+      { do nothing }
+    end;
   end;
   if Sender is TStimulus then begin
     //Timestamp('Comparison.Response');
