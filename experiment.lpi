@@ -9,14 +9,24 @@
         <MainUnitHasCreateFormStatements Value="False"/>
       </Flags>
       <SessionStorage Value="InProjectDir"/>
-      <Title Value="experiment"/>
+      <Title Value="Stimulus Control"/>
       <Scaled Value="True"/>
       <ResourceType Value="res"/>
       <UseXPManifest Value="True"/>
       <XPManifest>
         <DpiAware Value="True"/>
       </XPManifest>
+      <Icon Value="0"/>
     </General>
+    <VersionInfo>
+      <UseVersionInfo Value="True"/>
+      <AutoIncrementBuild Value="True"/>
+      <MajorVersionNr Value="1"/>
+      <BuildNr Value="1"/>
+      <Language Value="0416"/>
+      <Attributes pvaPrivateBuild="True"/>
+      <StringTable Comments="Uma máquina de ensinar para experimentos comportamentais livres" InternalName="Stimulus Control" LegalCopyright="Carlos Rafael Fernandes Picanço" ProductName="Stimulus Control"/>
+    </VersionInfo>
     <BuildModes>
       <Item Name="Default" Default="True"/>
       <Item Name="Win32">

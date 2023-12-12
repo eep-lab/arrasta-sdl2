@@ -24,7 +24,8 @@ begin
   {$ENDIF}
   Randomize;
   RequireDerivedFormResource:=True;
-  Application.Scaled:=True;
+  Application.Title := 'Stimulus Control';
+  Application.Scaled := True;
   Application.Initialize;
   Application.CreateForm(TFormBackground, FormBackground);
   Application.CreateForm(
