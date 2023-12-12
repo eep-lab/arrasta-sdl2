@@ -6,34 +6,45 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, StdCtrls,
-  IniPropStorage, Spin;
+  IniPropStorage, Spin, ComCtrls;
 
 type
 
   { TFormMisc }
 
   TFormMisc = class(TForm)
+    CheckBoxShowMarkers: TCheckBox;
     CheckBoxShowModalFormForSpeechResponses: TCheckBox;
+    CheckBoxTestMode: TCheckBox;
+    ComboBoxEyeTracker: TComboBox;
+    ComboBoxAudioFolder: TComboBox;
     ComboBoxAudioPromptForText: TComboBox;
     ComboBoxFixedSamplePosition: TComboBox;
-    ComboBoxAudioFolder: TComboBox;
     ComboBoxFontName: TComboBox;
+    ComboBoxMonitor: TComboBox;
     IniPropStorage1: TIniPropStorage;
-    LabelRecordingSeconds: TLabel;
-    LabelAudioPromptForText: TLabel;
-    LabelShowModal: TLabel;
-    LabelFontsize: TLabel;
-    LabelFixedSamplePosition: TLabel;
+    Label1: TLabel;
+    LabelMonitor: TLabel;
+    LabelTestMode: TLabel;
+    LabelEyeTracker: TLabel;
     LabelAudioFolder: TLabel;
-    LabelTimeOut: TLabel;
-    LabelLimitedHold: TLabel;
-    LabelInterTrialInterval: TLabel;
+    LabelAudioPromptForText: TLabel;
+    LabelFixedSamplePosition: TLabel;
     LabelFont: TLabel;
-    SpinEditRecordingSeconds: TSpinEdit;
+    LabelFontsize: TLabel;
+    LabelInterTrialInterval: TLabel;
+    LabelLimitedHold: TLabel;
+    LabelRecordingSeconds: TLabel;
+    LabelShowModal: TLabel;
+    LabelTimeOut: TLabel;
+    PageControl: TPageControl;
     SpinEditFontSize: TSpinEdit;
-    SpinEditTimeOut: TSpinEdit;
-    SpinEditLimitedHold: TSpinEdit;
     SpinEditInterTrialInterval: TSpinEdit;
+    SpinEditLimitedHold: TSpinEdit;
+    SpinEditRecordingSeconds: TSpinEdit;
+    SpinEditTimeOut: TSpinEdit;
+    TabSheetGeneral: TTabSheet;
+    TabSheetEyeTracking: TTabSheet;
     procedure FormCreate(Sender: TObject);
   private
 
@@ -46,17 +57,38 @@ var
 
 implementation
 
-uses session.fileutils;
+uses sdl.app, session.fileutils;
 
 {$R *.lfm}
 
 { TFormMisc }
 
 procedure TFormMisc.FormCreate(Sender: TObject);
+var
+  LStringList : TStringList;
+  i: Integer;
 begin
   GetAudioFilesFor(ComboBoxAudioPromptForText.Items);
   GetAudioFoldersFor(ComboBoxAudioFolder.Items);
   GetFontFilesFor(ComboBoxFontName.Items);
+
+  LStringList := TStringList.Create;
+  try
+    TSDLApplication.GetAvailableMonitors(LStringList);
+    if ComboBoxMonitor.Items.Count = LStringList.Count then begin
+      for i := 0 to ComboBoxMonitor.Items.Count -1 do begin
+        if ComboBoxMonitor.Items[i] <> LStringList[i] then begin
+           ComboBoxMonitor.Items.Clear;
+           ComboBoxMonitor.Items.Assign(LStringList);
+        end;
+      end;
+    end else begin
+      ComboBoxMonitor.Items.Assign(LStringList);
+    end;
+  finally
+    LStringList.Clear;
+    LStringList.Free;
+  end;
 end;
 
 { TFormMisc }

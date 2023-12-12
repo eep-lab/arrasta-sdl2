@@ -18,7 +18,8 @@ function MakeConfigurationFile(AFilename : string) : string;
 implementation
 
 uses
-  session.fileutils
+  forms.main
+  , session.fileutils
   , session.csv.experiments.base
   , session.constants.trials
   , session.parameters.global
@@ -33,6 +34,7 @@ begin
 
   LExperimentWriter :=
     TBaseExperimentWriter.Create(ConfigurationFile, AFilename);
+  LExperimentWriter.ProgressBar := FormBackground.ProgressBar;
   try
     LExperimentWriter.Write;
   finally

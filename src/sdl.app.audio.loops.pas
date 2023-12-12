@@ -32,13 +32,14 @@ type
       procedure SetOnFinalLoopStop(AValue: TNotifyEvent);
       procedure EveryLoopStart(Sender: TObject);
       procedure EveryLoopStop(Sender: TObject);
+      procedure SetTotalLoops(AValue: SmallInt);
       procedure Validate;
     public
       constructor Create;
       destructor Destroy; override;
       property Sound : ISound read FSound write FSound;
       property Interval : cuint32 read GetInterval write SetInterval;
-      property TotalLoops : SmallInt read FTotalLoops write FTotalLoops;
+      property TotalLoops : SmallInt read FTotalLoops write SetTotalLoops;
       procedure Start;
       procedure Stop;
       property OnEveryLoopStart: TNotifyEvent read FOnEveryLoopStart write SetOnEveryLoopStart;
@@ -117,6 +118,16 @@ begin
   end;
 end;
 
+procedure TSoundLoop.SetTotalLoops(AValue: SmallInt);
+begin
+  if FTotalLoops = AValue then Exit;
+  if AValue < 0 then begin
+    FTotalLoops := MaxSmallint;
+  end else begin
+    FTotalLoops := AValue;
+  end;
+end;
+
 procedure TSoundLoop.Validate;
 begin
   if FSound = nil then raise
@@ -130,7 +141,7 @@ begin
   FTimer.OnTimer := @PlaySound;
   FTimer.Interval := 2000;
   FCurrentLoopCount := 0;
-  FTotalLoops := -1;
+  FTotalLoops := 0;
 end;
 
 destructor TSoundLoop.Destroy;

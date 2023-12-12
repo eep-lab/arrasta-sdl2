@@ -17,6 +17,7 @@ uses
   Classes, SysUtils
   , SDL2
   , ctypes
+  , sdl.app.events.abstract
   , sdl.app.renderer.custom
   ;
 
@@ -43,6 +44,8 @@ type
     FRect    : TSDL_Rect;
     function GetBoundsRect: TSDL_Rect; override;
     procedure SetBoundsRect(AValue : TSDL_Rect); override;
+    procedure MouseDown(Sender: TObject; Shift: TCustomShiftState;
+      X, Y: Integer); override;
     procedure MouseEnter(Sender: TObject); override;
     procedure MouseExit(Sender: TObject); override;
     procedure GazeEnter(Sender: TObject); override;
@@ -102,6 +105,14 @@ end;
 procedure TRectangule.SetBoundsRect(AValue: TSDL_Rect);
 begin
   FRect := AValue;
+end;
+
+procedure TRectangule.MouseDown(Sender: TObject; Shift: TCustomShiftState; X,
+  Y: Integer);
+begin
+  if Visible then begin
+    inherited MouseDown(Sender, Shift, X, Y);
+  end;
 end;
 
 procedure TRectangule.SetHeight(AValue: cint);

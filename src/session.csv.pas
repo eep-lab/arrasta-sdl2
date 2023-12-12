@@ -28,6 +28,7 @@ type
   private
     FCSVDocument: TCustomCSVDocument;
     function GetCurrentIndex: integer;
+    function GetRowCount: integer;
     procedure SetCurrentIndex(AValue: integer);
   public
     constructor Create; virtual;
@@ -36,6 +37,7 @@ type
     procedure LoadFromFile(AFilename : string);
     procedure Clear;
     property CurrentIndex : integer read GetCurrentIndex write SetCurrentIndex;
+    property RowCount : integer read GetRowCount;
   end;
 
   function InsideBaseFolder(AFilename : string) : string;
@@ -112,6 +114,11 @@ end;
 function TCSVRows.GetCurrentIndex: integer;
 begin
   Result := FCSVDocument.CurrentIndex;
+end;
+
+function TCSVRows.GetRowCount: integer;
+begin
+  Result := FCSVDocument.RowCount;
 end;
 
 procedure TCSVRows.SetCurrentIndex(AValue: integer);

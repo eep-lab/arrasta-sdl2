@@ -92,7 +92,16 @@ begin
 end;
 
 procedure TCounters.BeforeEndSession;
+var
+  LStartAt : TStartAt;
 begin
+  if Pool.EndCriteria.OfSession then begin
+    { do nothing }
+  end else begin
+    LStartAt.Trial := Trial.ID;
+    LStartAt.Block := Block.ID;
+    ConfigurationFile.StartAt := LStartAt;
+  end;
   Session.Free;
 end;
 

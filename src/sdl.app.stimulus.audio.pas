@@ -116,8 +116,8 @@ procedure TAudioStimulus.MouseDown(Sender: TObject; Shift: TCustomShiftState;
 begin
   if IsSample then begin
     with FLoops do begin
-      if TotalLoops > 1 then begin
-        FLoops.OnFinalLoopStop := nil;
+      if TotalLoops > 0 then begin
+        FLoops.Start;
       end;
     end;
     if ResponseID = 0 then begin
@@ -204,9 +204,9 @@ begin
     Sound := SDLAudio.LoadFromFile(AudioFile(FCustomName));
     OnEveryLoopStart := @SoundStart;
     OnEveryLoopStop := @SoundFinished;
-    if TotalLoops > 1 then begin
-      FLoops.OnFinalLoopStop := @NoResponse;
-    end;
+    //if TotalLoops > 1 then begin
+    //  FLoops.OnFinalLoopStop := @NoResponse;
+    //end;
   end;
 end;
 
@@ -222,9 +222,7 @@ begin
 
   if IsSample then begin
     LRectangule.Show;
-    if FLoops.TotalLoops > 0 then begin
-      FLoops.Start;
-    end;
+    FLoops.Sound.Play;
   end else begin
     LRectangule.Show;
   end;

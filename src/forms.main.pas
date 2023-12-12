@@ -15,7 +15,7 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Dialogs, StdCtrls, ExtCtrls,
-  IniPropStorage;
+  IniPropStorage, ComCtrls, Menus;
 
 type
 
@@ -27,15 +27,15 @@ type
     ButtonLoadConfigurationFile: TButton;
     ButtonNewConfigurationFile: TButton;
     ButtonRunSession: TButton;
-    CheckBoxShowMarkers: TCheckBox;
-    CheckBoxTestMode: TCheckBox;
-    ComboBoxMonitor: TComboBox;
     ComboBoxCondition: TComboBox;
     ComboBoxParticipant: TComboBox;
     IniPropStorage1: TIniPropStorage;
+    LabelContact: TLabel;
+    MenuItemRemoveParticipant: TMenuItem;
     OpenDialog1: TOpenDialog;
     Panel1: TPanel;
-    RadioGroupEyeTracker: TRadioGroup;
+    PopupMenuParticipants: TPopupMenu;
+    ProgressBar: TProgressBar;
     procedure ButtonLoadConfigurationFileClick(Sender: TObject);
     procedure ButtonMiscClick(Sender: TObject);
     procedure ButtonNewConfigurationFileClick(Sender: TObject);
@@ -45,12 +45,14 @@ type
     procedure EndSession(Sender : TObject);
     procedure CloseSDLApp(Sender : TObject);
     procedure FormCreate(Sender: TObject);
+    procedure MenuItemRemoveParticipantClick(Sender: TObject);
   private
     //FEyeLink : TEyeLink;
     procedure AssignGlobalVariables;
-    procedure ToogleControlPanelEnabled;
+    procedure ToogleControlPanelEnabled(AException: TComponent = nil);
     function ParticipantFolderName : string;
     function SessionName : string;
+    function SetupFolders : Boolean;
     function Validated : Boolean;
   public
 
@@ -89,19 +91,18 @@ begin
   if not Validated then Exit;
   AssignGlobalVariables;
   ToogleControlPanelEnabled;
-  TestMode := CheckBoxTestMode.Checked;
 
   SDLApp := TSDLApplication.Create(@Pool.AppName[1]);
-  SDLApp.SetupVideo(ComboBoxMonitor.ItemIndex);
+  SDLApp.SetupVideo(FormMisc.ComboBoxMonitor.ItemIndex);
   SDLApp.SetupEvents;
   SDLApp.SetupAudio;
   SDLApp.SetupText;
   SDLApp.OnClose := @CloseSDLApp;
-  SDLApp.ShowMarkers := CheckBoxShowMarkers.Checked;
+  SDLApp.ShowMarkers := FormMisc.CheckBoxShowMarkers.Checked;
 
   Pool.App := SDLApp;
 
-  InitializeEyeTracker(RadioGroupEyeTracker.ItemIndex);
+  InitializeEyeTracker(FormMisc.ComboBoxEyeTracker.ItemIndex);
 
   SDLSession := TSession.Create(Self);
   SDLSession.OnBeforeStart := @BeginSession;
@@ -117,18 +118,21 @@ var
 begin
   AssignGlobalVariables;
   if ComboBoxCondition.Items.Count = 0 then begin
-    ShowMessage('A pasta de condições (design) está vazia.');
+    ShowMessage('A pasta de parâmetros (design) está vazia.');
     Exit;
   end;
   if ComboBoxCondition.ItemIndex = -1 then begin
-    ShowMessage('Escolha uma condição.');
+    ShowMessage('Escolha um parâmetro.');
     Exit;
   end else begin
     with ComboBoxCondition do begin
       LFilename := Items[ItemIndex];
     end;
   end;
+  ToogleControlPanelEnabled(ProgressBar);
   Pool.ConfigurationFilename := MakeConfigurationFile(LFilename);
+  ProgressBar.Visible := True;
+  ToogleControlPanelEnabled(ProgressBar);
 end;
 
 procedure TFormBackground.ButtonNewParticipantClick(Sender: TObject);
@@ -147,9 +151,14 @@ end;
 
 procedure TFormBackground.ButtonLoadConfigurationFileClick(Sender: TObject);
 begin
-  AssignGlobalVariables;
-  if OpenDialog1.Execute then
+  SetupFolders;
+  OpenDialog1.InitialDir := Pool.BaseFileName;
+  if OpenDialog1.Execute then begin
     Pool.ConfigurationFilename := LoadConfigurationFile(OpenDialog1.FileName);
+  end;
+  ProgressBar.Max := 1;
+  ProgressBar.StepIt;
+  ProgressBar.Visible := True;
 end;
 
 procedure TFormBackground.ButtonMiscClick(Sender: TObject);
@@ -172,47 +181,34 @@ end;
 
 procedure TFormBackground.CloseSDLApp(Sender: TObject);
 begin
-  FreeConfigurationFile;
   if Assigned(EyeTracker) then begin
     EyeTracker.StopRecording;
   end;
   TLogger.SetFooter;
   SDLSession.Free;
   SDLApp.Free;
+  FreeConfigurationFile;
   ToogleControlPanelEnabled;
+  ProgressBar.Visible := False;
 end;
 
 procedure TFormBackground.FormCreate(Sender: TObject);
-var
-  LStringList : TStringList;
-  i: Integer;
 begin
   GetDesignFilesFor(ComboBoxCondition.Items);
-  LStringList := TStringList.Create;
-  try
-    TSDLApplication.GetAvailableMonitors(LStringList);
-    if ComboBoxMonitor.Items.Count = LStringList.Count then begin
-      for i := 0 to ComboBoxMonitor.Items.Count -1 do begin
-        if ComboBoxMonitor.Items[i] <> LStringList[i] then begin
-           ComboBoxMonitor.Items.Clear;
-           ComboBoxMonitor.Items.Assign(LStringList);
-        end;
-      end;
-    end else begin
-      ComboBoxMonitor.Items.Assign(LStringList);
-    end;
-  finally
-    LStringList.Clear;
-    LStringList.Free;
-  end;
+end;
+
+procedure TFormBackground.MenuItemRemoveParticipantClick(Sender: TObject);
+begin
+  with ComboBoxParticipant do
+    Items.Delete(ItemIndex);
 end;
 
 procedure TFormBackground.AssignGlobalVariables;
 begin
+  TestMode := FormMisc.CheckBoxTestMode.Checked;
+
   GlobalTrialParameters.Cursor := 1;
   GlobalTrialParameters.FixedComparisonPosition := 7;
-
-
 
   with GlobalTrialParameters,
        FormMisc.CheckBoxShowModalFormForSpeechResponses do
@@ -264,12 +260,13 @@ begin
   end;
 end;
 
-procedure TFormBackground.ToogleControlPanelEnabled;
+procedure TFormBackground.ToogleControlPanelEnabled(AException: TComponent);
 var
   i: Integer;
 begin
   for i := 0 to ComponentCount -1 do begin
-    if Components[i] is TControl then begin
+    if (Components[i] is TControl) and
+       (Components[i] <> AException) then begin
       TControl(Components[i]).Enabled := not TControl(Components[i]).Enabled;
     end;
   end;
@@ -288,20 +285,20 @@ begin
   Result := 'Sessão';
 end;
 
+function TFormBackground.SetupFolders: Boolean;
+begin
+  Pool.BaseFileName := Pool.RootData +
+    ParticipantFolderName;
+
+  Pool.RootDataResponses := Pool.RootData +
+    ParticipantFolderName + Pool.ResponsesBasePath;
+
+  Result :=
+    ForceDirectories(Pool.BaseFileName) and
+    ForceDirectories(Pool.RootDataResponses);
+end;
+
 function TFormBackground.Validated: Boolean;
-  function SetupFolders : Boolean;
-  begin
-    Pool.BaseFileName := Pool.RootData +
-      ParticipantFolderName;
-
-    Pool.RootDataResponses := Pool.RootData +
-      ParticipantFolderName + Pool.ResponsesBasePath;
-
-    Result :=
-      ForceDirectories(Pool.BaseFileName) and
-      ForceDirectories(Pool.RootDataResponses);
-  end;
-
   function SetupParticipantID : Boolean;
   var
     LParticipantID: TStringList;
@@ -344,13 +341,13 @@ function TFormBackground.Validated: Boolean;
 begin
   Result := False;
 
-  if ComboBoxMonitor.ItemIndex = -1 then begin
+  if FormMisc.ComboBoxMonitor.ItemIndex = -1 then begin
     ShowMessage('Escolha um monitor.');
     Exit;
   end;
 
   if Pool.ConfigurationFilename.IsEmpty then begin
-    ShowMessage('Crie uma nova sessão ou abra uma pronta.');
+    ShowMessage('Crie uma nova sessão ou carregue uma sessão interrompida.');
     Exit;
   end;
   if ComboBoxParticipant.Items.Count = 0 then begin
