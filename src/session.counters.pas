@@ -92,7 +92,16 @@ begin
 end;
 
 procedure TCounters.BeforeEndSession;
+var
+  LStartAt : TStartAt;
 begin
+  if Pool.EndCriteria.OfSession then begin
+    { do nothing }
+  end else begin
+    LStartAt.Trial := 0; // Trial.ID; todo: find a way to persist all counters
+    LStartAt.Block := Block.ID;  // use block as checkpoint
+    ConfigurationFile.StartAt := LStartAt;
+  end;
   Session.Free;
 end;
 

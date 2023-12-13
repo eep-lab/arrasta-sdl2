@@ -78,6 +78,7 @@ procedure TCSVPseudowordsTrials.AfterLoadingParameters(Sender: TObject);
     //SetComparisons(Result);
   end;
 begin
+  inherited AfterLoadingParameters(Sender);
   FPhase := GetPhase(FCycle, FCondition, Relation);
   FWord := GetWord(FPhase, ToAlphaNumericCode(FCode));
   FName := TrialID.ToString + #32 + '(' + FWord.Caption + #32 +

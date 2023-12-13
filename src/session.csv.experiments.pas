@@ -7,27 +7,22 @@
   You should have received a copy of the GNU General Public License
   along with this program. If not, see <http://www.gnu.org/licenses/>.
 }
-unit experiments;
+unit session.csv.experiments;
 
 {$mode objfpc}{$H+}
 
 interface
 
-uses common.helpers;
-
 function MakeConfigurationFile(AFilename : string) : string;
-
-var
-  ITI : integer = 2;
-  LimitedHold : integer  = 1;
-  Timeout : integer = 3;
 
 implementation
 
 uses
-  session.fileutils
-  , experiments.base
+  forms.main
+  , session.fileutils
+  , session.csv.experiments.base
   , session.constants.trials
+  , session.parameters.global
   , session.configurationfile
   ;
 
@@ -36,13 +31,10 @@ var
   LExperimentWriter : TBaseExperimentWriter;
 begin
   Result := NewConfigurationFile;
-  GlobalTrialParameters.InterTrialInterval := ITI.SecondsToMiliseconds;
-  GlobalTrialParameters.LimitedHold := LimitedHold.MinutesToMiliseconds;
-  GlobalTrialParameters.TimeOutInterval := Timeout.SecondsToMiliseconds;
-  GlobalTrialParameters.Cursor := 1;
 
   LExperimentWriter :=
     TBaseExperimentWriter.Create(ConfigurationFile, AFilename);
+  LExperimentWriter.ProgressBar := FormBackground.ProgressBar;
   try
     LExperimentWriter.Write;
   finally

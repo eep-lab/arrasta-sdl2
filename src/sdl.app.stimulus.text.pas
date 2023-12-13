@@ -51,6 +51,7 @@ implementation
 
 uses
   sdl.app.audio
+  , session.parameters.global
   , sdl.app.renderer.custom
   , session.constants.mts;
 
@@ -90,7 +91,7 @@ procedure TTextStimulus.Load(AParameters: TStringList; AParent: TObject;
   ARect: TSDL_Rect);
 begin
   FCustomName := GetWordValue(AParameters, IsSample, Index);
-  FText.FontName := 'Picanco_et_al';
+  FText.FontName := GlobalTrialParameters.FontName;
   //FText.FontSize := 50;
   FText.Load(FCustomName);
   FText.CentralizeWith(ARect);
@@ -100,7 +101,8 @@ begin
   FHasPrompt := HasPrompt(AParameters);
   if FHasPrompt then begin
     if IsSample then
-      FPrompt := SDLAudio.SoundFromName('sample-text-prompt-rafael');
+      FPrompt := SDLAudio.SoundFromName(
+        GlobalTrialParameters.AudioPromptForText);
   end;
 end;
 

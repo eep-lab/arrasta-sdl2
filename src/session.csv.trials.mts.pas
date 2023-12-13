@@ -18,9 +18,9 @@ type
       FRelation : string;
     public
       constructor Create; override;
-      property Comparisons : integer read FComparisons;
-      property Relation : string read FRelation;
-      property Samples : integer read FSamples;
+      property Comparisons : integer read FComparisons write FComparisons;
+      property Relation : string read FRelation write FRelation;
+      property Samples : integer read FSamples write FSamples;
   end;
 
 implementation

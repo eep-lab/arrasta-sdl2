@@ -65,7 +65,7 @@ type
     procedure WriteToTrial(ATrial : integer; AStrings : TStrings); overload;
     procedure WriteToTrial(ATrial : integer; AName, AValue: string); overload;
     procedure WriteToTrial(ATrial : integer; ABlock : integer; AName, AValue: string); overload;
-    procedure WriteToInstruction(ATrial : integer; ABlock : integer; AName, AValue: string);
+    procedure WriteToInstruction(ABlock : integer; ATrial : integer; AName, AValue: string);
 
     procedure WriteToMain(AKey: string; AValue: string);
     procedure WriteMain(AMain : TStrings);
@@ -177,53 +177,63 @@ var
   LBlockSection : string;
 begin
   LBlockSection := BlockSection(BlockIndex);
-  with Result, ParserBlockKeys do
-    begin
-      ID := BlockIndex;
-      TotalTrials:= Self.Trials[BlockIndex];
-      Name:= ReadString(LBlockSection, _Name, '');
+  with Result, ParserBlockKeys do begin
+    ID := BlockIndex;
+    TotalTrials:= Self.Trials[BlockIndex];
+    Name:= ReadString(LBlockSection, NameKey, '');
 
-      NextBlockOnNotCriterion :=
-        ReadInteger(LBlockSection, NextBlockOnNotCriterionKey, -1);
-      BackUpBlockErrors :=
-        ReadInteger(LBlockSection, BackUpBlockErrorsKey, 0);
-      MaxBlockRepetition :=
-        ReadInteger(LBlockSection, MaxBlockRepetitionKey, 0);
-      MaxBlockRepetitionInSession :=
-        ReadInteger(LBlockSection, MaxBlockRepetitionInSessionKey, 0);
-      EndSessionOnHitCriterion :=
-        ReadBool(LBlockSection, EndSessionOnHitCriterionKey, False);
-      NextBlockOnHitCriterion :=
-        ReadInteger(LBlockSection, NextBlockOnHitCriterionKey, -1);
-      CrtHitPorcentage :=
-        ReadInteger(LBlockSection, CrtHitPorcentageKey, 0);
-      Reinforcement :=
-        ReadInteger(LBlockSection, ReinforcementKey, 100);
+    BackUpBlock := ReadInteger(
+      LBlockSection, BackUpBlockKey, 0);;
 
-      // old, not active
-      ITI:= ReadInteger(LBlockSection, _ITI, 0);
-      BkGnd:= ReadInteger(LBlockSection, _BkGnd, 0);
-      DefNextBlock:=
-        ReadString(LBlockSection, _DefNextBlock, '');
-      MaxCorrection:=
-        ReadInteger(LBlockSection, _MaxCorrection, 0);
-      Counter:=
-        ReadString(LBlockSection, _Counter, 'NONE');
-      AutoEndSession :=
-        ReadBool(LBlockSection, _AutoEndSession, False);
-      CrtConsecutiveHit :=
-        ReadInteger(LBlockSection, _CrtConsecutiveHit, 0);
-      CrtConsecutiveMiss :=
-        ReadInteger(LBlockSection, _CrtConsecutiveMiss, 0);
-      CrtConsecutiveHitPerType :=
-        ReadInteger(LBlockSection, _CrtConsecutiveHitPerType, 0);
-      CrtHitValue :=
-        ReadInteger(LBlockSection, _CrtHitValue, 0);
-      CrtMaxTrials:=
-        ReadInteger(LBlockSection, _CrtMaxTrials, 0);
-      CrtCsqHit :=
-        ReadInteger(LBlockSection, _CsqCriterion, 0);
-    end;
+    BackUpBlockErrors := ReadInteger(
+      LBlockSection, BackUpBlockErrorsKey, 0);
+
+    MaxBlockRepetition := ReadInteger(
+      LBlockSection, MaxBlockRepetitionKey, 0);
+
+    MaxBlockRepetitionInSession := ReadInteger(
+      LBlockSection, MaxBlockRepetitionInSessionKey, 0);
+
+    EndSessionOnHitCriterion := ReadBool(
+      LBlockSection, EndSessionOnHitCriterionKey, False);
+
+    NextBlockOnHitCriterion := ReadInteger(
+      LBlockSection, NextBlockOnHitCriterionKey, -1);
+
+    NextBlockOnNotCriterion := ReadInteger(
+      LBlockSection, NextBlockOnNotCriterionKey, -1);
+
+    CrtHitPorcentage := ReadInteger(
+      LBlockSection, CrtHitPorcentageKey, 0);
+
+    CrtConsecutiveHit := ReadInteger(
+      LBlockSection, CrtConsecutiveHitKey, 0);
+
+    Reinforcement := ReadInteger(
+      LBlockSection, ReinforcementKey, 100);
+
+    // old, not active
+    ITI:= ReadInteger(LBlockSection, _ITI, 0);
+    BkGnd:= ReadInteger(LBlockSection, _BkGnd, 0);
+    DefNextBlock:=
+      ReadString(LBlockSection, _DefNextBlock, '');
+    MaxCorrection:=
+      ReadInteger(LBlockSection, _MaxCorrection, 0);
+    Counter:=
+      ReadString(LBlockSection, _Counter, 'NONE');
+    AutoEndSession :=
+      ReadBool(LBlockSection, _AutoEndSession, False);
+    CrtConsecutiveMiss :=
+      ReadInteger(LBlockSection, _CrtConsecutiveMiss, 0);
+    CrtConsecutiveHitPerType :=
+      ReadInteger(LBlockSection, _CrtConsecutiveHitPerType, 0);
+    CrtHitValue :=
+      ReadInteger(LBlockSection, _CrtHitValue, 0);
+    CrtMaxTrials:=
+      ReadInteger(LBlockSection, _CrtMaxTrials, 0);
+    CrtCsqHit :=
+      ReadInteger(LBlockSection, _CsqCriterion, 0);
+  end;
 end;
 
 function TConfigurationFile.GetTrial(BlockIndex, TrialIndex: integer): TTrialData;
@@ -247,7 +257,7 @@ begin
   FCurrentTrialParameters.Clear;
   with Result, TrialKeys do begin
     Id :=  i + 1;
-    Kind := ReadString(LTrialSection, _Kind, '');
+    Kind := ReadString(LTrialSection, KindKey, '');
     ReferenceName := ReadString(LTrialSection, ReferenceNameKey, '');
     ReadSectionValues(LTrialSection, FCurrentTrialParameters);
     AppendSectionValues(LInstructionSection, FCurrentTrialParameters);
@@ -331,10 +341,13 @@ end;
 procedure TConfigurationFile.Invalidate;
 var
   i: Integer;
+  s: string;
 begin
   WriteInteger(_Main, _NumBlock, Blocks);
-  for i := 0 to Blocks-1 do
-    WriteString(BlockSection(i),_NumTrials, Trials[i].ToString+' 1');
+  for i := 0 to Blocks-1 do begin
+    s:= Trials[i].ToString;
+    WriteString(BlockSection(i),_NumTrials, s);
+  end;
 end;
 
 procedure TConfigurationFile.AppendSectionValues(ASection: string;
@@ -476,8 +489,8 @@ begin
   WriteString(TrialSection(ABlock, ATrial),AName,AValue);
 end;
 
-procedure TConfigurationFile.WriteToInstruction(ATrial: integer;
-  ABlock: integer; AName, AValue: string);
+procedure TConfigurationFile.WriteToInstruction(ABlock: integer;
+  ATrial: integer;AName, AValue: string);
 begin
   WriteString(InstructionSection(ABlock, ATrial),AName,AValue);
 end;

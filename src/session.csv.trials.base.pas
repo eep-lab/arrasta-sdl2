@@ -24,6 +24,7 @@ type
       FInterTrialInterval : integer;
       FConsequenceInterval : integer;
       FRepeatTrial : integer;
+      FTrialCount : integer;
       FHasConsequence : Boolean;
     protected
       FKind : string;
@@ -31,19 +32,29 @@ type
     public
       constructor Create; override;
       property TrialID : integer read FTrialID;
-      property TrialCount : integer read FRepeatTrial;
+      property TrialCount : integer read FTrialCount;
       property Values[const AKey: string]: string read GetValue write SetValue;
   end;
 
 implementation
 
-uses session.constants.trials;
+uses session.constants.trials, session.parameters.global;
 
 { TCSVTrialsBase }
 
 procedure TCSVTrialsBase.AfterLoadingParameters(Sender: TObject);
 begin
+  if FInterTrialInterval = -1 then begin
+    FInterTrialInterval := GlobalTrialParameters.InterTrialInterval;
+  end;
 
+  if FLimitedHold = -1 then begin
+    FLimitedHold := GlobalTrialParameters.LimitedHold;
+  end;
+
+  if FConsequenceInterval = -1 then begin
+    FConsequenceInterval := GlobalTrialParameters.TimeOutInterval;
+  end;
 end;
 
 constructor TCSVTrialsBase.Create;
@@ -53,10 +64,11 @@ begin
   FTrialID := 0;
   FKind := '';
   FRepeatTrial := 1;
+  FTrialCount := 1;
   FCursor := GlobalTrialParameters.Cursor;
-  FLimitedHold := GlobalTrialParameters.LimitedHold;
-  FInterTrialInterval := GlobalTrialParameters.InterTrialInterval;
-  FConsequenceInterval := GlobalTrialParameters.TimeOutInterval;
+  FLimitedHold := -1;
+  FInterTrialInterval := -1;
+  FConsequenceInterval := -1;
   FHasConsequence := True;
 
   with ParserTrialsBase do begin
@@ -66,6 +78,8 @@ begin
       @FKind, FKind);
     RegisterParameter(RepeatTrialKey,
       @FRepeatTrial, FRepeatTrial);
+    RegisterParameter(TrialCountKey,
+      @FTrialCount, FTrialCount);
     RegisterParameter(CursorKey,
       @FCursor, FCursor);
     RegisterParameter(LimitedHoldKey,

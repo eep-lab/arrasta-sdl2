@@ -1,0 +1,36 @@
+unit session.constants.trials.dapaap;
+
+{$mode ObjFPC}{$H+}
+
+interface
+
+uses session.constants.mts, session.constants.trials;
+
+type
+  TParserTrialsDAPAAP = record
+    ReferenceNameKey : string;
+    NameKey          : string;
+    SampleKey        : string;
+    ComparisonKey    : string;
+    RelationKey      : string;
+    SubsetKey        : string;
+    HasPromptKey     : string;
+    TotalLoopsKey    : string;
+  end;
+
+const
+  ParserTrialsDAPAAP : TParserTrialsDAPAAP = (
+    ReferenceNameKey : HeaderReferenceName;
+    NameKey          : HeaderName;
+    SampleKey        : HeaderSample;
+    ComparisonKey    : HeaderCompasison;
+    RelationKey      : HeaderRelation;
+    SubsetKey        : 'Subset';
+    HasPromptKey     : 'HasPrompt';
+    TotalLoopsKey    : 'TotalLoops';
+  );
+
+implementation
+
+end.
+

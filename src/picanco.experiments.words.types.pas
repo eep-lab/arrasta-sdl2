@@ -332,7 +332,7 @@ begin
     begin
       LCandidateWords.Clear;
       GetWordsFromLetter(AWord, i, LCandidateWords, AWords);
-      Print(LCandidateWords.Count.ToString);
+      //Print(LCandidateWords.Count.ToString);
       if LCandidateWords.Count > 0 then begin
         repeat
           LRandomWord := GetRandomWord(LCandidateWords);

@@ -289,11 +289,11 @@ begin
     InitializeWord(Words[i]);
   end;
 
-  Print(Length(Words).ToString);
+  //Print(Length(Words).ToString);
   for i := Low(Words) to High(Words) do begin
     SetNegativeComparisons(Words[i], Words);
-    Print('');
-    Print(Words[i].ToString);
+    //Print('');
+    //Print(Words[i].ToString);
   end;
 
   HashWords := THashWords.Create;

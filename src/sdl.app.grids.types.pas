@@ -10,8 +10,9 @@ type
   TGridStyle =
      (gtCircle, gtSquare, gtDistributed);
 
-   TGridOrientation =
-     (goNone, goLeftToRight, goRightToLeft, goTopToBottom, goBottomToTop);
+   TGridOrientation = (goNone,
+     goLeftToRight, goRightToLeft, goTopToBottom, goBottomToTop,
+     goCustom);
 
    TCell = array [0..1] of Integer;
 

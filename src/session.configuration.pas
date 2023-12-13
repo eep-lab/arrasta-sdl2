@@ -39,13 +39,13 @@ type
     ID : integer;
     Name: string;
     TotalTrials: integer;
-
-    NextBlockOnNotCriterion : integer; // BackUpBlock	: integer;
+    BackUpBlock	: integer;
     BackUpBlockErrors	: integer;
     MaxBlockRepetition : integer;
     MaxBlockRepetitionInSession	: integer;
     EndSessionOnHitCriterion	: Boolean;
     NextBlockOnHitCriterion : integer;
+    NextBlockOnNotCriterion : integer;
     CrtHitPorcentage : integer;
     Reinforcement : integer;
 

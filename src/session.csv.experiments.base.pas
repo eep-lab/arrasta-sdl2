@@ -1,11 +1,11 @@
-unit experiments.base;
+unit session.csv.experiments.base;
 
 {$mode ObjFPC}{$H+}
 
 interface
 
 uses
-  Classes, SysUtils
+  Classes, SysUtils, ComCtrls
   , session.configurationfile
   , session.configurationfile.writer
   , session.parameters
@@ -16,27 +16,30 @@ type
 
   TBaseExperimentWriter = class(TParametricObject)
   private
+    FProgressBar : TProgressBar;
     FDesignFilename : string;
     FMultiTrialType: boolean;
     FWriter: TConfigurationWriter;
-    procedure PopulateBooleanStrings;
   protected
     procedure WriteBlocks; virtual;
     procedure WriteTrials; virtual;
     procedure WriteTrialsStarters; virtual;
   public
+    class procedure PopulateBooleanStrings;
     constructor Create(AConfigurationFile : TConfigurationFile;
       ADesignFilename: string);
     destructor Destroy; override;
     procedure Write;
     property MultiTrialType : boolean
       read FMultiTrialType write FMultiTrialType;
+    property ProgressBar : TProgressBar read FProgressBar write FProgressBar;
   end;
 
 implementation
 
 uses
-  sdl.app.output
+  Forms
+  , sdl.app.output
   , session.csv.trials.base
   , session.csv.blocks
   , session.csv.trials
@@ -45,7 +48,7 @@ uses
 
 { TBaseExperimentWriter }
 
-procedure TBaseExperimentWriter.PopulateBooleanStrings;
+class procedure TBaseExperimentWriter.PopulateBooleanStrings;
 begin
   SetLength(TrueBoolStrs, 1);
   TrueBoolStrs[0] := 'T';
@@ -86,15 +89,25 @@ begin
     try
       LBlockParser.Clear;
       LBlockParser.LoadFromFile(InsideBlocksSubFolder(FDesignFilename));
+
+      FProgressBar.Visible := True;
+      FProgressBar.Position := 0;
+      FProgressBar.Max := LBlockParser.RowCount;
+
       for LRow in LBlockParser do begin
-        Print(LineEnding+LineEnding+LRow.Text+LineEnding+LineEnding);
+        //Print(LineEnding+LineEnding+LRow.Text+LineEnding+LineEnding);
         LBlockParser.LoadParameters(LRow);
         LBlockParser.AssignParameters(FWriter.BlockConfig);
-        Print(LineEnding+LineEnding+FWriter.BlockConfig.Text+LineEnding+LineEnding);
+        //Print(LineEnding+LineEnding+FWriter.BlockConfig.Text+LineEnding+LineEnding);
         FWriter.CurrentBlock := LBlockParser.ID;
         FWriter.WriteBlock;
+
+        FProgressBar.StepIt;
+        Application.ProcessMessages;
       end;
     finally
+      FProgressBar.StepIt;
+      FProgressBar.Visible := False;
       LBlockParser.Free;
     end;
   end;
@@ -113,6 +126,11 @@ begin
     LTrialSourceParser := TCSVTrialsSource.Create;
     try
       LTrialSourceParser.LoadFromFile(InsideBaseFolder(FDesignFilename));
+
+      FProgressBar.Visible := True;
+      FProgressBar.Position := 0;
+      FProgressBar.Max := LTrialSourceParser.RowCount;
+
       for LRow in LTrialSourceParser do begin
         LTrialSourceParser.LoadParameters(LRow);
         FWriter.CurrentBlock := LTrialSourceParser.BlockID;
@@ -170,8 +188,13 @@ begin
             end;
           end;
         end;
+
+        FProgressBar.StepIt;
+        Application.ProcessMessages;
       end;
     finally
+      FProgressBar.StepIt;
+      FProgressBar.Visible := False;
       LTrialSourceParser.Free;
     end;
     LStartAt.Block := 0;
@@ -189,16 +212,30 @@ begin
     LCSVStarter := TCSVTrialsStarters.Create;
     try
       LCSVStarter.LoadFromFile(InsideInstructionsSubFolder(FDesignFilename));
+
+      FProgressBar.Visible := True;
+      FProgressBar.Position := 0;
+      FProgressBar.Max := LCSVStarter.RowCount;
+
+
       for LRow in LCSVStarter do begin
         LCSVStarter.LoadParameters(LRow);
         LCSVStarter.AssignParameters(FWriter.TrialStartersConfig);
         FWriter.WriteStarter(LCSVStarter.BlockID, LCSVStarter.TrialID);
+
+        FProgressBar.StepIt;
+        Application.ProcessMessages;
       end;
     finally
+      FProgressBar.StepIt;
+      FProgressBar.Visible := False;
       LCSVStarter.Free;
     end;
   end;
 end;
+
+initialization
+  TBaseExperimentWriter.PopulateBooleanStrings;
 
 end.
 

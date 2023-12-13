@@ -30,7 +30,7 @@ implementation
 
 uses
   session.csv.trials.pseudowords,
-  session.csv.trials.daats;
+  session.csv.trials.dapaap;
 
 { TCSVTrialsFactory }
 
@@ -65,7 +65,7 @@ initialization
   TCSVTrialsFactory.RegisterCSVTrialClass(
     'mts-pseudowords', TCSVPseudowordsTrials);
   TCSVTrialsFactory.RegisterCSVTrialClass(
-    'mts-daats', TCSVDAATSTrials);
+    'mts-dapa-ap', TCSVDAPAAPTrials);
 
   //TCSVTrialsFactory.RegisterTrialClass('mm-eep', TDragDrop);
 end.

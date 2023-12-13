@@ -48,7 +48,11 @@ var
 implementation
 
 uses
-  FileUtil, LazFileUtils, sdl.app.video.methods, sdl.app.output, session.pool;
+  FileUtil, LazFileUtils
+  , sdl.app.video.methods
+  , sdl.app.output
+  , session.pool
+  , session.parameters.global;
 
 { TSDLText }
 
@@ -115,7 +119,11 @@ var
   LFontData : TFontData = (Name : ''; Size : 0; Font : nil);
 begin
   LFilename := PAnsiChar(AFilename);
-  LFontData.Size := GetFontSize;
+  if GlobalTrialParameters.FontSize = 0 then begin
+    LFontData.Size := GetFontSize;
+  end else begin
+    LFontData.Size := GlobalTrialParameters.FontSize;
+  end;
   LPTTFFont := TTF_OpenFont(LFilename, LFontData.Size);
   if LPTTFFont <> nil then begin
     LFontData.Name := ExtractFileNameWithoutExt(ExtractFileNameOnly(AFilename));

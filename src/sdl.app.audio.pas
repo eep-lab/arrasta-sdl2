@@ -61,7 +61,11 @@ var
 
 implementation
 
-uses sdl.app.output, sdl.app.events.custom, session.strutils;
+uses
+  sdl.app.output
+  , sdl.app.events.custom
+  , session.strutils
+  , session.parameters.global;
 
 procedure ChannelFinishedCallback(channel : cint); cdecl;
 var
@@ -76,7 +80,7 @@ procedure AllocateDefaultAudioChannels;
 begin
   SDLAudio.LoadFromFile(Assets('acerto'));
   SDLAudio.LoadFromFile(Assets('erro'));
-  SDLAudio.LoadFromFile(Assets('sample-text-prompt-rafael'));
+  SDLAudio.LoadFromFile(Assets(GlobalTrialParameters.AudioPromptForText));
 end;
 
 { TSDLAudio }
@@ -150,7 +154,7 @@ begin
       Exit;
     end;
   end;
-  raise EFileNotFoundException.Create('TSDLAudio.SoundFromName'+AName);
+  raise EFileNotFoundException.Create('TSDLAudio.SoundFromName: '+AName);
 end;
 
 function TSDLAudio.LoadFromFile(AFilename: string): ISound;

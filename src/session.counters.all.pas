@@ -235,14 +235,12 @@ end;
 
 procedure TSessionCounters.NextTrialID(ATrialID: TTrialID);
 begin
-  Print(FTrial.ToString);
   FTrial.Next; // increment session trials
   FBlock.Trial.NextID(ATrialID); // increment block trials
 end;
 
 procedure TSessionCounters.NextBlockID(ABlockID: TBlockID);
 begin
-  Print(FBlock.ToString);
   FBlock.NextID(ABlockID);
 end;
 

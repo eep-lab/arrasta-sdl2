@@ -19,13 +19,15 @@ type
   TParserBlockKeys = record
     IDKey : string;
     NameKey : string;
-    NextBlockOnNotCriterionKey : string; // BackUpBlock	: integer;
+    BackUpBlockKey : string;
     BackUpBlockErrorsKey: string;
     MaxBlockRepetitionKey : string;
     MaxBlockRepetitionInSessionKey	: string;
     EndSessionOnHitCriterionKey	: string;
     NextBlockOnHitCriterionKey : string;
+    NextBlockOnNotCriterionKey : string;
     CrtHitPorcentageKey : string;
+    CrtConsecutiveHitKey :string;
     ReinforcementKey : string;
   end;
 
@@ -33,13 +35,15 @@ const
   ParserBlockKeys : TParserBlockKeys = (
     IDKey : 'ID';
     NameKey : 'Name';
-    NextBlockOnNotCriterionKey : 'BackUpBlock'; // BackUpBlock	: integer;
+    BackUpBlockKey : 'BackUpBlock';
     BackUpBlockErrorsKey: 'BackUpBlockErrors';
     MaxBlockRepetitionKey : 'MaxBlockRepetition';
     MaxBlockRepetitionInSessionKey	: 'MaxBlockRepetitionInSession';
     EndSessionOnHitCriterionKey	: 'EndSessionOnHitCriterion';
     NextBlockOnHitCriterionKey : 'NextBlockOnHitCriterion';
+    NextBlockOnNotCriterionKey : 'NextBlockOnNotCriterion';
     CrtHitPorcentageKey : 'HitCriterion';
+    CrtConsecutiveHitKey : 'ConsecutiveHitCriterion';
     ReinforcementKey: 'Reinforcement');
 
 implementation
