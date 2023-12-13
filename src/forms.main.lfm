@@ -49,7 +49,7 @@ object FormBackground: TFormBackground
     object ButtonLoadConfigurationFile: TButton
       Left = 16
       Height = 26
-      Hint = 'Aqui você pode retomar uma sessão'#13#10'exatamente do ponto no qual ela foi'#13#10'interrompida.'#13#10#13#10'Caso seja necessário, você pode'#13#10'interromper uma sessão pressionando'#13#10'a tecla ESC.'
+      Hint = 'Aqui você pode retomar uma sessão'#13#10'do início do bloco no qual ela foi'#13#10'interrompida.'#13#10#13#10'Caso seja necessário, você pode'#13#10'interromper uma sessão pressionando'#13#10'a tecla ESC.'
       Top = 96
       Width = 400
       Caption = 'Carregar sessão interrompida'

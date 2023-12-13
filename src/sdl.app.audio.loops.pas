@@ -156,11 +156,13 @@ begin
   Validate;
   case FTotalLoops of
     1 : begin
-      FSound.Play;
+      if not FSound.Playing then
+        FSound.Play;
     end;
 
     2..MaxSmallint: begin
-      FSound.Play;
+      if not FSound.Playing then
+        FSound.Play;
       FTimer.Start;
     end;
 

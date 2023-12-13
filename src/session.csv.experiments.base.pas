@@ -198,7 +198,7 @@ begin
       LTrialSourceParser.Free;
     end;
     LStartAt.Block := 0;
-    LStartAt.Trial:= 22;
+    LStartAt.Trial:= 0;
     FWriter.StartAt := LStartAt;
   end;
 end;
