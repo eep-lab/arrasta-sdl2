@@ -1,2 +1,2 @@
-# stimulus-control-sdl2
-A SDL2 teaching machine for free behavioral experiments
+# Stimulus Control
+A teaching machine for free behavioral experiments
