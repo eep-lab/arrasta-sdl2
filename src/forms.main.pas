@@ -155,10 +155,10 @@ begin
   OpenDialog1.InitialDir := Pool.BaseFileName;
   if OpenDialog1.Execute then begin
     Pool.ConfigurationFilename := LoadConfigurationFile(OpenDialog1.FileName);
+    ProgressBar.Max := 1;
+    ProgressBar.StepIt;
+    ProgressBar.Visible := True;
   end;
-  ProgressBar.Max := 1;
-  ProgressBar.StepIt;
-  ProgressBar.Visible := True;
 end;
 
 procedure TFormBackground.ButtonMiscClick(Sender: TObject);
@@ -213,6 +213,9 @@ begin
   with GlobalTrialParameters,
        FormMisc.CheckBoxShowModalFormForSpeechResponses do
     ShowModalFormForSpeechResponses := Checked;
+
+  with GlobalTrialParameters, FormMisc.ComboBoxShouldRestartAt do
+    ShouldRestartAtBlockStart := ItemIndex = 0;
 
   with GlobalTrialParameters, FormMisc.ComboBoxAudioPromptForText do
     AudioPromptForText := Items[ItemIndex];

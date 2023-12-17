@@ -52,6 +52,7 @@ uses Classes, SysUtils
   , session.loggers.writerow
   , session.pool
   , session.configurationfile
+  , session.parameters.global
   ;
 
 { TCounterManager }
@@ -80,8 +81,9 @@ begin
   Subject := GetSubjectIDFromFile;
   Session := TSessionCounters.Create;
   Session.Reset;
-  if Session.CacheExists then begin
+  if FileExists(Pool.BaseFilename+'.bin') then begin
     Session.LoadFromFile(Pool.BaseFilename+'.bin');
+    Session.NextID(Session.ID+1);
   end;
   Block := Session.Block;
   Trial := Block.Trial;
@@ -101,7 +103,11 @@ begin
   if Pool.EndCriteria.OfSession then begin
     { do nothing }
   end else begin
-    LStartAt.Trial := 0; // Trial.ID; todo: find a way to persist all counters
+    if GlobalTrialParameters.ShouldRestartAtBlockStart then begin
+      LStartAt.Trial := 0;
+    end else begin
+      LStartAt.Trial := Trial.ID;
+    end;
     LStartAt.Block := Block.ID;  // use block as checkpoint
     ConfigurationFile.StartAt := LStartAt;
     Session.SaveToFile(Pool.BaseFilename+'.bin')

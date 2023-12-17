@@ -16,6 +16,7 @@ type
     CheckBoxShowMarkers: TCheckBox;
     CheckBoxShowModalFormForSpeechResponses: TCheckBox;
     CheckBoxTestMode: TCheckBox;
+    ComboBoxShouldRestartAt: TComboBox;
     ComboBoxEyeTracker: TComboBox;
     ComboBoxAudioFolder: TComboBox;
     ComboBoxAudioPromptForText: TComboBox;
@@ -24,6 +25,7 @@ type
     ComboBoxMonitor: TComboBox;
     IniPropStorage1: TIniPropStorage;
     Label1: TLabel;
+    LabelShoudRestartAtBlockStart: TLabel;
     LabelMonitor: TLabel;
     LabelTestMode: TLabel;
     LabelEyeTracker: TLabel;

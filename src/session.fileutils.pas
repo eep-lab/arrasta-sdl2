@@ -184,8 +184,6 @@ end;
 
 function NewConfigurationFile : string;
 begin
-  //RandSeed := Random(MaxInt);  // Generate a random seed
-  //RandSeed := 1270036106;
   Result := Pool.BaseFilePath + 'last_session.ini';
   if FileExists(Result) then
     DeleteFile(Result);
@@ -193,7 +191,7 @@ begin
   FreeConfigurationFile;
   ConfigurationFile := TConfigurationFile.Create(Result);
   ConfigurationFile.CacheUpdates := True;
-  //ConfigurationFile.WriteInteger(_Main, 'RandSeed', RandSeed);
+  ConfigurationFile.WriteInt64(_Main, 'RandSeed', RandSeed);
   ConfigurationFile.Invalidate;
 end;
 
@@ -203,6 +201,7 @@ begin
     FreeConfigurationFile;
     ConfigurationFile := TConfigurationFile.Create(AFilename);
     ConfigurationFile.CacheUpdates := True;
+    RandSeed:= ConfigurationFile.ReadInt64(_Main, 'RandSeed', RandSeed);
     Result := AFilename;
   end else begin
     raise EFileNotFoundException.Create(AFilename);

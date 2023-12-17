@@ -24,6 +24,7 @@ type
     ShowModalFormForSpeechResponses : Boolean;
     AudioPromptForText : string;
     RecordingSeconds : UInt8;
+    ShouldRestartAtBlockStart : Boolean;
   end;
 
 var

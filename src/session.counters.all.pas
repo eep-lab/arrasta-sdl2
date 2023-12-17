@@ -30,9 +30,9 @@ type
     protected
       FCustomName : string;
       FEvents : TMutuallyExclusiveCounters;
-      function ToIni : string; override;
     public
       constructor Create;
+      function ToIni : string; override;
       procedure LoadFromStream(AStream : TStream); override;
       procedure SaveToStream(AStream : TStream); override;
       destructor Destroy; override;
@@ -44,10 +44,9 @@ type
     { TTrialCounters }
 
     TTrialCounters = class(TCustomUIDCounter)
-    protected
-      function ToIni : string; override;
     public
       ID : TTrialID; static;
+      function ToIni : string; override;
       procedure LoadFromStream(AStream : TStream); override;
       procedure SaveToStream(AStream : TStream); override;
       procedure Invalidate; override;
@@ -61,11 +60,11 @@ type
       FTrial : TTrialCounters;
     protected
       function GetTrials: Word; overload;
-      function ToIni : string; override;
     public
       ID : TBlockID; static;
       constructor Create;
       destructor Destroy; override;
+      function ToIni : string; override;
       procedure LoadFromStream(AStream : TStream); override;
       procedure SaveToStream(AStream : TStream); override;
       procedure Invalidate; override;
@@ -85,12 +84,11 @@ type
     protected
       function GetTrials : Word;
       function GetBlocks : Word;
-      function ToIni : string; override;
     public
       ID : Word; static;
       constructor Create(AMockInitialization : Boolean = False);
       destructor Destroy; override;
-      function CacheExists : Boolean;
+      function ToIni : string; override;
       procedure LoadFromFile(AFilename : string);
       procedure LoadFromStream(AStream : TStream); override;
       procedure SaveToFile(AFilename : string);
@@ -282,11 +280,6 @@ begin
   inherited Destroy;
 end;
 
-function TSessionCounters.CacheExists: Boolean;
-begin
-  Result := False;
-end;
-
 procedure TSessionCounters.LoadFromFile(AFilename: string);
 var
   LFileStream : TFileStream;
@@ -339,7 +332,8 @@ end;
 
 procedure TSessionCounters.NextID(AValue: TTrialID);
 begin
-  { Next Session ID }
+  if AValue = ID then Exit;
+  ID := AValue;
 end;
 
 procedure TSessionCounters.NextTrialConsecutive;
