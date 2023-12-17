@@ -80,6 +80,9 @@ begin
   Subject := GetSubjectIDFromFile;
   Session := TSessionCounters.Create;
   Session.Reset;
+  if Session.CacheExists then begin
+    Session.LoadFromFile(Pool.BaseFilename+'.bin');
+  end;
   Block := Session.Block;
   Trial := Block.Trial;
 
@@ -101,6 +104,7 @@ begin
     LStartAt.Trial := 0; // Trial.ID; todo: find a way to persist all counters
     LStartAt.Block := Block.ID;  // use block as checkpoint
     ConfigurationFile.StartAt := LStartAt;
+    Session.SaveToFile(Pool.BaseFilename+'.bin')
   end;
   Session.Free;
 end;

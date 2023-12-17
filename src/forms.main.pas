@@ -151,7 +151,7 @@ end;
 
 procedure TFormBackground.ButtonLoadConfigurationFileClick(Sender: TObject);
 begin
-  SetupFolders;
+  SetupFolders;         // todo: pass filename id of loaded file into session.counters.loadfromfile
   OpenDialog1.InitialDir := Pool.BaseFileName;
   if OpenDialog1.Execute then begin
     Pool.ConfigurationFilename := LoadConfigurationFile(OpenDialog1.FileName);
@@ -287,11 +287,10 @@ end;
 
 function TFormBackground.SetupFolders: Boolean;
 begin
-  Pool.BaseFileName := Pool.RootData +
-    ParticipantFolderName;
-
-  Pool.RootDataResponses := Pool.RootData +
-    ParticipantFolderName + Pool.ResponsesBasePath;
+  Pool.BaseFileName :=
+    ConcatPaths([Pool.RootData, ParticipantFolderName]);
+  Pool.RootDataResponses :=
+    ConcatPaths([Pool.BaseFileName, Pool.ResponsesBasePath]);
 
   Result :=
     ForceDirectories(Pool.BaseFileName) and

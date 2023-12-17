@@ -30,9 +30,11 @@ type
     protected
       FCustomName : string;
       FEvents : TMutuallyExclusiveCounters;
-      function ToString : string; override;
+      function ToIni : string; override;
     public
       constructor Create;
+      procedure LoadFromStream(AStream : TStream); override;
+      procedure SaveToStream(AStream : TStream); override;
       destructor Destroy; override;
       procedure NextID(AValue : TTrialID); virtual; abstract;
       property Events : TMutuallyExclusiveCounters read FEvents;
@@ -43,9 +45,11 @@ type
 
     TTrialCounters = class(TCustomUIDCounter)
     protected
-      function ToString : string; override;
+      function ToIni : string; override;
     public
       ID : TTrialID; static;
+      procedure LoadFromStream(AStream : TStream); override;
+      procedure SaveToStream(AStream : TStream); override;
       procedure Invalidate; override;
       procedure NextID(AValue : TTrialID); override;
     end;
@@ -57,11 +61,13 @@ type
       FTrial : TTrialCounters;
     protected
       function GetTrials: Word; overload;
-      function ToString : string; override;
+      function ToIni : string; override;
     public
       ID : TBlockID; static;
       constructor Create;
       destructor Destroy; override;
+      procedure LoadFromStream(AStream : TStream); override;
+      procedure SaveToStream(AStream : TStream); override;
       procedure Invalidate; override;
       procedure Next; override;
       procedure NextID(AValue : TTrialID); override;
@@ -79,15 +85,21 @@ type
     protected
       function GetTrials : Word;
       function GetBlocks : Word;
+      function ToIni : string; override;
     public
       ID : Word; static;
-      constructor Create;
+      constructor Create(AMockInitialization : Boolean = False);
       destructor Destroy; override;
-      procedure Reset; override;
+      function CacheExists : Boolean;
+      procedure LoadFromFile(AFilename : string);
+      procedure LoadFromStream(AStream : TStream); override;
+      procedure SaveToFile(AFilename : string);
+      procedure SaveToStream(AStream : TStream); override;
       procedure NextID(AValue : TTrialID); override;
       procedure NextTrialConsecutive;
       procedure NextTrialID(ATrialID : TTrialID);
       procedure NextBlockID(ABlockID : TBlockID);
+      procedure Reset; override;
       property Block : TBlockCounters read FBlock;
       property Trial : TTrialCounters read FTrial;
       property Blocks : Word read GetBlocks;
@@ -101,14 +113,31 @@ uses session.pool, session.strutils;
 
 { TCustomUIDCounter }
 
-function TCustomUIDCounter.ToString: string;
+function TCustomUIDCounter.ToIni: string;
 begin
-  Result := inherited ToString;
+  Result :=
+    KeyValue('CustomName', CustomName) +
+    inherited ToIni + FEvents.ToIni;
 end;
 
 constructor TCustomUIDCounter.Create;
 begin
+  Name := TCustomUIDCounter.ClassName;
   FEvents := TMutuallyExclusiveCounters.Create;
+end;
+
+procedure TCustomUIDCounter.LoadFromStream(AStream: TStream);
+begin
+  inherited LoadFromStream(AStream);
+  FCustomName := AStream.ReadAnsiString;
+  FEvents.LoadFromStream(AStream);
+end;
+
+procedure TCustomUIDCounter.SaveToStream(AStream: TStream);
+begin
+  inherited SaveToStream(AStream);
+  AStream.WriteAnsiString(FCustomName);
+  FEvents.SaveToStream(AStream);
 end;
 
 destructor TCustomUIDCounter.Destroy;
@@ -119,11 +148,23 @@ end;
 
 { TTrialCounters }
 
-function TTrialCounters.ToString: string;
+function TTrialCounters.ToIni: string;
 begin
   Result := KeyValue(CustomName, (UID+1).ToString) +
             KeyValue('ID', ID.ToString) +
-            inherited ToString + FEvents.ToString;
+            inherited ToIni;
+end;
+
+procedure TTrialCounters.LoadFromStream(AStream: TStream);
+begin
+  inherited LoadFromStream(AStream);
+  ID := AStream.ReadWord;
+end;
+
+procedure TTrialCounters.SaveToStream(AStream: TStream);
+begin
+  inherited SaveToStream(AStream);
+  AStream.WriteWord(ID);
 end;
 
 procedure TTrialCounters.Invalidate;
@@ -146,11 +187,11 @@ begin
   Result := FTrial.Count;
 end;
 
-function TBlockCounters.ToString: string;
+function TBlockCounters.ToIni: string;
 begin
   Result := KeyValue(CustomName, (UID+1).ToString) +
             KeyValue('ID', ID.ToString) +
-            inherited ToString + FEvents.ToString;
+            inherited ToIni;
 end;
 
 procedure TBlockCounters.Next;
@@ -178,6 +219,20 @@ begin
   inherited Destroy;
 end;
 
+procedure TBlockCounters.LoadFromStream(AStream: TStream);
+begin
+  inherited LoadFromStream(AStream);
+  ID := AStream.ReadWord;
+  FTrial.LoadFromStream(AStream);
+end;
+
+procedure TBlockCounters.SaveToStream(AStream: TStream);
+begin
+  inherited SaveToStream(AStream);
+  AStream.WriteWord(ID);
+  FTrial.SaveToStream(AStream);
+end;
+
 procedure TBlockCounters.Invalidate;
 begin
   inherited Invalidate;
@@ -196,7 +251,16 @@ begin
   Result := FBlock.Count;
 end;
 
-constructor TSessionCounters.Create;
+function TSessionCounters.ToIni: string;
+begin
+  Result :=
+    inherited ToIni +
+    FBlock.ToIni +
+    FBlock.Trial.ToIni +
+    FTrial.ToIni;
+end;
+
+constructor TSessionCounters.Create(AMockInitialization: Boolean);
 begin
   inherited Create;
   CustomName := 'Session';
@@ -204,7 +268,11 @@ begin
   FBlock.CustomName := 'Session.Block';
   FTrial := TTrialCounters.Create;
   FTrial.CustomName := 'Session.Trial';
-  FTree.Initialize;
+  if AMockInitialization then begin
+    FTree.InitializeMock;
+  end else begin
+    FTree.Initialize;
+  end;
 end;
 
 destructor TSessionCounters.Destroy;
@@ -212,6 +280,53 @@ begin
   FTrial.Free;
   FBlock.Free;
   inherited Destroy;
+end;
+
+function TSessionCounters.CacheExists: Boolean;
+begin
+  Result := False;
+end;
+
+procedure TSessionCounters.LoadFromFile(AFilename: string);
+var
+  LFileStream : TFileStream;
+begin
+  LFileStream := TFileStream.Create(AFilename, fmOpenRead);
+  try
+    LoadFromStream(LFileStream);
+  finally
+    LFileStream.Free;
+  end;
+end;
+
+procedure TSessionCounters.LoadFromStream(AStream: TStream);
+begin
+  inherited LoadFromStream(AStream);
+  ID := AStream.ReadWord;
+  FBlock.LoadFromStream(AStream);
+  FTrial.LoadFromStream(AStream);
+  FTree.LoadFromStream(AStream);
+end;
+
+procedure TSessionCounters.SaveToFile(AFilename: string);
+var
+  LFileStream : TFileStream;
+begin
+  LFileStream := TFileStream.Create(AFilename, fmCreate);
+  try
+    SaveToStream(LFileStream);
+  finally
+    LFileStream.Free;
+  end;
+end;
+
+procedure TSessionCounters.SaveToStream(AStream: TStream);
+begin
+  inherited SaveToStream(AStream);
+  AStream.WriteWord(ID);
+  FBlock.SaveToStream(AStream);
+  FTrial.SaveToStream(AStream);
+  FTree.SaveToStream(AStream);
 end;
 
 procedure TSessionCounters.Reset;
