@@ -26,6 +26,7 @@ procedure AppendFilesTo(var AStimuliArray: TStringArray;
 
 procedure GetAudioFoldersFor(AStrings : TStrings);
 procedure GetAudioFilesFor(AStrings : TStrings);
+procedure GetDesignFoldersFor(AStrings : TStrings);
 procedure GetDesignFilesFor(AStrings : TStrings);
 procedure GetFontFilesFor(AStrings : TStrings);
 
@@ -79,7 +80,7 @@ begin
   FindAllDirectories(AStrings, LDefaultFolder, False);
   for i := 0 to AStrings.Count - 1 do begin
     AStrings[i] :=
-      AsPath(AStrings[i].Replace(LFolder+DirectorySeparator, ''));
+      AsPath(ExtractFileNameOnly(AStrings[i]));
   end;
 end;
 
@@ -100,14 +101,26 @@ begin
   end;
 end;
 
+procedure GetDesignFoldersFor(AStrings: TStrings);
+var
+  i : integer;
+const
+  LFolder = 'design';
+begin
+  FindAllDirectories(AStrings, LFolder, False);
+  for i := 0 to AStrings.Count - 1 do begin
+    AStrings[i] :=
+      AsPath(AStrings[i].Replace(LFolder+DirectorySeparator, ''));
+  end;
+end;
+
 procedure GetDesignFilesFor(AStrings : TStrings);
 var
   i : integer;
 const
   LDefaultExtension = '*.csv';
-  LDefaultFolder    = 'design';
 begin
-  FindAllFiles(AStrings, LDefaultFolder, LDefaultExtension, False);
+  FindAllFiles(AStrings, DesignFolder, LDefaultExtension, False);
   if AStrings.Count > 0 then begin
     for i := 0 to AStrings.Count -1 do begin
       AStrings[i] :=
@@ -184,7 +197,7 @@ end;
 
 function NewConfigurationFile : string;
 begin
-  Result := Pool.BaseFilePath + 'last_session.ini';
+  Result := Pool.BasePath + 'last_session.ini';
   if FileExists(Result) then
     DeleteFile(Result);
 

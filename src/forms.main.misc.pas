@@ -47,6 +47,7 @@ type
     SpinEditTimeOut: TSpinEdit;
     TabSheetGeneral: TTabSheet;
     TabSheetEyeTracking: TTabSheet;
+    procedure ComboBoxDesignFolderChange(Sender: TObject);
     procedure FormCreate(Sender: TObject);
   private
 
@@ -59,7 +60,7 @@ var
 
 implementation
 
-uses sdl.app, session.fileutils;
+uses sdl.app, session.pool, session.fileutils;
 
 {$R *.lfm}
 
@@ -91,6 +92,11 @@ begin
     LStringList.Clear;
     LStringList.Free;
   end;
+end;
+
+procedure TFormMisc.ComboBoxDesignFolderChange(Sender: TObject);
+begin
+
 end;
 
 { TFormMisc }

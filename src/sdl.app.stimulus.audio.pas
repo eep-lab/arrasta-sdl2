@@ -179,7 +179,7 @@ end;
 procedure TAudioStimulus.Load(AParameters: TStringList; AParent: TObject;
   ARect: TSDL_Rect);
 const
-  LAudioPicture : string = 'AudioPicture'+IMG_EXT;
+  LAudioPicture : string = 'AudioPicture';
 begin
   FCustomName := GetWordValue(AParameters, IsSample, Index);
   FHasPrompt := HasDAPAAPPrompt(AParameters);
@@ -191,7 +191,7 @@ begin
     FText.Parent := TCustomRenderer(AParent);
     FText.OnMouseDown := @MouseDown;
   end else begin
-    FPicture.LoadFromFile(Assets(LAudioPicture));
+    FPicture.LoadFromFile(AsAsset(LAudioPicture));
     FPicture.BoundsRect := ARect;
     FPicture.Parent := TCustomRenderer(AParent);
     FPicture.OnMouseDown := @MouseDown;
@@ -201,7 +201,7 @@ begin
 
   FLoops.TotalLoops := GetTotalLoopsValue(AParameters);
   with FLoops do begin
-    Sound := SDLAudio.LoadFromFile(AudioFile(FCustomName));
+    Sound := SDLAudio.LoadFromFile(AsAudio(FCustomName));
     OnEveryLoopStart := @SoundStart;
     OnEveryLoopStop := @SoundFinished;
     //if TotalLoops > 1 then begin

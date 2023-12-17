@@ -78,7 +78,7 @@ var
 begin
   inherited DoResponse(AHuman);
   LName := GetID.ToString.Replace(#9, '-').Replace(#32, '-');
-  FRecorder.SaveToFile(Pool.RootDataResponses+LName);
+  FRecorder.SaveToFile(Pool.DataResponsesBasePath+LName);
   FormManualSpeechValidation.ExpectedText := FCustomName;
 end;
 
@@ -143,10 +143,10 @@ end;
 procedure TSpeechStimulus.Load(AParameters: TStringList; AParent: TObject;
   ARect: TSDL_Rect);
 const
-  LRecordButtonOn  : string = 'RecordButtonOn' +IMG_EXT;
-  LRecordButtonOff : string = 'RecordButtonOff'+IMG_EXT;
-  LPlayButtonOn  : string = 'PlayButtonOn' +IMG_EXT;
-  LPlayButtonOff : string = 'PlayButtonOff'+IMG_EXT;
+  LRecordButtonOn  : string = 'RecordButtonOn';
+  LRecordButtonOff : string = 'RecordButtonOff';
+  LPlayButtonOn  : string = 'PlayButtonOn';
+  LPlayButtonOff : string = 'PlayButtonOff';
 begin
   //inherited Load(AParameters, AParent, ARect);
   FRect := ARect;
@@ -158,7 +158,7 @@ begin
 
   if FPlayback.Opened then begin
     FPlaybackButton.LoadFromFile(
-      Assets(LPlayButtonOff), Assets(LPlayButtonOn));
+      AsAsset(LPlayButtonOff), AsAsset(LPlayButtonOn));
     FPlaybackButton.BoundsRect := ARect;
     FPlaybackButton.Parent := TCustomRenderer(AParent);
     //FPlaybackButton.OnMouseDown := @MouseDown;
@@ -168,7 +168,7 @@ begin
 
   if FRecorder.Opened then begin
     FRecorderButton.LoadFromFile(
-      Assets(LRecordButtonOff), Assets(LRecordButtonOn));
+      AsAsset(LRecordButtonOff), AsAsset(LRecordButtonOn));
     FRecorderButton.BoundsRect := ARect;
     FRecorderButton.Sibling := FPlaybackButton;
     FRecorderButton.Parent := TCustomRenderer(AParent);

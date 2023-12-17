@@ -49,7 +49,6 @@ type
       FSoundWrong   : ISound;
       FComparisons : TCustomStimulusList;
       FSamples : TCustomStimulusList;
-      function MyResult : TTrialResult; override;
       procedure DoConsequence(Sender : TObject);
       procedure ConsequenceDone(Sender: TObject);
       procedure ConsequenceStart(Sender: TObject);
@@ -64,6 +63,7 @@ type
     public
       constructor Create; override;
       destructor Destroy; override;
+      function MyResult : TTrialResult; override;
       function AsInterface : IStimuli;
       procedure DoExpectedResponse; override;
       procedure Load(AParameters : TStringList;
@@ -90,6 +90,7 @@ uses
   , session.constants.trials
   , session.constants.mts
   , session.pool
+  , session.strutils
   ;
 
 { TMTSStimuli }
@@ -439,12 +440,12 @@ begin
 
     case FMTSModality.Comparisons of
       ModalityA : begin
-        FButton.LoadFromFile(Pool.AssetsBasePath+'ConfirmButton'+IMG_EXT);
+        FButton.LoadFromFile(AsAsset('ConfirmButton'));
         FButton.Parent := TCustomRenderer(AParent);
         FButton.OnClick:=@ButtonClick;
       end;
       ModalityD : begin
-        FButton.LoadFromFile(Pool.AssetsBasePath+'FinalizeButton'+IMG_EXT);
+        FButton.LoadFromFile(AsAsset('FinalizeButton'));
         FButton.Parent := TCustomRenderer(AParent);
         FButton.OnClick:=@ButtonClick;
 

@@ -51,44 +51,38 @@ type
 
 implementation
 
-uses session.pool, LazFileUtils;
+uses session.strutils, LazFileUtils;
 
 const
   LDefaultExtention = '.csv';
-  LDefaultFolder = 'design';
   LDefaultInstructionsFolder = 'instructions';
   LDefaultBlocksFolder = 'blocks';
   LDefaultTrialsSourceFolder = 'trials';
 
 function InsideBaseFolder(AFilename: string): string;
 begin
-  Result := Pool.BaseFilePath +
-    LDefaultFolder+DirectorySeparator+
-    AFilename+LDefaultExtention;
+  Result := DesignFolder + AFilename+LDefaultExtention;
 end;
 
 function InsideBlocksSubFolder(AFilename: string): string;
 begin
-  Result := Pool.BaseFilePath +
-            LDefaultFolder+DirectorySeparator+
-            LDefaultBlocksFolder+DirectorySeparator+
-            AFilename+LDefaultExtention;
+  Result :=
+    ConcatPaths([DesignFolder, AsPath(LDefaultBlocksFolder)]) +
+    AFilename+LDefaultExtention;
 end;
 
 function InsideTrialsSubFolder(AFilename: string): string;
 begin
-  Result := Pool.BaseFilePath +
-            LDefaultFolder+DirectorySeparator+
-            LDefaultTrialsSourceFolder+DirectorySeparator+
-            AFilename+LDefaultExtention;
+  Result :=
+    ConcatPaths([DesignFolder, AsPath(LDefaultTrialsSourceFolder)]) +
+    AFilename+LDefaultExtention;
 end;
 
 function InsideInstructionsSubFolder(AFilename: string): string;
 begin
-  Result := Pool.BaseFilePath +
-            LDefaultFolder+DirectorySeparator+
-            LDefaultInstructionsFolder+DirectorySeparator+
-            AFilename+LDefaultExtention;
+  Result :=
+    ConcatPaths([DesignFolder, AsPath(LDefaultInstructionsFolder)]) +
+    AFilename+LDefaultExtention;
 end;
 
 function BaseFileExists(AFilename: string): Boolean;

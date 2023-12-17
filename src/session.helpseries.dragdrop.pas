@@ -341,7 +341,7 @@ var
   end;
 begin
   if AFilename = '' then begin
-    Filename := Pool.BaseFilePath + DefaultComplexityFilename;
+    Filename := Pool.BasePath + DefaultComplexityFilename;
   end else begin
     Filename := AFilename;
   end;

@@ -46,7 +46,8 @@ implementation
 uses
    sdl.app.renderer.custom
    , session.constants.mts
-   , session.strutils.mts;
+   , session.strutils.mts
+   , session.strutils;
 
 { TPictureStimulus }
 
@@ -81,7 +82,7 @@ procedure TPictureStimulus.Load(AParameters: TStringList; AParent: TObject;
   ARect: TSDL_Rect);
 begin
   FCustomName := GetWordValue(AParameters, IsSample, Index);
-  FPicture.LoadFromFile(FCustomName+IMG_EXT);
+  FPicture.LoadFromFile(AsImage(FCustomName));
   FPicture.BoundsRect := ARect;
   FPicture.Parent := TCustomRenderer(AParent);
   FPicture.OnMouseDown := @MouseDown;
