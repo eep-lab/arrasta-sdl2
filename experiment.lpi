@@ -22,7 +22,7 @@
       <UseVersionInfo Value="True"/>
       <AutoIncrementBuild Value="True"/>
       <MajorVersionNr Value="1"/>
-      <BuildNr Value="2"/>
+      <BuildNr Value="4"/>
       <Language Value="0416"/>
       <Attributes pvaPrivateBuild="True"/>
       <StringTable Comments="Uma máquina de ensinar para experimentos comportamentais livres" InternalName="Stimulus Control" LegalCopyright="Carlos Rafael Fernandes Picanço" ProductName="Stimulus Control"/>
@@ -841,6 +841,30 @@
       </Unit>
       <Unit>
         <Filename Value="src\session.parameters.global.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="src\session.csv.trials.pseudowords.cycle1.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="src\session.csv.trials.pseudowords.cycle2.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="src\session.csv.trials.pseudowords.cycle3.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="src\session.csv.trials.pseudowords.cycle4.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="src\session.csv.trials.pseudowords.cycle5.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="src\session.csv.trials.pseudowords.cycle6.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit>
     </Units>
