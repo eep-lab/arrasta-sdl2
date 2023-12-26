@@ -57,7 +57,7 @@ type
 implementation
 
 uses sdl.app.audio
-   , sdl.app.renderer.custom
+   , sdl.app.controls.custom
    , session.parameters.global
    , session.loggers.writerow.timestamp
    , session.pool
@@ -188,15 +188,19 @@ begin
     //FText.FontSize := 50;
     FText.Load(FCustomName);
     FText.CentralizeWith(ARect);
-    FText.Parent := TCustomRenderer(AParent);
+    FText.Parent := TSDLControl(AParent);
     FText.OnMouseDown := @MouseDown;
+
+    Selectables.Add(FText.AsISelectable);
   end else begin
     FPicture.LoadFromFile(AsAsset(LAudioPicture));
     FPicture.BoundsRect := ARect;
-    FPicture.Parent := TCustomRenderer(AParent);
+    FPicture.Parent := TSDLControl(AParent);
     FPicture.OnMouseDown := @MouseDown;
     FPicture.OnMouseEnter := @MouseEnter;
     FPicture.OnMouseExit := @MouseExit;
+
+    Selectables.Add(FPicture.AsISelectable);
   end;
 
   FLoops.TotalLoops := GetTotalLoopsValue(AParameters);

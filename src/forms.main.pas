@@ -89,6 +89,7 @@ uses
   , session.fileutils
   , session.csv.experiments
   , sdl.app
+  , sdl.app.controller.manager
   , sdl.app.grids.types
   , sdl.app.testmode
   , eye.tracker
@@ -108,11 +109,13 @@ begin
 
   SDLApp := TSDLApplication.Create(@Pool.AppName[1]);
   SDLApp.SetupVideo(FormMisc.ComboBoxMonitor.ItemIndex);
-  SDLApp.SetupEvents;
   SDLApp.SetupAudio;
   SDLApp.SetupText;
   SDLApp.OnClose := @CloseSDLApp;
   SDLApp.ShowMarkers := FormMisc.CheckBoxShowMarkers.Checked;
+
+  Controllers := TControllerManager.Create;
+  Controllers.CreateController(FormMisc.ComboBoxController.ItemIndex);
 
   Pool.App := SDLApp;
 
@@ -214,6 +217,7 @@ begin
   FreeConfigurationFile;
   ToogleControlPanelEnabled;
   ProgressBar.Visible := False;
+  Controllers.Free;
 end;
 
 procedure TFormBackground.IniPropStorage1RestoreProperties(Sender: TObject);

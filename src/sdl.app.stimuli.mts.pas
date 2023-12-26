@@ -15,8 +15,10 @@ interface
 
 uses
   Classes, SysUtils
-  , fgl
+  , Generics.Collections
   , sdl.app.graphics.button
+  , sdl.app.navigable.contract
+  , sdl.app.navigator.contract
   , sdl.app.stimuli.contract
   , sdl.app.stimuli
   , sdl.app.stimulus.contract
@@ -28,6 +30,8 @@ uses
 
 type
 
+  TState = (startNone, startSamples, startComparisons, startButtons);
+
   TModality = (ModalityNone, ModalityA, ModalityB, ModalityC, ModalityD);
 
   TMTSModality = record
@@ -35,20 +39,25 @@ type
     Comparisons : TModality;
   end;
 
-  TCustomStimulusList = specialize TFPGList<TStimulus>;
+  TCustomStimulusList = specialize TList<TStimulus>;
 
   { TMTSStimuli }
 
-  TMTSStimuli = class sealed (TStimuli, IStimuli)
+  TMTSStimuli = class sealed (TStimuli, INavigable)
     private
+      FState : TState;
+      FNavigator : INavigator;
       FResult : TTrialResult;
-      FMTSModality : TMTSModality;
       FHasConsequence : Boolean;
-      FButton : TButton;
       FSoundCorrect : ISound;
       FSoundWrong   : ISound;
+      FMTSModality : TMTSModality;
+      FButton : TButton;
       FComparisons : TCustomStimulusList;
       FSamples : TCustomStimulusList;
+      procedure UpdateState(AState : TState);
+      procedure SetNavigator(ANavigator: INavigator);
+      procedure UpdateNavigator;
       procedure DoConsequence(Sender : TObject);
       procedure ConsequenceDone(Sender: TObject);
       procedure ConsequenceStart(Sender: TObject);
@@ -57,9 +66,9 @@ type
       procedure StimulusMouseDown(Sender: TObject; Shift: TCustomShiftState; X, Y: Integer);
       procedure StimulusMouseUp(Sender: TObject; Shift: TCustomShiftState; X, Y: Integer);
       procedure ButtonClick(Sender: TObject);
+      procedure NoResponse(Sender: TObject);
       procedure ComparisonResponse(Sender: TObject);
       procedure SampleResponse(Sender: TObject);
-      procedure NoResponse(Sender: TObject);
     public
       constructor Create; override;
       destructor Destroy; override;
@@ -76,7 +85,7 @@ implementation
 
 uses
   StrUtils
-  , sdl.app.renderer.custom
+  , sdl.app.controls.custom
   , sdl.app.graphics.picture
   , sdl.app.output
   , sdl.app.audio
@@ -85,6 +94,8 @@ uses
   , sdl.app.stimulus.factory
   , sdl.app.stimulus.audio
   , sdl.app.stimulus.speech
+  , sdl.app.selectable.contract
+  , sdl.app.selectable.list
   , session.loggers.writerow
   , session.loggers.writerow.timestamp
   , session.constants.trials
@@ -98,6 +109,70 @@ uses
 function TMTSStimuli.MyResult: TTrialResult;
 begin
   Result := FResult;
+end;
+
+procedure TMTSStimuli.UpdateState(AState: TState);
+begin
+  FState := AState;
+  UpdateNavigator;
+end;
+
+procedure TMTSStimuli.SetNavigator(ANavigator: INavigator);
+begin
+  FNavigator := ANavigator;
+end;
+
+procedure TMTSStimuli.UpdateNavigator;
+var
+  LSelectables : TSelectables;
+  LSelectable : ISelectable;
+  LStimulus : TStimulus;
+begin
+  LSelectables := TSelectables.Create;
+  try
+    case FState of
+      startNone: { do nothing };
+
+      startSamples: begin
+        for LStimulus in FSamples do begin
+          for LSelectable in LStimulus.Selectables do begin
+            LSelectables.Add(LSelectable);
+          end;
+        end;
+      end;
+
+      startComparisons: begin
+        for LStimulus in FSamples do begin
+          for LSelectable in LStimulus.Selectables do begin
+            LSelectables.Add(LSelectable);
+          end;
+        end;
+
+        for LStimulus in FComparisons do begin
+          for LSelectable in LStimulus.Selectables do begin
+            LSelectables.Add(LSelectable);
+          end;
+        end;
+      end;
+
+      startButtons: begin
+        LSelectables.Add(FButton.AsISelectable);
+      end;
+
+    end;
+
+    if LSelectables.Count > 0 then begin
+      if LSelectables.Count > 1 then begin
+        LSelectables.Sort(TSelectables.ByOrigin);
+      end;
+      FNavigator.UpdateNavigationControls(LSelectables);
+    end else begin
+      FNavigator.UpdateNavigationControls(nil);
+    end;
+
+  finally
+    LSelectables.Free;
+  end;
 end;
 
 procedure TMTSStimuli.DoConsequence(Sender: TObject);
@@ -218,10 +293,12 @@ begin
         LIStimulus.Stop;
       end;
     end;
-    else begin
+
+    otherwise begin
       { do nothing }
     end;
   end;
+
   if Sender is TStimulus then begin
     //Timestamp('Comparison.Response');
     LStimulus := Sender as TStimulus;
@@ -232,6 +309,7 @@ begin
         FButton.CentralizeAtTopWith(LStimulus.Rectangule.BoundsRect);
         FButton.Sender := Sender;
         FButton.Show;
+        UpdateState(startButtons);
         Exit;
       end;
 
@@ -240,9 +318,13 @@ begin
         FButton.CentralizeAtRightWith(LStimulus.Rectangule.BoundsRect);
         FButton.Sender := Sender;
         FButton.Show;
+        UpdateState(startButtons);
         Exit;
       end;
-      else { do nothing }
+
+      otherwise begin
+        { do nothing }
+      end;
     end;
 
     for LIStimulus in FComparisons do begin
@@ -266,6 +348,7 @@ begin
     LStimulus.Start;
   end;
   Timestamp('Comparison.Start');
+  UpdateState(startComparisons);
 end;
 
 procedure TMTSStimuli.NoResponse(Sender: TObject);
@@ -292,6 +375,7 @@ end;
 
 destructor TMTSStimuli.Destroy;
 begin
+  UpdateState(startNone);
   TStimulusFactory.Clear;
   FButton.Free;
   FSamples.Free;
@@ -441,12 +525,12 @@ begin
     case FMTSModality.Comparisons of
       ModalityA : begin
         FButton.LoadFromFile(AsAsset('ConfirmButton'));
-        FButton.Parent := TCustomRenderer(AParent);
+        FButton.Parent := TSDLControl(AParent);
         FButton.OnClick:=@ButtonClick;
       end;
       ModalityD : begin
         FButton.LoadFromFile(AsAsset('FinalizeButton'));
-        FButton.Parent := TCustomRenderer(AParent);
+        FButton.Parent := TSDLControl(AParent);
         FButton.OnClick:=@ButtonClick;
 
         LComparisons := 1;
@@ -464,6 +548,7 @@ var
 begin
   for LStimulus in FSamples do
     LStimulus.Start;
+  UpdateState(startSamples);
 end;
 
 procedure TMTSStimuli.Stop;

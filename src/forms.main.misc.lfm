@@ -3,13 +3,13 @@ object FormMisc: TFormMisc
   Height = 629
   Top = 45
   Width = 391
-  HorzScrollBar.Page = 363
-  VertScrollBar.Page = 546
+  HorzScrollBar.Page = 204
+  VertScrollBar.Page = 91
   AutoScroll = True
   Caption = 'Configurações da sessão'
   ClientHeight = 629
   ClientWidth = 391
-  SessionProperties = 'CheckBoxShowMarkers.Checked;CheckBoxShowModalFormForSpeechResponses.Checked;CheckBoxTestMode.Checked;ComboBoxAudioFolder.ItemIndex;ComboBoxAudioPromptForText.ItemIndex;ComboBoxEyeTracker.ItemIndex;ComboBoxFixedSamplePosition.ItemIndex;ComboBoxFontName.ItemIndex;ComboBoxMonitor.ItemIndex;ComboBoxShouldRestartAt.ItemIndex;SpinEditFontSize.Value;SpinEditInterTrialInterval.Value;SpinEditLimitedHold.Value;SpinEditTimeOut.Value'
+  SessionProperties = 'CheckBoxShowMarkers.Checked;CheckBoxShowModalFormForSpeechResponses.Checked;CheckBoxTestMode.Checked;ComboBoxAudioFolder.ItemIndex;ComboBoxAudioPromptForText.ItemIndex;ComboBoxEyeTracker.ItemIndex;ComboBoxFixedSamplePosition.ItemIndex;ComboBoxFontName.ItemIndex;ComboBoxMonitor.ItemIndex;ComboBoxShouldRestartAt.ItemIndex;SpinEditFontSize.Value;SpinEditInterTrialInterval.Value;SpinEditLimitedHold.Value;SpinEditTimeOut.Value;PageControl.TabIndex;ComboBoxController.ItemIndex'
   LCLVersion = '3.99.0.0'
   OnCreate = FormCreate
   object PageControl: TPageControl
@@ -17,9 +17,9 @@ object FormMisc: TFormMisc
     Height = 629
     Top = 0
     Width = 391
-    ActivePage = TabSheetGeneral
+    ActivePage = TabSheetControllers
     Align = alClient
-    TabIndex = 0
+    TabIndex = 2
     TabOrder = 0
     object TabSheetGeneral: TTabSheet
       Caption = 'Geral'
@@ -302,6 +302,41 @@ object FormMisc: TFormMisc
         ReadOnly = True
         TabOrder = 1
         Text = 'Nenhum'
+      end
+    end
+    object TabSheetControllers: TTabSheet
+      Caption = 'Controles'
+      ChildSizing.LeftRightSpacing = 20
+      ChildSizing.TopBottomSpacing = 20
+      ChildSizing.HorizontalSpacing = 10
+      ChildSizing.VerticalSpacing = 10
+      ChildSizing.EnlargeHorizontal = crsHomogenousChildResize
+      ChildSizing.Layout = cclLeftToRightThenTopToBottom
+      ChildSizing.ControlsPerLine = 2
+      ClientHeight = 601
+      ClientWidth = 383
+      object LabelController: TLabel
+        Left = 20
+        Height = 23
+        Top = 20
+        Width = 140
+        Caption = 'Controle'
+      end
+      object ComboBoxController: TComboBox
+        Left = 170
+        Height = 23
+        Top = 20
+        Width = 193
+        ItemHeight = 15
+        ItemIndex = 0
+        Items.Strings = (
+          'Mouse'
+          'Teclado'
+          'Wii Remote'
+          'PS4'
+        )
+        TabOrder = 0
+        Text = 'Mouse'
       end
     end
   end

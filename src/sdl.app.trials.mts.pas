@@ -19,6 +19,7 @@ uses
   , sdl.app.trials
   , sdl.app.stimuli.contract
   , sdl.app.stimuli.mts
+  , sdl.app.navigable.contract
   ;
 
 type
@@ -28,8 +29,10 @@ type
   TMTS = class sealed (TTrial)
     private
       FStimuli : TMTSStimuli;
+      FNavigable: INavigable;
     protected
       function GetIStimuli: IStimuli; override;
+      function GetINavigable : INavigable; override;
     public
       constructor Create; override;
       destructor Destroy; override;
@@ -61,6 +64,11 @@ end;
 function TMTS.GetIStimuli: IStimuli;
 begin
   Result := FStimuli.AsInterface;
+end;
+
+function TMTS.GetINavigable: INavigable;
+begin
+  Result := FStimuli as INavigable;
 end;
 
 procedure TMTS.EndTrial;

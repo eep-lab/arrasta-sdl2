@@ -16,6 +16,7 @@ type
     CheckBoxShowMarkers: TCheckBox;
     CheckBoxShowModalFormForSpeechResponses: TCheckBox;
     CheckBoxTestMode: TCheckBox;
+    ComboBoxController: TComboBox;
     ComboBoxShouldRestartAt: TComboBox;
     ComboBoxEyeTracker: TComboBox;
     ComboBoxAudioFolder: TComboBox;
@@ -25,6 +26,7 @@ type
     ComboBoxMonitor: TComboBox;
     IniPropStorage1: TIniPropStorage;
     Label1: TLabel;
+    LabelController: TLabel;
     LabelShoudRestartAtBlockStart: TLabel;
     LabelMonitor: TLabel;
     LabelTestMode: TLabel;
@@ -45,6 +47,7 @@ type
     SpinEditLimitedHold: TSpinEdit;
     SpinEditRecordingSeconds: TSpinEdit;
     SpinEditTimeOut: TSpinEdit;
+    TabSheetControllers: TTabSheet;
     TabSheetGeneral: TTabSheet;
     TabSheetEyeTracking: TTabSheet;
     procedure ComboBoxDesignFolderChange(Sender: TObject);

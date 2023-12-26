@@ -19,7 +19,7 @@ uses
   , sdl.app.events.abstract
   , sdl.app.stimuli
   , sdl.app.stimuli.contract
-  , sdl.app.renderer.custom
+  , sdl.app.controls.custom
   , sdl.app.graphics.text
   , sdl.app.stimulus.typeable;
 
@@ -91,7 +91,7 @@ begin
   FText.Wrapped := True;
   FText.WrappedWidth := (Monitor.w div 3) * 2;
   FText.LoadFromFile(AParameters.Values['Instruction']);
-  FText.Parent := TCustomRenderer(AParent);
+  FText.Parent := TSDLControl(AParent);
   FText.Centralize;
 end;
 

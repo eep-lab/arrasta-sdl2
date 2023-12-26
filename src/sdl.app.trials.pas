@@ -17,8 +17,9 @@ uses
   Classes, SysUtils, fgl
   , SDL2
   , sdl.timer
-  , sdl.app.renderer.custom
+  , sdl.app.controls.custom
   , sdl.app.trials.types
+  , sdl.app.navigable.contract
   , sdl.app.trials.contract
   , sdl.app.stimuli.contract
   , sdl.app.stimuli
@@ -35,11 +36,11 @@ type
 
   { TTrial }
 
-  TTrial = class(TCustomRenderer, ITrial)
+  TTrial = class(TSDLControl, ITrial)
     private
       FName: string;
       FText : TText;
-      FParent : TCustomRenderer;
+      FParent : TSDLControl;
       FLimitedHoldTimer : TSDLTimer;
       FTestMode: Boolean;
       FVisible: Boolean;
@@ -50,7 +51,7 @@ type
       FConsequenceInterval : Cardinal;
       FHasInstructions : Boolean;
       FHasCalibration  : Boolean;
-      procedure SetParent(AValue: TCustomRenderer);
+      procedure SetParent(AValue: TSDLControl);
       procedure SetTestMode(AValue: Boolean);
       procedure EndStarterCallBack(Sender : TObject);
       procedure CreateStartersIfRequired;
@@ -71,6 +72,7 @@ type
       function GetOnTrialEnd: TNotifyEvent;
       function GetTrialData: TTrialData;
       function GetIStimuli : IStimuli; virtual; abstract;
+      function GetINavigable : INavigable; virtual; abstract;
       function MyResult : TTrialResult; virtual;
     public
       constructor Create; override;
@@ -87,8 +89,9 @@ type
       property Data : TTrialData read GetTrialData write SetTrialData;
       property OnTrialEnd : TNotifyEvent read GetOnTrialEnd write SetOnTrialEnd;
       property TestMode : Boolean read FTestMode write SetTestMode;
-      property Parent : TCustomRenderer read FParent write SetParent;
+      property Parent : TSDLControl read FParent write SetParent;
       property Name : string read FName write FName;
+      property Naviable : INavigable read GetINavigable;
   end;
 
 const
@@ -98,12 +101,14 @@ implementation
 
 uses
     eye.tracker.client
+  , sdl.app.video.methods
   , sdl.app.stimuli.instruction
   , sdl.app.stimuli.calibration.pupil
   , sdl.app.paintable.contract
   , sdl.app.clickable.contract
   , sdl.app.moveable.contract
   , sdl.app.lookable.contract
+  , sdl.app.controller.manager
   , session.constants.trials
   , session.loggers.writerow.timestamp;
 
@@ -112,11 +117,15 @@ uses
 constructor TTrial.Create;
 begin
   inherited Create;
+  FRect := MonitorFromWindow;
   SDLEvents.AssignEvents;
   SDLEvents.OnMouseButtonDown := AsIClickable.GetSDLMouseButtonDown;
   SDLEvents.OnMouseButtonUp := AsIClickable.GetSDLMouseButtonUp;
   SDLEvents.OnMouseMotion := AsIMoveable.GetSDLMouseMotion;
   SDLEvents.OnGazeOnScreen := @GazeOnScreen;
+
+  Controllers.FirstController.Navigator.SetBaseControl(AsISelectable);
+
   FICalibration := nil;
   FIInstruction := nil;
   FVisible := False;
@@ -204,7 +213,7 @@ begin
     for Child in FChildren do begin
       SDLPoint.x := X;
       SDLPoint.y := Y;
-      IChild := IMoveable(TCustomRenderer(Child));
+      IChild := IMoveable(TSDLControl(Child));
       if IChild.PointInside(SDLPoint) then begin
         if not IChild.MouseInside then begin
           IChild.MouseInside:=True;
@@ -231,7 +240,7 @@ begin
     for Child in FChildren do begin
       SDLPoint.x := X;
       SDLPoint.y := Y;
-      IChild := IClickable(TCustomRenderer(Child));
+      IChild := IClickable(TSDLControl(Child));
       if IChild.PointInside(SDLPoint) then
         IChild.MouseDown(Sender, Shift, X, Y);
     end;
@@ -249,7 +258,7 @@ begin
     for Child in FChildren do begin
       SDLPoint.x := X;
       SDLPoint.y := Y;
-      IChild := IClickable(TCustomRenderer(Child));
+      IChild := IClickable(TSDLControl(Child));
       if IChild.PointInside(SDLPoint) then
         IChild.MouseUp(Sender, Shift, X, Y);
     end;
@@ -347,7 +356,7 @@ begin
         for Child in FChildren do begin
           SDLPoint.x := AGazes[i].X;
           SDLPoint.y := AGazes[i].Y;
-          IChild := ILookable(TCustomRenderer(Child));
+          IChild := ILookable(TSDLControl(Child));
           if IChild.PointInside(SDLPoint) then begin
             if not IChild.GazeInside then begin
               IChild.GazeInside:=True;
@@ -367,7 +376,7 @@ begin
 end;
 
 
-procedure TTrial.SetParent(AValue: TCustomRenderer);
+procedure TTrial.SetParent(AValue: TSDLControl);
 begin
   if FParent = AValue then Exit;
   FParent := AValue;
@@ -390,7 +399,7 @@ var
 begin
   if FVisible then begin
     for Child in FChildren do begin
-      IPaintable(TCustomRenderer(Child)).Paint;
+      IPaintable(TSDLControl(Child)).Paint;
     end;
   end;
 end;

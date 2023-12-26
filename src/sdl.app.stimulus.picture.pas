@@ -44,7 +44,7 @@ type
 implementation
 
 uses
-   sdl.app.renderer.custom
+   sdl.app.controls.custom
    , session.constants.mts
    , session.strutils.mts
    , session.strutils;
@@ -70,6 +70,8 @@ constructor TPictureStimulus.Create;
 begin
   inherited Create;
   FPicture := TPicture.Create;
+
+  Selectables.Add(FPicture.AsISelectable);
 end;
 
 destructor TPictureStimulus.Destroy;
@@ -84,7 +86,7 @@ begin
   FCustomName := GetWordValue(AParameters, IsSample, Index);
   FPicture.LoadFromFile(AsImage(FCustomName));
   FPicture.BoundsRect := ARect;
-  FPicture.Parent := TCustomRenderer(AParent);
+  FPicture.Parent := TSDLControl(AParent);
   FPicture.OnMouseDown := @MouseDown;
 end;
 

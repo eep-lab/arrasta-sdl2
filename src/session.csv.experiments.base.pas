@@ -9,7 +9,7 @@ uses
   , session.configurationfile
   , session.configurationfile.writer
   , session.parameters
-  , session.csv;
+  , session.csv.enumerable;
 
 type
   { TBaseExperimentWriter }

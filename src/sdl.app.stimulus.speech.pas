@@ -61,7 +61,7 @@ implementation
 uses Controls
    , session.pool
    , sdl.app.output
-   , sdl.app.renderer.custom
+   , sdl.app.controls.custom
    , session.constants.mts
    , session.strutils
    , session.strutils.mts
@@ -118,6 +118,9 @@ begin
   FPlaybackButton.Owner := Self as TObject;
   FRecorderButton := TToggleButton.Create;
   FRecorderButton.Owner := Self as TObject;
+
+  Selectables.Add(FRecorderButton.AsISelectable);
+  Selectables.Add(FPlaybackButton.AsISelectable);
 end;
 
 destructor TSpeechStimulus.Destroy;
@@ -160,7 +163,7 @@ begin
     FPlaybackButton.LoadFromFile(
       AsAsset(LPlayButtonOff), AsAsset(LPlayButtonOn));
     FPlaybackButton.BoundsRect := ARect;
-    FPlaybackButton.Parent := TCustomRenderer(AParent);
+    FPlaybackButton.Parent := TSDLControl(AParent);
     //FPlaybackButton.OnMouseDown := @MouseDown;
     FPlaybackButton.OnMouseUp := @MouseUp;
     SDLAudio.RecorderDevice.Append(FPlaybackButton);
@@ -171,7 +174,7 @@ begin
       AsAsset(LRecordButtonOff), AsAsset(LRecordButtonOn));
     FRecorderButton.BoundsRect := ARect;
     FRecorderButton.Sibling := FPlaybackButton;
-    FRecorderButton.Parent := TCustomRenderer(AParent);
+    FRecorderButton.Parent := TSDLControl(AParent);
     //FRecordButton.OnMouseDown := @MouseDown;
     FRecorderButton.OnMouseUp := @MouseUp;
     SDLAudio.RecorderDevice.Append(FRecorderButton);

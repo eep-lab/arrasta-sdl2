@@ -5,7 +5,7 @@ unit session.parameters.global;
 interface
 
 uses
-  Classes, SysUtils, sdl.app.grids.types;
+  Classes, SysUtils, sdl.app.grids.types, sdl.app.controller.types;
 
 type
 
