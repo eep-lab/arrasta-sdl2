@@ -31,7 +31,8 @@ implementation
 uses
   sdl.app.controller.mouse,
   sdl.app.controller.keyboard,
-  sdl.app.controller.wii;
+  sdl.app.controller.wii,
+  sdl.app.controller.ps4;
 
 { TControllerFactory }
 
@@ -48,6 +49,10 @@ begin
 
     gcWii: begin
       Result := TSDLWiiRemote.Create;
+    end;
+
+    gcPS4: begin
+      Result := TSDLPS4Controller.Create;
     end;
   end;
 end;

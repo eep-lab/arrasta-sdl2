@@ -19,6 +19,7 @@ uses
   , sdl.timer
   , sdl.app.controls.custom
   , sdl.app.trials.types
+  , sdl.app.navigator.contract
   , sdl.app.navigable.contract
   , sdl.app.trials.contract
   , sdl.app.stimuli.contract
@@ -36,9 +37,10 @@ type
 
   { TTrial }
 
-  TTrial = class(TSDLControl, ITrial)
+  TTrial = class(TSDLControl, ITrial, INavigable)
     private
       FName: string;
+      FNavigator: ITableNavigator;
       FText : TText;
       FParent : TSDLControl;
       FLimitedHoldTimer : TSDLTimer;
@@ -51,6 +53,8 @@ type
       FConsequenceInterval : Cardinal;
       FHasInstructions : Boolean;
       FHasCalibration  : Boolean;
+      procedure UpdateNavigator;
+      procedure SetNavigator(AValue: ITableNavigator);
       procedure SetParent(AValue: TSDLControl);
       procedure SetTestMode(AValue: Boolean);
       procedure EndStarterCallBack(Sender : TObject);
@@ -72,7 +76,6 @@ type
       function GetOnTrialEnd: TNotifyEvent;
       function GetTrialData: TTrialData;
       function GetIStimuli : IStimuli; virtual; abstract;
-      function GetINavigable : INavigable; virtual; abstract;
       function MyResult : TTrialResult; virtual;
     public
       constructor Create; override;
@@ -91,7 +94,7 @@ type
       property TestMode : Boolean read FTestMode write SetTestMode;
       property Parent : TSDLControl read FParent write SetParent;
       property Name : string read FName write FName;
-      property Naviable : INavigable read GetINavigable;
+      property Navigator : ITableNavigator read FNavigator write SetNavigator;
   end;
 
 const
@@ -123,8 +126,6 @@ begin
   SDLEvents.OnMouseButtonUp := AsIClickable.GetSDLMouseButtonUp;
   SDLEvents.OnMouseMotion := AsIMoveable.GetSDLMouseMotion;
   SDLEvents.OnGazeOnScreen := @GazeOnScreen;
-
-  Controllers.FirstController.Navigator.SetBaseControl(AsISelectable);
 
   FICalibration := nil;
   FIInstruction := nil;
@@ -382,6 +383,23 @@ begin
   FParent := AValue;
 end;
 
+procedure TTrial.UpdateNavigator;
+var
+  LNaviable : INavigable;
+begin
+  LNaviable := FIStimuli.AsINavigable;
+  if LNaviable <> nil then begin
+    LNaviable.SetNavigator(Navigator);
+  end;
+end;
+
+procedure TTrial.SetNavigator(AValue: ITableNavigator);
+begin
+  if FNavigator = AValue then Exit;
+  FNavigator := AValue;
+  FNavigator.SetBaseControl(AsISelectable);
+end;
+
 procedure TTrial.SetTestMode(AValue: Boolean);
 begin
   if FTestMode = AValue then Exit;
@@ -441,6 +459,7 @@ begin
   if TestMode then begin
     DoExpectedResponse;
   end else begin
+    UpdateNavigator;
     FIStimuli.Start;
     if FLimitedHoldTimer.Interval > 0 then begin
       FLimitedHoldTimer.Start;

@@ -1,4 +1,4 @@
-unit sdl.app.navigator.iterator;
+unit sdl.app.navigator.lineiterator;
 
 {$mode ObjFPC}{$H+}
 

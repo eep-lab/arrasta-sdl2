@@ -51,6 +51,9 @@ type
       property OnUserEvent;
       property OnTextEditing;
       property OnTextInput;
+      property OnControllerAxisMotion;
+      property OnControllerButtonDown;
+      property OnControllerButtonUp;
   end;
 
 var

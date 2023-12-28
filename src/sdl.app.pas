@@ -199,6 +199,12 @@ begin
   end;
   SDLAudio := TSDLAudio.Create;
 
+  if SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER) < 0  then begin
+    LError := SDL_GetError;
+    Print(LError);
+    raise Exception.Create(LError);
+  end;
+
   // text/font setup
   SDLText  := TSDLText.Create;
   {$ENDIF}

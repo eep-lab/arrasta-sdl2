@@ -32,12 +32,21 @@ begin
   if FNavigator = nil then Exit;
 
   case Event.keysym.sym of
-    SDLK_UP, SDLK_RIGHT : begin
-      FNavigator.SelectNext;
+
+    SDLK_LEFT: begin
+      FNavigator.SelectLeft;
     end;
 
-    SDLK_DOWN, SDLK_LEFT: begin
-      FNavigator.SelectPrevious;
+    SDLK_RIGHT : begin
+      FNavigator.SelectRight;
+    end;
+
+    SDLK_UP : begin
+          FNavigator.SelectUp;
+        end;
+
+    SDLK_DOWN: begin
+      FNavigator.SelectDown;
     end;
 
     SDLK_RETURN, SDLK_RETURN2: begin

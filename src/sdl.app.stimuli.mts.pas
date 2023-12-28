@@ -46,7 +46,7 @@ type
   TMTSStimuli = class sealed (TStimuli, INavigable)
     private
       FState : TState;
-      FNavigator : INavigator;
+      FNavigator : ITableNavigator;
       FResult : TTrialResult;
       FHasConsequence : Boolean;
       FSoundCorrect : ISound;
@@ -56,7 +56,7 @@ type
       FComparisons : TCustomStimulusList;
       FSamples : TCustomStimulusList;
       procedure UpdateState(AState : TState);
-      procedure SetNavigator(ANavigator: INavigator);
+      procedure SetNavigator(ANavigator: ITableNavigator);
       procedure UpdateNavigator;
       procedure DoConsequence(Sender : TObject);
       procedure ConsequenceDone(Sender: TObject);
@@ -73,7 +73,8 @@ type
       constructor Create; override;
       destructor Destroy; override;
       function MyResult : TTrialResult; override;
-      function AsInterface : IStimuli;
+      function AsIStimuli : IStimuli;
+      function AsINavigable : INavigable; override;
       procedure DoExpectedResponse; override;
       procedure Load(AParameters : TStringList;
         AParent : TObject); override;
@@ -117,7 +118,7 @@ begin
   UpdateNavigator;
 end;
 
-procedure TMTSStimuli.SetNavigator(ANavigator: INavigator);
+procedure TMTSStimuli.SetNavigator(ANavigator: ITableNavigator);
 begin
   FNavigator := ANavigator;
 end;
@@ -383,9 +384,14 @@ begin
   inherited Destroy;
 end;
 
-function TMTSStimuli.AsInterface: IStimuli;
+function TMTSStimuli.AsIStimuli: IStimuli;
 begin
   Result := Self as IStimuli;
+end;
+
+function TMTSStimuli.AsINavigable: INavigable;
+begin
+  Result := Self as INavigable;
 end;
 
 procedure TMTSStimuli.DoExpectedResponse;

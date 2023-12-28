@@ -29,10 +29,8 @@ type
   TMTS = class sealed (TTrial)
     private
       FStimuli : TMTSStimuli;
-      FNavigable: INavigable;
     protected
       function GetIStimuli: IStimuli; override;
-      function GetINavigable : INavigable; override;
     public
       constructor Create; override;
       destructor Destroy; override;
@@ -63,12 +61,7 @@ end;
 
 function TMTS.GetIStimuli: IStimuli;
 begin
-  Result := FStimuli.AsInterface;
-end;
-
-function TMTS.GetINavigable: INavigable;
-begin
-  Result := FStimuli as INavigable;
+  Result := FStimuli.AsIStimuli;
 end;
 
 procedure TMTS.EndTrial;

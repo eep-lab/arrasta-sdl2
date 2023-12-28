@@ -10,9 +10,9 @@ uses sdl.app.selectable.contract, sdl.app.selectable.list;
 
 type
 
-  { INavigator }
+  { ILineNavigator }
 
-  INavigator = interface
+  ILineNavigator = interface
     ['{DEBD72A2-BC97-4D1C-80AB-A0CAB06BAEFC}']
     procedure Unselect;
     procedure SelectNext;
@@ -21,6 +21,21 @@ type
     procedure SetBaseControl(AControl : ISelectable);
     procedure UpdateNavigationControls(AControls : TSelectables);
   end;
+
+  ITableNavigator = interface
+    ['{DEBD72A2-BC97-4D1C-80AB-A0CAB06BAEFC}']
+    procedure Unselect;
+    procedure SelectUp;
+    procedure SelectDown;
+    procedure SelectLeft;
+    procedure SelectRight;
+    //procedure GoLevelUp;
+    //procedure GoLevelDown;
+    procedure ConfirmSelection;
+    procedure SetBaseControl(AControl : ISelectable);
+    procedure UpdateNavigationControls(AControls : TSelectables);
+  end;
+
 
 implementation
 

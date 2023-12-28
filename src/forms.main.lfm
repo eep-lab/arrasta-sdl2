@@ -1,7 +1,7 @@
 object FormBackground: TFormBackground
-  Left = 281
+  Left = 362
   Height = 523
-  Top = 107
+  Top = 152
   Width = 566
   BorderStyle = bsNone
   Caption = 'Stimulus Control'

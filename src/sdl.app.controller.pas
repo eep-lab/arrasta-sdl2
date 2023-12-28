@@ -15,8 +15,8 @@ type
 
   TController = class(IController)
     protected
-      FNavigator : TNavigator;
-      function Navigator : INavigator;
+      FNavigator : TTableNavigator;
+      function Navigator : ITableNavigator;
     public
       constructor Create; virtual;
       destructor Destroy; override;
@@ -26,14 +26,14 @@ implementation
 
 { TController }
 
-function TController.Navigator: INavigator;
+function TController.Navigator: ITableNavigator;
 begin
-  Result := FNavigator as INavigator;
+  Result := FNavigator as ITableNavigator;
 end;
 
 constructor TController.Create;
 begin
-  FNavigator := TNavigator.Create;
+  FNavigator := TTableNavigator.Create;
 end;
 
 destructor TController.Destroy;

@@ -19,6 +19,9 @@ uses
   , sdl.app.events.abstract
   , sdl.app.stimuli
   , sdl.app.stimuli.contract
+  , sdl.app.navigable.contract
+  , sdl.app.navigator.contract
+  , sdl.app.selectable.list
   , sdl.app.controls.custom
   , sdl.app.graphics.text
   , sdl.app.stimulus.typeable;
@@ -27,16 +30,19 @@ type
 
   { TInstructionStimuli }
 
-  TInstructionStimuli = class sealed (TStimuli, IStimuli)
+  TInstructionStimuli = class sealed (TStimuli, IStimuli, INavigable)
     private
+      FNavigator : ITableNavigator;
       FText : TText;
-      FInstruction : TTypeableStimulus;
+      //FInstruction : TTypeableStimulus;
       procedure InstructionMouseDown(Sender: TObject;
         Shift: TCustomShiftState; X, Y: Integer);
+      procedure SetNavigator(ANavigator: ITableNavigator);
+      procedure UpdateNavigator;
     public
       constructor Create; override;
       destructor Destroy; override;
-      function AsInterface : IStimuli;
+      function AsINavigable: INavigable; override;
       procedure DoExpectedResponse; override;
       procedure Load(AParameters : TStringList;
         AParent : TObject); override;
@@ -56,6 +62,24 @@ begin
   DoExpectedResponse;
 end;
 
+procedure TInstructionStimuli.SetNavigator(ANavigator: ITableNavigator);
+begin
+  FNavigator := ANavigator;
+end;
+
+procedure TInstructionStimuli.UpdateNavigator;
+var
+  LControls : TSelectables;
+begin
+  LControls := TSelectables.Create;
+  LControls.Add(FText.AsISelectable);
+  try
+    FNavigator.UpdateNavigationControls(LControls);
+  finally
+    LControls.Free;
+  end;
+end;
+
 constructor TInstructionStimuli.Create;
 begin
   FText := TText.Create;
@@ -67,9 +91,9 @@ begin
   inherited Destroy;
 end;
 
-function TInstructionStimuli.AsInterface: IStimuli;
+function TInstructionStimuli.AsINavigable: INavigable;
 begin
-  Result := Self.AsInterface;
+  Result := Self as INavigable;
 end;
 
 procedure TInstructionStimuli.DoExpectedResponse;
@@ -98,6 +122,7 @@ end;
 procedure TInstructionStimuli.Start;
 begin
   FText.Show;
+  UpdateNavigator;
 end;
 
 procedure TInstructionStimuli.Stop;

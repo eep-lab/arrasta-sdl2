@@ -5,7 +5,7 @@ unit sdl.app.controller.types;
 interface
 
 type
-  TControllerCode = (gcMouse, gcKeyboard, gcWii);
+  TControllerCode = (gcMouse, gcKeyboard, gcWii, gcPS4);
 
 implementation
 

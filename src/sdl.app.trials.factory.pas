@@ -90,7 +90,7 @@ begin
   EndCriteria.InvalidateTrial(TrialData);
 
   CurrentTrial := TrialClass.Create;
-  CurrentTrial.Naviable.SetNavigator(Controllers.FirstController.Navigator);
+  CurrentTrial.Navigator := Controllers.FirstController.Navigator;
   //CurrentTrial.Parent := TSDLRenderer;
   CurrentTrial.Name := 'T' + (Pool.Session.Trial.UID+1).ToString;
   CurrentTrial.OnTrialEnd := InterTrial.OnBegin;

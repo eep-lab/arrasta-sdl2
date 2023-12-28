@@ -7,8 +7,6 @@ interface
 uses
   Classes, SysUtils, SDL2,
   sdl.app.events.abstract,
-  sdl.app.navigator.contract,
-  sdl.app.controller.contract,
   sdl.app.controller;
 
 type
