@@ -22,7 +22,7 @@
       <UseVersionInfo Value="True"/>
       <AutoIncrementBuild Value="True"/>
       <MajorVersionNr Value="1"/>
-      <BuildNr Value="6"/>
+      <BuildNr Value="8"/>
       <Language Value="0416"/>
       <Attributes pvaPrivateBuild="True"/>
       <StringTable Comments="Uma máquina de ensinar para experimentos comportamentais livres" InternalName="Stimulus Control" LegalCopyright="Carlos Rafael Fernandes Picanço" ProductName="Stimulus Control"/>
@@ -880,7 +880,7 @@
         <IsPartOfProject Value="True"/>
       </Unit>
       <Unit>
-        <Filename Value="src\generics.aggregator.pas"/>
+        <Filename Value="src\generics.aggregator.table.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit>
       <Unit>
@@ -892,7 +892,7 @@
         <IsPartOfProject Value="True"/>
       </Unit>
       <Unit>
-        <Filename Value="src\sdl.app.navigator.iterator.pas"/>
+        <Filename Value="src\sdl.app.navigator.lineiterator.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit>
       <Unit>
@@ -930,6 +930,25 @@
       <Unit>
         <Filename Value="src\sdl.app.selectable.list.pas"/>
         <IsPartOfProject Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="src\sdl.app.controller.ps4.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="src\generics.iterator.table.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Generics.Iterator.Table"/>
+      </Unit>
+      <Unit>
+        <Filename Value="src\generics.iterator.table.contract.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Generics.Iterator.Table.Contract"/>
+      </Unit>
+      <Unit>
+        <Filename Value="src\generics.table.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Generics.Table"/>
       </Unit>
     </Units>
   </ProjectOptions>
