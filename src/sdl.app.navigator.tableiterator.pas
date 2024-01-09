@@ -21,17 +21,23 @@ type
     function BaseControlExists : Boolean;
   public
     function Select : ISelectable;
-    function NextRow : ISelectable;
-    function PreviousRow : ISelectable;
-    function NextCol : ISelectable;
-    function PreviousCol : ISelectable;
+    function GoBottom : ISelectable;
+    function GoTop : ISelectable;
+    function GoRight : ISelectable;
+    function GoLeft : ISelectable;
+    function GoTopRight : ISelectable;
+    function GoBottomLeft : ISelectable;
+    function GoTopLeft : ISelectable;
+    function GoBottomRight : ISelectable;
+
+    //function TopLeft
     procedure Update(ASelectables : TSelectables);
     procedure SetBaseControl(ABaseControl : ISelectable);
   end;
 
 implementation
 
-uses sdl.app.output;
+uses sdl.app.output, integers.list;
 
 { TPossibleSelections }
 
@@ -55,119 +61,183 @@ begin
   Result := Iterator.GetCurrent;
 end;
 
-function TPossibleSelections.NextRow: ISelectable;
+function TPossibleSelections.GoBottom: ISelectable;
 begin
-  if Table.RowCount = 1 then begin
-    Result := Iterator.GetCurrent;
+  if (Table.ColCount = 1) and (Table.RowCount = 1) then begin
+    Result := Select;
     Exit;
   end;
 
-  if TableControlExists then begin
-    with Iterator do begin
-      repeat
-        if IsLastRow then begin
-          if IsLastCol then begin
-            GoFirstCol;
-          end else begin
-            GoNextCol;
-          end;
-          GoFirstRow;
-        end else begin
-          GoNextRow;
-        end;
-      until not IsCurrentEmpty(Result);
+  Result := nil;
+  with Iterator do begin
+    Save;
+    while (not IsLastRow) do begin
+      GoNextRow;
+      if IsCurrentEmpty(Result) then begin
+        Result := nil;
+      end else begin
+        Exit;
+      end;
     end;
-  end else begin
-    if BaseControlExists then begin
-      Result := FBaseControl;
-    end;
+    Load;
   end;
 end;
 
-function TPossibleSelections.PreviousRow: ISelectable;
+function TPossibleSelections.GoTop: ISelectable;
 begin
-  if Table.RowCount = 1 then begin
-    Result := Iterator.GetCurrent;
+  if (Table.ColCount = 1) and (Table.RowCount = 1) then begin
+    Result := Select;
     Exit;
   end;
 
-  if TableControlExists then begin
-    with Iterator do begin
-      repeat
-        if IsFirstRow then begin
-          if IsFirstCol then begin
-            GoLastCol;
-          end else begin
-            GoPreviousCol;
-          end;
-          GoLastRow;
-        end else begin
-          GoPreviousRow;
-        end;
-      until not IsCurrentEmpty(Result);
+  Result := nil;
+  with Iterator do begin
+    Save;
+    while (not IsFirstRow) do begin
+      GoPreviousRow;
+      if IsCurrentEmpty(Result) then begin
+        Result := nil;
+      end else begin
+        Exit;
+      end;
     end;
-  end else begin
-    if BaseControlExists then begin
-      Result := FBaseControl;
-    end;
+    Load;
   end;
 end;
 
-function TPossibleSelections.NextCol: ISelectable;
+function TPossibleSelections.GoRight: ISelectable;
 begin
-  if Table.ColCount = 1 then begin
-    Result := Iterator.GetCurrent;
+  if (Table.ColCount = 1) and (Table.RowCount = 1) then begin
+    Result := Select;
     Exit;
   end;
 
-  if TableControlExists then begin
-    with Iterator do begin
-      repeat
-        if IsLastCol then begin
-          if IsLastRow then begin
-            GoFirstRow;
-          end else begin
-            GoNextRow;
-          end;
-          GoFirstCol;
-        end else begin
-          GoNextCol;
-        end;
-      until not IsCurrentEmpty(Result);
+  Result := nil;
+  with Iterator do begin
+    Save;
+    while (not IsLastCol) do begin
+      GoNextCol;
+      if IsCurrentEmpty(Result) then begin
+        Result := nil;
+      end else begin
+        Exit;
+      end;
     end;
-  end else begin
-    if BaseControlExists then begin
-      Result := FBaseControl;
-    end;
+    Load;
   end;
 end;
 
-function TPossibleSelections.PreviousCol: ISelectable;
+function TPossibleSelections.GoLeft: ISelectable;
 begin
-  if Table.ColCount = 1 then begin
-    Result := Iterator.GetCurrent;
+  if (Table.ColCount = 1) and (Table.RowCount = 1) then begin
+    Result := Select;
     Exit;
   end;
 
-  if TableControlExists then begin
-    with Iterator do begin
-      repeat
-        if IsFirstCol then begin
-          if IsFirstRow then begin
-            GoLastRow;
-          end else begin
-            GoPreviousRow;
-          end;
-          GoLastCol;
-        end else begin
-          GoPreviousCol;
-        end;
-      until not IsCurrentEmpty(Result);
+  Result := nil;
+  with Iterator do begin
+    Save;
+    while (not IsFirstCol) do begin
+      GoPreviousCol;
+      if IsCurrentEmpty(Result) then begin
+        Result := nil;
+      end else begin
+        Exit;
+      end;
     end;
-  end else begin
-    if BaseControlExists then begin
-      Result := FBaseControl;
+    Load;
+  end;
+end;
+
+function TPossibleSelections.GoTopRight: ISelectable;
+begin
+  if (Table.ColCount = 1) and (Table.RowCount = 1) then begin
+    Result := Select;
+    Exit;
+  end;
+
+  Result := nil;
+  with Iterator do begin
+    Save;
+    while not (IsLastCol or IsFirstRow) do begin
+      GoNextCol;
+      GoPreviousRow;
+      if IsCurrentEmpty(Result) then begin
+        Result := nil;
+      end else begin
+        Exit;
+      end;
     end;
+    Load;
+  end;
+end;
+
+function TPossibleSelections.GoBottomLeft: ISelectable;
+begin
+  if (Table.ColCount = 1) and (Table.RowCount = 1) then begin
+    Result := Select;
+    Exit;
+  end;
+
+  Result := nil;
+  with Iterator do begin
+    Save;
+    while not (IsFirstCol or IsLastRow) do begin
+      GoPreviousCol;
+      GoNextRow;
+      if IsCurrentEmpty(Result) then begin
+        Result := nil;
+      end else begin
+        Exit;
+      end;
+    end;
+    Load;
+  end;
+end;
+
+function TPossibleSelections.GoTopLeft: ISelectable;
+begin
+  if (Table.ColCount = 1) and (Table.RowCount = 1) then begin
+    Result := Select;
+    Exit;
+  end;
+
+  Result := nil;
+  with Iterator do begin
+    Save;
+    while not (IsFirstCol or IsFirstRow) do begin
+      GoPreviousCol;
+      GoPreviousRow;
+      if IsCurrentEmpty(Result) then begin
+        Result := nil;
+      end else begin
+        Exit;
+      end;
+    end;
+    Load;
+  end;
+end;
+
+function TPossibleSelections.GoBottomRight: ISelectable;
+begin
+  if (Table.ColCount = 1) and (Table.RowCount = 1) then begin
+    Result := Select;
+    Exit;
+  end;
+
+  Result := nil;
+  with Iterator do begin
+    Save;
+    while not (IsLastCol or IsLastRow) do begin
+      GoNextCol;
+      GoNextRow;
+      if IsCurrentEmpty(Result) then begin
+        Result := nil;
+      end else begin
+        Exit;
+      end;
+    end;
+    Load;
   end;
 end;
 
@@ -182,40 +252,61 @@ var
   LRow : integer;
   LCol : integer;
 
-  procedure Count(ARows : TPosition; ACols : TPosition; ATable: TTableSpec);
+  procedure MountGrid(ARows : TPosition; ACols : TPosition; ATable: TTableSpec);
   var
     LSelectable : ISelectable;
     LColCount : UInt32 = 0;
     LRowCount : UInt32 = 0;
     LX : integer;
     LY : integer;
+    LSortedX : TIntegers;
+    LSortedY : TIntegers;
   begin
-    for LSelectable in ASelectables do begin
-      LX := LSelectable.Origen.x;
-      LY := LSelectable.Origen.y;
-
-      with ARows do begin
-        if ContainsKey(LY) then begin
-          { do nothing }
-        end else begin
-          Add(LY, LRowCount);
-          Inc(LRowCount);
-        end;
+    LSortedX := TIntegers.Create(TIntegers.ByValue);
+    try
+      for LSelectable in ASelectables do begin
+        LSortedX.Add(LSelectable.Origen.x);
       end;
 
-      with ACols do begin
-        if ContainsKey(LX) then begin
-          { do nothing }
-        end else begin
-          Add(LX, LColCount);
-          Inc(LColCount);
+      LSortedX.Sort;
+      for LX in LSortedX do begin
+        with ACols do begin
+          if ContainsKey(LX) then begin
+            { do nothing }
+          end else begin
+            Add(LX, LColCount);
+            Inc(LColCount);
+          end;
         end;
       end;
+    finally
+      LSortedX.Free;
     end;
+
+    LSortedY := TIntegers.Create();
+    try
+      for LSelectable in ASelectables do begin
+        LSortedY.Add(LSelectable.Origen.y);
+      end;
+
+      LSortedY.Sort;
+      for LY in LSortedY do begin
+        with ARows do begin
+          if ContainsKey(LY) then begin
+            { do nothing }
+          end else begin
+            Add(LY, LRowCount);
+            Inc(LRowCount);
+          end;
+        end;
+      end;
+    finally
+      LSortedY.Free;
+    end;
+
     ATable.RowCount := LRowCount;
     ATable.ColCount := LColCount;
     ATable.Populate;
-    Print(ATable.AsString);
   end;
 
 begin
@@ -225,7 +316,7 @@ begin
   LRows := TPosition.Create;
   LCols := TPosition.Create;
   try
-    Count(LRows, LCols, Table);
+    MountGrid(LRows, LCols, Table);
     for LISelectable in ASelectables do begin
       LRow := LISelectable.Origen.y;
       LCol := LISelectable.Origen.x;

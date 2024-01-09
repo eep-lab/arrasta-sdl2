@@ -17,19 +17,24 @@ type
 
   TTableNavigator = class(ITableNavigator)
   private
-    FControls : TPossibleSelections;
     FCurrentControl : ISelectable;
+    FControls : TPossibleSelections;
     procedure SetBaseControl(ABaseControl : ISelectable);
     procedure UpdateNavigationControls(AControls: TSelectables);
+    procedure SelectControl(AControl : ISelectable);
   public
     constructor Create;
     destructor Destroy; override;
     procedure Unselect;
     procedure Select;
-    procedure SelectUp;
-    procedure SelectDown;
-    procedure SelectLeft;
-    procedure SelectRight;
+    procedure GoTop;
+    procedure GoBottom;
+    procedure GoLeft;
+    procedure GoRight;
+    procedure GoTopRight;
+    procedure GoBottomLeft;
+    procedure GoTopLeft;
+    procedure GoBottomRight;
     procedure ConfirmSelection;
   end;
 
@@ -41,6 +46,14 @@ procedure TTableNavigator.UpdateNavigationControls(
   AControls: TSelectables);
 begin
   FControls.Update(AControls);
+end;
+
+procedure TTableNavigator.SelectControl(AControl: ISelectable);
+begin
+  if AControl <> nil then begin
+    FCurrentControl := AControl;
+    FCurrentControl.Select;
+  end;
 end;
 
 procedure TTableNavigator.SetBaseControl(ABaseControl: ISelectable);
@@ -61,37 +74,54 @@ end;
 
 procedure TTableNavigator.Unselect;
 begin
-  FCurrentControl.Unselect;
+  if Assigned(FCurrentControl) then begin
+    FCurrentControl.Unselect;
+  end;
 end;
 
 procedure TTableNavigator.Select;
 begin
-  FCurrentControl := FControls.Select;
-  FCurrentControl.Select;
+  SelectControl(FControls.Select);
 end;
 
-procedure TTableNavigator.SelectUp;
+procedure TTableNavigator.GoTop;
 begin
-  FCurrentControl := FControls.PreviousRow;
-  FCurrentControl.Select;
+  SelectControl(FControls.GoTop);
 end;
 
-procedure TTableNavigator.SelectDown;
+procedure TTableNavigator.GoBottom;
 begin
-  FCurrentControl := FControls.NextRow;
-  FCurrentControl.Select;
+  SelectControl(FControls.GoBottom);
 end;
 
-procedure TTableNavigator.SelectLeft;
+procedure TTableNavigator.GoLeft;
 begin
-  FCurrentControl := FControls.PreviousCol;
-  FCurrentControl.Select;
+  SelectControl(FControls.GoLeft);
 end;
 
-procedure TTableNavigator.SelectRight;
+procedure TTableNavigator.GoRight;
 begin
-  FCurrentControl := FControls.NextCol;
-  FCurrentControl.Select;
+  SelectControl(FControls.GoRight);
+end;
+
+procedure TTableNavigator.GoTopRight;
+begin
+  SelectControl(FControls.GoTopRight);
+end;
+
+procedure TTableNavigator.GoBottomLeft;
+begin
+  SelectControl(FControls.GoBottomLeft);
+end;
+
+procedure TTableNavigator.GoTopLeft;
+begin
+  SelectControl(FControls.GoTopLeft);
+end;
+
+procedure TTableNavigator.GoBottomRight;
+begin
+  SelectControl(FControls.GoBottomRight);
 end;
 
 procedure TTableNavigator.ConfirmSelection;

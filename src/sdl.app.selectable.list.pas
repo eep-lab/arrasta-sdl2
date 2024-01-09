@@ -22,7 +22,7 @@ type
 
 implementation
 
-uses SDL2;
+uses SDL2, Math;
 
 { TSelectableComparer }
 
@@ -36,16 +36,16 @@ begin
   B := AItem2.Origen;
 
   if A.x = B.x then begin
-    Result := A.y - B.y;
+    Result := CompareValue(A.y, B.y);
   end else begin
-    Result := A.x - B.x;
+    Result := CompareValue(A.x, B.x);
   end;
 end;
 
 class function TSelectables.ByOrigin : specialize IComparer<ISelectable>;
 begin
-  // TSelectableByOriginComparer is reference counted
-  Result := TSelectableByOriginComparer.Create.Default;
+  // TSelectableByOriginComparer is not reference counted
+  Result := TSelectableByOriginComparer.Default;
 end;
 
 end.

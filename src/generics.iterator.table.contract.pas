@@ -25,6 +25,8 @@ type
     procedure GoNextCol;
     procedure GoPreviousCol;
     procedure GoLastCol;
+    procedure Save;
+    procedure Load;
   end;
 
 implementation

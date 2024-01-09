@@ -34,19 +34,19 @@ begin
   case Event.keysym.sym of
 
     SDLK_LEFT: begin
-      FNavigator.SelectLeft;
+      FNavigator.GoLeft;
     end;
 
     SDLK_RIGHT : begin
-      FNavigator.SelectRight;
+      FNavigator.GoRight;
     end;
 
     SDLK_UP : begin
-          FNavigator.SelectUp;
-        end;
+      FNavigator.GoTop;
+    end;
 
     SDLK_DOWN: begin
-      FNavigator.SelectDown;
+      FNavigator.GoBottom;
     end;
 
     SDLK_RETURN, SDLK_RETURN2: begin

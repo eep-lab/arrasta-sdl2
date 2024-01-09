@@ -54,6 +54,8 @@ type
       property OnControllerAxisMotion;
       property OnControllerButtonDown;
       property OnControllerButtonUp;
+      property OnControllerTouchPadMotion;
+      property OnControllerSensorUpdate;
   end;
 
 var

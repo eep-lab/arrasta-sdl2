@@ -28,7 +28,11 @@ procedure Render;
 implementation
 
 uses
-  sdl.app.video.methods, sdl.app.trials.factory, sdl.colors, sdl.app.markers;
+  sdl.app.video.methods,
+  sdl.app.trials.factory,
+  //sdl.app.graphics.debug,
+  sdl.colors,
+  sdl.app.markers;
 
 procedure Render;
 begin
@@ -43,6 +47,8 @@ begin
   if Assigned(Markers) then begin
     Markers.Paint;
   end;
+
+  //PaintDebugGraphics;
 
   SDL_RenderPresent(PSDLRenderer);
   SDL_Delay(1000 div 50);

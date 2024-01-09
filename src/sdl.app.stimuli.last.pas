@@ -39,7 +39,9 @@ type
 
 implementation
 
-uses sdl.app.controls.custom;
+uses
+  sdl.app.controls.custom;
+
 { TLastStimuli }
 
 constructor TLastStimuli.Create;

@@ -46,6 +46,7 @@ type
       destructor Destroy; override;
       procedure CreateController(AController : TControllerCode); overload;
       procedure CreateController(AController : integer); overload;
+      procedure Disable;
       property FirstController : IController read GetFirstController;
       property OnJoyDeviceAdded : TOnJoyDeviceAddedEvent
         read FOnJoyDeviceAdded write SetOnJoyDeviceAdded;
@@ -65,7 +66,7 @@ var
 
 implementation
 
-uses sdl.app.controller.factory, sdl.app.navigator;
+uses sdl.app.controller.factory;
 
 { TControllerManager }
 
@@ -141,6 +142,12 @@ end;
 procedure TControllerManager.CreateController(AController: integer);
 begin
   CreateController(TControllerCode(AController));
+end;
+
+procedure TControllerManager.Disable;
+begin
+  FController.Free;
+  FController := nil;
 end;
 
 constructor TControllerManager.Create;

@@ -163,10 +163,8 @@ begin
     end;
 
     if LSelectables.Count > 0 then begin
-      if LSelectables.Count > 1 then begin
-        LSelectables.Sort(TSelectables.ByOrigin);
-      end;
       FNavigator.UpdateNavigationControls(LSelectables);
+      FNavigator.Select;
     end else begin
       FNavigator.UpdateNavigationControls(nil);
     end;
@@ -376,7 +374,6 @@ end;
 
 destructor TMTSStimuli.Destroy;
 begin
-  UpdateState(startNone);
   TStimulusFactory.Clear;
   FButton.Free;
   FSamples.Free;

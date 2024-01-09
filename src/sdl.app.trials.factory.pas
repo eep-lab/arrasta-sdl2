@@ -105,6 +105,7 @@ var
     ReferenceName: 'Mock'; Parameters: nil);
 begin
   FreeCurrentTrial;
+  Controllers.Disable;
 
   CurrentTrial := TLastTrial.Create;
   CurrentTrial.OnTrialEnd := nil;

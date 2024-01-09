@@ -22,13 +22,20 @@ type
     procedure UpdateNavigationControls(AControls : TSelectables);
   end;
 
+  { ITableNavigator }
+
   ITableNavigator = interface
     ['{DEBD72A2-BC97-4D1C-80AB-A0CAB06BAEFC}']
+    procedure Select;
     procedure Unselect;
-    procedure SelectUp;
-    procedure SelectDown;
-    procedure SelectLeft;
-    procedure SelectRight;
+    procedure GoTop;
+    procedure GoBottom;
+    procedure GoLeft;
+    procedure GoRight;
+    procedure GoTopRight;
+    procedure GoBottomLeft;
+    procedure GoTopLeft;
+    procedure GoBottomRight;
     //procedure GoLevelUp;
     //procedure GoLevelDown;
     procedure ConfirmSelection;

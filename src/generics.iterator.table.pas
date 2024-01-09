@@ -24,6 +24,8 @@ type
     IAggregatorSpec = specialize ITableAggregator<_GT>;
   private
     FTableAggregator : IAggregatorSpec;
+    FSavedRow : UInt32;
+    FSavedCol : UInt32;
     FRowIndex : UInt32;
     FColIndex : UInt32;
     function HighCol : UInt32;
@@ -31,7 +33,7 @@ type
   public
     constructor Create(AAggregator: IAggregatorSpec);
     function GetCurrent : _GT;
-    function IsCurrentEmpty(out ACell : _GT) : Boolean;
+    function IsCurrentEmpty(out ACell : _GT) : Boolean; overload;
     function IsFirstRow: Boolean;
     function IsLastRow: Boolean;
     function IsFirstCol: Boolean;
@@ -44,6 +46,8 @@ type
     procedure GoNextCol;
     procedure GoPreviousCol;
     procedure GoLastCol;
+    procedure Save;
+    procedure Load;
   end;
 
 implementation
@@ -149,6 +153,18 @@ end;
 procedure TTableIterator.GoLastCol;
 begin
   FColIndex := HighCol;
+end;
+
+procedure TTableIterator.Save;
+begin
+  FSavedCol := FColIndex;
+  FSavedRow := FRowIndex;
+end;
+
+procedure TTableIterator.Load;
+begin
+  FColIndex := FSavedCol;
+  FRowIndex := FSavedRow;
 end;
 
 end.

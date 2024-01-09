@@ -5,7 +5,7 @@ unit sdl.app.controller.ps4;
 interface
 
 uses
-  Classes, SysUtils, SDL2,
+  Classes, SysUtils, ctypes, SDL2,
   sdl.app.events.abstract,
   sdl.app.controller;
 
@@ -21,14 +21,19 @@ type
     FOnControllerAxisMotion: TOnControllerAxisMotionEvent;
     FOnControllerButtonDown: TOnControllerButtonDownEvent;
     FOnControllerButtonUp: TOnControllerButtonUpEvent;
+    FOnControllerTouchPadMotion: TOnControllerTouchPadMotionEvent;
+    FOnControllerSensorUpdate: TOnControllerSensorUpdateEvent;
     procedure ControllerAxisMotion(const event: TSDL_ControllerAxisEvent);
     procedure ControllerButtonDown(const event: TSDL_ControllerButtonEvent);
     procedure ControllerButtonUp(const event: TSDL_ControllerButtonEvent);
-    procedure ControllerDeviceAdded(const event: TSDL_ControllerDeviceEvent);
-    procedure ControllerDeviceRemoved(const event: TSDL_ControllerDeviceEvent);
+    procedure ControllerTouchPadMotion(const event: TSDL_ControllerTouchpadEvent);
+    procedure ControllerSensorUpdate(const event: TSDL_ControllerSensorEvent);
     procedure SetOnControllerAxisMotion(AValue: TOnControllerAxisMotionEvent);
     procedure SetOnControllerButtonDown(AValue: TOnControllerButtonDownEvent);
     procedure SetOnControllerButtonUp(AValue: TOnControllerButtonUpEvent);
+    procedure SetOnControllerTouchPadMotion(
+      AValue: TOnControllerTouchPadMotionEvent);
+    procedure SetOnControllerSensorUpdate(AValue: TOnControllerSensorUpdateEvent);
   public
     constructor Create; override;
     destructor Destroy; override;
@@ -40,14 +45,22 @@ type
 
     property OnControllerButtonUp : TOnControllerButtonUpEvent
       read FOnControllerButtonUp write SetOnControllerButtonUp;
+
+    property OnControllerTouchPadMotion : TOnControllerTouchPadMotionEvent
+      read FOnControllerTouchPadMotion write SetOnControllerTouchPadMotion;
+
+    property OnControllerSensorUpdate : TOnControllerSensorUpdateEvent
+      read FOnControllerSensorUpdate write SetOnControllerSensorUpdate;
   end;
 
 implementation
 
 uses
+  Math,
   sdl.app.output,
   sdl.app.events.custom,
   sdl.app.video.methods,
+  sdl.app.graphics.debug,
   timestamps.types,
   timestamps;
 
@@ -57,69 +70,198 @@ const
   PS4_BUTTON_SHARE = 4;
   PS4_BUTTON_HOME = 5;
   PS4_BUTTON_OPTIONS = 6;
+  LHumbleTime = 100;
+
+type
+  Direction = (
+    Top,     Left,     Bottom,     Right,
+    TopLeft, TopRight, BottomLeft, BottomRight);
+
+const
+  SectorSize: Double = 45;
+  MaxDegress : Double = 360;
+  HalfDegree : Double = 180;
 
 var
-  LastTimeStamp : TLargerFloat = 0;
+  SectorPad : Double;
+  Sector0 : Double;
+  Sector1 : Double;
+  Sector2 : Double;
+  Sector3 : Double;
+  Sector4 : Double;
+  Sector5 : Double;
+  Sector6 : Double;
+  Sector7 : Double;
+
+function GetDirection(Degree: Double): Direction;
+begin
+  if      (Degree >= Sector0) or  (Degree < Sector1) then
+    Result := Direction.Right
+  else if (Degree >= Sector1) and (Degree < Sector2) then
+    Result := Direction.BottomRight
+  else if (Degree >= Sector2) and (Degree < Sector3) then
+    Result := Direction.Bottom
+  else if (Degree >= Sector3) and (Degree < Sector4) then
+    Result := Direction.BottomLeft
+  else if (Degree >= Sector4) and (Degree < Sector5) then
+    Result := Direction.Left
+  else if (Degree >= Sector5) and (Degree < Sector6) then
+    Result := Direction.TopLeft
+  else if (Degree >= Sector6) and (Degree < Sector7) then
+    Result := Direction.Top
+  else if (Degree >= Sector7) and (Degree < Sector0) then
+    Result := Direction.TopRight;
+end;
+
+procedure NormalizeDiagonals(var AX: Double; var AY : Double);
+var
+  Magnitude: Double;
+begin
+  Magnitude := Hypot(AX, AY);
+  if Magnitude > 1.0 then begin
+    AX := AX / Magnitude;
+    AY := AY / Magnitude;
+  end;
+end;
+
+// https://github.com/Minimuino/thumbstick-deadzones
+type
+  TPoint = record
+    X : Double;
+    Y : Double;
+  end;
+
+const
+  DeadZoneThreshold = 0.2;
+
+var
+  LastClock : TLargerFloat = 0;
+
+function MapRange(AValue, OldMin, OldMax, NewMin, NewMax: Double): Double;
+begin
+  Result :=
+    (NewMin + (NewMax - NewMin)) * ((AValue - OldMin) / (OldMax - OldMin));
+end;
+
+function SlopedScaledAxialDeadzone(AX, AY: Double): TPoint;
+var
+  LX, LY, DeadzoneX, DeadzoneY: Double;
+  SignX: Double;
+  SignY: Double;
+begin
+  LX := 0;
+  LY := 0;
+  DeadzoneX := DeadZoneThreshold * Power(Abs(AX), 2);
+  DeadzoneY := DeadZoneThreshold * Power(Abs(AY), 2);
+  SignX := Sign(AX);
+  SignY := Sign(AY);
+
+  if Abs(AX) > DeadzoneX then
+    LX := SignX * MapRange(Abs(AX), DeadzoneX, 1, 0, 1);
+
+  if Abs(AY) > DeadzoneY then
+    LY := SignY * MapRange(Abs(AY), DeadzoneY, 1, 0, 1);
+
+  Result.X := LX;
+  Result.Y := LY;
+end;
+
+function ScaledRadialDeadzone(AX, AY : Double): TPoint;
+var
+  Magnitude: Double;
+  NormalizedX : Double;
+  NormalizedY : Double;
+begin
+  Magnitude := Hypot(AX, AY);
+
+  if Magnitude < DeadZoneThreshold then begin
+    Result.X := 0;
+    Result.Y := 0;
+  end else begin
+    NormalizedX := AX / Magnitude;
+    NormalizedY := AY / Magnitude;
+
+    Result.X := NormalizedX * MapRange(Magnitude, DeadZoneThreshold, 1, 0, 1);
+    Result.Y := NormalizedY * MapRange(Magnitude, DeadZoneThreshold, 1, 0, 1);
+  end;
+end;
+
+function IsOutsideDeadZone(var AX : Double; var AY : Double) : Boolean;
+var
+  Magnitude: Double;
+  Output : TPoint;
+begin
+  Magnitude := Hypot(AX, AY);
+
+  if Magnitude < DeadZoneThreshold then begin
+    AX := 0;
+    AY := 0;
+    Result := False;
+  end else begin
+    Output := ScaledRadialDeadzone(AX, AY);
+    Output := SlopedScaledAxialDeadzone(Output.X, Output.Y);
+    AX := Output.X;
+    AY := Output.Y;
+    Result := True;
+  end;
+end;
+
+//var
+//  PreviousX : Double;
+//  PreviousY : Double;
+//
+//function IsDeadZoneLeaveEvent(AX, AY : Double) : Boolean;
+//begin
+//  Result := (not IsOutsideDeadZone(PreviousX, PreviousY)) and IsOutsideDeadZone(AX, AY);
+//  PreviousX := AX;
+//  PreviousY := AY;
+//end;
 
 procedure TSDLPS4Controller.ControllerAxisMotion(
   const event: TSDL_ControllerAxisEvent);
-const
-  LTimeDelta = 0.100;
-  LSensitivity = 0.50;
-  LMaxValue = 32767;
-  LHumbleTime = 100;
-  LHumblePower = $FFFF;
-
 var
-  LTimestamp : TLargerFloat;
-  procedure SelectH(AValue : SmallInt);
-  begin
-    if AValue < 0 then begin
-      FNavigator.SelectLeft;
-    end else begin
-      FNavigator.SelectRight;
-    end;
-  end;
+  LX : Double;
+  LY , LDegrees: Double;
 
-  procedure SelectV(AValue : SmallInt);
+  function CalculateAngleDegrees(AX, AY: Double): Double;
+  var
+    AngleRadians, AngleDegrees: Double;
   begin
-    if AValue < 0 then begin
-      FNavigator.SelectUp;
-    end else begin
-      FNavigator.SelectDown;
-    end;
+    AngleRadians := ArcTan2(AY, AX);
+    AngleDegrees := AngleRadians * (HalfDegree/PI);
+    AngleDegrees := AngleDegrees + MaxDegress;
+    Result := AngleDegrees - Trunc(AngleDegrees/MaxDegress) * MaxDegress;
   end;
-
 begin
-  LTimestamp := ClockMonotonic;
-  case event.axis of
-    SDL_CONTROLLER_AXIS_LEFTY, SDL_CONTROLLER_AXIS_RIGHTY: begin
-      if (LTimestamp - LastTimeStamp) > LTimeDelta then begin
-        LastTimeStamp := LTimestamp;
-        if Abs(event.value/LMaxValue) > LSensitivity then begin
-          SelectV(event.value);
-          SDL_GameControllerRumble(
-            FGameController, LHumblePower, LHumblePower, LHumbleTime);
-        end;
-      end;
-    end;
+  if (ClockMonotonic-LastClock) < 0.250 then Exit;
 
-    SDL_CONTROLLER_AXIS_LEFTX, SDL_CONTROLLER_AXIS_RIGHTX: begin
-      if (LTimestamp - LastTimeStamp) > LTimeDelta then begin
-        LastTimeStamp := LTimestamp;
-        if Abs(event.value/LMaxValue) > LSensitivity then begin
-          SelectH(event.value);
-          SDL_GameControllerRumble(
-            FGameController, LHumblePower, LHumblePower, LHumbleTime);
-        end;
-      end;
-    end;
+  LX := SDL_GameControllerGetAxis(
+    FGameController, SDL_CONTROLLER_AXIS_LEFTX)/MaxSmallint;
 
-    SDL_CONTROLLER_AXIS_TRIGGERLEFT:;
-    SDL_CONTROLLER_AXIS_TRIGGERRIGHT:;
+  LY := SDL_GameControllerGetAxis(
+    FGameController, SDL_CONTROLLER_AXIS_LEFTY)/MaxSmallint;
 
-    otherwise begin
-
+  if IsOutsideDeadZone(LX, LY) then begin
+    LastClock := ClockMonotonic;
+    LDegrees := CalculateAngleDegrees(LX, LY);
+    //DrawDebugCircle(LDegrees);
+    case GetDirection(LDegrees) of
+      Top:
+        FNavigator.GoTop;
+      Left:
+        FNavigator.GoLeft;
+      Bottom:
+        FNavigator.GoBottom;
+      Right:
+        FNavigator.GoRight;
+      TopLeft:
+        FNavigator.GoTopLeft;
+      TopRight:
+        FNavigator.GoTopRight;
+      BottomLeft:
+        FNavigator.GoBottomLeft;
+      BottomRight:
+        FNavigator.GoBottomRight;
     end;
   end;
 end;
@@ -151,25 +293,81 @@ begin
     SDL_CONTROLLER_BUTTON_LEFTSHOULDER: FNavigator.ConfirmSelection;
     SDL_CONTROLLER_BUTTON_RIGHTSHOULDER: FNavigator.ConfirmSelection;
 
-    SDL_CONTROLLER_BUTTON_DPAD_UP: FNavigator.SelectUp;
-    SDL_CONTROLLER_BUTTON_DPAD_DOWN: FNavigator.SelectDown;
-    SDL_CONTROLLER_BUTTON_DPAD_LEFT: FNavigator.SelectLeft;
-    SDL_CONTROLLER_BUTTON_DPAD_RIGHT: FNavigator.SelectRight;
+    SDL_CONTROLLER_BUTTON_DPAD_UP: begin
+      FNavigator.GoTop;
+      SDL_GameControllerRumble(
+        FGameController, $FFFF, $FFFF, LHumbleTime);
+    end;
+
+    SDL_CONTROLLER_BUTTON_DPAD_DOWN: begin
+      FNavigator.GoBottom;
+      SDL_GameControllerRumble(
+        FGameController, $FFFF, $FFFF, LHumbleTime);
+    end;
+
+    SDL_CONTROLLER_BUTTON_DPAD_LEFT: begin
+      FNavigator.GoLeft;
+      SDL_GameControllerRumble(
+        FGameController, $FFFF, $FFFF, LHumbleTime);
+    end;
+
+    SDL_CONTROLLER_BUTTON_DPAD_RIGHT: begin
+      FNavigator.GoRight;
+      SDL_GameControllerRumble(
+        FGameController, $FFFF, $FFFF, LHumbleTime);
+    end;
 
     SDL_CONTROLLER_BUTTON_TOUCHPAD: ;
   end;
 end;
 
-procedure TSDLPS4Controller.ControllerDeviceAdded(
-  const event: TSDL_ControllerDeviceEvent);
+procedure TSDLPS4Controller.ControllerTouchPadMotion(
+  const event: TSDL_ControllerTouchpadEvent);
+var
+  touchpad, finger: cint32;
+  state: Uint8;
+  x, y, pressure: Single;
 begin
+  // Get the touchpad and finger indices
+  touchpad := event.touchpad;
+  finger := event.finger;
 
+  // Get the finger state, position, and pressure
+  SDL_GameControllerGetTouchpadFinger(
+    FGameController, touchpad, finger, @state, @x, @y, @pressure);
+
+  // Print the finger information
+  Print(Format('Touchpad %d, Finger %d, State %d, X %f, Y %f, Pressure %f',
+    [touchpad, finger, state, x, y, pressure]));
 end;
 
-procedure TSDLPS4Controller.ControllerDeviceRemoved(
-  const event: TSDL_ControllerDeviceEvent);
+procedure TSDLPS4Controller.ControllerSensorUpdate(const event: TSDL_ControllerSensorEvent);
+var
+  LSensor: PSDL_Sensor;
 begin
+  LSensor := SDL_SensorFromInstanceID(event.which);
+  if not Assigned(LSensor) then
+  begin
+    Print('Couldn''t get sensor for sensor event');
+    Exit;
+  end;
 
+  case SDL_SensorGetType(LSensor) of
+    SDL_SENSOR_ACCEL: begin
+      Print(Format('Accelerometer update: %.2f, %.2f, %.2f',
+        [event.data[0], event.data[1], event.data[2]]));
+    end;
+
+    SDL_SENSOR_GYRO: begin
+      Print(Format('Gyro update: %.2f, %.2f, %.2f',
+        [event.data[0], event.data[1], event.data[2]]));
+    end
+
+    otherwise begin
+      Print(Format('Sensor update for sensor type %1d',
+        [SDL_SensorGetType(LSensor)]));
+    end;
+  end;
 end;
 
 procedure TSDLPS4Controller.SetOnControllerAxisMotion(
@@ -193,6 +391,20 @@ begin
   FOnControllerButtonUp := AValue;
 end;
 
+procedure TSDLPS4Controller.SetOnControllerTouchPadMotion(
+  AValue: TOnControllerTouchPadMotionEvent);
+begin
+  if FOnControllerTouchPadMotion = AValue then Exit;
+  FOnControllerTouchPadMotion := AValue;
+end;
+
+procedure TSDLPS4Controller.SetOnControllerSensorUpdate(
+  AValue: TOnControllerSensorUpdateEvent);
+begin
+  if FOnControllerSensorUpdate = AValue then Exit;
+  FOnControllerSensorUpdate := AValue;
+end;
+
 constructor TSDLPS4Controller.Create;
 var
   LGameControllers : integer;
@@ -206,13 +418,32 @@ begin
   SDLEvents.OnControllerButtonDown := @ControllerButtonDown;
   SDLEvents.OnControllerAxisMotion := @ControllerAxisMotion;
   SDLEvents.OnControllerButtonUp := @ControllerButtonUp;
+  SDLEvents.OnControllerSensorUpdate := @ControllerSensorUpdate;
+  SDLEvents.OnControllerTouchPadMotion := @ControllerTouchPadMotion;
 
   SDL_JoystickUpdate;
   LGameControllers := SDL_NumJoysticks;
+  Print('NumJoysticks:'+LGameControllers.ToString);
   if LGameControllers > 0 then begin
     // 'PS4 Controller'
     Print(SDL_GameControllerNameForIndex(0));
     FGameController := SDL_GameControllerOpen(0);
+    if SDL_GameControllerHasRumble(FGameController) = SDL_TRUE then begin
+      Print('Has Rumble');
+    end;
+
+    if SDL_GameControllerHasRumbleTriggers(FGameController) = SDL_TRUE then begin
+      Print('Has Rumble Triggers');
+    end;
+
+    if SDL_GameControllerHasSensor(FGameController, SDL_SENSOR_ACCEL) = SDL_TRUE then begin
+      Print('Has Accelerometer');
+    end;
+
+    if SDL_GameControllerHasSensor(FGameController, SDL_SENSOR_GYRO) = SDL_TRUE then begin
+      Print('Has Gyroscope');
+    end;
+
   end else begin
 
   end;
@@ -220,9 +451,25 @@ end;
 
 destructor TSDLPS4Controller.Destroy;
 begin
+  SDLEvents.OnControllerButtonDown := nil;
+  SDLEvents.OnControllerAxisMotion := nil;
+  SDLEvents.OnControllerButtonUp := nil;
+  SDLEvents.OnControllerSensorUpdate := nil;
+  SDLEvents.OnControllerTouchPadMotion := nil;
   SDL_GameControllerClose(FGameController);
   inherited Destroy;
 end;
+
+initialization
+  SectorPad := SectorSize/2;
+  Sector0:= MaxDegress-SectorPad;
+  Sector1:= (Sectorsize * 1)-SectorPad;
+  Sector2:= (SectorSize * 2)-SectorPad;
+  Sector3:= (SectorSize * 3)-SectorPad;
+  Sector4:= (SectorSize * 4)-SectorPad;
+  Sector5:= (SectorSize * 5)-SectorPad;
+  Sector6:= (SectorSize * 6)-SectorPad;
+  Sector7:= (SectorSize * 7)-SectorPad;
 
 end.
 
