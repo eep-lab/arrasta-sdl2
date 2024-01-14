@@ -170,6 +170,10 @@ object FormBackground: TFormBackground
       Caption = 'Converter delineamento'
       OnClick = MenuItemConvertDesignFileClick
     end
+    object MenuItemCyclesFromTemplate: TMenuItem
+      Caption = 'Criar ciclos do template'
+      OnClick = MenuItemCyclesFromTemplateClick
+    end
   end
   object OpenDialog2: TOpenDialog
     DefaultExt = '.csv'

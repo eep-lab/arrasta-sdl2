@@ -8,31 +8,36 @@ uses
   Classes, SysUtils;
 
   procedure CovertToSingleFilename;
+  procedure CyclesFromTemplate;
 
 implementation
 
-uses session.strutils, csvdocument, session.csv.enumerable;
+uses FileUtil, session.strutils, csvdocument, session.csv.enumerable;
 
 procedure CovertToSingleFilename;
 const
-  OutputFilename = 'Estudo1-Condicoes-de-00-a-07.csv';
+  OutputFilename = 'Estudo1-Completo.csv';
   BlockID = 'BlockID';
   TrialID = 'TrialID';
   TrialIDSource = 'TrialIDSource';
 var
   LInputFilename : string;
   LTrialIDSource : string;
-  LPreTraining : string = '00 - Pre-treino.csv';
-  LProbes : string = '07 - Sondas CD (20 palavras).csv';
+  LPreTraining : string = 'Ciclo1-0-Pre-treino.csv';
+  LProbes : string =
+    'Ciclo1-7-Sondas-CD-Palavras-12-ensino-8-generalizacao.csv';
+
   LCorePhases : array of string = (
-    '07 - Sondas CD (20 palavras).csv',
-    '01 - Treino AB.csv',
-    '02 - Treino AC-CD.csv',
-    '02b - Treino AC-CD (Ref Intermitente).csv',
-    '03 - Sondas BC-CB (Palavras de ensino).csv',
-    '04 - Sondas BC-CB (Palavras reservadas).csv',
-    '05 - Sondas CD (Palavras reservadas e novas).csv',
-    '06 - Sondas AC (Palavras reservadas e novas).csv');
+    'Ciclo1-7-Sondas-CD-Palavras-12-ensino-8-generalizacao.csv',
+    'Ciclo1-1-Treino-AB.csv',
+    'Ciclo1-2a-Treino-AC-CD.csv',
+    'Ciclo1-2b-Treino-AC-CD-Ref-Intermitente.csv',
+    'Ciclo1-3-Sondas-BC-CB-Palavras-de-ensino.csv',
+    'Ciclo1-4-Sondas-BC-CB-Palavras-reservadas.csv',
+    'Ciclo1-5-Sondas-CD-Palavras-generalizacao-reservadas.csv',
+    'Ciclo1-6-Sondas-AC-Palavras-generalizacao-reservadas.csv');
+    //'Ciclo1-8-Sondas-CD-Palavras-30-Todas.csv'
+
   LPhase : string;
 
   LCSVOutput : TCSVDocument;
@@ -259,6 +264,92 @@ begin
       ConcatPaths([DesignFolder, 'blocks', OutputFilename]));
   finally
     LCSVOutput.Free;
+  end;
+end;
+
+procedure CyclesFromTemplate;
+var
+  LCSVOutput : TCSVDocument;
+  LCSVInput : TCSVRows;
+  LRow : TStringList;
+  LWriteHeader : Boolean;
+
+  LCorePhases : array of string = (
+    'Ciclo1-1-Treino-AB.csv',
+    'Ciclo1-2a-Treino-AC-CD.csv',
+    'Ciclo1-2b-Treino-AC-CD-Ref-Intermitente.csv',
+    'Ciclo1-3-Sondas-BC-CB-Palavras-de-ensino.csv',
+    'Ciclo1-4-Sondas-BC-CB-Palavras-reservadas.csv',
+    'Ciclo1-5-Sondas-CD-Palavras-generalizacao-reservadas.csv',
+    'Ciclo1-6-Sondas-AC-Palavras-generalizacao-reservadas.csv',
+    'Ciclo1-7-Sondas-CD-Palavras-12-ensino-8-generalizacao.csv');
+    //'Ciclo1-8-Sondas-CD-Palavras-30-Todas.csv'
+
+  LPhase : string;
+  LInputFilename: string;
+  LSrc, LDst: RawByteString;
+  i, j : integer;
+begin
+
+  LCSVInput  := TCSVRows.Create;
+  LCSVOutput := TCSVDocument.Create;
+  try
+    for LPhase in LCorePhases do begin
+      LInputFilename := ConcatPaths([DesignFolder, LPhase]);
+      LCSVInput.LoadFromFile(LInputFilename);
+      for i := 1 to 5 do begin
+        LCSVOutput.Clear;
+        LWriteHeader := True;
+        for LRow in LCSVInput do begin
+          if LWriteHeader then begin
+            LCSVOutput.AddRow;
+            LWriteHeader := False;
+            for j := 0 to LRow.Count-1 do begin
+              LCSVOutput.Cells[j, LCSVOutput.RowCount-1] := LRow.Names[j];
+            end;
+          end;
+
+          LCSVOutput.AddRow;
+          for j := 0 to LRow.Count-1 do begin
+            case j of
+              2 : begin
+                LCSVOutput.Cells[j, LCSVOutput.RowCount-1] :=
+                  LRow.ValueFromIndex[j].Replace(
+                    'mts-pseudowords-1','mts-pseudowords-'+(i+1).ToString);
+
+              end;
+              otherwise begin
+                LCSVOutput.Cells[j, LCSVOutput.RowCount-1] :=
+                  LRow.ValueFromIndex[j];
+              end;
+            end;
+          end;
+        end;
+
+        LCSVOutput.SaveToFile(
+          LInputFilename.Replace('Ciclo1', 'Ciclo'+(i+1).ToString));
+      end;
+    end;
+  finally
+    LCSVInput.Free;
+    LCSVOutput.Free;
+  end;
+
+
+  for i := 1 to 5 do begin
+    for LPhase in LCorePhases do begin
+      LSrc := ConcatPaths([DesignFolder, 'blocks',
+        LPhase]);
+      LDst := ConcatPaths([DesignFolder, 'blocks',
+        LPhase.Replace('Ciclo1', 'Ciclo'+(i+1).ToString)]);
+      CopyFile(LSrc, LDst);
+
+      LSrc := ConcatPaths([DesignFolder, 'instructions',
+        LPhase]);
+      LDst := ConcatPaths([DesignFolder, 'instructions',
+        LPhase.Replace('Ciclo1', 'Ciclo'+(i+1).ToString)]);
+      CopyFile(LSrc, LDst);
+    end;
   end;
 end;
 

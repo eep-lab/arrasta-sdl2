@@ -32,6 +32,7 @@ type
     ComboBoxParticipant: TComboBox;
     IniPropStorage1: TIniPropStorage;
     LabelContact: TLabel;
+    MenuItemCyclesFromTemplate: TMenuItem;
     MenuItemConvertDesignFile: TMenuItem;
     MenuItemRemoveParticipant: TMenuItem;
     MenuItemCopyPNGFiles: TMenuItem;
@@ -61,6 +62,7 @@ type
       var Value: TStoredType);
     procedure MenuItemConvertDesignFileClick(Sender: TObject);
     procedure MenuItemCopyPNGFilesClick(Sender: TObject);
+    procedure MenuItemCyclesFromTemplateClick(Sender: TObject);
     procedure MenuItemRemoveParticipantClick(Sender: TObject);
   private
     procedure AssignGlobalVariables;
@@ -266,6 +268,11 @@ end;
 procedure TFormBackground.MenuItemCopyPNGFilesClick(Sender: TObject);
 begin
   E1CopyRandomImagesToParticipantFolder;
+end;
+
+procedure TFormBackground.MenuItemCyclesFromTemplateClick(Sender: TObject);
+begin
+  CyclesFromTemplate;
 end;
 
 procedure TFormBackground.MenuItemRemoveParticipantClick(Sender: TObject);
