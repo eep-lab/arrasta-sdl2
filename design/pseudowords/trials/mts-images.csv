@@ -1,7 +1,9 @@
-ID,Trials,Relation,Code,Comparisons
-1,1,B-B,X1,1
-2,2,B-B,X1,2
-3,1,B-B,X2,1
-4,2,B-B,X2,2
-5,2,B-B,X1,2
-6,2,B-B,X2,2
+ID,Trials,Relation,Code,Comparisons,Prompt,FontName
+1,1,B-B,X1,1,,
+2,2,B-B,X1,2,,
+3,1,B-B,X2,1,,
+4,2,B-B,X2,2,,
+5,2,B-B,X1,2,,
+6,2,B-B,X2,2,,
+7,2,C-D,P1,1,sample-text-prompt-giulia-word,Arimo-Regular
+8,2,C-D,P2,1,sample-text-prompt-giulia-word,Arimo-Regular

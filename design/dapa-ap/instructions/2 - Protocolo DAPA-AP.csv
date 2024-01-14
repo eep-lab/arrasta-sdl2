@@ -1,9 +1,9 @@
 Trial,Block,Instruction,DoCalibration
-1,1,M5,F
-1,2,M4,F
-1,20,M5,F
-1,21,M4,F
-1,39,M5,F
-1,40,M4,F
-1,67,M5,F
-1,68,M4,F
+1,1,D2,F
+1,2,D1,F
+1,20,D2,F
+1,21,D1,F
+1,39,D2,F
+1,40,D1,F
+1,67,D2,F
+1,68,D1,F
