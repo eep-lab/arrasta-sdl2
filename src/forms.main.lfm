@@ -166,5 +166,15 @@ object FormBackground: TFormBackground
       Caption = 'Copiar arquivos PNG para a pasta do participante'
       OnClick = MenuItemCopyPNGFilesClick
     end
+    object MenuItemConvertDesignFile: TMenuItem
+      Caption = 'Converter delineamento'
+      OnClick = MenuItemConvertDesignFileClick
+    end
+  end
+  object OpenDialog2: TOpenDialog
+    DefaultExt = '.csv'
+    Filter = 'Sessão|*.csv|*.CSV|*.CSV'
+    Left = 488
+    Top = 152
   end
 end

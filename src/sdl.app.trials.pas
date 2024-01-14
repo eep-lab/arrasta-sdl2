@@ -111,7 +111,6 @@ uses
   , sdl.app.clickable.contract
   , sdl.app.moveable.contract
   , sdl.app.lookable.contract
-  , sdl.app.controller.manager
   , session.constants.trials
   , session.loggers.writerow.timestamp;
 
@@ -191,7 +190,8 @@ end;
 
 function TTrial.InterTrialInterval: Cardinal;
 begin
-  if FTestMode then begin
+  if FTestMode or
+     ((FResult = Miss) and FHasConsequence) then begin
     Result := 0;
   end else begin
     Result := FInterTrialInterval;

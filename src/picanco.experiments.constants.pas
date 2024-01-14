@@ -18,7 +18,7 @@ uses picanco.experiments.words.types;
 const
   E1Reserved1 = 'falo';
   E1Reserved2 = 'bena';
-  E1ReservedWord : array [R01..R02] of string = (E1Reserved1, E1Reserved2);
+  E1ReservedWords : array [R01..R02] of string = (E1Reserved1, E1Reserved2);
 
   E1Word01 = 'nibo';
   E1Word02 = 'fale';
@@ -45,21 +45,25 @@ const
   E1Word23 = 'febi';
   E1Word24 = 'lano';
 
+  E1Word25 = 'lani';
+  E1Word26 = 'febo';
+  E1Word27 = 'nole';
+  E1Word28 = 'bifa';
+
+
   E1WordsWithImages: array [E1WordsWithImagesRange] of string = (
     E1Word01, E1Word02, E1Word03, E1Word04, E1Word05, E1Word06,
     E1Word07, E1Word08, E1Word09, E1Word10, E1Word11, E1Word12,
     E1Reserved1, E1Reserved2);
 
-  E1WordsWithNewImages: array [0..42] of string = (
-    '2003', '2004', '2006', '2009', '2010',
-    '2012', '2014', '2015', '2016', '2017',
-    '2019', '2024', '2032', '2034', '2036',
-    '2037', '2038', '2039', '2040', '2041',
-    '2042', '2045', '2046', '2047', '2050',
-    '2051', '2052', '2053', '2057', '2059',
-    '2060', '2061', '2062', '2063', '2064',
-    '3001', '3002', '3003', '3004',
-    '3006',         '3008', '3009', '3010');
+  E1WordsWithNewImages: array [0..32] of string = (
+    '2001', '2004', '2006', '2009', '2010',
+    '2014', '2015', '2016', '2018', '2019',
+    '2022', '2023', '2027', '2030', '2032',
+    '2034', '2038', '2040', '2042', '2044',
+    '2045', '2046', '2047', '2049', '2050',
+    '2051', '2052', '2053', '2055', '2059',
+    '2060', '2061', '2062');
 
   E1WordPerCycleCode: array [E1CyclesRange, E1CyclesCodeRange] of string = (
     (E1Word01, E1Word02, E1Reserved1, E1Reserved2, E1Word13, E1Word14),
@@ -78,14 +82,14 @@ const
     (T11, T12, R01, R02, A11, A12));
 
   E1UniqueCodesPreTraining: TAlphaNumericCodes = (
-    X1,  X2,  Y1,  Y2);
+    X1,  X2,  Y1,  Y2, P1, P2);
 
   E1UniqueCodesProbes: TAlphaNumericCodes = (
     T01, T02, T03, T04, T05, T06,
     T07, T08, T09, T10, T11, T12,
     A01, A02, A03, A04, A05, A06,
     A07, A08, A09, A10, A11, A12,
-    R01, R02);
+    A13, A14, A15, A16, R01, R02);
 
   E1WordsTeaching : array [E1TeachUniqueCodeRange] of string = (
     E1Word01, E1Word02, E1Word03, E1Word04, E1Word05, E1Word06,
@@ -103,7 +107,18 @@ const
     E1Word07, E1Word08, E1Word09, E1Word10, E1Word11, E1Word12,
     E1Reserved1, E1Reserved2,
     E1Word13, E1Word14, E1Word15, E1Word16, E1Word17, E1Word18,
-    E1Word19, E1Word20, E1Word21, E1Word22, E1Word23, E1Word24);
+    E1Word19, E1Word20, E1Word21, E1Word22, E1Word23, E1Word24,
+    E1Word25, E1Word26, E1Word27, E1Word28);
+
+  E1WordsForCondition7 : array [0..7] of string = (
+    E1Word19, // A07
+    E1Word20, // A08
+    E1Word21, // A09
+    E1Word22, // A10
+    E1Word25, // A13
+    E1Word26, // A14
+    E1Word27, // A15
+    E1Word28);// A16
 
 function CycleCodeFromWord(AWord : string;
   out ACycle : TCycle): TAlphaNumericCode;
@@ -117,6 +132,7 @@ implementation
 function CycleCodeFromWord(AWord : string;
   out ACycle : TCycle): TAlphaNumericCode;
 begin
+  Result := NA;
   case AWord of
     E1Reserved1 : begin
       ACycle := Cycle1;
@@ -147,13 +163,8 @@ begin
     E1Reserved1 : Result := R01;
     E1Reserved2 : Result := R02;
     else begin
-      for Result in E1TeachUniqueCodeRange do begin
-        if AWord = E1WordsTeaching[Result] then begin
-          Exit;
-        end;
-      end;
-      for Result in E1ProbeUniqueCodeRange do begin
-        if AWord = E1WordsProbes[Result] then begin
+      for Result in E1WordsWithCodesRange do begin
+        if AWord = E1WordsWithCodes[Result] then begin
           Break;
         end;
       end;
@@ -163,7 +174,13 @@ end;
 
 function UniqueCodeToStr(AUniqueCode: TAlphaNumericCode): string;
 begin
-  WriteStr(Result, AUniqueCode);
+  case AUniqueCode of
+    P1 : Result := 'bolo';
+    P2 : Result := 'bala';
+    otherwise begin
+      WriteStr(Result, AUniqueCode);
+    end;
+  end;
 end;
 
 end.

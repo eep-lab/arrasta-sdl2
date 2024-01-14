@@ -32,9 +32,11 @@ type
     ComboBoxParticipant: TComboBox;
     IniPropStorage1: TIniPropStorage;
     LabelContact: TLabel;
+    MenuItemConvertDesignFile: TMenuItem;
     MenuItemRemoveParticipant: TMenuItem;
     MenuItemCopyPNGFiles: TMenuItem;
     OpenDialog1: TOpenDialog;
+    OpenDialog2: TOpenDialog;
     Panel1: TPanel;
     PopupMenuParticipants: TPopupMenu;
     PopupMenuMisc: TPopupMenu;
@@ -57,10 +59,10 @@ type
       var Value: TStoredType);
     procedure IniPropStorage1StoredValues1Save(Sender: TStoredValue;
       var Value: TStoredType);
+    procedure MenuItemConvertDesignFileClick(Sender: TObject);
     procedure MenuItemCopyPNGFilesClick(Sender: TObject);
     procedure MenuItemRemoveParticipantClick(Sender: TObject);
   private
-    //FEyeLink : TEyeLink;
     procedure AssignGlobalVariables;
     procedure ToogleControlPanelEnabled(AException: TComponent = nil);
     function ParticipantFolderName : string;
@@ -88,6 +90,7 @@ uses
   , session.loggers
   , session.fileutils
   , session.csv.experiments
+  , session.design.conversion
   , sdl.app
   , sdl.app.controller.manager
   , sdl.app.grids.types
@@ -98,6 +101,8 @@ uses
 
 { ToDo: show next designed session of selected participant.
         for data in data folder get next session of last session}
+
+{ ToDo: point-and-click design tools }
 
 { TFormBackground }
 
@@ -253,6 +258,11 @@ begin
   Value := ComboBoxCondition.ItemIndex.ToString;
 end;
 
+procedure TFormBackground.MenuItemConvertDesignFileClick(Sender: TObject);
+begin
+  CovertToSingleFilename;
+end;
+
 procedure TFormBackground.MenuItemCopyPNGFilesClick(Sender: TObject);
 begin
   E1CopyRandomImagesToParticipantFolder;
@@ -291,13 +301,19 @@ begin
     RecordingSeconds := Value;
 
   with GlobalTrialParameters, FormMisc.SpinEditInterTrialInterval do
-    InterTrialInterval := Value.SecondsToMiliseconds;
+    InterTrialInterval := Value;
 
   with GlobalTrialParameters, FormMisc.SpinEditLimitedHold do
     LimitedHold := Value.MinutesToMiliseconds;
 
+  with GlobalTrialParameters, FormMisc.SpinEditAudioLoopInterval do
+    AudioLoopInterval := Value;
+
+  with GlobalTrialParameters, FormMisc.SpinEditDefaultAudioLoops do
+    DefaultAudioLoops := Value;
+
   with GlobalTrialParameters, FormMisc.SpinEditTimeOut do
-    TimeOutInterval := Value.SecondsToMiliseconds;
+    TimeOutInterval := Value;
 
   with GlobalTrialParameters, FormMisc.ComboBoxAudioFolder do
     Pool.AudioBasePath := Items[ItemIndex];

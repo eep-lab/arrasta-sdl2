@@ -53,7 +53,8 @@ uses
   sdl.app.audio
   , session.parameters.global
   , sdl.app.controls.custom
-  , session.constants.mts;
+  , session.constants.mts
+  , session.strutils;
 
 { TTextStimuli }
 
@@ -93,18 +94,18 @@ procedure TTextStimulus.Load(AParameters: TStringList; AParent: TObject;
   ARect: TSDL_Rect);
 begin
   FCustomName := GetWordValue(AParameters, IsSample, Index);
-  FText.FontName := GlobalTrialParameters.FontName;
+  FText.FontName := GetFontName(AParameters);
   //FText.FontSize := 50;
   FText.Load(FCustomName);
   FText.CentralizeWith(ARect);
   FText.Parent := TSDLControl(AParent);
   FText.OnMouseDown := @MouseDown;
 
-  FHasPrompt := HasPrompt(AParameters);
+  FHasPrompt := HasTextPrompt(AParameters);
   if FHasPrompt then begin
     if IsSample then
-      FPrompt := SDLAudio.SoundFromName(
-        GlobalTrialParameters.AudioPromptForText);
+      FPrompt := SDLAudio.LoadFromFile(
+        AsAsset(GetAudioPromptForText(AParameters)));
   end;
 end;
 

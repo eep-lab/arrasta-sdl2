@@ -13,9 +13,13 @@ type
 
   TCSVTrialsMTS = class(TCSVTrialsBase)
     private
-      FSamples : integer;
-      FComparisons : integer;
-      FRelation : string;
+      FSamples       : integer;
+      FComparisons   : integer;
+      FRelation      : string;
+      FHasPrompt     : Boolean;
+      FHasTextPrompt : Boolean;
+      FPrompt        : string;
+      FFontName      : string;
     public
       constructor Create; override;
       property Comparisons : integer read FComparisons write FComparisons;
@@ -38,6 +42,10 @@ begin
   FSamples     := 1;
   FComparisons := 0;
   FRelation    := '';
+  FHasPrompt   := False;
+  FHasTextPrompt := True;
+  FPrompt      := '';
+  FFontName    := '';
 
   with MTSKeys do begin
     RegisterParameter(SamplesKey,
@@ -46,6 +54,14 @@ begin
       @FComparisons, FComparisons);
     RegisterParameter(RelationKey,
       @FRelation, FRelation);
+    RegisterParameter(HasPromptKey,
+      @FHasPrompt, FHasPrompt);
+    RegisterParameter(HasTextPromptKey,
+      @FHasTextPrompt, FHasTextPrompt);
+    RegisterParameter(PromptKey,
+      @FPrompt, FPrompt);
+    RegisterParameter(FontNameKey,
+      @FFontName, FFontName);
   end;
 end;
 

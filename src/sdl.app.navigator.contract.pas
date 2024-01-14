@@ -6,7 +6,10 @@ unit sdl.app.navigator.contract;
 
 interface
 
-uses sdl.app.selectable.contract, sdl.app.selectable.list;
+uses
+  sdl.app.selectable.contract,
+  sdl.app.selectable.list,
+  sdl.app.controller.types;
 
 type
 

@@ -35,6 +35,13 @@ begin
   Result := FindAllFiles(LMediaPath, '*'+IMG_EXT, False);
 end;
 
+function NewImagesFolder : string;
+var
+  LMediaPath : string = 'pool';
+begin
+  Result := ConcatPaths([Pool.ImageRootBasePath, LMediaPath]);
+end;
+
 function HasDstImages: Boolean;
 var
   LDstImages : TStringList;
@@ -50,7 +57,7 @@ end;
 procedure CopyImagesToMediaPath(ADstImages: TStringList);
 var
   i: integer;
-  SrcFile, DstFile: string;
+  Image, SrcFile, DstFile: string;
   LSrcImages : TStringList;
 begin
   LSrcImages := GetSrcImages;
@@ -69,8 +76,14 @@ begin
         CopyFile(SrcFile, DstFile);
     end;
 
-    CopyFile(MeaningfulImageFolder+'X1'+IMG_EXT, AsImage('X1')+IMG_EXT);
-    CopyFile(MeaningfulImageFolder+'X2'+IMG_EXT, AsImage('X2')+IMG_EXT);
+    CopyFile(MeaningfulImageFolder+'quadrado'+IMG_EXT, AsImage('X1')+IMG_EXT);
+    CopyFile(MeaningfulImageFolder+'estrela'+IMG_EXT, AsImage('X2')+IMG_EXT);
+
+    for Image in E1WordsWithNewImages do begin
+      SrcFile := ConcatPaths([NewImagesFolder, Image+IMG_EXT]);
+      DstFile := AsImage(Image)+IMG_EXT;
+      CopyFile(SrcFile, DstFile);
+    end;
   finally
     LSrcImages.Clear;
     LSrcImages.Free;

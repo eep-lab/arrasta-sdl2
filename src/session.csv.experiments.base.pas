@@ -147,8 +147,8 @@ begin
               LCSVTrial.GetEnumerator.IndexOf[LTrialSourceParser.TrialID];
             LCSVTrial.LoadParameters(LTrial);
             if LCSVTrial.TrialID = LTrialSourceParser.TrialID then begin
-              LCSVTrial.AssignParameters(FWriter.TrialConfig);
               for i := 0 to LCSVTrial.TrialCount -1 do begin
+                LCSVTrial.AssignParameters(FWriter.TrialConfig);
                 FWriter.WriteTrial;
               end;
             end;

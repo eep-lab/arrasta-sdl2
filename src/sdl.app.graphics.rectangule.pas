@@ -55,7 +55,8 @@ type
     function IntersectsWith(ARect: TRectangule) : Boolean; overload;
     procedure Centralize;
     procedure CentralizeAtTopWith(ARect: TSDL_Rect);
-    procedure CentralizeAtRightWith(ARect: TSDL_Rect);
+    procedure MoveToBottomRightScreen;
+    procedure CentralizeAtRightWith(ARect: TSDL_Rect; AFactor : Byte);
     procedure CentralizeWith(ARect: TSDL_Rect);
     procedure DoRandomMouseDown;
     procedure Inflate(AValue : cint);
@@ -241,10 +242,16 @@ begin
   Top  := ARect.y - Height - 5;
 end;
 
-procedure TRectangule.CentralizeAtRightWith(ARect: TSDL_Rect);
+procedure TRectangule.MoveToBottomRightScreen;
 begin
-  Left := ARect.x + Width + (Width div 2);
-  Top  := ARect.y - (ARect.h div 2) - (Height div 2);
+  Left := Parent.BoundsRect.w - Width - 25;
+  Top  := Parent.BoundsRect.h - Height - 25;
+end;
+
+procedure TRectangule.CentralizeAtRightWith(ARect: TSDL_Rect; AFactor : Byte);
+begin
+  Left := ARect.x + Width * AFactor;
+  Top  := ARect.y + (ARect.h div 2) - (Height div 2);
 end;
 
 procedure TRectangule.Inflate(AValue: cint);

@@ -226,7 +226,7 @@ begin
 
   if IsSample then begin
     LRectangule.Show;
-    FLoops.Sound.Play;
+    //FLoops.Sound.Play;
   end else begin
     LRectangule.Show;
   end;

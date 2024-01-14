@@ -103,6 +103,7 @@ uses
   , session.constants.mts
   , session.pool
   , session.strutils
+  , session.parameters.global
   ;
 
 { TMTSStimuli }
@@ -157,6 +158,11 @@ begin
       end;
 
       startButtons: begin
+        for LStimulus in FComparisons do begin
+          for LSelectable in LStimulus.Selectables do begin
+            LSelectables.Add(LSelectable);
+          end;
+        end;
         LSelectables.Add(FButton.AsISelectable);
       end;
 
@@ -164,7 +170,7 @@ begin
 
     if LSelectables.Count > 0 then begin
       FNavigator.UpdateNavigationControls(LSelectables);
-      FNavigator.Select;
+      FNavigator.UnSelect;
     end else begin
       FNavigator.UpdateNavigationControls(nil);
     end;
@@ -314,7 +320,7 @@ begin
 
       ModalityD: begin { TSpeechStimulus }
         FButton.Sibling := LStimulus.Rectangule;
-        FButton.CentralizeAtRightWith(LStimulus.Rectangule.BoundsRect);
+        FButton.CentralizeAtRightWith(LStimulus.Rectangule.BoundsRect, 2);
         FButton.Sender := Sender;
         FButton.Show;
         UpdateState(startButtons);
@@ -516,6 +522,7 @@ begin
       else
         raise Exception.Create('Unknown Samples modality: ' + SampleLetter);
     end;
+
     case ComparLetter of
       'A' : FMTSModality.Comparisons := ModalityA;
       'B' : FMTSModality.Comparisons := ModalityB;
@@ -531,6 +538,7 @@ begin
         FButton.Parent := TSDLControl(AParent);
         FButton.OnClick:=@ButtonClick;
       end;
+
       ModalityD : begin
         FButton.LoadFromFile(AsAsset('FinalizeButton'));
         FButton.Parent := TSDLControl(AParent);
@@ -538,6 +546,7 @@ begin
 
         LComparisons := 1;
       end;
+
       else { do nothing }
     end;
   end;

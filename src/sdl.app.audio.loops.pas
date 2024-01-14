@@ -49,6 +49,8 @@ type
 
 implementation
 
+uses session.parameters.global;
+
 { TSoundLoop }
 
 function TSoundLoop.GetInterval: cuint32;
@@ -139,7 +141,7 @@ begin
   FSound := nil;
   FTimer := TSDLTimer.Create;
   FTimer.OnTimer := @PlaySound;
-  FTimer.Interval := 2000;
+  FTimer.Interval := GlobalTrialParameters.AudioLoopInterval;
   FCurrentLoopCount := 0;
   FTotalLoops := 0;
 end;
@@ -156,14 +158,19 @@ begin
   Validate;
   case FTotalLoops of
     1 : begin
-      if not FSound.Playing then
+      if not FSound.Playing then begin
         FSound.Play;
+      end;
     end;
 
     2..MaxSmallint: begin
-      if not FSound.Playing then
+      if not FSound.Playing then begin
         FSound.Play;
-      FTimer.Start;
+      end;
+
+      if not FTimer.Enabled then begin
+        FTimer.Start;
+      end;
     end;
 
     else Exit;

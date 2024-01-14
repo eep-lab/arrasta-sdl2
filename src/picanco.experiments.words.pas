@@ -68,44 +68,44 @@ begin
     case AWord.CycleCode of
       T1 : begin
         LCandidateNegativeComparisons.Add(
-          HashWords[E1WordPerCycleCode[AWord.Cycle, T2]]);
+          HashWords[E1WordPerCycleCode[AWord.Phase.Cycle, T2]]);
         LCandidateNegativeComparisons.Add(
-          HashWords[E1WordPerCycleCode[AWord.Cycle, R1]]);
+          HashWords[E1WordPerCycleCode[AWord.Phase.Cycle, R1]]);
         LCandidateNegativeComparisons.Add(
-          HashWords[E1WordPerCycleCode[AWord.Cycle, R2]]);
+          HashWords[E1WordPerCycleCode[AWord.Phase.Cycle, R2]]);
       end;
       T2 : begin
         LCandidateNegativeComparisons.Add(
-          HashWords[E1WordPerCycleCode[AWord.Cycle, T1]]);
+          HashWords[E1WordPerCycleCode[AWord.Phase.Cycle, T1]]);
         LCandidateNegativeComparisons.Add(
-          HashWords[E1WordPerCycleCode[AWord.Cycle, R1]]);
+          HashWords[E1WordPerCycleCode[AWord.Phase.Cycle, R1]]);
         LCandidateNegativeComparisons.Add(
-          HashWords[E1WordPerCycleCode[AWord.Cycle, R2]]);
+          HashWords[E1WordPerCycleCode[AWord.Phase.Cycle, R2]]);
       end;
       R1 : begin
         LCandidateNegativeComparisons.Add(
-          HashWords[E1WordPerCycleCode[AWord.Cycle, T2]]);
+          HashWords[E1WordPerCycleCode[AWord.Phase.Cycle, T2]]);
         LCandidateNegativeComparisons.Add(
-          HashWords[E1WordPerCycleCode[AWord.Cycle, T1]]);
+          HashWords[E1WordPerCycleCode[AWord.Phase.Cycle, T1]]);
         LCandidateNegativeComparisons.Add(
-          HashWords[E1WordPerCycleCode[AWord.Cycle, R2]]);
+          HashWords[E1WordPerCycleCode[AWord.Phase.Cycle, R2]]);
       end;
       R2 : begin
         LCandidateNegativeComparisons.Add(
-          HashWords[E1WordPerCycleCode[AWord.Cycle, T1]]);
+          HashWords[E1WordPerCycleCode[AWord.Phase.Cycle, T1]]);
         LCandidateNegativeComparisons.Add(
-          HashWords[E1WordPerCycleCode[AWord.Cycle, T2]]);
+          HashWords[E1WordPerCycleCode[AWord.Phase.Cycle, T2]]);
         LCandidateNegativeComparisons.Add(
-          HashWords[E1WordPerCycleCode[AWord.Cycle, R1]]);
+          HashWords[E1WordPerCycleCode[AWord.Phase.Cycle, R1]]);
       end;
 
       A1, A2: begin
         LCandidateNegativeComparisons.Add(
-          HashWords[E1WordPerCycleCode[AWord.Cycle, T1]]);
+          HashWords[E1WordPerCycleCode[AWord.Phase.Cycle, T1]]);
         LCandidateNegativeComparisons.Add(
-          HashWords[E1WordPerCycleCode[AWord.Cycle, T2]]);
+          HashWords[E1WordPerCycleCode[AWord.Phase.Cycle, T2]]);
         LCandidateNegativeComparisons.Add(
-          HashWords[E1WordPerCycleCode[AWord.Cycle, R1]]);
+          HashWords[E1WordPerCycleCode[AWord.Phase.Cycle, R1]]);
       end;
       X1: begin
         LCandidateNegativeComparisons.Add(
@@ -123,6 +123,15 @@ begin
         LCandidateNegativeComparisons.Add(
           HashPreTrainingWords['Y2']);
       end;
+
+      P1 : begin
+        { no negative comparisons }
+      end;
+
+      P2 : begin
+        { no negative comparisons }
+      end;
+
       else
         raise EArgumentOutOfRangeException.Create('SetComparisons error');
     end;
@@ -164,7 +173,6 @@ begin
                 end;
               end;
 
-              // todo: abcd cbad adcb cdab
               ModalityC: Text   := GetRandomWord(LCandidateNegativeWords);
               ModalityD: Speech := @EmptyWord;
               else
@@ -209,6 +217,7 @@ begin
     5 : Result.Condition := Condition_CD_1;
     6 : Result.Condition := Condition_AC;
     7 : Result.Condition := Condition_CD_2;
+    8 : Result.Condition := Condition_CD_3;
   end;
 
   case Result.Condition of
@@ -230,7 +239,6 @@ begin
     else
       raise Exception.Create('Unknown modality: '+ ALetter);
   end;
-
 end;
 
 procedure Initialize;

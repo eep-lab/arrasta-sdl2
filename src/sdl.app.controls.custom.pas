@@ -430,7 +430,7 @@ end;
 
 procedure TSDLControl.Unselect;
 begin
-  Mouse.MoveTo(Parent.BottomRightPoint);
+  Mouse.MoveTo(Parent.CenterPoint);
 end;
 
 end.

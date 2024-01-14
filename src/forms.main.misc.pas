@@ -26,6 +26,8 @@ type
     ComboBoxMonitor: TComboBox;
     IniPropStorage1: TIniPropStorage;
     Label1: TLabel;
+    LabelDefaultAudioLoops: TLabel;
+    LabelAudioLoopInterval: TLabel;
     LabelController: TLabel;
     LabelShoudRestartAtBlockStart: TLabel;
     LabelMonitor: TLabel;
@@ -42,6 +44,8 @@ type
     LabelShowModal: TLabel;
     LabelTimeOut: TLabel;
     PageControl: TPageControl;
+    SpinEditDefaultAudioLoops: TSpinEdit;
+    SpinEditAudioLoopInterval: TSpinEdit;
     SpinEditFontSize: TSpinEdit;
     SpinEditInterTrialInterval: TSpinEdit;
     SpinEditLimitedHold: TSpinEdit;

@@ -21,6 +21,9 @@ type
     ComparisonsKey : string;
     ComparisonKey  : string;
     HasPromptKey   : string;
+    HasTextPromptKey  : string;
+    PromptKey      : string;
+    FontNameKey    : string;
   end;
 
 const
@@ -35,7 +38,10 @@ const
     SampleKey      : HeaderSample;
     ComparisonsKey : HeaderCompasisons;
     ComparisonKey  : HeaderCompasison;
-    HasPromptKey   : 'HasPrompt');
+    HasPromptKey   : 'HasPrompt';
+    HasTextPromptKey  : 'HasTextPrompt';
+    PromptKey      : 'Prompt';
+    FontNameKey    : 'FontName');
 
 implementation
 

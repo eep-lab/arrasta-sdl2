@@ -35,8 +35,7 @@ type
 implementation
 
 uses
-  sdl.app.trials.mts
-  , session.constants.trials
+  session.constants.trials
   , session.constants.trials.pseudowords
   , picanco.experiments.words
   , picanco.experiments.constants;
@@ -81,8 +80,12 @@ begin
   inherited AfterLoadingParameters(Sender);
   FPhase := GetPhase(FCycle, FCondition, Relation);
   FWord := GetWord(FPhase, ToAlphaNumericCode(FCode));
-  FName := TrialID.ToString + #32 + '(' + FWord.Caption + #32 +
-      Relation + #32 + Comparisons.ToString + 'C)';
+  FName :=
+    TrialID.ToString + #32 +
+    '(Cycle ' + FCycle.ToString + #32 +
+    FWord.Caption + #32 +
+    Relation + #32 +
+    Comparisons.ToString + 'C)';
   FRefName := FCode;
 end;
 
@@ -112,7 +115,7 @@ end;
 { You may call AssignParameters many times after loading parameters.
   For example, in pseudocode:
     repeat
-      { Instance }.AssignParameters;
+      % Instance %.AssignParameters;
       FWriter.WriteTrial;
     until Done;
   Do not use AssignParameters for building dinamically created parameters,
