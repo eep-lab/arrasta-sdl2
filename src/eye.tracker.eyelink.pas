@@ -30,10 +30,13 @@ type
       FEyeLinkClient : TEyeLinkClient;
       FOnGazeOnScreenEvent : TGazeOnScreenEvent;
       procedure AllDataEvent(Sender: TObject; APALLF_DATA : array of PALLF_DATA);
+      procedure CalibrationSuccessfulEvent(Sender: TObject);
+      procedure CalibrationFailedEvent(Sender: TObject);
     protected
       function GetGazeOnScreenEvent: TGazeOnScreenEvent; override;
-      procedure SetGazeOnScreenEvent(
-        AGazeOnScreenEvent: TGazeOnScreenEvent); override;
+      procedure SetGazeOnScreenEvent(AValue: TGazeOnScreenEvent); override;
+      procedure SetOnCalibrationSuccessful(AValue: TNotifyEvent); override;
+      procedure SetOnCalibrationFailed(AValue: TNotifyEvent); override;
       procedure StartRecording; override;
       procedure StopRecording; override;
       procedure StartCalibration; override;
@@ -50,10 +53,20 @@ uses session.pool;
 { TEyeLinkEyeTracker }
 
 procedure TEyeLinkEyeTracker.SetGazeOnScreenEvent(
-  AGazeOnScreenEvent: TGazeOnScreenEvent);
+  AValue: TGazeOnScreenEvent);
 begin
-  if FOnGazeOnScreenEvent = AGazeOnScreenEvent then Exit;
-  FOnGazeOnScreenEvent := AGazeOnScreenEvent;
+  if FOnGazeOnScreenEvent = AValue then Exit;
+  FOnGazeOnScreenEvent := AValue;
+end;
+
+procedure TEyeLinkEyeTracker.SetOnCalibrationSuccessful(AValue: TNotifyEvent);
+begin
+
+end;
+
+procedure TEyeLinkEyeTracker.SetOnCalibrationFailed(AValue: TNotifyEvent);
+begin
+
 end;
 
 procedure TEyeLinkEyeTracker.StartRecording;
@@ -122,6 +135,16 @@ begin
       end;
     end;
   end;
+end;
+
+procedure TEyeLinkEyeTracker.CalibrationSuccessfulEvent(Sender: TObject);
+begin
+  // todo: TEyeLinkEyeTracker.CalibrationSuccessfulEvent
+end;
+
+procedure TEyeLinkEyeTracker.CalibrationFailedEvent(Sender: TObject);
+begin
+  // todo: TEyeLinkEyeTracker.CalibrationFailedEvent
 end;
 
 function TEyeLinkEyeTracker.GetGazeOnScreenEvent: TGazeOnScreenEvent;

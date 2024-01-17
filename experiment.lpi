@@ -693,7 +693,7 @@
         <IsPartOfProject Value="True"/>
       </Unit>
       <Unit>
-        <Filename Value="src\sdl.app.stimuli.calibration.pupil.pas"/>
+        <Filename Value="src\sdl.app.stimuli.calibration.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit>
       <Unit>

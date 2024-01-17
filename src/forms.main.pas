@@ -217,6 +217,7 @@ procedure TFormBackground.CloseSDLApp(Sender: TObject);
 begin
   if Assigned(EyeTracker) then begin
     EyeTracker.StopRecording;
+    FinalizeEyeTracker;
   end;
   TLogger.SetFooter;
   SDLSession.Free;
@@ -287,6 +288,9 @@ begin
 
   GlobalTrialParameters.Cursor := 1;
   GlobalTrialParameters.FixedComparisonPosition := 7;
+
+  with GlobalTrialParameters, FormMisc.SpinEditAprilTagsSize do
+    MarkerSize := Value;
 
   with GlobalTrialParameters,
        FormMisc.CheckBoxShowModalFormForSpeechResponses do

@@ -27,6 +27,7 @@ type
     ShouldRestartAtBlockStart : Boolean;
     AudioLoopInterval : UInt32;
     DefaultAudioLoops : SmallInt;
+    MarkerSize : SmallInt;
   end;
 
 var

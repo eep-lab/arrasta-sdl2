@@ -41,7 +41,7 @@ var
 
 implementation
 
-uses sdl.app.video.methods, session.strutils;
+uses sdl.app.video.methods, session.strutils, session.parameters.global;
 
 { TMarkers }
 
@@ -81,8 +81,8 @@ begin
     LFilename := Format('marker_%d', [LMarkerID]);
     LMarker := FMarkers.Items[LMarkerID];
     LMarker.LoadFromFile(AsMarker(LFilename));
-    LMarker.Width := 100;
-    LMarker.Height := 100;
+    LMarker.Width := GlobalTrialParameters.MarkerSize;
+    LMarker.Height := GlobalTrialParameters.MarkerSize;
     LMarker.Parent := FMonitor;
     case LMarkerID of
       0 : LMarker.ToTopLeft;

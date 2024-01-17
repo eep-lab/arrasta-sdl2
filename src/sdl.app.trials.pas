@@ -106,7 +106,7 @@ uses
     eye.tracker.client
   , sdl.app.video.methods
   , sdl.app.stimuli.instruction
-  , sdl.app.stimuli.calibration.pupil
+  , sdl.app.stimuli.calibration
   , sdl.app.paintable.contract
   , sdl.app.clickable.contract
   , sdl.app.moveable.contract
@@ -307,8 +307,8 @@ begin
     end;
   end;
 
-  if Sender is TPupilCalibrationStimuli then begin
-    TPupilCalibrationStimuli(Sender).Stop;
+  if Sender is TCalibrationStimuli then begin
+    TCalibrationStimuli(Sender).Stop;
     FIStimuli := GetIStimuli;
     Show;
   end;
@@ -323,7 +323,7 @@ end;
 procedure TTrial.CreateStartersIfRequired;
 var
   LInstruction : TInstructionStimuli;
-  LCalibration : TPupilCalibrationStimuli;
+  LCalibration : TCalibrationStimuli;
 begin
   if FHasInstructions then begin
     LInstruction := TInstructionStimuli.Create;
@@ -335,7 +335,7 @@ begin
   end;
 
   if TEyeTrackerClient.Exists and FHasCalibration then begin
-    LCalibration := TPupilCalibrationStimuli.Create;
+    LCalibration := TCalibrationStimuli.Create;
     LCalibration.OnFinalize := @EndStarterCallBack;
     FICalibration := LCalibration;
     FICalibration.Load(FData.Parameters, Self);

@@ -29,11 +29,16 @@ type
       FMonitor : TSDL_Rect;
       FPupilClient : TPupilClient;
       FOnGazeOnScreenEvent : TGazeOnScreenEvent;
+      FOnCalibrationSuccessfulEvent : TNotifyEvent;
+      FOnCalibrationFailedEvent : TNotifyEvent;
       procedure SurfaceEvent(Sender: TObject; AMultiPartMessage : TPupilMessage);
+      procedure CalibrationSuccessful(Sender: TObject; AMultiPartMessage : TPupilMessage);
+      procedure CalibrationFailed(Sender: TObject; AMultiPartMessage : TPupilMessage);
     protected
       function GetGazeOnScreenEvent: TGazeOnScreenEvent; override;
-      procedure SetGazeOnScreenEvent(
-        AGazeOnScreenEvent: TGazeOnScreenEvent); override;
+      procedure SetGazeOnScreenEvent(AValue: TGazeOnScreenEvent); override;
+      procedure SetOnCalibrationSuccessful(AValue: TNotifyEvent); override;
+      procedure SetOnCalibrationFailed(AValue: TNotifyEvent); override;
       procedure StartRecording; override;
       procedure StopRecording; override;
       procedure StartCalibration; override;
@@ -51,10 +56,24 @@ uses SimpleMsgPack, sdl.app.video.methods;
 { TPupilEyeTracker }
 
 procedure TPupilEyeTracker.SetGazeOnScreenEvent(
-  AGazeOnScreenEvent: TGazeOnScreenEvent);
+  AValue: TGazeOnScreenEvent);
 begin
-  if FOnGazeOnScreenEvent = AGazeOnScreenEvent then Exit;
-  FOnGazeOnScreenEvent := AGazeOnScreenEvent;
+  if FOnGazeOnScreenEvent = AValue then Exit;
+  FOnGazeOnScreenEvent := AValue;
+end;
+
+procedure TPupilEyeTracker.SetOnCalibrationSuccessful(
+  AValue: TNotifyEvent);
+begin
+  if FOnCalibrationSuccessfulEvent = AValue then Exit;
+  FOnCalibrationSuccessfulEvent := AValue;
+end;
+
+procedure TPupilEyeTracker.SetOnCalibrationFailed(
+  AValue: TNotifyEvent);
+begin
+  if FOnCalibrationFailedEvent = AValue then Exit;
+  FOnCalibrationFailedEvent := AValue;
 end;
 
 procedure TPupilEyeTracker.StartRecording;
@@ -74,22 +93,28 @@ end;
 
 procedure TPupilEyeTracker.StopCalibration;
 begin
-  PupilClient.Request(REQ_SHOULD_STOP_CALIBRATION);
+  FPupilClient.Request(REQ_SHOULD_STOP_CALIBRATION);
 end;
 
 constructor TPupilEyeTracker.Create;
 begin
   FPupilClient := TPupilClient.Create;
   FPupilClient.OnSurfacesEvent := @SurfaceEvent;
+  FPupilClient.OnCalibrationSuccessful := @CalibrationSuccessful;
+  FPupilClient.OnCalibrationFailed := @CalibrationFailed;
   FPupilClient.Start;
   FPupilClient.StartSubscriber;
   FPupilClient.Subscribe(SUB_SURFACES_EVENT);
+  FPupilClient.Subscribe(NOTIFY_CALIBRATION_SUCCESSFUL);
+  FPupilClient.Subscribe(NOTIFY_CALIBRATION_FAILED);
   Invalidate;
 end;
 
 destructor TPupilEyeTracker.Destroy;
 begin
-  FPupilClient.Free;
+  FPupilClient.UnSubscribe(SUB_SURFACES_EVENT);
+  FPupilClient.Close;
+  //FPupilClient.Free;
   inherited Destroy;
 end;
 
@@ -125,6 +150,22 @@ begin
         end;
       end;
     end;
+  end;
+end;
+
+procedure TPupilEyeTracker.CalibrationSuccessful(Sender: TObject;
+  AMultiPartMessage: TPupilMessage);
+begin
+  if Assigned(FOnCalibrationSuccessfulEvent) then begin
+    FOnCalibrationSuccessfulEvent(Self);
+  end;
+end;
+
+procedure TPupilEyeTracker.CalibrationFailed(Sender: TObject;
+  AMultiPartMessage: TPupilMessage);
+begin
+  if Assigned(FOnCalibrationSuccessfulEvent) then begin
+    FOnCalibrationFailedEvent(Self);
   end;
 end;
 

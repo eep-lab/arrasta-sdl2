@@ -16,6 +16,7 @@ interface
 uses eye.tracker.contract;
 
 procedure InitializeEyeTracker(AItemIndex : integer);
+procedure FinalizeEyeTracker;
 
 var
   EyeTracker : IEyeTracker;
@@ -27,6 +28,11 @@ uses eye.tracker.types, eye.tracker.factory;
 procedure InitializeEyeTracker(AItemIndex: integer);
 begin
   EyeTracker := TEyeTrackerFactory.New(TEyeTrackerCode(AItemIndex));
+end;
+
+procedure FinalizeEyeTracker;
+begin
+  TEyeTrackerFactory.Finalize;
 end;
 
 end.

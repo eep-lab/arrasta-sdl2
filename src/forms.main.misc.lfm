@@ -17,9 +17,9 @@ object FormMisc: TFormMisc
     Height = 629
     Top = 0
     Width = 449
-    ActivePage = TabSheetGeneral
+    ActivePage = TabSheetEyeTracking
     Align = alClient
-    TabIndex = 0
+    TabIndex = 1
     TabOrder = 0
     object TabSheetGeneral: TTabSheet
       Caption = 'Geral'
@@ -309,28 +309,45 @@ object FormMisc: TFormMisc
         Left = 20
         Height = 17
         Top = 20
-        Width = 192
+        Width = 218
         Caption = 'Mostrar AprilTags'
       end
       object CheckBoxShowMarkers: TCheckBox
-        Left = 222
+        Left = 248
         Height = 17
         Top = 20
-        Width = 199
+        Width = 173
         TabOrder = 0
+      end
+      object LabelAprilTagsSize: TLabel
+        Left = 20
+        Height = 23
+        Top = 47
+        Width = 218
+        Caption = 'Tamanho das AprilTags (px)'
+      end
+      object SpinEditAprilTagsSize: TSpinEdit
+        Left = 248
+        Height = 23
+        Top = 47
+        Width = 173
+        MaxValue = 3000
+        MinValue = 50
+        TabOrder = 2
+        Value = 120
       end
       object LabelEyeTracker: TLabel
         Left = 20
         Height = 23
-        Top = 47
-        Width = 192
+        Top = 80
+        Width = 218
         Caption = 'Rastreador ocular'
       end
       object ComboBoxEyeTracker: TComboBox
-        Left = 222
+        Left = 248
         Height = 23
-        Top = 47
-        Width = 199
+        Top = 80
+        Width = 173
         ItemHeight = 15
         ItemIndex = 0
         Items.Strings = (

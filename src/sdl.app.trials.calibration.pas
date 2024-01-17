@@ -27,7 +27,7 @@ type
 
   TPupilCalibration = class sealed (TTrial)
     private
-      FStimuli : TPupilCalibrationStimuli;
+      FStimuli : TCalibrationStimuli;
     protected
       function GetIStimuli: IStimuli; override;
     public
@@ -51,7 +51,7 @@ end;
 constructor TPupilCalibration.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
-  FStimuli := TPupilCalibrationStimuli.Create(Self);
+  FStimuli := TCalibrationStimuli.Create(Self);
   FStimuli.Trial := Self as TObject;
   FStimuli.OnFinalize := @EndTrialCallBack;
 end;
