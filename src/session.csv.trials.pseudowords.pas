@@ -86,7 +86,7 @@ begin
     FWord.Caption + #32 +
     Relation + #32 +
     Comparisons.ToString + 'C)';
-  FRefName := FCode;
+  FRefName := FCode+'-'+Relation;
 end;
 
 constructor TCSVPseudowordsTrials.Create;
