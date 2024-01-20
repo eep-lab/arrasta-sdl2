@@ -187,6 +187,7 @@ var
 begin
   if Sender is TStimulus then begin
     LStimulus := Sender as TStimulus;
+    FResponse := LStimulus.AsInterface.ToData;
 
     if LStimulus is TSpeechStimulus then begin
       LIsHit := LStimulus.IsCorrectResponse;
@@ -493,6 +494,7 @@ var
       end;
       AppendToTrialHeader(Pool.Session.Trial.Events.Header);
       AppendToTrialHeader(Grid.Header);
+      AppendToTrialHeader(Header);
     end;
   end;
 

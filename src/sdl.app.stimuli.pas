@@ -39,9 +39,12 @@ type
     procedure SetOnStop(AValue : TNotifyEvent);
     procedure SetTrial(AValue: TObject);
   protected
+    FResponse : string;
     function GetTrial : TObject;
     function CustomName : string;
     function MyResult : TTrialResult; virtual;
+    function Header : string; virtual;
+    function ToData : string; virtual;
     //function ContainerItems : IEnumerable; virtual; abstract;
     procedure DoExpectedResponse; virtual; abstract;
     procedure Load(AParameters: TStringList; AParent: TObject); virtual;
@@ -75,6 +78,16 @@ end;
 function TStimuli.MyResult: TTrialResult;
 begin
   Result := none;
+end;
+
+function TStimuli.Header: string;
+begin
+  Result := 'Response';
+end;
+
+function TStimuli.ToData: string;
+begin
+  Result := FResponse;
 end;
 
 function TStimuli.GetTrial: TObject;
@@ -141,6 +154,7 @@ end;
 constructor TStimuli.Create;
 begin
   inherited Create;
+  FResponse := '';
   FSchedule := TSchedule.Create(nil);
   with FSchedule do begin
     OnConsequence:= @Self.Consequence;

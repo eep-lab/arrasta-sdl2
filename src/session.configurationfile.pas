@@ -41,25 +41,25 @@ type
     function CurrentBlockSection : string;
     function GetBlockCount : integer;
     function GetTrialCount(BlockIndex : integer): integer;
-    function GetBlock(BlockIndex : integer): TBlockData;
-    function GetTrial(BlockIndex, TrialIndex : integer): TTrialData;
-    function GetTrialBase(BlockIndex, TrialIndex : integer): TTrialData;
+    function GetBlock(BlockIndex : integer): TBlockConfiguration;
+    function GetTrial(BlockIndex, TrialIndex : integer): TTrialConfiguration;
+    function GetTrialBase(BlockIndex, TrialIndex : integer): TTrialConfiguration;
     procedure CopySection(AFrom, ATo : string; AConfigurationFile : TConfigurationFile);
     procedure WriteSection(ASectionName:string; ASection : TStrings);
-    procedure AddNamesTo(AReferenceList : TReferenceList; ACurrentBlock : TBlockData);
+    procedure AddNamesTo(AReferenceList : TReferenceList; ACurrentBlock : TBlockConfiguration);
   public
     constructor Create(const AConfigurationFile: string; AEscapeLineFeeds:Boolean=False); override;
     destructor Destroy; override;
     class function FullTrialSection(ABlock, ATrial : integer) : string;
     function ReadTrialString(ABlock : integer; ATrial : integer; AName:string):string;
     function ReadTrialInteger(ABlock : integer; ATrial : integer; AName:string):LongInt;
-    function CurrentBlock: TBlockData;
-    function CurrentTrial: TTrialData;
+    function CurrentBlock: TBlockConfiguration;
+    function CurrentTrial: TTrialConfiguration;
     function BeginTableName : string;
     function EndTableName : string;
     procedure Invalidate;
     procedure AppendSectionValues(ASection : string; AParameters : TStringList);
-    procedure NewTrialOrder(ACurrentBlock : TBlockData);
+    procedure NewTrialOrder(ACurrentBlock : TBlockConfiguration);
     procedure ReadPositionsInBlock(ABlock:integer; APositionsList : TStrings);
     procedure WriteToBlock(ABlock : integer;AName, AValue: string);
     procedure WriteToTrial(ATrial : integer; AStrings : TStrings); overload;
@@ -73,14 +73,14 @@ type
       AlsoAppendTrials : Boolean = True);
     procedure WriteTrialFromTarget(ATargetBlock,ATargetTrial: integer; ATargetConfigurationFile : TConfigurationFile);
     procedure WriteBlockIfEmpty(ABlock : integer; ABlockSection : TStrings);
-    //procedure WriteBlock(ABlock: TBlockData; AlsoAppendTrials: Boolean);
-    //procedure WriteTrial(ATrial : TTrialData);
+    //procedure WriteBlock(ABlock: TBlockConfiguration; AlsoAppendTrials: Boolean);
+    //procedure WriteTrial(ATrial : TTrialConfiguration);
     property Blocks : integer read GetBlockCount;
     property TotalBlocks : integer read FBlockCount;
     property TotalTrials : integer read FTrialCount;
     property Trials[BlockIndex : integer] : integer read GetTrialCount;
-    property Block[BlockIndex : integer] : TBlockData read GetBlock {write SetBlock};
-    property Trial[BlockIndex, TrialIndex : integer] : TTrialData read GetTrial {write SetTrial};
+    property Block[BlockIndex : integer] : TBlockConfiguration read GetBlock {write SetBlock};
+    property Trial[BlockIndex, TrialIndex : integer] : TTrialConfiguration read GetTrial {write SetTrial};
     property StartAt : TStartAt read GetStartAt write SetStartAt;
   end;
 
@@ -145,12 +145,12 @@ begin
   Result := BlockSection(BlockIndex) + ' - ' + 'M' + IntToStr(TrialIndex+1);
 end;
 
-function TConfigurationFile.CurrentBlock: TBlockData;
+function TConfigurationFile.CurrentBlock: TBlockConfiguration;
 begin
   Result := Block[Pool.Block.ID];
 end;
 
-function TConfigurationFile.CurrentTrial: TTrialData;
+function TConfigurationFile.CurrentTrial: TTrialConfiguration;
 begin
   Result := Trial[
     Pool.Block.ID,
@@ -172,7 +172,7 @@ begin
   Result := BlockSection(Pool.Block.ID);
 end;
 
-function TConfigurationFile.GetBlock(BlockIndex: integer): TBlockData;
+function TConfigurationFile.GetBlock(BlockIndex: integer): TBlockConfiguration;
 var
   LBlockSection : string;
 begin
@@ -236,7 +236,7 @@ begin
   end;
 end;
 
-function TConfigurationFile.GetTrial(BlockIndex, TrialIndex: integer): TTrialData;
+function TConfigurationFile.GetTrial(BlockIndex, TrialIndex: integer): TTrialConfiguration;
 var
   LTrialSection : string;
   LInstructionSection : string;
@@ -266,7 +266,7 @@ begin
 end;
 
 function TConfigurationFile.GetTrialBase(BlockIndex,
-  TrialIndex: integer): TTrialData;
+  TrialIndex: integer): TTrialConfiguration;
 var
   LTrialSection : string;
 begin
@@ -319,11 +319,11 @@ begin
 end;
 
 procedure TConfigurationFile.AddNamesTo(AReferenceList: TReferenceList;
-  ACurrentBlock : TBlockData);
+  ACurrentBlock : TBlockConfiguration);
 var
   i: Integer;
   LItem : TItem;
-  LTrialData : TTrialData;
+  LTrialData : TTrialConfiguration;
 begin
   for i := 0 to ACurrentBlock.TotalTrials-1 do begin
     LTrialData := GetTrialBase(ACurrentBlock.ID, i);
@@ -367,7 +367,7 @@ begin
   end;
 end;
 
-procedure TConfigurationFile.NewTrialOrder(ACurrentBlock : TBlockData);
+procedure TConfigurationFile.NewTrialOrder(ACurrentBlock : TBlockConfiguration);
 var
   FReferenceList : TReferenceList;
 begin

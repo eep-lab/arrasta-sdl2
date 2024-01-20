@@ -27,6 +27,8 @@ type
     function CustomName : string;
     function GetTrial : TObject;
     function MyResult : TTrialResult;
+    function ToData : string;
+    function Header : string;
     procedure DoExpectedResponse;
     procedure Load(AParameters : TStringList; AParent : TObject);
     procedure Start;

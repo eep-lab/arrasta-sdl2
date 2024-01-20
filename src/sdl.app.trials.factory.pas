@@ -29,14 +29,15 @@ type
 
   TTrialFactory = class sealed
     strict private
-      class var Registry: TTrialRegistry;
+      class var FCurrentTrial: TTrial;
+      class var FRegistry: TTrialRegistry;
       class constructor Create;
       class destructor Destroy;
     public
-      class var CurrentTrial: TTrial;
       class procedure RegisterTrialClass(
         ATrialKind: string; ATrialClass: TTrialClass); static;
       class procedure Play; static;
+      class function CurrentTrial : ITrial;
       class function GetLastTrial : ITrial; static;
       class procedure FreeCurrentTrial;
   end;
@@ -61,65 +62,70 @@ uses Classes
 
 class constructor TTrialFactory.Create;
 begin
-  Registry := TTrialRegistry.Create;
-  CurrentTrial := nil;
+  FRegistry := TTrialRegistry.Create;
+  FCurrentTrial := nil;
 end;
 
 class destructor TTrialFactory.Destroy;
 begin
-  Registry.Free;
+  FRegistry.Free;
 end;
 
 class procedure TTrialFactory.RegisterTrialClass(ATrialKind: string;
   ATrialClass: TTrialClass);
 begin
-  Registry.AddOrSetValue(ATrialKind, ATrialClass);
+  FRegistry.AddOrSetValue(ATrialKind, ATrialClass);
 end;
 
 class procedure TTrialFactory.Play;
 var
-  TrialData : TTrialData;
+  TrialData : TTrialConfiguration;
   TrialClass : TTrialClass;
 begin
   FreeCurrentTrial;
 
   TrialData := ConfigurationFile.CurrentTrial;
-  if not Registry.TryGetValue(TrialData.Kind, TrialClass) then
+  if not FRegistry.TryGetValue(TrialData.Kind, TrialClass) then
     raise EArgumentException.CreateFmt(
       'Trial kind is not registered: %s %s', [TrialData.Kind, TrialClass]);
   EndCriteria.InvalidateTrial(TrialData);
 
-  CurrentTrial := TrialClass.Create;
-  CurrentTrial.Navigator := Controllers.FirstController.Navigator;
-  //CurrentTrial.Parent := TSDLRenderer;
-  CurrentTrial.Name := 'T' + (Pool.Session.Trial.UID+1).ToString;
-  CurrentTrial.OnTrialEnd := InterTrial.OnBegin;
-  CurrentTrial.TestMode := TestMode;
-  CurrentTrial.Data := TrialData;
-  CurrentTrial.Show;
+  FCurrentTrial := TrialClass.Create;
+  FCurrentTrial.Navigator := Controllers.FirstController.Navigator;
+  //FCurrentTrial.Parent := TSDLRenderer;
+  FCurrentTrial.Name := 'T' + (Pool.Session.Trial.UID+1).ToString;
+  FCurrentTrial.OnTrialEnd := InterTrial.OnBegin;
+  FCurrentTrial.TestMode := TestMode;
+  FCurrentTrial.Data := TrialData;
+  FCurrentTrial.Show;
+end;
+
+class function TTrialFactory.CurrentTrial: ITrial;
+begin
+  Result := FCurrentTrial as ITrial;
 end;
 
 class function TTrialFactory.GetLastTrial: ITrial;
 var
-  LMockData : TTrialData = (ID: -1 ; Kind : 'TLastTrial';
+  LMockData : TTrialConfiguration = (ID: -1 ; Kind : 'TLastTrial';
     ReferenceName: 'Mock'; Parameters: nil);
 begin
   FreeCurrentTrial;
   Controllers.Disable;
 
-  CurrentTrial := TLastTrial.Create;
-  CurrentTrial.OnTrialEnd := nil;
-  CurrentTrial.Name := 'LastTrial';
-  CurrentTrial.Data := LMockData;
-  CurrentTrial.Show;
-  Result := CurrentTrial as ITrial;
+  FCurrentTrial := TLastTrial.Create;
+  FCurrentTrial.OnTrialEnd := nil;
+  FCurrentTrial.Name := 'LastTrial';
+  FCurrentTrial.Data := LMockData;
+  FCurrentTrial.Show;
+  Result := FCurrentTrial as ITrial;
 end;
 
 class procedure TTrialFactory.FreeCurrentTrial;
 begin
-  if Assigned(CurrentTrial) then begin
-    CurrentTrial.Free;
-    CurrentTrial := nil;
+  if Assigned(FCurrentTrial) then begin
+    FCurrentTrial.Free;
+    FCurrentTrial := nil;
   end;
 end;
 

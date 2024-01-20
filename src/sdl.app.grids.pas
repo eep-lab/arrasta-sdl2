@@ -435,7 +435,7 @@ begin
     end;
 
     for i := Low(Comparisons) to High(Comparisons) do begin
-        Result := String.Join(#9, [Result, 'Comparison-Position.'+(i+1).ToString]);
+      Result := String.Join(#9, [Result, 'Comparison-Position.'+(i+1).ToString]);
     end;
   end;
 end;

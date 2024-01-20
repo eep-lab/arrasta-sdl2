@@ -86,7 +86,7 @@ procedure TConfigurationWriter.Invalidate;
 var
   LTrial : integer;
   LBlock  : integer;
-  LBlockData : TBlockData;
+  LBlockData : TBlockConfiguration;
   LBlockReinforcement : TBlockReinforcement;
 begin
   with FConfigurationFile do begin

@@ -46,7 +46,7 @@ type
     function GetIStimuli: IStimuli; override;
     procedure MouseMove(Sender: TObject; Shift: TCustomShiftState; X, Y: Integer);
       override;
-    procedure SetTrialData(ATrialData: TTrialData); override;
+    procedure SetTrialConfiguration(ATrialConfiguration: TTrialConfiguration); override;
     procedure TrialLimitedHold(Sender: TObject);
   public
     constructor Create; override;
@@ -110,12 +110,12 @@ begin
   FStimuli.Stop;
 end;
 
-procedure TDragDrop.SetTrialData(ATrialData: TTrialData);
+procedure TDragDrop.SetTrialConfiguration(ATrialConfiguration: TTrialConfiguration);
 var
   LParameters: TStringList;
 begin
-  inherited SetTrialData(ATrialData);
-  LParameters := ATrialData.Parameters;
+  inherited SetTrialConfiguration(ATrialConfiguration);
+  LParameters := ATrialConfiguration.Parameters;
   with DragDropKeys do
     FUseHelpProgression := LParameters.Values[UseHelpProgression].ToBoolean;
 

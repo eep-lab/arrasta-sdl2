@@ -53,6 +53,7 @@ uses Classes, SysUtils
   , session.pool
   , session.configurationfile
   , session.parameters.global
+  , sdl.app.trials.factory
   ;
 
 { TCounterManager }
@@ -121,6 +122,7 @@ begin
   AppendToTrialData(Session.Block.Trial.Events.Last);
   AppendToTrialData(Session.Trial.Events.ToData);
   AppendToTrialData(Grid.ToData);
+  AppendToTrialData(TTrialFactory.CurrentTrial.ToData);
   WriteDataRow;
 end;
 

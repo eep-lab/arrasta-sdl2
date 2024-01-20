@@ -51,8 +51,6 @@ begin
 end;
 
 destructor TMarkers.Destroy;
-var
-  LMarker : TMarker;
 begin
   FMarkers.Free;
   inherited Destroy;

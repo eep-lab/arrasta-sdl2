@@ -151,7 +151,8 @@ begin
     // Count the occurrences of each unique string
     for i := 0 to AList.Count-1 do begin
       if LUniqueCount.ContainsKey(AList[i].ReferenceName) then begin
-        LUniqueCount[AList[i].ReferenceName] += 1;
+        LUniqueCount[AList[i].ReferenceName] :=
+          LUniqueCount[AList[i].ReferenceName] + 1;
       end else begin
         LUniqueCount.Add(AList[i].ReferenceName, 1);
       end;

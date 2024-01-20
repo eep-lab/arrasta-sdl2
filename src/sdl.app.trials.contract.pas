@@ -30,18 +30,20 @@ type
     function ConsequenceDelay: Cardinal;
     function ConsequenceInterval: Cardinal;
     function GetOnTrialEnd: TNotifyEvent;
-    function GetTrialData: TTrialData;
+    function GetTrialConfiguration: TTrialConfiguration;
     function InterTrialInterval : Cardinal;
     function AsITrial : ITrial;
     function AsIPaintable : IPaintable;
     function GetIStimuli : IStimuli;
     function MyResult : TTrialResult;
+    function Header : string;
+    function ToData : string;
     procedure Hide;
     procedure SetOnTrialEnd(ANotifyEvent: TNotifyEvent);
-    procedure SetTrialData(TrialData: TTrialData);
+    procedure SetTrialConfiguration(TrialData: TTrialConfiguration);
     procedure Show;
     procedure EndTrial;
-    property Data : TTrialData read GetTrialData write SetTrialData;
+    property Configuration : TTrialConfiguration read GetTrialConfiguration write SetTrialConfiguration;
     property OnTrialEnd : TNotifyEvent read GetOnTrialEnd write SetOnTrialEnd;
   end;
 

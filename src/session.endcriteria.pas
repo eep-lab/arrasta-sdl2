@@ -27,8 +27,8 @@ type
   private
     //Pool.Block.ID : integer;
     //Pool.Trial.ID : integer;
-    FCurrentBlock : TBlockData;
-    FCurrentTrial : TTrialData;
+    FCurrentBlock : TBlockConfiguration;
+    FCurrentTrial : TTrialConfiguration;
     function NextTrial : SmallInt;
     function NextBlock : SmallInt;
     function HitPorcentageInBlock : real;
@@ -40,7 +40,7 @@ type
   public
     constructor Create;
     procedure InvalidateBlock;
-    procedure InvalidateTrial(ATrialData : TTrialData);
+    procedure InvalidateTrial(ATrialData : TTrialConfiguration);
     function OfSession : Boolean;
     function OfBlock : Boolean;
     function OfTrial : Boolean;
@@ -72,7 +72,7 @@ begin
   //Pool.Trial.ID := 0;
 end;
 
-procedure TEndCriteria.InvalidateTrial(ATrialData : TTrialData);
+procedure TEndCriteria.InvalidateTrial(ATrialData : TTrialConfiguration);
 begin
   FCurrentTrial := ATrialData;
   TrialName := FCurrentTrial.Parameters.Values['Name'];
