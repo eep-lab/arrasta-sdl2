@@ -40,7 +40,7 @@ begin
     etPupilLabs : Client := TPupilEyeTracker.Create;
     etEyeLink : Client := TEyeLinkEyeTracker.Create;
     otherwise begin
-      Client := nil;
+      Result := nil;
       Exit;
     end;
   end;

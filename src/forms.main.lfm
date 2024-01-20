@@ -5,8 +5,8 @@ object FormBackground: TFormBackground
   Width = 566
   BorderStyle = bsNone
   Caption = 'Stimulus Control'
-  ClientHeight = 523
-  ClientWidth = 566
+  ClientHeight = 0
+  ClientWidth = 0
   PopupMenu = PopupMenuMisc
   SessionProperties = 'ComboBoxCondition.ItemIndex;ComboBoxDesignFolder.ItemIndex;ComboBoxParticipant.Items;OpenDialog1.InitialDir;ComboBoxParticipant.ItemIndex;ComboBoxParticipant.Text'
   LCLVersion = '3.99.0.0'

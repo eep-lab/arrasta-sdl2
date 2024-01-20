@@ -31,7 +31,7 @@ var
     'Ciclo1-7-Sondas-CD-Palavras-12-ensino-8-generalizacao.csv',
     'Ciclo1-1-Treino-AB.csv',
     'Ciclo1-2a-Treino-AC-CD.csv',
-    'Ciclo1-2b-Treino-AC-CD-Ref-Intermitente.csv',
+    'Ciclo1-2b-Treino-AC-Ref-Intermitente.csv',
     'Ciclo1-3-Sondas-BC-CB-Palavras-de-ensino.csv',
     'Ciclo1-4-Sondas-BC-CB-Palavras-reservadas.csv',
     'Ciclo1-5-Sondas-CD-Palavras-generalizacao-reservadas.csv',
@@ -149,7 +149,7 @@ var
         for i := 0 to LRow.Count-1 do begin // sorted
           case i of
             0: begin // backup block
-              LValue := LRow.ValueFromIndex[i].ToInteger;
+              LValue := StrToIntDef(LRow.ValueFromIndex[i], 0);
               if LValue > 0 then begin
                 Inc(LValue, LValueIncrement);
               end;
@@ -163,7 +163,7 @@ var
               AConvertedBlockID.ToString
             end;
 
-            7: begin // NextBlockOnHitCriterion
+            8: begin // NextBlockOnHitCriterion
               LValue := LRow.ValueFromIndex[i].ToInteger;
               if LValue > 0 then begin
                 LValue := AConvertedBlockID+1;
@@ -237,7 +237,7 @@ begin
     //  ConcatPaths([DesignFolder, '_'+OutputFilename]));
 
     LCSVOutput.SaveToFile(
-      ConcatPaths([DesignFolder, '_'+OutputFilename]));
+      ConcatPaths([DesignFolder, 'instructions', OutputFilename]));
   finally
     LAnnotation.Free;
     LCSVOutput.Free;
@@ -277,7 +277,7 @@ var
   LCorePhases : array of string = (
     'Ciclo1-1-Treino-AB.csv',
     'Ciclo1-2a-Treino-AC-CD.csv',
-    'Ciclo1-2b-Treino-AC-CD-Ref-Intermitente.csv',
+    'Ciclo1-2b-Treino-AC-Ref-Intermitente.csv',
     'Ciclo1-3-Sondas-BC-CB-Palavras-de-ensino.csv',
     'Ciclo1-4-Sondas-BC-CB-Palavras-reservadas.csv',
     'Ciclo1-5-Sondas-CD-Palavras-generalizacao-reservadas.csv',

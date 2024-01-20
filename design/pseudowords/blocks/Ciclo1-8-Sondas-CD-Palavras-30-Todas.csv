@@ -1,2 +1,2 @@
-ID,BackUpBlock,BackUpBlockErrors,MaxBlockRepetition,MaxBlockRepetitionInSession,EndSessionOnHitCriterion,NextBlockOnHitCriterion,HitCriterion,Reinforcement
-1,0,0,0,0,0,0,0,0
+ID,Name,BackUpBlock,BackUpBlockErrors,MaxBlockRepetition,MaxBlockRepetitionInSession,EndSessionOnHitCriterion,NextBlockOnHitCriterion,HitCriterion,Reinforcement
+1,Probes-all-words,0,0,0,0,0,0,0,0

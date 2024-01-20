@@ -1,2 +1,2 @@
-ID,BackUpBlock,BackUpBlockErrors,MaxBlockRepetition,MaxBlockRepetitionInSession,EndSessionOnHitCriterion,NextBlockOnHitCriterion,HitCriterion,Reinforcement
-1,1,0,3,0,0,2,100,0
+ID,Name,BackUpBlock,BackUpBlockErrors,MaxBlockRepetition,MaxBlockRepetitionInSession,EndSessionOnHitCriterion,NextBlockOnHitCriterion,NextBlockOnNotCriterion,HitCriterion,Reinforcement
+1,Probes-BC-CB-training-words,,,3,0,0,2,1,100,0
