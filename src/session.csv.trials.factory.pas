@@ -23,11 +23,14 @@ type
       class constructor Create;
       class destructor Destroy;
       class function New(ATrialSourceFilename : string) : TCSVTrialsBase;
+      class procedure Initialize;
+      class procedure Finalize;
   end;
 
 implementation
 
 uses
+  picanco.experiments.words,
   session.csv.trials.pseudowords,
   session.csv.trials.pseudowords.cycle1,
   session.csv.trials.pseudowords.cycle2,
@@ -63,7 +66,17 @@ begin
   if not Registry.TryGetValue(ATrialSourceFilename, CSVTrialClass) then
     raise EArgumentException.CreateFmt(
       'CSV trial not registered: %s', [ATrialSourceFilename]);
-  Result := CSVTrialClass.Create;
+  Result := CSVTrialClass.Create(ATrialSourceFilename);
+end;
+
+class procedure TCSVTrialsFactory.Initialize;
+begin
+  Picanco.Experiments.Words.Initialize;
+end;
+
+class procedure TCSVTrialsFactory.Finalize;
+begin
+  Picanco.Experiments.Words.Finalize;
 end;
 
 initialization
@@ -87,5 +100,10 @@ initialization
     'mts-dapa-ap', TCSVDAPAAPTrials);
 
   //TCSVTrialsFactory.RegisterTrialClass('mm-eep', TDragDrop);
+
+  TCSVTrialsFactory.Initialize;
+
+finalization
+  TCSVTrialsFactory.Finalize;
 end.
 

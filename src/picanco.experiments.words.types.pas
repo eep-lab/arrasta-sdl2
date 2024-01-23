@@ -173,6 +173,7 @@ type
   THashWords = specialize TDictionary<string, PTWord>;
 
   procedure InitializeWord(var AWord: TWord);
+  //procedure ShuffleWords(AWords: TWordList);
   function GetRandomWord(var AWords: TWordList): PTWord;
   function GetNextComparison(var AWords: TWordList): PTWord;
   function GetWordFilenames(ACaption: string) : TWordFilenames;
@@ -191,6 +192,16 @@ uses Classes, SysUtils, Session.Pool
   , picanco.experiments.constants
   , picanco.experiments.words.constants
   ;
+
+//procedure ShuffleWords(AWords: TWordList);
+//begin
+//  with AWords do begin
+//    for i := 0 to Count-1 do begin
+//      r := Random(Count);
+//      Exchange(i, r);
+//    end;
+//  end;
+//end;
 
 function GetRandomWord(var AWords: TWordList): PTWord;
 var

@@ -7,6 +7,7 @@ interface
 uses session.constants.mts, session.constants.trials;
 
 type
+
   TParserTrialsPseudowordsMTS = record
     ReferenceNameKey : string;
     NameKey          : string;

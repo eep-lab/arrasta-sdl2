@@ -24,7 +24,7 @@ type
     protected
       procedure AfterLoadingParameters(Sender: TObject); override;
     public
-      constructor Create; override;
+      constructor Create(ASource: string); override;
       procedure AssignParameters(AParameters : TStringList); override;
       property Values[const AKey: string]: string
         read GetValue write SetValue;
@@ -51,9 +51,9 @@ begin
   FRefName := FSample;
 end;
 
-constructor TCSVDAPAAPTrials.Create;
+constructor TCSVDAPAAPTrials.Create(ASource: string);
 begin
-  inherited Create;
+  inherited Create(ASource);
   OnAfterLoadingParameters := @AfterLoadingParameters;
   FName        := '';
   FRefName     := '';

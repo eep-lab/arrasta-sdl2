@@ -7,28 +7,15 @@
   You should have received a copy of the GNU General Public License
   along with this program. If not, see <http://www.gnu.org/licenses/>.
 }
-unit session.trials.shuffler;
+unit session.shuffler.base;
 
 {$mode ObjFPC}{$H+}
-{$modeswitch AdvancedRecords}
 
 interface
 
-uses Classes, SysUtils, Generics.Collections;
+uses Classes, SysUtils, Generics.Collections, session.shuffler.types;
 
 type
-
-  { TItem }
-
-  TItem = record
-    ID : integer;
-    ReferenceName : string;
-    class operator = (A, B: TItem): Boolean;
-  end;
-
-  TUniqueCount = specialize TDictionary<string, integer>;
-
-  TReferenceList = specialize TList<TItem>;
 
   TIntegerList = specialize TList<integer>;
 
@@ -42,19 +29,18 @@ type
     constructor Create;
     destructor Destroy; override;
     procedure Shuffle(AList: TReferenceList);
-    function Value(AIndex: Integer): Integer;
+    function Values(AIndex: Integer): Integer;
+    function ToArray : TIntArray;
   end;
 
 implementation
 
 uses session.pool;
 
-{ TItem }
+type
 
-class operator TItem. = (A, B: TItem): Boolean;
-begin
-  Result := A.ReferenceName = B.ReferenceName;
-end;
+  TUniqueCount = specialize TDictionary<string, integer>;
+
 
 constructor TShuffler.Create;
 begin
@@ -87,7 +73,7 @@ begin
   end;
 end;
 
-function TShuffler.Value(AIndex: Integer): Integer;
+function TShuffler.Values(AIndex: Integer): Integer;
 begin
   if (AIndex >= 0) and (AIndex < FShuffledList.Count) then
     Result := FShuffledList[AIndex]
@@ -96,6 +82,17 @@ begin
       'Block '+(Pool.Block.ID+1).ToString+
       ' TShuffler.Value: '+AIndex.ToString+
       ' FShuffledList.Count: '+FShuffledList.Count.ToString);
+  end;
+end;
+
+function TShuffler.ToArray: TIntArray;
+var
+  i: Integer;
+begin
+  Result := nil;
+  SetLength(Result, FShuffledList.Count);
+  for i := 0 to FShuffledList.Count-1 do begin
+    Result[i] := FShuffledList[i];
   end;
 end;
 

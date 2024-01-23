@@ -66,8 +66,7 @@ end;
 procedure TEndCriteria.InvalidateBlock;
 begin
   FCurrentBlock := ConfigurationFile.CurrentBlock;
-  ConfigurationFile.NewTrialOrder(FCurrentBlock);
-
+  ConfigurationFile.NewOrdereringForTrialsInBlock(FCurrentBlock);
   BlockName := FCurrentBlock.Name;
   //Pool.Trial.ID := 0;
 end;

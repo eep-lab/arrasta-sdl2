@@ -18,6 +18,7 @@ type
 
   TCSVTrialsBase = class(TCSVRows)
     private
+      FSource : string;
       FTrialID : integer;
       FCursor : integer;
       FLimitedHold : integer;
@@ -30,7 +31,7 @@ type
       FKind : string;
       procedure AfterLoadingParameters(Sender: TObject); virtual;
     public
-      constructor Create; override;
+      constructor Create(ASource : string); virtual;
       property TrialID : integer read FTrialID;
       property TrialCount : integer read FTrialCount;
       property Values[const AKey: string]: string read GetValue write SetValue;
@@ -57,9 +58,11 @@ begin
   end;
 end;
 
-constructor TCSVTrialsBase.Create;
+constructor TCSVTrialsBase.Create(ASource: string);
 begin
   inherited Create;
+  FSource := ASource;
+
   OnAfterLoadingParameters := @AfterLoadingParameters;
   FTrialID := 0;
   FKind := '';
@@ -70,6 +73,10 @@ begin
   FInterTrialInterval := -1;
   FConsequenceInterval := -1;
   FHasConsequence := True;
+
+  with ParserTrialsSourceKeys do begin
+    RegisterParameter(TrialIDSourceKey, @FSource, FSource);
+  end;
 
   with ParserTrialsBase do begin
     RegisterParameter(IDKey,

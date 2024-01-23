@@ -12,16 +12,16 @@ type
 
   TCSVPseudowordsCycle6 = class(TCSVPseudowordsTrials)
     public
-      constructor Create; override;
+      constructor Create(ASource: string); override;
   end;
 
 implementation
 
 { TCSVPseudowordsCycle6 }
 
-constructor TCSVPseudowordsCycle6.Create;
+constructor TCSVPseudowordsCycle6.Create(ASource: string);
 begin
-  inherited Create;
+  inherited Create(ASource);
   FCycle := 6;
 end;
 

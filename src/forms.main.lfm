@@ -2,11 +2,11 @@ object FormBackground: TFormBackground
   Left = 362
   Height = 523
   Top = 152
-  Width = 566
+  Width = 702
   BorderStyle = bsNone
   Caption = 'Stimulus Control'
-  ClientHeight = 0
-  ClientWidth = 0
+  ClientHeight = 523
+  ClientWidth = 702
   PopupMenu = PopupMenuMisc
   SessionProperties = 'ComboBoxCondition.ItemIndex;ComboBoxDesignFolder.ItemIndex;ComboBoxParticipant.Items;OpenDialog1.InitialDir;ComboBoxParticipant.ItemIndex;ComboBoxParticipant.Text'
   LCLVersion = '3.99.0.0'
@@ -16,12 +16,12 @@ object FormBackground: TFormBackground
     AnchorSideLeft.Side = asrCenter
     AnchorSideTop.Control = Owner
     AnchorSideTop.Side = asrCenter
-    Left = 67
-    Height = 349
-    Top = 87
-    Width = 432
-    ClientHeight = 349
-    ClientWidth = 432
+    Left = 131
+    Height = 421
+    Top = 51
+    Width = 440
+    ClientHeight = 421
+    ClientWidth = 440
     ParentShowHint = False
     ShowHint = True
     TabOrder = 0
@@ -29,60 +29,60 @@ object FormBackground: TFormBackground
       Left = 19
       Height = 42
       Hint = 'Para escolher um monitor:'#13#10#13#10'1 - Clique em "Configurações da sessão"'#13#10'2 - Em "Monitor usado para apresentar a sessão", selecione o monitor.'
-      Top = 280
+      Top = 360
       Width = 398
       Caption = 'Iniciar sessão / Continuar sessão interrompida'
       TabOrder = 0
       OnClick = ButtonRunSessionClick
     end
     object ComboBoxParticipant: TComboBox
-      Left = 16
+      Left = 19
       Height = 23
       Hint = 'O nome do participante corresponde'#13#10'ao nome da pasta de dados desse participante.'#13#10#13#10'A pasta de dados de cada participante'#13#10'está dentro da pasta "data".'
       Top = 24
-      Width = 192
+      Width = 398
       ItemHeight = 15
       ReadOnly = True
       TabOrder = 1
       Text = 'Participante'
     end
     object ButtonLoadConfigurationFile: TButton
-      Left = 17
+      Left = 19
       Height = 26
       Hint = 'Aqui você pode retomar uma sessão'#13#10'do início do bloco no qual ela foi'#13#10'interrompida.'#13#10#13#10'Caso seja necessário, você pode'#13#10'interromper uma sessão pressionando'#13#10'a tecla ESC.'
-      Top = 160
-      Width = 400
+      Top = 232
+      Width = 398
       Caption = 'Carregar sessão interrompida'
       TabOrder = 2
       OnClick = ButtonLoadConfigurationFileClick
     end
     object ButtonNewConfigurationFile: TButton
-      Left = 224
-      Height = 23
+      Left = 19
+      Height = 26
       Hint = 'Para criar uma nova sessão, selecione'#13#10'o parâmetro e clique aqui.'
-      Top = 88
-      Width = 192
+      Top = 176
+      Width = 398
       Caption = 'Criar nova sessão'
       TabOrder = 3
       OnClick = ButtonNewConfigurationFileClick
     end
     object ButtonNewParticipant: TButton
-      Left = 224
-      Height = 23
+      Left = 19
+      Height = 26
       Hint = 'Você pode criar novos participantes aqui.'#13#10#13#10'Para remover um participante da lista,'#13#10'selecione o participante na caixa,'#13#10'clique com o botão direito do mouse'#13#10'sobre o botão e selecione a opção'#13#10'para remover.'
-      Top = 24
-      Width = 192
+      Top = 56
+      Width = 398
       Caption = 'Criar novo participante'
       PopupMenu = PopupMenuParticipants
       TabOrder = 4
       OnClick = ButtonNewParticipantClick
     end
     object ComboBoxCondition: TComboBox
-      Left = 16
+      Left = 19
       Height = 23
       Hint = 'Aqui você encontra os parâmetros'#13#10'de cada sessão do delineamento previsto.'#13#10#13#10'Você deve criar 3 sessões para cada criança,'#13#10'na seguinte ordem:'#13#10#13#10'1 - Pré teste de leitura'#13#10'2 - Protocolo DAPA-AP'#13#10'3 - Pós-teste de leitura'#13#10#13#10'OBS.:'#13#10#13#10'Neste programa de computador, cada '#13#10'sessão é criada a partir de um conjunto'#13#10'de parâmetros. Esses parâmetros estão'#13#10'localizados na pasta "design". Não mexa'#13#10'nessa pasta.'
-      Top = 88
-      Width = 192
+      Top = 144
+      Width = 398
       ItemHeight = 15
       ReadOnly = True
       TabOrder = 5
@@ -92,7 +92,7 @@ object FormBackground: TFormBackground
       Left = 19
       Height = 42
       Hint = 'Este programa de computador salvará'#13#10'todas as configurações automaticamente'#13#10'ao ser fechado.'#13#10#13#10'Quando voltar, você encontrará tudo'#13#10'exatamente da forma como deixou'#13#10'ao sair.'
-      Top = 232
+      Top = 312
       Width = 398
       Caption = 'Configurações da sessão'
       TabOrder = 6
@@ -101,17 +101,17 @@ object FormBackground: TFormBackground
     object ProgressBar: TProgressBar
       Left = 19
       Height = 20
-      Top = 200
+      Top = 264
       Width = 398
       Step = 1
       TabOrder = 7
       Visible = False
     end
     object ComboBoxDesignFolder: TComboBox
-      Left = 16
+      Left = 19
       Height = 23
-      Top = 56
-      Width = 192
+      Top = 112
+      Width = 398
       ItemHeight = 15
       ReadOnly = True
       TabOrder = 8
@@ -129,8 +129,8 @@ object FormBackground: TFormBackground
   object OpenDialog1: TOpenDialog
     DefaultExt = '.ini'
     Filter = 'Sessão|*.ini|*.INI'
-    Left = 488
-    Top = 88
+    Left = 584
+    Top = 184
   end
   object IniPropStorage1: TIniPropStorage
     StoredValues = <    
@@ -148,20 +148,20 @@ object FormBackground: TFormBackground
       end>
     IniFileName = 'configurations.ini'
     OnRestoreProperties = IniPropStorage1RestoreProperties
-    Left = 488
-    Top = 16
+    Left = 584
+    Top = 120
   end
   object PopupMenuParticipants: TPopupMenu
-    Left = 368
-    Top = 32
+    Left = 440
+    Top = 16
     object MenuItemRemoveParticipant: TMenuItem
       Caption = 'Retirar participante da lista'
       OnClick = MenuItemRemoveParticipantClick
     end
   end
   object PopupMenuMisc: TPopupMenu
-    Left = 248
-    Top = 32
+    Left = 304
+    Top = 16
     object MenuItemCopyPNGFiles: TMenuItem
       Caption = 'Copiar arquivos PNG para a pasta do participante'
       OnClick = MenuItemCopyPNGFilesClick
@@ -178,7 +178,7 @@ object FormBackground: TFormBackground
   object OpenDialog2: TOpenDialog
     DefaultExt = '.csv'
     Filter = 'Sessão|*.csv|*.CSV|*.CSV'
-    Left = 488
-    Top = 152
+    Left = 584
+    Top = 248
   end
 end

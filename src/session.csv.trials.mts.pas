@@ -21,7 +21,7 @@ type
       FPrompt        : string;
       FFontName      : string;
     public
-      constructor Create; override;
+      constructor Create(ASource: string); override;
       property Comparisons : integer read FComparisons write FComparisons;
       property Relation : string read FRelation write FRelation;
       property Samples : integer read FSamples write FSamples;
@@ -35,9 +35,9 @@ uses
 
 { TCSVTrialsMTS }
 
-constructor TCSVTrialsMTS.Create;
+constructor TCSVTrialsMTS.Create(ASource: string);
 begin
-  inherited Create;
+  inherited Create(ASource);
   FKind := TMTS.ClassName;
   FSamples     := 1;
   FComparisons := 0;
