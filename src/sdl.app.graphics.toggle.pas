@@ -61,6 +61,7 @@ type
     procedure MouseEnter(Sender: TObject); override;
     procedure MouseExit(Sender: TObject); override;
     procedure Paint; override;
+    procedure Confirm; override;
   public
     constructor Create; override;
     destructor Destroy; override;
@@ -81,8 +82,9 @@ uses
   , sdl.colors
   , sdl.app.video.methods
   , sdl.app.output
-  , session.pool
   , sdl.app.testmode
+  , sdl.app.mouse
+  , session.pool
   ;
 
 { TToggleButton }
@@ -149,8 +151,9 @@ end;
 procedure TToggleButton.MouseDown(Sender: TObject; Shift: TCustomShiftState; X,
   Y: Integer);
 begin
-  if Visible and Enabled then
+  if Visible and Enabled then begin
     inherited MouseDown(Self, Shift, X, Y);
+  end;
 end;
 
 procedure TToggleButton.MouseUp(Sender: TObject; Shift: TCustomShiftState; X,
@@ -247,6 +250,16 @@ begin
         SDL_SetRenderDrawColor(PSDLRenderer, r, g, b, a);
       SDL_RenderFillRect(PSDLRenderer, @FRect);
     end;
+  end;
+end;
+
+procedure TToggleButton.Confirm;
+var
+  LPoint : TSDL_Point;
+begin
+  Mouse.State(LPoint);
+  if PointInside(LPoint) then begin
+    MouseUp(Self, GetShiftState, LPoint.X, LPoint.Y);
   end;
 end;
 

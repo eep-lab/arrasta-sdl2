@@ -79,8 +79,6 @@ begin
   FText := TText.Create;
   FPrompt := nil;
   FHasPrompt := False;
-
-  Selectables.Add(FText.AsISelectable);
 end;
 
 destructor TTextStimulus.Destroy;
@@ -98,6 +96,7 @@ begin
   //FText.FontSize := 50;
   FText.Load(FCustomName);
   FText.CentralizeWith(ARect);
+  Selectables.Add(FText.AsISelectable);
   FText.Parent := TSDLControl(AParent);
   FText.OnMouseDown := @MouseDown;
 

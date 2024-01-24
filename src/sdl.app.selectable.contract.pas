@@ -15,7 +15,6 @@ type
   ISelectable = interface
     ['{3914BD43-1105-4C45-BD28-9F1709AC16AB}']
     function Origen : TSDL_Point;
-    procedure Unselect;
     procedure Select;
     procedure Confirm;
   end;

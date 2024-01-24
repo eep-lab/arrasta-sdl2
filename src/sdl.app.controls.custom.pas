@@ -116,7 +116,6 @@ type
     procedure BringToFront;
     procedure Confirm; virtual;
     procedure Select; virtual;
-    procedure Unselect; virtual;
     property Parent : TSDLControl read FParent write SetParent;
     property BoundsRect : TSDL_Rect read GetBoundsRect;
     property OnGazeEnter : TNotifyEvent read FOnGazeEnter write SetOnGazeEnter;
@@ -404,8 +403,8 @@ end;
 
 function TSDLControl.Origen: TSDL_Point;
 begin
-  Result.x := FRect.x;
-  Result.y := FRect.y;
+  Result.X := FRect.x + (FRect.w div 2);
+  Result.Y := FRect.y + (FRect.h div 2);
 end;
 
 procedure TSDLControl.BringToFront;
@@ -426,11 +425,6 @@ end;
 procedure TSDLControl.Select;
 begin
   Mouse.MoveTo(ClientToParent(CenterPoint));
-end;
-
-procedure TSDLControl.Unselect;
-begin
-  Mouse.MoveTo(Parent.CenterPoint);
 end;
 
 end.

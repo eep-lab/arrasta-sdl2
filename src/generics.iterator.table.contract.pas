@@ -6,6 +6,8 @@ unit Generics.Iterator.Table.Contract;
 
 interface
 
+uses Generics.Tables.Types;
+
 type
 
   { ITableIterator }
@@ -17,6 +19,7 @@ type
     function IsLastRow: Boolean;
     function IsFirstCol: Boolean;
     function IsLastCol: Boolean;
+    procedure GoToCell(ACell : TCell);
     procedure GoFirstRow;
     procedure GoNextRow;
     procedure GoPreviousRow;

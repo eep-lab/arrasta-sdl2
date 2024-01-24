@@ -54,7 +54,7 @@ begin
     end;
 
     SDLK_BACKSPACE: begin
-      FNavigator.Unselect;
+      //FNavigator.Unselect;
     end;
   end;
 end;

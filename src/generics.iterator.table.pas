@@ -13,7 +13,8 @@ interface
 
 uses Classes, SysUtils
    , Generics.Iterator.Table.Contract
-   , Generics.Aggregator.Table.Contract;
+   , Generics.Aggregator.Table.Contract
+   , Generics.Tables.Types;
 
 type
 
@@ -38,6 +39,7 @@ type
     function IsLastRow: Boolean;
     function IsFirstCol: Boolean;
     function IsLastCol: Boolean;
+    procedure GoToCell(ACell : TCell);
     procedure GoFirstRow;
     procedure GoNextRow;
     procedure GoPreviousRow;
@@ -97,6 +99,12 @@ end;
 function TTableIterator.IsLastCol: Boolean;
 begin
   Result := FColIndex = HighCol;
+end;
+
+procedure TTableIterator.GoToCell(ACell: TCell);
+begin
+  FColIndex := ACell.Col;
+  FRowIndex := ACell.Row;
 end;
 
 procedure TTableIterator.GoFirstRow;

@@ -30,7 +30,6 @@ type
   ITableNavigator = interface
     ['{DEBD72A2-BC97-4D1C-80AB-A0CAB06BAEFC}']
     procedure Select;
-    procedure Unselect;
     procedure GoTop;
     procedure GoBottom;
     procedure GoLeft;
@@ -39,6 +38,7 @@ type
     procedure GoBottomLeft;
     procedure GoTopLeft;
     procedure GoBottomRight;
+    procedure GoBaseControl;
     //procedure GoLevelUp;
     //procedure GoLevelDown;
     procedure ConfirmSelection;

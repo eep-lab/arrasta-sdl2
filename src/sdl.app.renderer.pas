@@ -30,7 +30,7 @@ implementation
 uses
   sdl.app.video.methods,
   sdl.app.trials.factory,
-  //sdl.app.graphics.debug,
+  sdl.app.graphics.debug,
   sdl.colors,
   sdl.app.markers;
 

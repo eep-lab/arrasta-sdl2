@@ -20,6 +20,7 @@ type
     function TableControlExists : Boolean;
     function BaseControlExists : Boolean;
   public
+    constructor Create; override;
     function Select : ISelectable;
     function GoBottom : ISelectable;
     function GoTop : ISelectable;
@@ -29,6 +30,7 @@ type
     function GoBottomLeft : ISelectable;
     function GoTopLeft : ISelectable;
     function GoBottomRight : ISelectable;
+    function GoBaseControl : ISelectable;
 
     //function TopLeft
     procedure Update(ASelectables : TSelectables);
@@ -37,7 +39,7 @@ type
 
 implementation
 
-uses sdl.app.output, integers.list;
+uses Generics.Tables.Types, sdl.app.output, integers.list;
 
 { TPossibleSelections }
 
@@ -54,6 +56,12 @@ begin
     Result := False;
     raise EArgumentNilException.Create('Base control = nil');
   end;
+end;
+
+constructor TPossibleSelections.Create;
+begin
+  inherited Create;
+  FBaseControl := nil;
 end;
 
 function TPossibleSelections.Select: ISelectable;
@@ -241,6 +249,12 @@ begin
   end;
 end;
 
+function TPossibleSelections.GoBaseControl: ISelectable;
+begin
+  Iterator.GoToCell(Table.CellOf(FBaseControl));
+  Result := FBaseControl;
+end;
+
 procedure TPossibleSelections.Update(ASelectables: TSelectables);
 var
   LISelectable : ISelectable;
@@ -327,8 +341,7 @@ begin
     LCols.Free;
   end;
 
-  Iterator.GoFirstRow;
-  Iterator.GoFirstCol;
+  Iterator.GoToCell(Table.CellOf(FBaseControl));
 end;
 
 procedure TPossibleSelections.SetBaseControl(ABaseControl: ISelectable);

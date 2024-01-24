@@ -34,7 +34,7 @@ type
     FTable : TTableSpec;
     FIterator : TIteratorSpec;
   public
-    constructor Create;
+    constructor Create; virtual;
     destructor Destroy; override;
     function Table: TTableSpec;
     function Iterator: IIteratorSpec;

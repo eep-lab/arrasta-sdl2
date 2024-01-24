@@ -25,7 +25,6 @@ type
   public
     constructor Create;
     destructor Destroy; override;
-    procedure Unselect;
     procedure Select;
     procedure GoTop;
     procedure GoBottom;
@@ -35,6 +34,7 @@ type
     procedure GoBottomLeft;
     procedure GoTopLeft;
     procedure GoBottomRight;
+    procedure GoBaseControl;
     procedure ConfirmSelection;
   end;
 
@@ -46,6 +46,7 @@ procedure TTableNavigator.UpdateNavigationControls(
   AControls: TSelectables);
 begin
   FControls.Update(AControls);
+  Select;
 end;
 
 procedure TTableNavigator.SelectControl(AControl: ISelectable);
@@ -70,13 +71,6 @@ end;
 destructor TTableNavigator.Destroy;
 begin
   FControls.Free;
-end;
-
-procedure TTableNavigator.Unselect;
-begin
-  if Assigned(FCurrentControl) then begin
-    FCurrentControl.Unselect;
-  end;
 end;
 
 procedure TTableNavigator.Select;
@@ -124,9 +118,15 @@ begin
   SelectControl(FControls.GoBottomRight);
 end;
 
+procedure TTableNavigator.GoBaseControl;
+begin
+  SelectControl(FControls.GoBaseControl);
+end;
+
 procedure TTableNavigator.ConfirmSelection;
 begin
-  FCurrentControl.Confirm;
+  if FCurrentControl <> nil then
+    FCurrentControl.Confirm;
 end;
 
 end.

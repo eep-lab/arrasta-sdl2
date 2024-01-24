@@ -146,6 +146,7 @@ begin
       startComparisons: begin
         for LStimulus in FSamples do begin
           for LSelectable in LStimulus.Selectables do begin
+            FNavigator.SetBaseControl(LSelectable);
             LSelectables.Add(LSelectable);
           end;
         end;
@@ -170,7 +171,6 @@ begin
 
     if LSelectables.Count > 0 then begin
       FNavigator.UpdateNavigationControls(LSelectables);
-      FNavigator.UnSelect;
     end else begin
       FNavigator.UpdateNavigationControls(nil);
     end;
