@@ -13,7 +13,7 @@ unit eye.tracker.client;
 
 interface
 
-uses eye.tracker.contract, eye.tracker.types;
+uses Classes, eye.tracker.contract, eye.tracker.types;
 
 type
 
@@ -23,7 +23,11 @@ type
     protected
       function GetGazeOnScreenEvent : TGazeOnScreenEvent; virtual; abstract;
       procedure SetGazeOnScreenEvent(
-        AGazeOnScreenEvent: TGazeOnScreenEvent); virtual; abstract;
+        AValue: TGazeOnScreenEvent); virtual; abstract;
+      procedure SetOnCalibrationSuccessful(
+        AValue: TNotifyEvent); virtual; abstract;
+      procedure SetOnCalibrationFailed(
+        AValue: TNotifyEvent); virtual; abstract;
       procedure StartRecording; virtual; abstract;
       procedure StopRecording; virtual; abstract;
       procedure StartCalibration; virtual; abstract;

@@ -19,23 +19,21 @@ uses Classes, SysUtils;
 type
   TRepeatStyle = (repsNone, repsGlobal, repsConsecutive);
 
-  { TTrialData }
+  { TTrialConfiguration }
 
-  { TTrialData }
-
-  TTrialData = record
+  TTrialConfiguration = record
     ID : integer;
     Kind: string;
     ReferenceName: string;
     Parameters: TStringList;
-    class operator = (A, B: TTrialData): Boolean;
+    class operator = (A, B: TTrialConfiguration): Boolean;
   end;
 
-  TTrials = array of TTrialData;
+  TTrials = array of TTrialConfiguration;
 
-  { TBlockData }
+  { TBlockConfiguration }
 
-  TBlockData = record
+  TBlockConfiguration = record
     ID : integer;
     Name: string;
     TotalTrials: integer;
@@ -63,24 +61,24 @@ type
     CrtMaxTrials : integer;
     CrtCsqHit : integer;
     Trials: TTrials;
-    class operator = (A, B: TBlockData): Boolean;
+    class operator = (A, B: TBlockConfiguration): Boolean;
   end;
 
-  TBlocks = array of TBlockData;
+  TBlocks = array of TBlockConfiguration;
 
 implementation
 
 
-{ TTrialData }
+{ TTrialConfiguration }
 
-class operator TTrialData.=(A, B: TTrialData): Boolean;
+class operator TTrialConfiguration.=(A, B: TTrialConfiguration): Boolean;
 begin
   Result := A.ID = B.ID;
 end;
 
-{ TBlockData }
+{ TBlockConfiguration }
 
-class operator TBlockData.=(A, B: TBlockData): Boolean;
+class operator TBlockConfiguration.=(A, B: TBlockConfiguration): Boolean;
 begin
   Result := A.ID = B.ID;
 end;

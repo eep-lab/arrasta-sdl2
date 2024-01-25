@@ -55,9 +55,6 @@ type
     property Width  : cint read GetWidth write SetWidth;
   end;
 
-const
-  IMG_EXT = '.png';
-
 implementation
 
 uses
@@ -65,7 +62,6 @@ uses
   //, sdl.colors
   , sdl.app.video.methods
   , sdl.app.output
-  , session.pool
   ;
 
 { TMarker }
@@ -131,10 +127,12 @@ begin
 end;
 
 procedure TMarker.LoadFromFile(AFilename: string);
+const
+  IMG_EXT = '.png';
 var
   Media : PAnsiChar;
 begin
-  Media := PAnsiChar(Pool.RootMedia+AFilename);
+  Media := PAnsiChar(AFilename+IMG_EXT);
   FTexture := IMG_LoadTexture(PSDLRenderer, Media);
 end;
 

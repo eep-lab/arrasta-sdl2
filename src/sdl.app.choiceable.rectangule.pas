@@ -14,7 +14,7 @@ unit sdl.app.choiceable.rectangule;
 interface
 
 uses
-  Classes, SysUtils
+  SysUtils
   , fgl
   , sdl.app.graphics.rectangule
   , sdl.app.choiceable.contract

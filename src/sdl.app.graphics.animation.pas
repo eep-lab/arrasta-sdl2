@@ -5,7 +5,7 @@ unit sdl.app.graphics.animation;
 interface
 
 uses
-  Classes, SysUtils
+  SysUtils
   , SDL2
   //, ctypes
   , sdl.app.graphics.rectangule

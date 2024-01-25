@@ -5,7 +5,7 @@ unit sdl.app.typeable.contract;
 interface
 
 uses
-  Classes, SysUtils, SDL2, sdl.app.events.abstract;
+  SDL2, sdl.app.events.abstract;
 
 type
 

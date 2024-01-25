@@ -57,11 +57,9 @@ type
 implementation
 
 uses sdl.app.audio
-   , sdl.app.renderer.custom
+   , sdl.app.controls.custom
    , session.parameters.global
    , session.loggers.writerow.timestamp
-   , session.pool
-   , session.constants.mts
    , session.strutils
    , session.strutils.mts;
 
@@ -121,7 +119,6 @@ begin
       end;
     end;
     if ResponseID = 0 then begin
-      Timestamp('Stimulus.Response.' + GetStimulusName);
       DoResponse(True);
       OnResponse := nil;
     end;
@@ -132,7 +129,7 @@ begin
       if Assigned(OnMouseDown) then
         OnMouseDown(Self, Shift, X, Y);
 
-      Timestamp('Stimulus.Response.' + GetStimulusName);
+      Timestamp('Stimulus.Response.' + GetID.ToString);
       FLoops.Start;
     end;
   end;
@@ -179,7 +176,7 @@ end;
 procedure TAudioStimulus.Load(AParameters: TStringList; AParent: TObject;
   ARect: TSDL_Rect);
 const
-  LAudioPicture : string = 'AudioPicture'+IMG_EXT;
+  LAudioPicture : string = 'AudioPicture';
 begin
   FCustomName := GetWordValue(AParameters, IsSample, Index);
   FHasPrompt := HasDAPAAPPrompt(AParameters);
@@ -187,21 +184,27 @@ begin
     FText.FontName := GlobalTrialParameters.FontName;
     //FText.FontSize := 50;
     FText.Load(FCustomName);
+    FText.CustomName := FCustomName;
     FText.CentralizeWith(ARect);
-    FText.Parent := TCustomRenderer(AParent);
+    FText.Parent := TSDLControl(AParent);
     FText.OnMouseDown := @MouseDown;
+
+    Selectables.Add(FText.AsISelectable);
   end else begin
-    FPicture.LoadFromFile(Assets(LAudioPicture));
+    FPicture.LoadFromFile(AsAsset(LAudioPicture));
+    FPicture.CustomName := LAudioPicture;
     FPicture.BoundsRect := ARect;
-    FPicture.Parent := TCustomRenderer(AParent);
+    FPicture.Parent := TSDLControl(AParent);
     FPicture.OnMouseDown := @MouseDown;
     FPicture.OnMouseEnter := @MouseEnter;
     FPicture.OnMouseExit := @MouseExit;
+
+    Selectables.Add(FPicture.AsISelectable);
   end;
 
   FLoops.TotalLoops := GetTotalLoopsValue(AParameters);
   with FLoops do begin
-    Sound := SDLAudio.LoadFromFile(AudioFile(FCustomName));
+    Sound := SDLAudio.LoadFromFile(AsAudio(FCustomName));
     OnEveryLoopStart := @SoundStart;
     OnEveryLoopStop := @SoundFinished;
     //if TotalLoops > 1 then begin
@@ -222,7 +225,7 @@ begin
 
   if IsSample then begin
     LRectangule.Show;
-    FLoops.Sound.Play;
+    //FLoops.Sound.Play;
   end else begin
     LRectangule.Show;
   end;

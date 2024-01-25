@@ -23,8 +23,8 @@ type
     private
       FFixedComparison: Boolean;
       FFixedSample: Boolean;
-      FSampleGridList : TGridList;
-      FComparGridList : TGridList;
+      //FSampleGridList : TGridList;
+      //FComparGridList : TGridList;
       FSeed : integer;
       FCellsCount: integer;
       FCellsSize: real;
@@ -54,6 +54,7 @@ type
       function PositionFromObject(AObject: TObject) : integer;
       function Header : string;
       function ToData : string;
+      function ToJSON : string;
       procedure UpdatePositions(ASamples, AComparisons: integer;
         AGridOrientation : TGridOrientation);
       {Cria seleção randômica de modelos e comparações em posições diferentes no AGrid}
@@ -76,6 +77,7 @@ implementation
 uses
   Math
   , session.parameters.global
+  , sdl.helpers
   , sdl.app.grids.methods
   , sdl.app.stimulus.contract
   ;
@@ -341,7 +343,9 @@ begin
 
         goCustom: begin
           if FFixedSample then begin
-            Cell := IntToCell(GlobalTrialParameters.FixedSamplePosition);
+            Samples[Low(Samples)].Position :=
+              GlobalTrialParameters.FixedSamplePosition;
+            Cell := IntToCell(Samples[Low(Samples)].Position);
             SecureCopy(Samples[Low(Samples)], FGrid[Cell[0], Cell[1]]);
           end else begin
             raise ENotImplemented.Create(
@@ -349,7 +353,9 @@ begin
           end;
 
           if FFixedComparison then begin
-            Cell := IntToCell(GlobalTrialParameters.FixedComparisonPosition);
+            Comparisons[Low(Comparisons)].Position :=
+              GlobalTrialParameters.FixedComparisonPosition;
+            Cell := IntToCell(Comparisons[Low(Comparisons)].Position);
             SecureCopy(Comparisons[Low(Comparisons)], FGrid[Cell[0], Cell[1]]);
           end else begin
             LatinRowToGridItems(ComparisonsRows, Comparisons);
@@ -358,15 +364,20 @@ begin
 
         else begin
           if FFixedSample then begin
-            Cell := IntToCell(GlobalTrialParameters.FixedSamplePosition);
+            Samples[Low(Samples)].Position :=
+              GlobalTrialParameters.FixedSamplePosition;
+            Cell := IntToCell(Samples[Low(Samples)].Position);
             SecureCopy(Samples[Low(Samples)], FGrid[Cell[0], Cell[1]]);
           end else begin
             LatinRowToGridItems(SamplesRows, Samples);
           end;
 
           if FFixedComparison then begin
-            InvalidateComparGridList(LGridList);
-            Comparisons[Low(Comparisons)].Position := LGridList.First;
+            //InvalidateComparGridList(LGridList);
+            //Comparisons[Low(Comparisons)].Position := LGridList.First;
+            //Cell := IntToCell(Comparisons[Low(Comparisons)].Position);
+            Comparisons[Low(Comparisons)].Position :=
+              GlobalTrialParameters.FixedComparisonPosition;
             Cell := IntToCell(Comparisons[Low(Comparisons)].Position);
             SecureCopy(Comparisons[Low(Comparisons)], FGrid[Cell[0], Cell[1]]);
           end else begin
@@ -426,7 +437,7 @@ begin
     end;
 
     for i := Low(Comparisons) to High(Comparisons) do begin
-        Result := String.Join(#9, [Result, 'Comparison-Position.'+(i+1).ToString]);
+      Result := String.Join(#9, [Result, 'Comparison-Position.'+(i+1).ToString]);
     end;
   end;
 end;
@@ -452,6 +463,29 @@ begin
       Result := String.Join(#9, [Result, LIStimulus.ToData]);
     end;
   end;
+end;
+
+function TGrid.ToJSON: string;
+var
+  j, i: Integer;
+  LSeparator : string;
+begin
+  Result := '';
+  for j := Low(FGrid) to High(FGrid) do begin
+    for i := Low(FGrid[j]) to High(FGrid[j]) do begin
+      with FGrid[j][i] do begin
+        if (j = 0) and
+           (i = 0) then begin
+          LSeparator := '';
+        end else begin
+          LSeparator := ',';
+        end;
+        Result := String.Join(LSeparator, [Result,
+          Index.ToString + ':' + Rect.ToJSON])
+      end;
+    end;
+  end;
+  Result := '{grid:{'+Result+'}}'
 end;
 
 procedure TGrid.SetCellsCount(AValue: integer);
@@ -501,8 +535,8 @@ begin
     raise Exception.Create('Unknown position');
   end;
 
-  Result[Col] := AN div FSeed;  // Row
-  Result[Row] := AN mod FSeed;  // Column
+  Result[Col] := AN div FSeed;
+  Result[Row] := AN mod FSeed;
 end;
 
 constructor TGrid.Create(ASeed: integer);
@@ -542,9 +576,6 @@ begin
   end;
   RandomizePositions;
 end;
-
-finalization
-  if Assigned(Grid) then Grid.Free;
 
 end.
 

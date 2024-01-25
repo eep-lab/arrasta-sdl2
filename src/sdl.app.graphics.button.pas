@@ -61,6 +61,8 @@ begin
   if Visible then begin
     inherited MouseDown(Sender, Shift, X, Y);
     FIsPressed := True;
+    if Assigned(OnClick) then
+      OnClick(Self);
   end;
 end;
 
@@ -70,8 +72,6 @@ begin
     inherited MouseUp(Sender, Shift, X, Y);
     FIsPressed := False;
     // test if InRect(BoundsRect, Point(X, Y)) is needed
-    if Assigned(OnClick) then
-      OnClick(Self);
   end;
 end;
 

@@ -61,8 +61,7 @@ implementation
 uses Controls
    , session.pool
    , sdl.app.output
-   , sdl.app.renderer.custom
-   , session.constants.mts
+   , sdl.app.controls.custom
    , session.strutils
    , session.strutils.mts
    , session.loggers.writerow.timestamp
@@ -77,8 +76,8 @@ var
   LName: String;
 begin
   inherited DoResponse(AHuman);
-  LName := GetID.ToString.Replace(#9, '-').Replace(#32, '-');
-  FRecorder.SaveToFile(Pool.RootDataResponses+LName);
+  LName := 'Speech-'+GetID.ToSpeechString;
+  FRecorder.SaveToFile(Pool.DataResponsesBasePath+LName);
   FormManualSpeechValidation.ExpectedText := FCustomName;
 end;
 
@@ -118,6 +117,9 @@ begin
   FPlaybackButton.Owner := Self as TObject;
   FRecorderButton := TToggleButton.Create;
   FRecorderButton.Owner := Self as TObject;
+
+  Selectables.Add(FRecorderButton.AsISelectable);
+  Selectables.Add(FPlaybackButton.AsISelectable);
 end;
 
 destructor TSpeechStimulus.Destroy;
@@ -143,10 +145,12 @@ end;
 procedure TSpeechStimulus.Load(AParameters: TStringList; AParent: TObject;
   ARect: TSDL_Rect);
 const
-  LRecordButtonOn  : string = 'RecordButtonOn' +IMG_EXT;
-  LRecordButtonOff : string = 'RecordButtonOff'+IMG_EXT;
-  LPlayButtonOn  : string = 'PlayButtonOn' +IMG_EXT;
-  LPlayButtonOff : string = 'PlayButtonOff'+IMG_EXT;
+  LRecordButton    : string = 'RecordButton';
+  LRecordButtonOn  : string = 'RecordButtonOn';
+  LRecordButtonOff : string = 'RecordButtonOff';
+  LPlayButton    : string = 'PlayButton';
+  LPlayButtonOn  : string = 'PlayButtonOn';
+  LPlayButtonOff : string = 'PlayButtonOff';
 begin
   //inherited Load(AParameters, AParent, ARect);
   FRect := ARect;
@@ -158,9 +162,10 @@ begin
 
   if FPlayback.Opened then begin
     FPlaybackButton.LoadFromFile(
-      Assets(LPlayButtonOff), Assets(LPlayButtonOn));
+      AsAsset(LPlayButtonOff), AsAsset(LPlayButtonOn));
+    FPlaybackButton.CustomName := LPlayButton;
     FPlaybackButton.BoundsRect := ARect;
-    FPlaybackButton.Parent := TCustomRenderer(AParent);
+    FPlaybackButton.Parent := TSDLControl(AParent);
     //FPlaybackButton.OnMouseDown := @MouseDown;
     FPlaybackButton.OnMouseUp := @MouseUp;
     SDLAudio.RecorderDevice.Append(FPlaybackButton);
@@ -168,10 +173,11 @@ begin
 
   if FRecorder.Opened then begin
     FRecorderButton.LoadFromFile(
-      Assets(LRecordButtonOff), Assets(LRecordButtonOn));
+      AsAsset(LRecordButtonOff), AsAsset(LRecordButtonOn));
+    FRecorderButton.CustomName := LRecordButton;
     FRecorderButton.BoundsRect := ARect;
     FRecorderButton.Sibling := FPlaybackButton;
-    FRecorderButton.Parent := TCustomRenderer(AParent);
+    FRecorderButton.Parent := TSDLControl(AParent);
     //FRecordButton.OnMouseDown := @MouseDown;
     FRecorderButton.OnMouseUp := @MouseUp;
     SDLAudio.RecorderDevice.Append(FRecorderButton);

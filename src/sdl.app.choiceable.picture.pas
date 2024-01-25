@@ -47,7 +47,6 @@ uses
   sdl2_image
   , sdl.app.video.methods
   , sdl.app.output
-  , session.pool
   ;
 
 { TChoiceablePicture }
@@ -96,10 +95,12 @@ begin
 end;
 
 procedure TChoiceablePicture.LoadFromFile(AFilename: string);
+const
+  IMG_EXT = '.png';
 var
   Media : PAnsiChar;
 begin
-  Media := PAnsiChar(Pool.RootMedia+AFilename);
+  Media := PAnsiChar(AFilename+IMG_EXT);
   FTexture := IMG_LoadTexture(PSDLRenderer, Media);
 end;
 

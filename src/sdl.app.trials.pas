@@ -17,8 +17,10 @@ uses
   Classes, SysUtils, fgl
   , SDL2
   , sdl.timer
-  , sdl.app.renderer.custom
+  , sdl.app.controls.custom
   , sdl.app.trials.types
+  , sdl.app.navigator.contract
+  , sdl.app.navigable.contract
   , sdl.app.trials.contract
   , sdl.app.stimuli.contract
   , sdl.app.stimuli
@@ -35,11 +37,12 @@ type
 
   { TTrial }
 
-  TTrial = class(TCustomRenderer, ITrial)
+  TTrial = class(TSDLControl, ITrial, INavigable)
     private
       FName: string;
+      FNavigator: ITableNavigator;
       FText : TText;
-      FParent : TCustomRenderer;
+      FParent : TSDLControl;
       FLimitedHoldTimer : TSDLTimer;
       FTestMode: Boolean;
       FVisible: Boolean;
@@ -50,7 +53,9 @@ type
       FConsequenceInterval : Cardinal;
       FHasInstructions : Boolean;
       FHasCalibration  : Boolean;
-      procedure SetParent(AValue: TCustomRenderer);
+      procedure UpdateNavigator;
+      procedure SetNavigator(AValue: ITableNavigator);
+      procedure SetParent(AValue: TSDLControl);
       procedure SetTestMode(AValue: Boolean);
       procedure EndStarterCallBack(Sender : TObject);
       procedure CreateStartersIfRequired;
@@ -60,18 +65,20 @@ type
       FResult : TTrialResult;
       FStimuliList : TStimuliList;
       FOnTrialEnd : TNotifyEvent;
-      FData : TTrialData;
+      FConfiguration : TTrialConfiguration;
       procedure Paint; override;
       procedure EndTrialCallBack(Sender : TObject);
       procedure MouseMove(Sender:TObject; Shift: TCustomShiftState; X, Y: Integer); override;
       procedure MouseDown(Sender:TObject; Shift: TCustomShiftState; X, Y: Integer); override;
       procedure MouseUp(Sender:TObject; Shift: TCustomShiftState; X, Y: Integer); override;
       procedure SetOnTrialEnd(ANotifyEvent: TNotifyEvent);
-      procedure SetTrialData(ATrialData: TTrialData); virtual;
+      procedure SetTrialConfiguration(ATrialData: TTrialConfiguration); virtual;
       function GetOnTrialEnd: TNotifyEvent;
-      function GetTrialData: TTrialData;
+      function GetTrialConfiguration: TTrialConfiguration;
       function GetIStimuli : IStimuli; virtual; abstract;
       function MyResult : TTrialResult; virtual;
+      function Header : string; virtual; abstract;
+      function ToData : string; virtual;
     public
       constructor Create; override;
       destructor Destroy; override;
@@ -84,11 +91,12 @@ type
       procedure Hide; virtual;
       procedure DoExpectedResponse;
       property Visible : Boolean read FVisible;
-      property Data : TTrialData read GetTrialData write SetTrialData;
+      property Data : TTrialConfiguration read GetTrialConfiguration write SetTrialConfiguration;
       property OnTrialEnd : TNotifyEvent read GetOnTrialEnd write SetOnTrialEnd;
       property TestMode : Boolean read FTestMode write SetTestMode;
-      property Parent : TCustomRenderer read FParent write SetParent;
+      property Parent : TSDLControl read FParent write SetParent;
       property Name : string read FName write FName;
+      property Navigator : ITableNavigator read FNavigator write SetNavigator;
   end;
 
 const
@@ -98,8 +106,9 @@ implementation
 
 uses
     eye.tracker.client
+  , sdl.app.video.methods
   , sdl.app.stimuli.instruction
-  , sdl.app.stimuli.calibration.pupil
+  , sdl.app.stimuli.calibration
   , sdl.app.paintable.contract
   , sdl.app.clickable.contract
   , sdl.app.moveable.contract
@@ -112,11 +121,13 @@ uses
 constructor TTrial.Create;
 begin
   inherited Create;
+  FRect := MonitorFromWindow;
   SDLEvents.AssignEvents;
   SDLEvents.OnMouseButtonDown := AsIClickable.GetSDLMouseButtonDown;
   SDLEvents.OnMouseButtonUp := AsIClickable.GetSDLMouseButtonUp;
   SDLEvents.OnMouseMotion := AsIMoveable.GetSDLMouseMotion;
   SDLEvents.OnGazeOnScreen := @GazeOnScreen;
+
   FICalibration := nil;
   FIInstruction := nil;
   FVisible := False;
@@ -154,7 +165,7 @@ begin
   SDLEvents.OnMouseButtonUp := nil;
   SDLEvents.OnMouseMotion := nil;
   SDLEvents.OnUserEvent:=nil;
-  FData.Parameters := nil;
+  FConfiguration.Parameters := nil;
 
   FLimitedHoldTimer.Free;
   FStimuliList.Free;
@@ -181,7 +192,8 @@ end;
 
 function TTrial.InterTrialInterval: Cardinal;
 begin
-  if FTestMode then begin
+  if FTestMode or
+     ((FResult = Miss) and FHasConsequence) then begin
     Result := 0;
   end else begin
     Result := FInterTrialInterval;
@@ -204,7 +216,7 @@ begin
     for Child in FChildren do begin
       SDLPoint.x := X;
       SDLPoint.y := Y;
-      IChild := IMoveable(TCustomRenderer(Child));
+      IChild := IMoveable(TSDLControl(Child));
       if IChild.PointInside(SDLPoint) then begin
         if not IChild.MouseInside then begin
           IChild.MouseInside:=True;
@@ -231,7 +243,7 @@ begin
     for Child in FChildren do begin
       SDLPoint.x := X;
       SDLPoint.y := Y;
-      IChild := IClickable(TCustomRenderer(Child));
+      IChild := IClickable(TSDLControl(Child));
       if IChild.PointInside(SDLPoint) then
         IChild.MouseDown(Sender, Shift, X, Y);
     end;
@@ -249,7 +261,7 @@ begin
     for Child in FChildren do begin
       SDLPoint.x := X;
       SDLPoint.y := Y;
-      IChild := IClickable(TCustomRenderer(Child));
+      IChild := IClickable(TSDLControl(Child));
       if IChild.PointInside(SDLPoint) then
         IChild.MouseUp(Sender, Shift, X, Y);
     end;
@@ -297,8 +309,8 @@ begin
     end;
   end;
 
-  if Sender is TPupilCalibrationStimuli then begin
-    TPupilCalibrationStimuli(Sender).Stop;
+  if Sender is TCalibrationStimuli then begin
+    TCalibrationStimuli(Sender).Stop;
     FIStimuli := GetIStimuli;
     Show;
   end;
@@ -313,22 +325,22 @@ end;
 procedure TTrial.CreateStartersIfRequired;
 var
   LInstruction : TInstructionStimuli;
-  LCalibration : TPupilCalibrationStimuli;
+  LCalibration : TCalibrationStimuli;
 begin
   if FHasInstructions then begin
     LInstruction := TInstructionStimuli.Create;
     LInstruction.OnFinalize := @EndStarterCallBack;
     FIInstruction := LInstruction;
-    FIInstruction.Load(FData.Parameters, Self);
+    FIInstruction.Load(FConfiguration.Parameters, Self);
     FIStimuli := FIInstruction;
     FStimuliList.Add(LInstruction);
   end;
 
   if TEyeTrackerClient.Exists and FHasCalibration then begin
-    LCalibration := TPupilCalibrationStimuli.Create;
+    LCalibration := TCalibrationStimuli.Create;
     LCalibration.OnFinalize := @EndStarterCallBack;
     FICalibration := LCalibration;
-    FICalibration.Load(FData.Parameters, Self);
+    FICalibration.Load(FConfiguration.Parameters, Self);
     FIStimuli := LCalibration;
     FStimuliList.Add(LCalibration);
   end;
@@ -347,7 +359,7 @@ begin
         for Child in FChildren do begin
           SDLPoint.x := AGazes[i].X;
           SDLPoint.y := AGazes[i].Y;
-          IChild := ILookable(TCustomRenderer(Child));
+          IChild := ILookable(TSDLControl(Child));
           if IChild.PointInside(SDLPoint) then begin
             if not IChild.GazeInside then begin
               IChild.GazeInside:=True;
@@ -367,10 +379,27 @@ begin
 end;
 
 
-procedure TTrial.SetParent(AValue: TCustomRenderer);
+procedure TTrial.SetParent(AValue: TSDLControl);
 begin
   if FParent = AValue then Exit;
   FParent := AValue;
+end;
+
+procedure TTrial.UpdateNavigator;
+var
+  LNaviable : INavigable;
+begin
+  LNaviable := FIStimuli.AsINavigable;
+  if LNaviable <> nil then begin
+    LNaviable.SetNavigator(Navigator);
+  end;
+end;
+
+procedure TTrial.SetNavigator(AValue: ITableNavigator);
+begin
+  if FNavigator = AValue then Exit;
+  FNavigator := AValue;
+  FNavigator.SetBaseControl(AsISelectable);
 end;
 
 procedure TTrial.SetTestMode(AValue: Boolean);
@@ -390,7 +419,7 @@ var
 begin
   if FVisible then begin
     for Child in FChildren do begin
-      IPaintable(TCustomRenderer(Child)).Paint;
+      IPaintable(TSDLControl(Child)).Paint;
     end;
   end;
 end;
@@ -401,13 +430,13 @@ begin
   FOnTrialEnd := ANotifyEvent;
 end;
 
-procedure TTrial.SetTrialData(ATrialData: TTrialData);
+procedure TTrial.SetTrialConfiguration(ATrialData: TTrialConfiguration);
 begin
-  FData := ATrialData;
+  FConfiguration := ATrialData;
   FIStimuli := GetIStimuli;
-  FIStimuli.Load(FData.Parameters, Self);
-  if Assigned(FData.Parameters) then begin
-    LoadParameters(FData.Parameters);
+  FIStimuli.Load(FConfiguration.Parameters, Self);
+  if Assigned(FConfiguration.Parameters) then begin
+    LoadParameters(FConfiguration.Parameters);
     CreateStartersIfRequired;
   end;
 end;
@@ -417,9 +446,9 @@ begin
   Result := FOnTrialEnd;
 end;
 
-function TTrial.GetTrialData: TTrialData;
+function TTrial.GetTrialConfiguration: TTrialConfiguration;
 begin
-  Result := FData;
+  Result := FConfiguration;
 end;
 
 function TTrial.MyResult: TTrialResult;
@@ -427,17 +456,26 @@ begin
   Result := FResult;
 end;
 
+function TTrial.ToData: string;
+begin
+  Result := GetIStimuli.ToData;
+end;
+
 procedure TTrial.Show;
 begin
   if TestMode then begin
     DoExpectedResponse;
   end else begin
+    UpdateNavigator;
     FIStimuli.Start;
     if FLimitedHoldTimer.Interval > 0 then begin
       FLimitedHoldTimer.Start;
     end;
     FVisible := True;
-    Timestamp(FIStimuli.CustomName+'.Show');
+
+    with FIStimuli do begin
+      Timestamp(CustomName+'.Show'+#9+Selectables.ToJSON);
+    end;
   end;
   SDL_ShowCursor(SDL_ENABLE);
 end;

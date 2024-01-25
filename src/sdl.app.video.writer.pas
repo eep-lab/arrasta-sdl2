@@ -14,7 +14,7 @@ unit sdl.app.video.writer;
 interface
 
 uses
-  Classes, SysUtils, fgl, ctypes, sdl2, sdl2_image;
+  Classes, SysUtils, sdl2, sdl2_image;
 
 type
 

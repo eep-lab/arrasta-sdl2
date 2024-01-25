@@ -34,7 +34,8 @@ type
     Condition_BC_CB_Testing,  // Picture-To-Text and Text-To-Picture
     Condition_CD_1,           // Text-To-Speech
     Condition_AC,             // Audio-To-Text
-    Condition_CD_2);          // Text-To-Speech
+    Condition_CD_2,            // Text-To-Speech
+    Condition_CD_3);          // Text-To-Speech
 
   TPhase = record
     Cycle : TCycle;
@@ -110,22 +111,24 @@ type
   end;
 
   TAlphaNumericCode =
-   (NA,  X1,  X2,  Y1,  Y2,          // Unique codes per shape, pre-teaching
+   (NA,
+    X1,  X2,  Y1,  Y2,  P1, P2,  // Unique codes per shape, pre-teaching
     T1,  T2,  R1,  R2,  A1,  A2,     // Cycle codes
     T01, T02, T03, T04, T05, T06,    // Unique codes per word, teaching/testing
     T07, T08, T09, T10, T11, T12,
     R01, R02,
     A01, A02, A03, A04, A05, A06,
-    A07, A08, A09, A10, A11, A12);
+    A07, A08, A09, A10, A11, A12,
+    A13, A14, A15, A16);
 
   TAlphaNumericCodes = array of TAlphaNumericCode;
 
-  E1PreTrainingRange = X1..Y2;
+  E1PreTrainingRange = X1..P2;
   E1CyclesRange = Cycle1..Cycle6;
   E1CyclesCodeRange = T1..A2;
   E1CyclesCodeRangeWithImages = T1..R2;
   E1WordsWithImagesRange = T01..R02;
-  E1WordsWithCodesRange = T01..A12;
+  E1WordsWithCodesRange = T01..A16;
 
   // Reserved
   E1ReserUniqueCodeRange = R01..R02;
@@ -170,6 +173,7 @@ type
   THashWords = specialize TDictionary<string, PTWord>;
 
   procedure InitializeWord(var AWord: TWord);
+  //procedure ShuffleWords(AWords: TWordList);
   function GetRandomWord(var AWords: TWordList): PTWord;
   function GetNextComparison(var AWords: TWordList): PTWord;
   function GetWordFilenames(ACaption: string) : TWordFilenames;
@@ -183,11 +187,19 @@ var
 
 implementation
 
-uses Classes, SysUtils, Session.Pool
-  , sdl.app.output
-  , picanco.experiments.constants
+uses Classes, SysUtils, picanco.experiments.constants
   , picanco.experiments.words.constants
   ;
+
+//procedure ShuffleWords(AWords: TWordList);
+//begin
+//  with AWords do begin
+//    for i := 0 to Count-1 do begin
+//      r := Random(Count);
+//      Exchange(i, r);
+//    end;
+//  end;
+//end;
 
 function GetRandomWord(var AWords: TWordList): PTWord;
 var
@@ -289,10 +301,10 @@ end;
 
 function GetWordFilenames(ACaption: string) : TWordFilenames;
 begin
-  //Result.Audio  := Pool.RootMedia+DirectorySeparator+ACaption+'.wav';
-  //Result.Image  := Pool.RootMedia+DirectorySeparator+ACaption+'.jpg';
-  //Result.Text   := Pool.RootMedia+DirectorySeparator+ACaption+'.txt';
-  //Result.Speech := Pool.RootMedia+DirectorySeparator+ACaption+'-spoken';
+  //Result.Audio  := Pool.MediaRootBasePath+DirectorySeparator+ACaption+'.wav';
+  //Result.Image  := Pool.MediaRootBasePath+DirectorySeparator+ACaption+'.jpg';
+  //Result.Text   := Pool.MediaRootBasePath+DirectorySeparator+ACaption+'.txt';
+  //Result.Speech := Pool.MediaRootBasePath+DirectorySeparator+ACaption+'-spoken';
   Result.Audio  := ACaption;
   Result.Image  := ACaption;
   Result.Text   := ACaption;

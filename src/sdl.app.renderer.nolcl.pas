@@ -31,7 +31,7 @@ uses
   , sdl.app.video.writer.windows
   , sdl.app.video.methods
   , sdl.colors
-  , timestamps.methods;
+  ;
 
 var
   LRect : TSDL_Rect = (x: 0; y: 0; w: 200; h: 200);

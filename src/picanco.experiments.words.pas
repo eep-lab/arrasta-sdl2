@@ -13,7 +13,10 @@ unit picanco.experiments.words;
 
 interface
 
-uses picanco.experiments.words.types;
+uses Generics.Collections, picanco.experiments.words.types;
+
+type
+  TCodes = specialize TList<TAlphaNumericCode>;
 
 var
   PreTrainingWords : TWords;
@@ -22,13 +25,16 @@ var
   HashWords : THashWords;
   HashNewWords : THashWords;
   HashPreTrainingWords : THashWords;
+  SessionCodes : TCodes;
 
 
-procedure SetComparisons(var AWord: TWord);
+procedure SetComparisons(var AWord: TWord; ALastWord: TWord);
 function GetPhase(ACycle, ACondition : integer; ARelation: string) : TPhase;
 function GetModalityFromLetter(ALetter : string) : TModality;
-//procedure Initialize;
-//procedure Finalize;
+function GetWord(APhase : TPhase; ACode : TAlphaNumericCode) : TWord;
+function ToAlphaNumericCode(S : string) : TAlphaNumericCode;
+procedure Initialize;
+procedure Finalize;
 
 implementation
 
@@ -38,14 +44,55 @@ uses
   , picanco.experiments.constants
   , picanco.experiments.words.constants;
 
-procedure SetComparisons(var AWord: TWord);
+var
+  TTFlip : Boolean = False;
+  RRFlip : Boolean = False;
+  AAFlip : Boolean = False;
+
+function ToAlphaNumericCode(S : string) : TAlphaNumericCode;
+var
+  LErrorCode : Word;
+begin
+  Val(S, Result, LErrorCode);
+  if LErrorCode <> 0 then
+    Result := NA;
+end;
+
+function GetWord(APhase : TPhase; ACode : TAlphaNumericCode) : TWord;
+var
+  LCode : string;
+begin
+  case ACode of
+    Low(E1PreTrainingRange)..High(E1PreTrainingRange): begin
+      Result := HashPreTrainingWords[UniqueCodeToStr(ACode)]^;
+    end;
+    Low(E1CyclesCodeRange)..High(E1CyclesCodeRange): begin
+     Result := HashWords[E1WordPerCycleCode[APhase.Cycle, ACode]]^;
+    end;
+    Low(E1WordsWithCodesRange)..High(E1WordsWithCodesRange): begin
+     Result := HashWords[E1WordsWithCodes[ACode]]^;
+    end;
+   else begin
+     WriteStr(LCode, ACode);
+     raise Exception.Create('Unknown Word: '+ LCode);
+   end;
+  end;
+  Result.Phase := APhase;
+  //SetComparisons(Result);
+end;
+
+var
+  LLastPositiveCode : TAlphaNumericCode = NA;
+
+procedure SetComparisons(var AWord: TWord; ALastWord: TWord);
 var
   i: Integer;
-  //Code : TAlphaNumericCode;
-  //LWord : PTWord;
   LCandidateNegativeWords : TWordList;
   LCandidateNegativeComparisons : TWordList;
   LCandidateNegativeWordsWithNewImages : TWordList;
+  LCode2, LCode3: TAlphaNumericCode;
+
+  LM, LS : string;
 begin
   for i := Low(AWord.Comparisons) to High(AWord.Comparisons) do begin
     with AWord.Comparisons[i] do begin
@@ -65,48 +112,188 @@ begin
       LCandidateNegativeWords.Add(AWord.CandidateNegativeWords[i]);
     end;
 
+    if AWord.CycleCode <> ALastWord.CycleCode then begin
+      LLastPositiveCode := ALastWord.CycleCode;
+    end;
+
+    WriteStr(LM, AWord.CycleCode);
+    WriteStr(LS, LLastPositiveCode);
+    Print(LM+'-'+LS);
+
     case AWord.CycleCode of
       T1 : begin
+        TTFlip := not TTFlip;
+
+        case LLastPositiveCode of
+          R1: begin
+            LCode2 := R1;
+            if TTFlip then begin
+              LCode3 := T2;
+            end else begin
+              LCode3 := R2;
+            end;
+          end;
+
+          R2: begin
+            LCode2 := R2;
+            if TTFlip then begin
+              LCode3 := R1;
+            end else begin
+              LCode3 := T2;
+            end;
+          end;
+
+          otherwise begin
+            LCode2 := T2;
+            if TTFlip then begin
+              LCode3 := R1;
+            end else begin
+              LCode3 := R2;
+            end;
+          end;
+        end;
         LCandidateNegativeComparisons.Add(
-          HashWords[E1WordPerCycleCode[AWord.Cycle, T2]]);
+          HashWords[E1WordPerCycleCode[AWord.Phase.Cycle, LCode2]]);
         LCandidateNegativeComparisons.Add(
-          HashWords[E1WordPerCycleCode[AWord.Cycle, R1]]);
+          HashWords[E1WordPerCycleCode[AWord.Phase.Cycle, LCode3]]);
         LCandidateNegativeComparisons.Add(
-          HashWords[E1WordPerCycleCode[AWord.Cycle, R2]]);
-      end;
-      T2 : begin
-        LCandidateNegativeComparisons.Add(
-          HashWords[E1WordPerCycleCode[AWord.Cycle, T1]]);
-        LCandidateNegativeComparisons.Add(
-          HashWords[E1WordPerCycleCode[AWord.Cycle, R1]]);
-        LCandidateNegativeComparisons.Add(
-          HashWords[E1WordPerCycleCode[AWord.Cycle, R2]]);
-      end;
-      R1 : begin
-        LCandidateNegativeComparisons.Add(
-          HashWords[E1WordPerCycleCode[AWord.Cycle, T2]]);
-        LCandidateNegativeComparisons.Add(
-          HashWords[E1WordPerCycleCode[AWord.Cycle, T1]]);
-        LCandidateNegativeComparisons.Add(
-          HashWords[E1WordPerCycleCode[AWord.Cycle, R2]]);
-      end;
-      R2 : begin
-        LCandidateNegativeComparisons.Add(
-          HashWords[E1WordPerCycleCode[AWord.Cycle, T1]]);
-        LCandidateNegativeComparisons.Add(
-          HashWords[E1WordPerCycleCode[AWord.Cycle, T2]]);
-        LCandidateNegativeComparisons.Add(
-          HashWords[E1WordPerCycleCode[AWord.Cycle, R1]]);
+          HashWords[E1WordPerCycleCode[AWord.Phase.Cycle, LCode3]]);
       end;
 
-      A1, A2: begin
+      T2 : begin
+        TTFlip := not TTFlip;
+
+        case LLastPositiveCode of
+          R1: begin
+            LCode2 := R1;
+            if TTFlip then begin
+              LCode3 := T1;
+            end else begin
+              LCode3 := R2;
+            end;
+          end;
+
+          R2: begin
+            LCode2 := R2;
+            if TTFlip then begin
+              LCode3 := R1;
+            end else begin
+              LCode3 := T1;
+            end;
+          end;
+
+          otherwise begin
+            LCode2 := T1;
+            if TTFlip then begin
+              LCode3 := R1;
+            end else begin
+              LCode3 := R2;
+            end;
+          end;
+        end;
         LCandidateNegativeComparisons.Add(
-          HashWords[E1WordPerCycleCode[AWord.Cycle, T1]]);
+          HashWords[E1WordPerCycleCode[AWord.Phase.Cycle, LCode2]]);
         LCandidateNegativeComparisons.Add(
-          HashWords[E1WordPerCycleCode[AWord.Cycle, T2]]);
+          HashWords[E1WordPerCycleCode[AWord.Phase.Cycle, LCode3]]);
         LCandidateNegativeComparisons.Add(
-          HashWords[E1WordPerCycleCode[AWord.Cycle, R1]]);
+          HashWords[E1WordPerCycleCode[AWord.Phase.Cycle, LCode3]]);
       end;
+
+      R1 : begin
+        RRFlip := not RRFlip;
+
+        case LLastPositiveCode of
+          T1: begin
+            LCode2 := T1;
+            if RRFlip then begin
+              LCode3 := T2;
+            end else begin
+              LCode3 := R2;
+            end;
+          end;
+
+          T2: begin
+            LCode2 := T2;
+            if RRFlip then begin
+              LCode3 := R2;
+            end else begin
+              LCode3 := T1;
+            end;
+          end;
+
+          otherwise begin
+            LCode2 := R2;
+            if RRFlip then begin
+              LCode3 := T1;
+            end else begin
+              LCode3 := T2;
+            end;
+          end;
+        end;
+        LCandidateNegativeComparisons.Add(
+          HashWords[E1WordPerCycleCode[AWord.Phase.Cycle, LCode2]]);
+        LCandidateNegativeComparisons.Add(
+          HashWords[E1WordPerCycleCode[AWord.Phase.Cycle, LCode3]]);
+        LCandidateNegativeComparisons.Add(
+          HashWords[E1WordPerCycleCode[AWord.Phase.Cycle, LCode3]]);
+      end;
+
+      R2 : begin
+        RRFlip := not RRFlip;
+
+        case LLastPositiveCode of
+          T1: begin
+            LCode2 := T1;
+            if RRFlip then begin
+              LCode3 := T2;
+            end else begin
+              LCode3 := R1;
+            end;
+          end;
+
+          T2: begin
+            LCode2 := T2;
+            if RRFlip then begin
+              LCode3 := R1;
+            end else begin
+              LCode3 := T1;
+            end;
+          end;
+
+          otherwise begin
+            LCode2 := R1;
+            if RRFlip then begin
+              LCode3 := T1;
+            end else begin
+              LCode3 := T2;
+            end;
+          end;
+        end;
+        LCandidateNegativeComparisons.Add(
+          HashWords[E1WordPerCycleCode[AWord.Phase.Cycle, LCode2]]);
+        LCandidateNegativeComparisons.Add(
+          HashWords[E1WordPerCycleCode[AWord.Phase.Cycle, LCode3]]);
+        LCandidateNegativeComparisons.Add(
+          HashWords[E1WordPerCycleCode[AWord.Phase.Cycle, LCode3]]);
+      end;
+
+      A1, A2 : begin
+        AAFlip := not AAFlip;
+        if AAFlip then begin
+          LCode2 := T1;
+          LCode3 := T2;
+        end else begin
+          LCode2 := R1;
+          LCode3 := R2;
+        end;
+        LCandidateNegativeComparisons.Add(
+          HashWords[E1WordPerCycleCode[AWord.Phase.Cycle, LCode2]]);
+        LCandidateNegativeComparisons.Add(
+          HashWords[E1WordPerCycleCode[AWord.Phase.Cycle, LCode3]]);
+        LCandidateNegativeComparisons.Add(
+          HashWords[E1WordPerCycleCode[AWord.Phase.Cycle, LCode3]]);
+      end;
+
       X1: begin
         LCandidateNegativeComparisons.Add(
           HashPreTrainingWords['X2']);
@@ -115,6 +302,7 @@ begin
         LCandidateNegativeComparisons.Add(
           HashPreTrainingWords['Y2']);
       end;
+
       X2: begin
         LCandidateNegativeComparisons.Add(
           HashPreTrainingWords['X1']);
@@ -123,9 +311,19 @@ begin
         LCandidateNegativeComparisons.Add(
           HashPreTrainingWords['Y2']);
       end;
-      else
+
+      P1 : begin
+        { no negative comparisons }
+      end;
+
+      P2 : begin
+        { no negative comparisons }
+      end;
+
+      otherwise
         raise EArgumentOutOfRangeException.Create('SetComparisons error');
     end;
+
 
     for i := Low(E1WordsWithNewImages) to High(E1WordsWithNewImages) do begin
       LCandidateNegativeWordsWithNewImages.Add(
@@ -164,7 +362,6 @@ begin
                 end;
               end;
 
-              // todo: abcd cbad adcb cdab
               ModalityC: Text   := GetRandomWord(LCandidateNegativeWords);
               ModalityD: Speech := @EmptyWord;
               else
@@ -209,6 +406,7 @@ begin
     5 : Result.Condition := Condition_CD_1;
     6 : Result.Condition := Condition_AC;
     7 : Result.Condition := Condition_CD_2;
+    8 : Result.Condition := Condition_CD_3;
   end;
 
   case Result.Condition of
@@ -230,13 +428,14 @@ begin
     else
       raise Exception.Create('Unknown modality: '+ ALetter);
   end;
-
 end;
 
 procedure Initialize;
 var
   i, j : Integer;
 begin
+  SessionCodes := TCodes.Create;
+
   EmptyWord.Caption := '----';
   EmptyWord.Filenames.Audio:='--Empty--';
   EmptyWord.Filenames.Image:='--Empty--';
@@ -331,13 +530,14 @@ begin
   HashWords.Free;
   HashNewWords.Free;
   HashPreTrainingWords.Free;
+  SessionCodes.Free;
 end;
 
-initialization
-  Initialize;
-
-finalization
-  Finalize;
+//initialization
+//  Initialize;
+//
+//finalization
+//  Finalize;
 
 end.
 

@@ -27,6 +27,7 @@ type
     FConfigurationFile: TConfigurationFile;
     function GetCurrentTrial: integer;
     procedure SetStartTrial(AValue: TStartAt);
+    procedure InvalidateTrials;
   public
     constructor Create(AConfigurationFile: TConfigurationFile); reintroduce;
     destructor Destroy; override;
@@ -58,6 +59,13 @@ begin
   FConfigurationFile.StartAt:=AValue;
 end;
 
+procedure TConfigurationWriter.InvalidateTrials;
+var
+  LBlockID, LTrialID : integer;
+begin
+
+end;
+
 constructor TConfigurationWriter.Create(AConfigurationFile: TConfigurationFile);
 begin
   if not Assigned(ConfigurationFile) then
@@ -86,16 +94,16 @@ procedure TConfigurationWriter.Invalidate;
 var
   LTrial : integer;
   LBlock  : integer;
-  LBlockData : TBlockData;
+  LBlockData : TBlockConfiguration;
   LBlockReinforcement : TBlockReinforcement;
 begin
   with FConfigurationFile do begin
-    for LBlock := 0 to FConfigurationFile.Blocks -1 do begin
-      LBlockData := FConfigurationFile.Block[LBlock];
+    for LBlock := 0 to Blocks -1 do begin
+      LBlockData := Block[LBlock];
       if LBlockData.Reinforcement < 100 then begin
         LBlockReinforcement :=
           BlockReinforcement(LBlockData.TotalTrials, LBlockdata.Reinforcement);
-        for LTrial := 0 to FConfigurationFile.Trials[LBlock] -1 do begin
+        for LTrial := 0 to Trials[LBlock] -1 do begin
           WriteToTrial(LTrial, LBlock,
             'HasConsequence', LBlockReinforcement[LTrial].ToString);
         end;

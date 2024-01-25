@@ -14,19 +14,16 @@ unit sdl.app.stimulus;
 interface
 
 uses
-  Classes, SysUtils
-  , SDL2
+  Classes, SysUtils, SDL2
   , sdl.app.graphics.rectangule
   , sdl.app.stimulus.contract
-  //, sdl.app.choiceable.contract
-  , sdl.app.renderer.custom
+  , sdl.app.selectable.list
+  , sdl.app.controls.custom
   , sdl.app.events.abstract
   , sdl.app.stimulus.types
   ;
 
 type
-
-  //TChoices = specialize TFPGList<TObject>;
 
   { TStimulus }
 
@@ -37,7 +34,6 @@ type
       FPosition: Integer;
       FResponseID : Integer;
       FStimuli: TObject;
-      FStimulusID : ShortInt;
       FIndex : integer;
       FIsSample: Boolean;
       FOnMouseDown: TOnMouseEvent;
@@ -56,7 +52,8 @@ type
       procedure SetOnResponse(AValue: TNotifyEvent);
       procedure SetStimuli(AValue: TObject);
     protected
-      FCustomName : string; {Filename only without extention}
+      FCustomName : string; { Filename only without extention }
+      FSelectables : TSelectables;
       function GetID : TStimulusID;
       function ToData: string;
       function GetRect: TRectangule; virtual; abstract;
@@ -86,6 +83,7 @@ type
       property OnMouseExit: TNotifyEvent read FOnMouseExit write SetOnMouseExit;
       property OnResponse : TNotifyEvent read FOnResponse write SetOnResponse;
       property IsSample : Boolean read FIsSample write SetIsSample;
+      property Selectables : TSelectables read FSelectables;
       property Index : Integer read FIndex write FIndex;
       property Name : string read FName write FName;
       property Position : Integer read FPosition write FPosition;
@@ -109,15 +107,12 @@ end;
 
 function TStimulus.GetID: TStimulusID;
 begin
+  Result.IsSample := FIsSample;
   Result.SubjcID := Pool.Counters.Subject;
   Result.SessiID := Pool.Session.ID;
   Result.BlockID := Pool.Session.Block.UID;
   Result.TrialID := Pool.Session.Trial.UID;
-  if IsSample then begin
-    Result.StimuID := -FIndex;
-  end else begin
-    Result.StimuID := FIndex;
-  end;
+  Result.StimuID := FIndex;
   Result.RespoID := FResponseID;
   Result.Name := GetStimulusName;
 end;
@@ -178,6 +173,7 @@ end;
 constructor TStimulus.Create;
 begin
   FResponseID := 0;
+  FSelectables := TSelectables.Create;
 end;
 
 destructor TStimulus.Destroy;
@@ -188,6 +184,7 @@ begin
   FOnMouseMove := nil;
   FOnMouseUp := nil;
   FOnResponse := nil;
+  FSelectables.Free;
   inherited Destroy;
 end;
 

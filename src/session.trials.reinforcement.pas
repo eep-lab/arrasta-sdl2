@@ -24,7 +24,7 @@ function BlockReinforcement(ATotalTrials: integer;
 
 implementation
 
-uses session.trials.shuffler;
+uses session.shuffler.types, session.shuffler.base;
 
 function BlockReinforcement(ATotalTrials: integer;
   AReinforcementPorcentage: integer): TBlockReinforcement;
@@ -55,7 +55,7 @@ begin
     end;
     LShuffler.Shuffle(LReferenceList);
     for i := Low(LSortedList) to High(LSortedList) do begin
-      Result[i] := LSortedList[LShuffler.Value(i)];
+      Result[i] := LSortedList[LShuffler.Values(i)];
     end;
   finally
     LReferenceList.Free;

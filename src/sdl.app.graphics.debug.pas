@@ -1,0 +1,119 @@
+unit sdl.app.graphics.debug;
+
+{$mode ObjFPC}{$H+}
+
+interface
+
+uses
+  Classes, SysUtils;
+
+  procedure PaintDebugGraphics;
+  procedure DrawDebugCircle(ADegree : Double);
+
+implementation
+
+uses
+  sdl2,
+  sdl2_gfx,
+  sdl.app.video.methods,
+  sdl.app.graphics.text,
+  sdl.app.controller.types,
+  sdl.colors;
+
+const
+  CenterX = 150;
+  CenterY = 150;
+  Radius = 100;
+
+var
+  Text : TText = nil;
+  Aim : TPoint;
+  AimDegree : Double;
+
+function CircumferencePoint(ADegree : Double) : TPoint;
+var
+  LAngleRadians: Double = 0;
+begin
+  LAngleRadians := ADegree * (Pi / 180);
+
+  Result.X := CenterX + Radius * Cos(LAngleRadians);
+  Result.Y := CenterY + Radius * Sin(LAngleRadians);
+end;
+
+procedure PaintDebugGraphics;
+  procedure DrawLines(Color: TSDL_Color; ADegress : array of Double);
+  var
+    Degree : Double;
+    Point : TPoint;
+  begin
+    for Degree in ADegress do begin
+      Point := CircumferencePoint(Degree);
+      with Color do begin
+        aalineRGBA(PSDLRenderer,
+              CenterX, CenterY, Round(Point.X), Round(Point.Y), r, g, b, a);
+      end;
+    end;
+  end;
+
+begin
+  DrawLines(clLightBlueShaded1, [
+    Sector0, Sector1, Sector2, Sector3,
+    Sector4, Sector5, Sector6, Sector7]);
+
+  case GetDirection(AimDegree) of
+    Right:
+      DrawLines(clBlack, [Sector0, Sector1]);
+    BottomRight:
+      DrawLines(clBlack, [Sector1, Sector2]);
+    Bottom:
+      DrawLines(clBlack, [Sector2, Sector3]);
+    BottomLeft:
+      DrawLines(clBlack, [Sector3, Sector4]);
+    Left:
+      DrawLines(clBlack, [Sector4, Sector5]);
+    TopLeft:
+      DrawLines(clBlack, [Sector5, Sector6]);
+    Top:
+      DrawLines(clBlack, [Sector6, Sector7]);
+    TopRight:
+      DrawLines(clBlack, [Sector7, Sector0]);
+    None: { do nothing };
+  end;
+
+
+  with clRed do begin
+    aacircleRGBA(PSDLRenderer,
+      CenterX, CenterY, Radius, r, g, b, a);
+
+    aalineRGBA(PSDLRenderer,
+      CenterX, CenterY, Round(Aim.X), Round(Aim.Y), r, g, b, a);
+  end;
+
+
+  if Assigned(Text) then begin
+    Text.AsIPaintable.Paint;
+  end;
+end;
+
+procedure DrawDebugCircle(ADegree: Double);
+begin
+  if not Assigned(Text) then begin
+    Text := TText.Create;
+    Text.FontName := 'Arimo-Regular';
+    Text.FontSize := 14;
+    Text.Visible := True;
+  end;
+  Text.Load(ADegree.ToString);
+  Text.Left := 100;
+  Text.Top := 100;
+  AimDegree := ADegree;
+  Aim := CircumferencePoint(ADegree);
+end;
+
+finalization
+  if Assigned(Text) then begin
+    Text.Free;
+  end;
+
+end.
+

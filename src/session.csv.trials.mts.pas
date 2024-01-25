@@ -5,7 +5,7 @@ unit session.csv.trials.mts;
 interface
 
 uses
-  Classes, SysUtils, session.csv.trials.base;
+  SysUtils, session.csv.trials.base;
 
 type
 
@@ -13,11 +13,15 @@ type
 
   TCSVTrialsMTS = class(TCSVTrialsBase)
     private
-      FSamples : integer;
-      FComparisons : integer;
-      FRelation : string;
+      FSamples       : integer;
+      FComparisons   : integer;
+      FRelation      : string;
+      FHasPrompt     : Boolean;
+      FHasTextPrompt : Boolean;
+      FPrompt        : string;
+      FFontName      : string;
     public
-      constructor Create; override;
+      constructor Create(ASource: string); override;
       property Comparisons : integer read FComparisons write FComparisons;
       property Relation : string read FRelation write FRelation;
       property Samples : integer read FSamples write FSamples;
@@ -31,13 +35,17 @@ uses
 
 { TCSVTrialsMTS }
 
-constructor TCSVTrialsMTS.Create;
+constructor TCSVTrialsMTS.Create(ASource: string);
 begin
-  inherited Create;
+  inherited Create(ASource);
   FKind := TMTS.ClassName;
   FSamples     := 1;
   FComparisons := 0;
   FRelation    := '';
+  FHasPrompt   := False;
+  FHasTextPrompt := True;
+  FPrompt      := '';
+  FFontName    := '';
 
   with MTSKeys do begin
     RegisterParameter(SamplesKey,
@@ -46,6 +54,14 @@ begin
       @FComparisons, FComparisons);
     RegisterParameter(RelationKey,
       @FRelation, FRelation);
+    RegisterParameter(HasPromptKey,
+      @FHasPrompt, FHasPrompt);
+    RegisterParameter(HasTextPromptKey,
+      @FHasTextPrompt, FHasTextPrompt);
+    RegisterParameter(PromptKey,
+      @FPrompt, FPrompt);
+    RegisterParameter(FontNameKey,
+      @FFontName, FFontName);
   end;
 end;
 

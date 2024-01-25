@@ -4,8 +4,6 @@ unit dafny.experiments.words;
 
 interface
 
-uses
-  Classes, SysUtils;
 
 const
   TMeaningfulWords = (

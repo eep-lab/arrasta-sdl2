@@ -16,7 +16,7 @@ unit sdl.app.lookable.contract;
 interface
 
 uses
-  Classes, SDL2, SysUtils, sdl.app.events.abstract, eye.tracker.types;
+  SDL2, sdl.app.events.abstract;
 
 type
 

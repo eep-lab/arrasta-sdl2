@@ -15,19 +15,18 @@ interface
 
 uses
   Classes, SysUtils
-  , session.configuration
   , sdl.app.trials
   , sdl.app.stimuli.contract
-  , sdl.app.stimuli.calibration.pupil
+  , sdl.app.stimuli.calibration
   ;
 
 type
 
-  { TPupilCalibration }
+  { TCalibrationTrial }
 
-  TPupilCalibration = class sealed (TTrial)
+  TCalibrationTrial = class sealed (TTrial)
     private
-      FStimuli : TPupilCalibrationStimuli;
+      FStimuli : TCalibrationStimuli;
     protected
       function GetIStimuli: IStimuli; override;
     public
@@ -41,39 +40,39 @@ type
 
 implementation
 
-{ TPupilCalibration }
+{ TCalibrationTrial }
 
-function TPupilCalibration.GetIStimuli: IStimuli;
+function TCalibrationTrial.GetIStimuli: IStimuli;
 begin
   Result := FStimuli.AsInterface;
 end;
 
-constructor TPupilCalibration.Create(AOwner: TComponent);
+constructor TCalibrationTrial.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
-  FStimuli := TPupilCalibrationStimuli.Create(Self);
+  FStimuli := TCalibrationStimuli.Create(Self);
   FStimuli.Trial := Self as TObject;
   FStimuli.OnFinalize := @EndTrialCallBack;
 end;
 
-destructor TPupilCalibration.Destroy;
+destructor TCalibrationTrial.Destroy;
 begin
   FStimuli.Free;
   inherited Destroy;
 end;
 
-procedure TPupilCalibration.EndTrial;
+procedure TCalibrationTrial.EndTrial;
 begin
   inherited EndTrial;
 end;
 
-procedure TPupilCalibration.Show;
+procedure TCalibrationTrial.Show;
 begin
   inherited Show;
 
 end;
 
-procedure TPupilCalibration.Hide;
+procedure TCalibrationTrial.Hide;
 begin
   inherited Hide;
 

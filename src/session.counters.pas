@@ -11,11 +11,11 @@ unit session.counters;
 
 {$mode objfpc}{$H+}
 
-{$ModeSwitch advancedrecords}
+{$ModeSwitch AdvancedRecords}
 
 interface
 
-uses session.configuration, session.counters.consecutive, session.counters.all;
+uses session.counters.consecutive, session.counters.all;
 
 type
 
@@ -47,11 +47,12 @@ var
 implementation
 
 uses Classes, SysUtils
-  , sdl.app.output
   , sdl.app.grids
   , session.loggers.writerow
   , session.pool
   , session.configurationfile
+  , session.parameters.global
+  , sdl.app.trials.factory
   ;
 
 { TCounterManager }
@@ -77,9 +78,14 @@ end;
 
 procedure TCounters.BeforeBeginSession;
 begin
+  Grid := TGrid.Create(3);
   Subject := GetSubjectIDFromFile;
   Session := TSessionCounters.Create;
   Session.Reset;
+  if FileExists(Pool.BaseFilename+'.bin') then begin
+    Session.LoadFromFile(Pool.BaseFilename+'.bin');
+    Session.NextID(Session.ID+1);
+  end;
   Block := Session.Block;
   Trial := Block.Trial;
 
@@ -98,11 +104,17 @@ begin
   if Pool.EndCriteria.OfSession then begin
     { do nothing }
   end else begin
-    LStartAt.Trial := 0; // Trial.ID; todo: find a way to persist all counters
+    if GlobalTrialParameters.ShouldRestartAtBlockStart then begin
+      LStartAt.Trial := 0;
+    end else begin
+      LStartAt.Trial := Trial.ID;
+    end;
     LStartAt.Block := Block.ID;  // use block as checkpoint
     ConfigurationFile.StartAt := LStartAt;
+    Session.SaveToFile(Pool.BaseFilename+'.bin')
   end;
   Session.Free;
+  Grid.Free;
 end;
 
 procedure TCounters.BeforeEndTrial;
@@ -111,6 +123,7 @@ begin
   AppendToTrialData(Session.Block.Trial.Events.Last);
   AppendToTrialData(Session.Trial.Events.ToData);
   AppendToTrialData(Grid.ToData);
+  AppendToTrialData(TTrialFactory.CurrentTrial.ToData);
   WriteDataRow;
 end;
 

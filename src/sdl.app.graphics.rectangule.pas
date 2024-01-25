@@ -18,14 +18,14 @@ uses
   , SDL2
   , ctypes
   , sdl.app.events.abstract
-  , sdl.app.renderer.custom
+  , sdl.app.controls.custom
   ;
 
 type
 
   { TRectangule }
 
-  TRectangule = class(TCustomRenderer)
+  TRectangule = class(TSDLControl)
   private
     FCanShade : Boolean;
     FShaded : Boolean;
@@ -41,9 +41,6 @@ type
     procedure SetTop(AValue: cint);
     procedure SetWidth(AValue: cint);
   protected
-    FRect    : TSDL_Rect;
-    function GetBoundsRect: TSDL_Rect; override;
-    procedure SetBoundsRect(AValue : TSDL_Rect); override;
     procedure MouseDown(Sender: TObject; Shift: TCustomShiftState;
       X, Y: Integer); override;
     procedure MouseEnter(Sender: TObject); override;
@@ -58,7 +55,8 @@ type
     function IntersectsWith(ARect: TRectangule) : Boolean; overload;
     procedure Centralize;
     procedure CentralizeAtTopWith(ARect: TSDL_Rect);
-    procedure CentralizeAtRightWith(ARect: TSDL_Rect);
+    procedure MoveToBottomRightScreen;
+    procedure CentralizeAtRightWith(ARect: TSDL_Rect; AFactor : Byte);
     procedure CentralizeWith(ARect: TSDL_Rect);
     procedure DoRandomMouseDown;
     procedure Inflate(AValue : cint);
@@ -102,11 +100,6 @@ begin
   Result := FRect.w;
 end;
 
-procedure TRectangule.SetBoundsRect(AValue: TSDL_Rect);
-begin
-  FRect := AValue;
-end;
-
 procedure TRectangule.MouseDown(Sender: TObject; Shift: TCustomShiftState; X,
   Y: Integer);
 begin
@@ -137,11 +130,6 @@ procedure TRectangule.SetWidth(AValue: cint);
 begin
   if FRect.w=AValue then Exit;
   FRect.w:=AValue;
-end;
-
-function TRectangule.GetBoundsRect: TSDL_Rect;
-begin
-  Result:=FRect;
 end;
 
 procedure TRectangule.MouseEnter(Sender: TObject);
@@ -254,10 +242,16 @@ begin
   Top  := ARect.y - Height - 5;
 end;
 
-procedure TRectangule.CentralizeAtRightWith(ARect: TSDL_Rect);
+procedure TRectangule.MoveToBottomRightScreen;
 begin
-  Left := ARect.x + Width + (Width div 2);
-  Top  := ARect.y - (ARect.h div 2) - (Height div 2);
+  Left := Parent.BoundsRect.w - Width - 25;
+  Top  := Parent.BoundsRect.h - Height - 25;
+end;
+
+procedure TRectangule.CentralizeAtRightWith(ARect: TSDL_Rect; AFactor : Byte);
+begin
+  Left := ARect.x + Width * AFactor;
+  Top  := ARect.y + (ARect.h div 2) - (Height div 2);
 end;
 
 procedure TRectangule.Inflate(AValue: cint);

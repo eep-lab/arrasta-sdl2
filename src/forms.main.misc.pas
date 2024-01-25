@@ -5,7 +5,7 @@ unit forms.main.misc;
 interface
 
 uses
-  Classes, SysUtils, Forms, Controls, Graphics, Dialogs, StdCtrls,
+  Classes, SysUtils, Forms, Controls, StdCtrls,
   IniPropStorage, Spin, ComCtrls;
 
 type
@@ -16,6 +16,8 @@ type
     CheckBoxShowMarkers: TCheckBox;
     CheckBoxShowModalFormForSpeechResponses: TCheckBox;
     CheckBoxTestMode: TCheckBox;
+    ComboBoxController: TComboBox;
+    ComboBoxShouldRestartAt: TComboBox;
     ComboBoxEyeTracker: TComboBox;
     ComboBoxAudioFolder: TComboBox;
     ComboBoxAudioPromptForText: TComboBox;
@@ -24,6 +26,11 @@ type
     ComboBoxMonitor: TComboBox;
     IniPropStorage1: TIniPropStorage;
     Label1: TLabel;
+    LabelAprilTagsSize: TLabel;
+    LabelDefaultAudioLoops: TLabel;
+    LabelAudioLoopInterval: TLabel;
+    LabelController: TLabel;
+    LabelShoudRestartAtBlockStart: TLabel;
     LabelMonitor: TLabel;
     LabelTestMode: TLabel;
     LabelEyeTracker: TLabel;
@@ -38,13 +45,18 @@ type
     LabelShowModal: TLabel;
     LabelTimeOut: TLabel;
     PageControl: TPageControl;
+    SpinEditAprilTagsSize: TSpinEdit;
+    SpinEditDefaultAudioLoops: TSpinEdit;
+    SpinEditAudioLoopInterval: TSpinEdit;
     SpinEditFontSize: TSpinEdit;
     SpinEditInterTrialInterval: TSpinEdit;
     SpinEditLimitedHold: TSpinEdit;
     SpinEditRecordingSeconds: TSpinEdit;
     SpinEditTimeOut: TSpinEdit;
+    TabSheetControllers: TTabSheet;
     TabSheetGeneral: TTabSheet;
     TabSheetEyeTracking: TTabSheet;
+    procedure ComboBoxDesignFolderChange(Sender: TObject);
     procedure FormCreate(Sender: TObject);
   private
 
@@ -89,6 +101,11 @@ begin
     LStringList.Clear;
     LStringList.Free;
   end;
+end;
+
+procedure TFormMisc.ComboBoxDesignFolderChange(Sender: TObject);
+begin
+
 end;
 
 { TFormMisc }

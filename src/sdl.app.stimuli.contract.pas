@@ -15,17 +15,25 @@ unit sdl.app.stimuli.contract;
 
 interface
 
-uses Classes, sdl.app.trials.types;
+uses
+  Classes,
+  sdl.app.trials.types,
+  sdl.app.navigable.contract,
+  sdl.app.selectable.list;
 
 type
   { IStimuli }
 
   IStimuli = interface
     ['{6B18F44A-7450-4871-A2BB-A109FC2ED005}']
-    function AsInterface : IStimuli;
+    function AsIStimuli : IStimuli;
+    function AsINavigable : INavigable;
     function CustomName : string;
     function GetTrial : TObject;
     function MyResult : TTrialResult;
+    function ToData : string;
+    function Header : string;
+    function Selectables : TSelectables;
     procedure DoExpectedResponse;
     procedure Load(AParameters : TStringList; AParent : TObject);
     procedure Start;

@@ -46,7 +46,7 @@ var
 
 implementation
 
-uses sdl.app.output, session.pool;
+uses sdl.app.output;
 
 { SSDMixer }
 
@@ -88,7 +88,6 @@ end;
 
 procedure TSDLMusic.LoadFromFile(AFilename: string);
 begin
-  AFilename := Pool.RootMedia+AFilename;
   FMusic := Mix_LoadMUS(AFilename);
   if FMusic = nil then begin
     Print('Can''t load sound file:'+AFilename);

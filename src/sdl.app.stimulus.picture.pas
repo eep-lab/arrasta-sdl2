@@ -44,9 +44,9 @@ type
 implementation
 
 uses
-   sdl.app.renderer.custom
-   , session.constants.mts
-   , session.strutils.mts;
+   sdl.app.controls.custom
+   , session.strutils.mts
+   , session.strutils;
 
 { TPictureStimulus }
 
@@ -69,6 +69,8 @@ constructor TPictureStimulus.Create;
 begin
   inherited Create;
   FPicture := TPicture.Create;
+
+  Selectables.Add(FPicture.AsISelectable);
 end;
 
 destructor TPictureStimulus.Destroy;
@@ -81,9 +83,10 @@ procedure TPictureStimulus.Load(AParameters: TStringList; AParent: TObject;
   ARect: TSDL_Rect);
 begin
   FCustomName := GetWordValue(AParameters, IsSample, Index);
-  FPicture.LoadFromFile(FCustomName+IMG_EXT);
+  FPicture.LoadFromFile(AsImage(FCustomName));
+  FPicture.CustomName := FCustomName;
   FPicture.BoundsRect := ARect;
-  FPicture.Parent := TCustomRenderer(AParent);
+  FPicture.Parent := TSDLControl(AParent);
   FPicture.OnMouseDown := @MouseDown;
 end;
 

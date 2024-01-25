@@ -54,7 +54,9 @@ type
   TOnControllerDeviceAddedEvent = procedure(const event: TSDL_ControllerDeviceEvent) of object;
   TOnControllerDeviceRemovedEvent = procedure(const event: TSDL_ControllerDeviceEvent) of object;
   TOnControllerDeviceRemappedEvent = procedure(const event: TSDL_ControllerDeviceEvent) of object;
-  TOnUserEventEvent = procedure(const event: TSDL_UserEvent) of object;
+  TOnControllerTouchPadMotionEvent = procedure(const event: TSDL_ControllerTouchpadEvent) of object;
+  TOnControllerSensorUpdateEvent = procedure(const event: TSDL_ControllerSensorEvent) of object;
+  TOnUserEvent = procedure(const event: TSDL_UserEvent) of object;
 
   { TEventHandler }
 
@@ -68,6 +70,7 @@ type
       FOnControllerDeviceAdded: TOnControllerDeviceAddedEvent;
       FOnControllerDeviceRemapped: TOnControllerDeviceRemappedEvent;
       FOnControllerDeviceRemoved: TOnControllerDeviceRemovedEvent;
+      FOnControllerTouchPadMotion: TOnControllerTouchPadMotionEvent;
       FOnJoyAxisMotion: TOnJoyAxisMotionEvent;
       FOnJoyBallMotion: TOnJoyBallMotionEvent;
       FOnJoyButtonDown: TOnJoyButtonDownEvent;
@@ -82,9 +85,10 @@ type
       FOnMouseMotion: TOnMouseMotionEvent;
       FOnMouseWheel: TOnMouseWheelEvent;
       FOnQuit: TOnQuitEvent;
+      FOnControllerSensorUpdateEvent: TOnControllerSensorUpdateEvent;
       FOnTextEditing: TOnTextEditingEvent;
       FOnTextInput: TOnTextInputEvent;
-      FOnUserEvent: TOnUserEventEvent;
+      FOnUserEvent: TOnUserEvent;
       FOnWindowEvent: TOnWindowEventEvent;
       FOnWindowManagerEvent: TOnWindowManagerEventEvent;
       procedure SetOnControllerAxisMotion(AValue: TOnControllerAxisMotionEvent);
@@ -93,6 +97,8 @@ type
       procedure SetOnControllerDeviceAdded(AValue: TOnControllerDeviceAddedEvent);
       procedure SetOnControllerDeviceRemapped(AValue: TOnControllerDeviceRemappedEvent);
       procedure SetOnControllerDeviceRemoved(AValue: TOnControllerDeviceRemovedEvent);
+      procedure SetOnControllerTouchPadMotion(
+        AValue: TOnControllerTouchPadMotionEvent);
       procedure SetOnJoyAxisMotion(AValue: TOnJoyAxisMotionEvent);
       procedure SetOnJoyBallMotion(AValue: TOnJoyBallMotionEvent);
       procedure SetOnJoyButtonDown(AValue: TOnJoyButtonDownEvent);
@@ -107,9 +113,10 @@ type
       procedure SetOnMouseMotion(AValue: TOnMouseMotionEvent);
       procedure SetOnMouseWheel(AValue: TOnMouseWheelEvent);
       procedure SetOnQuit(AValue: TOnQuitEvent);
+      procedure SetOnControllerSensorUpdateEvent(AValue: TOnControllerSensorUpdateEvent);
       procedure SetOnTextEditing(AValue: TOnTextEditingEvent);
       procedure SetOnTextInput(AValue: TOnTextInputEvent);
-      procedure SetOnUserEvent(AValue: TOnUserEventEvent);
+      procedure SetOnUserEvent(AValue: TOnUserEvent);
       procedure SetOnWindowEvent(AValue: TOnWindowEventEvent);
       procedure SetOnWindowManagerEvent(AValue: TOnWindowManagerEventEvent);
     protected
@@ -163,7 +170,9 @@ type
       property OnControllerDeviceAdded : TOnControllerDeviceAddedEvent read FOnControllerDeviceAdded write SetOnControllerDeviceAdded;
       property OnControllerDeviceRemoved : TOnControllerDeviceRemovedEvent read FOnControllerDeviceRemoved write SetOnControllerDeviceRemoved;
       property OnControllerDeviceRemapped : TOnControllerDeviceRemappedEvent read FOnControllerDeviceRemapped write SetOnControllerDeviceRemapped;
-      property OnUserEvent : TOnUserEventEvent read FOnUserEvent write SetOnUserEvent;
+      property OnControllerTouchPadMotion : TOnControllerTouchPadMotionEvent read FOnControllerTouchPadMotion write SetOnControllerTouchPadMotion;
+      property OnControllerSensorUpdate : TOnControllerSensorUpdateEvent read FOnControllerSensorUpdateEvent write SetOnControllerSensorUpdateEvent;
+      property OnUserEvent : TOnUserEvent read FOnUserEvent write SetOnUserEvent;
     public
       procedure HandlePending;
       constructor Create; reintroduce;
@@ -309,6 +318,12 @@ begin
     SDL_CONTROLLERDEVICEREMAPPED:
       if Assigned(OnControllerDeviceRemapped) then
         OnControllerDeviceRemapped(event.cdevice);
+    SDL_CONTROLLERTOUCHPADMOTION:
+      if Assigned(OnControllerTouchPadMotion) then
+        OnControllerTouchPadMotion(event.ctouchpad);
+    SDL_CONTROLLERSENSORUPDATE:
+      if Assigned(OnControllerSensorUpdate) then
+        OnControllerSensorUpdate(event.csensor);
     SDL_USEREVENT..SDL_USEREVENT_HIGH:
       if Assigned(OnUserEvent) then
         OnUserEvent(event.user);
@@ -355,6 +370,13 @@ procedure TEventHandler.SetOnControllerDeviceRemoved(
 begin
   if FOnControllerDeviceRemoved=AValue then Exit;
   FOnControllerDeviceRemoved:=AValue;
+end;
+
+procedure TEventHandler.SetOnControllerTouchPadMotion(
+  AValue: TOnControllerTouchPadMotionEvent);
+begin
+  if FOnControllerTouchPadMotion = AValue then Exit;
+  FOnControllerTouchPadMotion := AValue;
 end;
 
 procedure TEventHandler.SetOnJoyAxisMotion(AValue: TOnJoyAxisMotionEvent);
@@ -441,6 +463,12 @@ begin
   FOnQuit:=AValue;
 end;
 
+procedure TEventHandler.SetOnControllerSensorUpdateEvent(AValue: TOnControllerSensorUpdateEvent);
+begin
+  if FOnControllerSensorUpdateEvent = AValue then Exit;
+  FOnControllerSensorUpdateEvent := AValue;
+end;
+
 procedure TEventHandler.SetOnTextEditing(AValue: TOnTextEditingEvent);
 begin
   if FOnTextEditing=AValue then Exit;
@@ -453,7 +481,7 @@ begin
   FOnTextInput:=AValue;
 end;
 
-procedure TEventHandler.SetOnUserEvent(AValue: TOnUserEventEvent);
+procedure TEventHandler.SetOnUserEvent(AValue: TOnUserEvent);
 begin
   if FOnUserEvent=AValue then Exit;
   FOnUserEvent:=AValue;

@@ -15,7 +15,7 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Dialogs, StdCtrls, ExtCtrls,
-  IniPropStorage, ComCtrls, Menus;
+  IniPropStorage, ComCtrls, Menus, PropertyStorage;
 
 type
 
@@ -28,13 +28,19 @@ type
     ButtonNewConfigurationFile: TButton;
     ButtonRunSession: TButton;
     ComboBoxCondition: TComboBox;
+    ComboBoxDesignFolder: TComboBox;
     ComboBoxParticipant: TComboBox;
     IniPropStorage1: TIniPropStorage;
     LabelContact: TLabel;
+    MenuItemCyclesFromTemplate: TMenuItem;
+    MenuItemConvertDesignFile: TMenuItem;
     MenuItemRemoveParticipant: TMenuItem;
+    MenuItemCopyPNGFiles: TMenuItem;
     OpenDialog1: TOpenDialog;
+    OpenDialog2: TOpenDialog;
     Panel1: TPanel;
     PopupMenuParticipants: TPopupMenu;
+    PopupMenuMisc: TPopupMenu;
     ProgressBar: TProgressBar;
     procedure ButtonLoadConfigurationFileClick(Sender: TObject);
     procedure ButtonMiscClick(Sender: TObject);
@@ -42,12 +48,23 @@ type
     procedure ButtonNewParticipantClick(Sender: TObject);
     procedure ButtonRunSessionClick(Sender: TObject);
     procedure BeginSession(Sender: TObject);
+    procedure ComboBoxDesignFolderEditingDone(Sender: TObject);
     procedure EndSession(Sender : TObject);
     procedure CloseSDLApp(Sender : TObject);
-    procedure FormCreate(Sender: TObject);
+    procedure IniPropStorage1RestoreProperties(Sender: TObject);
+    procedure IniPropStorage1StoredValues0Restore(Sender: TStoredValue;
+      var Value: TStoredType);
+    procedure IniPropStorage1StoredValues0Save(Sender: TStoredValue;
+      var Value: TStoredType);
+    procedure IniPropStorage1StoredValues1Restore(Sender: TStoredValue;
+      var Value: TStoredType);
+    procedure IniPropStorage1StoredValues1Save(Sender: TStoredValue;
+      var Value: TStoredType);
+    procedure MenuItemConvertDesignFileClick(Sender: TObject);
+    procedure MenuItemCopyPNGFilesClick(Sender: TObject);
+    procedure MenuItemCyclesFromTemplateClick(Sender: TObject);
     procedure MenuItemRemoveParticipantClick(Sender: TObject);
   private
-    //FEyeLink : TEyeLink;
     procedure AssignGlobalVariables;
     procedure ToogleControlPanelEnabled(AException: TComponent = nil);
     function ParticipantFolderName : string;
@@ -75,14 +92,19 @@ uses
   , session.loggers
   , session.fileutils
   , session.csv.experiments
+  , session.design.conversion
   , sdl.app
+  , sdl.app.controller.manager
   , sdl.app.grids.types
   , sdl.app.testmode
   , eye.tracker
+  , picanco.experiments.images
   ;
 
 { ToDo: show next designed session of selected participant.
         for data in data folder get next session of last session}
+
+{ ToDo: point-and-click design tools }
 
 { TFormBackground }
 
@@ -94,11 +116,13 @@ begin
 
   SDLApp := TSDLApplication.Create(@Pool.AppName[1]);
   SDLApp.SetupVideo(FormMisc.ComboBoxMonitor.ItemIndex);
-  SDLApp.SetupEvents;
   SDLApp.SetupAudio;
   SDLApp.SetupText;
   SDLApp.OnClose := @CloseSDLApp;
   SDLApp.ShowMarkers := FormMisc.CheckBoxShowMarkers.Checked;
+
+  Controllers := TControllerManager.Create;
+  Controllers.CreateController(FormMisc.ComboBoxController.ItemIndex);
 
   Pool.App := SDLApp;
 
@@ -140,25 +164,26 @@ var
   LNewParticipant : string;
 begin
   with ComboBoxParticipant do begin
-    LNewParticipant := InputBox(Pool.AppName,
-                   'Nome: mínimo de 3 caracteres',
-                   '');
-    if LNewParticipant.IsEmpty or (Length(LNewParticipant) < 3) then Exit;
+    LNewParticipant :=
+      InputBox(Pool.AppName,
+      'Nome: mínimo de 3 caracteres',
+      '');
 
+    if LNewParticipant.IsEmpty or (Length(LNewParticipant) < 3) then Exit;
     Items.Append(LNewParticipant);
   end;
 end;
 
 procedure TFormBackground.ButtonLoadConfigurationFileClick(Sender: TObject);
 begin
-  SetupFolders;
+  SetupFolders;         // todo: pass filename id of loaded file into session.counters.loadfromfile
   OpenDialog1.InitialDir := Pool.BaseFileName;
   if OpenDialog1.Execute then begin
     Pool.ConfigurationFilename := LoadConfigurationFile(OpenDialog1.FileName);
+    ProgressBar.Max := 1;
+    ProgressBar.StepIt;
+    ProgressBar.Visible := True;
   end;
-  ProgressBar.Max := 1;
-  ProgressBar.StepIt;
-  ProgressBar.Visible := True;
 end;
 
 procedure TFormBackground.ButtonMiscClick(Sender: TObject);
@@ -174,6 +199,15 @@ begin
   TLogger.SetHeader(SessionName, ParticipantFolderName);
 end;
 
+procedure TFormBackground.ComboBoxDesignFolderEditingDone(Sender: TObject);
+begin
+  with Pool, ComboBoxDesignFolder do begin
+    DesignBasePath := Items[ItemIndex];
+  end;
+  ComboBoxCondition.Clear;
+  GetDesignFilesFor(ComboBoxCondition.Items);
+end;
+
 procedure TFormBackground.EndSession(Sender: TObject);
 begin
 
@@ -183,18 +217,63 @@ procedure TFormBackground.CloseSDLApp(Sender: TObject);
 begin
   if Assigned(EyeTracker) then begin
     EyeTracker.StopRecording;
+    FinalizeEyeTracker;
   end;
   TLogger.SetFooter;
   SDLSession.Free;
   SDLApp.Free;
   FreeConfigurationFile;
+  Controllers.Free;
   ToogleControlPanelEnabled;
   ProgressBar.Visible := False;
 end;
 
-procedure TFormBackground.FormCreate(Sender: TObject);
+procedure TFormBackground.IniPropStorage1RestoreProperties(Sender: TObject);
+begin
+  SetupFolders;
+end;
+
+procedure TFormBackground.IniPropStorage1StoredValues0Restore(
+  Sender: TStoredValue; var Value: TStoredType);
+begin
+  GetDesignFoldersFor(ComboBoxDesignFolder.Items);
+  with Pool, ComboBoxDesignFolder do begin
+    DesignBasePath := Items[Value.ToInteger];
+  end;
+end;
+
+procedure TFormBackground.IniPropStorage1StoredValues0Save(
+  Sender: TStoredValue; var Value: TStoredType);
+begin
+  Value := ComboBoxDesignFolder.ItemIndex.ToString;
+end;
+
+procedure TFormBackground.IniPropStorage1StoredValues1Restore(
+  Sender: TStoredValue; var Value: TStoredType);
 begin
   GetDesignFilesFor(ComboBoxCondition.Items);
+  ComboBoxCondition.ItemIndex := Value.ToInteger;
+end;
+
+procedure TFormBackground.IniPropStorage1StoredValues1Save(
+  Sender: TStoredValue; var Value: TStoredType);
+begin
+  Value := ComboBoxCondition.ItemIndex.ToString;
+end;
+
+procedure TFormBackground.MenuItemConvertDesignFileClick(Sender: TObject);
+begin
+  CovertToSingleFilename;
+end;
+
+procedure TFormBackground.MenuItemCopyPNGFilesClick(Sender: TObject);
+begin
+  E1CopyRandomImagesToParticipantFolder;
+end;
+
+procedure TFormBackground.MenuItemCyclesFromTemplateClick(Sender: TObject);
+begin
+  CyclesFromTemplate;
 end;
 
 procedure TFormBackground.MenuItemRemoveParticipantClick(Sender: TObject);
@@ -210,9 +289,15 @@ begin
   GlobalTrialParameters.Cursor := 1;
   GlobalTrialParameters.FixedComparisonPosition := 7;
 
+  with GlobalTrialParameters, FormMisc.SpinEditAprilTagsSize do
+    MarkerSize := Value;
+
   with GlobalTrialParameters,
        FormMisc.CheckBoxShowModalFormForSpeechResponses do
     ShowModalFormForSpeechResponses := Checked;
+
+  with GlobalTrialParameters, FormMisc.ComboBoxShouldRestartAt do
+    ShouldRestartAtBlockStart := ItemIndex = 0;
 
   with GlobalTrialParameters, FormMisc.ComboBoxAudioPromptForText do
     AudioPromptForText := Items[ItemIndex];
@@ -227,13 +312,19 @@ begin
     RecordingSeconds := Value;
 
   with GlobalTrialParameters, FormMisc.SpinEditInterTrialInterval do
-    InterTrialInterval := Value.SecondsToMiliseconds;
+    InterTrialInterval := Value;
 
   with GlobalTrialParameters, FormMisc.SpinEditLimitedHold do
     LimitedHold := Value.MinutesToMiliseconds;
 
+  with GlobalTrialParameters, FormMisc.SpinEditAudioLoopInterval do
+    AudioLoopInterval := Value;
+
+  with GlobalTrialParameters, FormMisc.SpinEditDefaultAudioLoops do
+    DefaultAudioLoops := Value;
+
   with GlobalTrialParameters, FormMisc.SpinEditTimeOut do
-    TimeOutInterval := Value.SecondsToMiliseconds;
+    TimeOutInterval := Value;
 
   with GlobalTrialParameters, FormMisc.ComboBoxAudioFolder do
     Pool.AudioBasePath := Items[ItemIndex];
@@ -287,15 +378,15 @@ end;
 
 function TFormBackground.SetupFolders: Boolean;
 begin
-  Pool.BaseFileName := Pool.RootData +
-    ParticipantFolderName;
-
-  Pool.RootDataResponses := Pool.RootData +
-    ParticipantFolderName + Pool.ResponsesBasePath;
+  Pool.ImageBasePath := ParticipantFolderName;
+  Pool.BaseFileName :=
+    ConcatPaths([Pool.DataRootBasePath, ParticipantFolderName]);
+  Pool.DataResponsesBasePath :=
+    ConcatPaths([Pool.BaseFileName, Pool.ResponsesBasePath]);
 
   Result :=
     ForceDirectories(Pool.BaseFileName) and
-    ForceDirectories(Pool.RootDataResponses);
+    ForceDirectories(Pool.DataResponsesBasePath);
 end;
 
 function TFormBackground.Validated: Boolean;
@@ -305,7 +396,7 @@ function TFormBackground.Validated: Boolean;
     LIDFile : string;
     LID : string;
   begin
-    LIDFile := Pool.RootData + ParticipantFolderName + 'ID';
+    LIDFile := Pool.DataRootBasePath + ParticipantFolderName + 'ID';
     LID := Pool.Counters.Subject.ToString;
     LParticipantID := TStringList.Create;
     try

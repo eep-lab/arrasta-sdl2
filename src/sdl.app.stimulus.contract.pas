@@ -15,7 +15,7 @@ unit sdl.app.stimulus.contract;
 
 interface
 
-uses Classes, SDL2, sdl.app.stimulus.types;
+uses Classes, SDL2, sdl.app.trials.contract, sdl.app.stimulus.types;
 
 type
 

@@ -95,11 +95,8 @@ type
 
 implementation
 
-uses SysUtils, sdl.app.output, fpwavformat
-  //, sdl.app.stimulus.contract
-  , session.loggers.writerow
-  , session.parameters.global
-  , session.pool;
+uses SysUtils, sdl.app.output, session.parameters.global
+  ;
 
 var
   MAX_RECORDING_SECONDS : UInt8;

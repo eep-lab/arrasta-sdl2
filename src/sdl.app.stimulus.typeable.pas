@@ -73,11 +73,9 @@ type
 
 implementation
 
-uses session.pool
-   , sdl.app.renderer.custom
-   , session.constants.mts
+uses sdl.app.controls.custom
    , session.strutils
-   , session.strutils.mts;
+   ;
 
 { TTypeableStimulus }
 
@@ -229,7 +227,7 @@ begin
   end;
   FText.Load('teste');
   FText.CentralizeWith(FRect);
-  FText.Parent := TCustomRenderer(AParent);
+  FText.Parent := TSDLControl(AParent);
   {$IFDEF WINDOWS}
     //SetEnvironmentVariable(LKey, LValue);
   {$ENDIF}

@@ -39,7 +39,9 @@ type
 
 implementation
 
-uses sdl.app.renderer.custom;
+uses
+  sdl.app.controls.custom;
+
 { TLastStimuli }
 
 constructor TLastStimuli.Create;
@@ -65,12 +67,16 @@ begin
 end;
 
 procedure TLastStimuli.Load(AParameters: TStringList; AParent: TObject);
+var
+  LText : string = 'Fim.';
 begin
   inherited Load(AParameters, AParent);
   FText.FontName := 'Raleway-Regular';
   FText.FontSize := 150;
-  FText.Load('Fim.');
-  FText.Parent := TCustomRenderer(AParent);
+  FText.Load(LText);
+  FText.CustomName := LText;
+  FSelectables.Add(FText.AsISelectable);
+  FText.Parent := TSDLControl(AParent);
   FText.Centralize;
 end;
 

@@ -55,7 +55,6 @@ uses
   //, sdl.colors
   , sdl.app.video.methods
   , sdl.app.output
-  , session.pool
   ;
 
 { TPicture }
@@ -126,7 +125,7 @@ procedure TPicture.LoadFromFile(AFilename: string);
 var
   Media : PAnsiChar;
 begin
-  Media := PAnsiChar(Pool.RootMedia+AFilename);
+  Media := PAnsiChar(AFilename+IMG_EXT);
   FTexture := IMG_LoadTexture(PSDLRenderer, Media);
 end;
 

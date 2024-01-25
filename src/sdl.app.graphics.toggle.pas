@@ -64,6 +64,7 @@ type
   public
     constructor Create; override;
     destructor Destroy; override;
+    procedure Confirm; override;
     procedure LoadFromFile(AFilename1, AFilename2: string); virtual;
     procedure Toggle;
     property Owner : TObject read FOwner write SetOwner;
@@ -81,8 +82,8 @@ uses
   , sdl.colors
   , sdl.app.video.methods
   , sdl.app.output
-  , session.pool
   , sdl.app.testmode
+  , sdl.app.mouse
   ;
 
 { TToggleButton }
@@ -149,8 +150,9 @@ end;
 procedure TToggleButton.MouseDown(Sender: TObject; Shift: TCustomShiftState; X,
   Y: Integer);
 begin
-  if Visible and Enabled then
+  if Visible and Enabled then begin
     inherited MouseDown(Self, Shift, X, Y);
+  end;
 end;
 
 procedure TToggleButton.MouseUp(Sender: TObject; Shift: TCustomShiftState; X,
@@ -250,13 +252,23 @@ begin
   end;
 end;
 
+procedure TToggleButton.Confirm;
+var
+  LPoint : TSDL_Point;
+begin
+  Mouse.State(LPoint);
+  if PointInside(LPoint) then begin
+    MouseUp(Self, GetShiftState, LPoint.X, LPoint.Y);
+  end;
+end;
+
 procedure TToggleButton.LoadFromFile(AFilename1, AFilename2: string);
 var
   Media : PAnsiChar;
 begin
-  Media := PAnsiChar(Pool.RootMedia+AFilename1);
+  Media := PAnsiChar(AFilename1+IMG_EXT);
   FTexture1 := IMG_LoadTexture(PSDLRenderer, Media);
-  Media := PAnsiChar(Pool.RootMedia+AFilename2);
+  Media := PAnsiChar(AFilename2+IMG_EXT);
   FTexture2 := IMG_LoadTexture(PSDLRenderer, Media);
 end;
 

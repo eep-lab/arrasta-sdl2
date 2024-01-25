@@ -1,0 +1,2 @@
+ID,Name,BackUpBlock,BackUpBlockErrors,MaxBlockRepetition,MaxBlockRepetitionInSession,EndSessionOnHitCriterion,NextBlockOnHitCriterion,HitCriterion,Reinforcement
+1,Probes-CD-generalization-and-constant-words,1,0,3,0,0,2,100,0

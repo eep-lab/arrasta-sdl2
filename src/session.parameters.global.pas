@@ -5,15 +5,15 @@ unit session.parameters.global;
 interface
 
 uses
-  Classes, SysUtils, sdl.app.grids.types;
+  SysUtils, sdl.app.grids.types;
 
 type
 
   TGlobalTrialParameters = record
     Cursor : integer;
-    LimitedHold : integer;
-    InterTrialInterval : integer;
-    TimeOutInterval : integer;
+    LimitedHold : UInt32;
+    InterTrialInterval : UInt32;
+    TimeOutInterval : UInt32;
     HasConsequence : Boolean;
     FontName : string;
     FixedSamplePosition : UInt8;
@@ -24,6 +24,10 @@ type
     ShowModalFormForSpeechResponses : Boolean;
     AudioPromptForText : string;
     RecordingSeconds : UInt8;
+    ShouldRestartAtBlockStart : Boolean;
+    AudioLoopInterval : UInt32;
+    DefaultAudioLoops : SmallInt;
+    MarkerSize : SmallInt;
   end;
 
 var

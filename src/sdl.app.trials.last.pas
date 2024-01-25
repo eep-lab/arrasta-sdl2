@@ -14,7 +14,7 @@ unit sdl.app.trials.last;
 interface
 
 uses
-  Classes, SysUtils
+  SysUtils
   , SDL2
   , sdl.app.trials
   , sdl.app.stimuli.contract
@@ -43,7 +43,7 @@ implementation
 
 function TLastTrial.GetIStimuli: IStimuli;
 begin
-  Result := FStimuli.AsInterface;
+  Result := FStimuli.AsIStimuli;
 end;
 
 constructor TLastTrial.Create;

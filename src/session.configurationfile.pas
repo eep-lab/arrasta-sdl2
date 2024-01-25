@@ -17,14 +17,16 @@ uses
   Classes, SysUtils
   , Session.Configuration
   , IniFiles
-  , session.trials.shuffler
+  , session.shuffler.base
   ;
 
 type
+
   TStartAt = record
     Trial : integer;
     Block  : integer;
   end;
+
   { TConfigurationFile }
 
   TConfigurationFile = class(TIniFile)
@@ -41,26 +43,26 @@ type
     function CurrentBlockSection : string;
     function GetBlockCount : integer;
     function GetTrialCount(BlockIndex : integer): integer;
-    function GetBlock(BlockIndex : integer): TBlockData;
-    function GetTrial(BlockIndex, TrialIndex : integer): TTrialData;
-    function GetTrialBase(BlockIndex, TrialIndex : integer): TTrialData;
+    function GetBlock(BlockIndex : integer): TBlockConfiguration;
+    function GetTrial(BlockIndex, TrialIndex : integer): TTrialConfiguration;
+    function GetTrialBase(BlockIndex, TrialIndex : integer): TTrialConfiguration;
     procedure CopySection(AFrom, ATo : string; AConfigurationFile : TConfigurationFile);
     procedure WriteSection(ASectionName:string; ASection : TStrings);
-    procedure AddNamesTo(AReferenceList : TReferenceList; ACurrentBlock : TBlockData);
   public
     constructor Create(const AConfigurationFile: string; AEscapeLineFeeds:Boolean=False); override;
     destructor Destroy; override;
     class function FullTrialSection(ABlock, ATrial : integer) : string;
     function ReadTrialString(ABlock : integer; ATrial : integer; AName:string):string;
     function ReadTrialInteger(ABlock : integer; ATrial : integer; AName:string):LongInt;
-    function CurrentBlock: TBlockData;
-    function CurrentTrial: TTrialData;
+    function CurrentBlock: TBlockConfiguration;
+    function CurrentTrial: TTrialConfiguration;
     function BeginTableName : string;
     function EndTableName : string;
     procedure Invalidate;
     procedure AppendSectionValues(ASection : string; AParameters : TStringList);
-    procedure NewTrialOrder(ACurrentBlock : TBlockData);
-    procedure ReadPositionsInBlock(ABlock:integer; APositionsList : TStrings);
+    procedure NewOrdereringForTrialsInBlock(
+      ACurrentBlock : TBlockConfiguration);
+    //procedure ReadPositionsInBlock(ABlock:integer; APositionsList : TStrings);
     procedure WriteToBlock(ABlock : integer;AName, AValue: string);
     procedure WriteToTrial(ATrial : integer; AStrings : TStrings); overload;
     procedure WriteToTrial(ATrial : integer; AName, AValue: string); overload;
@@ -73,14 +75,14 @@ type
       AlsoAppendTrials : Boolean = True);
     procedure WriteTrialFromTarget(ATargetBlock,ATargetTrial: integer; ATargetConfigurationFile : TConfigurationFile);
     procedure WriteBlockIfEmpty(ABlock : integer; ABlockSection : TStrings);
-    //procedure WriteBlock(ABlock: TBlockData; AlsoAppendTrials: Boolean);
-    //procedure WriteTrial(ATrial : TTrialData);
+    //procedure WriteBlock(ABlock: TBlockConfiguration; AlsoAppendTrials: Boolean);
+    //procedure WriteTrial(ATrial : TTrialConfiguration);
     property Blocks : integer read GetBlockCount;
     property TotalBlocks : integer read FBlockCount;
     property TotalTrials : integer read FTrialCount;
     property Trials[BlockIndex : integer] : integer read GetTrialCount;
-    property Block[BlockIndex : integer] : TBlockData read GetBlock {write SetBlock};
-    property Trial[BlockIndex, TrialIndex : integer] : TTrialData read GetTrial {write SetTrial};
+    property Block[BlockIndex : integer] : TBlockConfiguration read GetBlock {write SetBlock};
+    property Trial[BlockIndex, TrialIndex : integer] : TTrialConfiguration read GetTrial {write SetTrial};
     property StartAt : TStartAt read GetStartAt write SetStartAt;
   end;
 
@@ -90,6 +92,8 @@ var
 implementation
 
 uses StrUtils
+  , session.shuffler.types
+  , session.dynamics.base
   , session.constants
   , session.constants.trials
   , session.constants.blocks
@@ -145,12 +149,12 @@ begin
   Result := BlockSection(BlockIndex) + ' - ' + 'M' + IntToStr(TrialIndex+1);
 end;
 
-function TConfigurationFile.CurrentBlock: TBlockData;
+function TConfigurationFile.CurrentBlock: TBlockConfiguration;
 begin
   Result := Block[Pool.Block.ID];
 end;
 
-function TConfigurationFile.CurrentTrial: TTrialData;
+function TConfigurationFile.CurrentTrial: TTrialConfiguration;
 begin
   Result := Trial[
     Pool.Block.ID,
@@ -172,7 +176,7 @@ begin
   Result := BlockSection(Pool.Block.ID);
 end;
 
-function TConfigurationFile.GetBlock(BlockIndex: integer): TBlockData;
+function TConfigurationFile.GetBlock(BlockIndex: integer): TBlockConfiguration;
 var
   LBlockSection : string;
 begin
@@ -183,7 +187,7 @@ begin
     Name:= ReadString(LBlockSection, NameKey, '');
 
     BackUpBlock := ReadInteger(
-      LBlockSection, BackUpBlockKey, 0);;
+      LBlockSection, BackUpBlockKey, 0);
 
     BackUpBlockErrors := ReadInteger(
       LBlockSection, BackUpBlockErrorsKey, 0);
@@ -236,13 +240,13 @@ begin
   end;
 end;
 
-function TConfigurationFile.GetTrial(BlockIndex, TrialIndex: integer): TTrialData;
+function TConfigurationFile.GetTrial(BlockIndex, TrialIndex: integer): TTrialConfiguration;
 var
   LTrialSection : string;
   LInstructionSection : string;
   i : integer;
 begin
-  i := FPositions.Value(TrialIndex);
+  i := FPositions.Values(TrialIndex);
   if (i < 0) or
      (i >= TotalTrials) then begin
     raise EArgumentOutOfRangeException.Create(
@@ -261,12 +265,13 @@ begin
     ReferenceName := ReadString(LTrialSection, ReferenceNameKey, '');
     ReadSectionValues(LTrialSection, FCurrentTrialParameters);
     AppendSectionValues(LInstructionSection, FCurrentTrialParameters);
+    SetTrialDynamics(FCurrentTrialParameters);
     Parameters := FCurrentTrialParameters;
   end;
 end;
 
 function TConfigurationFile.GetTrialBase(BlockIndex,
-  TrialIndex: integer): TTrialData;
+  TrialIndex: integer): TTrialConfiguration;
 var
   LTrialSection : string;
 begin
@@ -318,26 +323,6 @@ begin
     end;
 end;
 
-procedure TConfigurationFile.AddNamesTo(AReferenceList: TReferenceList;
-  ACurrentBlock : TBlockData);
-var
-  i: Integer;
-  LItem : TItem;
-  LTrialData : TTrialData;
-begin
-  for i := 0 to ACurrentBlock.TotalTrials-1 do begin
-    LTrialData := GetTrialBase(ACurrentBlock.ID, i);
-    try
-      LItem.ReferenceName := LTrialData.ReferenceName;
-      LItem.ID := i;
-      AReferenceList.Add(LItem);
-    finally
-      LTrialData.Parameters.Clear;
-      LTrialData.Parameters.Free;
-    end;
-  end;
-end;
-
 procedure TConfigurationFile.Invalidate;
 var
   i: Integer;
@@ -367,68 +352,88 @@ begin
   end;
 end;
 
-procedure TConfigurationFile.NewTrialOrder(ACurrentBlock : TBlockData);
+procedure TConfigurationFile.NewOrdereringForTrialsInBlock(
+  ACurrentBlock: TBlockConfiguration);
 var
-  FReferenceList : TReferenceList;
+  LReferenceList : TReferenceList;
+  procedure GetTrialsReferenceNames(AReferenceList: TReferenceList;
+    ACurrentBlock : TBlockConfiguration);
+  var
+    i: Integer;
+    LItem : TItem;
+    LTrialData : TTrialConfiguration;
+  begin
+    for i := 0 to ACurrentBlock.TotalTrials-1 do begin
+      LTrialData := GetTrialBase(ACurrentBlock.ID, i);
+      try
+        LItem.ReferenceName := LTrialData.ReferenceName;
+        LItem.ID := i;
+        AReferenceList.Add(LItem);
+      finally
+        LTrialData.Parameters.Clear;
+        LTrialData.Parameters.Free;
+      end;
+    end;
+  end;
 begin
-  FReferenceList := TReferenceList.Create;
+  LReferenceList := TReferenceList.Create;
   try
-    AddNamesTo(FReferenceList, ACurrentBlock);
-    FPositions.Shuffle(FReferenceList);
+    GetTrialsReferenceNames(LReferenceList, ACurrentBlock);
+    FPositions.Shuffle(LReferenceList);
   finally
-    FReferenceList.Free;
+    LReferenceList.Free;
   end;
 end;
 
-procedure TConfigurationFile.ReadPositionsInBlock(ABlock: integer;
-  APositionsList: TStrings);
-var
-  L : TStringList;
-  LNumComp: LongInt;
-  LTrialSection, LKeyName, S: String;
-  j, i: Integer;
-begin
-  L := TStringList.Create;
-  L.Sorted := True;
-  L.Duplicates:=dupIgnore;
-  try
-    for i := 0 to Trials[ABlock]-1 do
-      begin
-        LTrialSection := TrialSection(ABlock, i);
-
-        // sample
-        if ReadString(LTrialSection,_Kind,'') = T_MTS then
-          begin
-            LKeyName := _Samp+_cBnd;
-            S := ReadString(LTrialSection,LKeyName,'');
-            if S <> '' then
-              L.Append(S);
-          end;
-
-        // comparisons
-        LNumComp := ReadInteger(LTrialSection,_NumComp,0);
-        if LNumComp > 0 then
-          for j := 0 to  LNumComp-1 do
-            begin
-              LKeyName := _Comp+IntToStr(j+1)+_cBnd;
-              S := ReadString(LTrialSection,LKeyName,'');
-              if S <> '' then
-                L.Append(S);
-            end;
-      end;
-
-    j := 0;
-    for i := L.Count-1 downto 0 do
-      begin
-        APositionsList.Values[IntToStr(j+1)] := L[i];
-        Inc(j);
-      end;
-
-  finally
-    L.Clear;
-    L.Free;
-  end;
-end;
+//procedure TConfigurationFile.ReadPositionsInBlock(ABlock: integer;
+//  APositionsList: TStrings);
+//var
+//  L : TStringList;
+//  LNumComp: LongInt;
+//  LTrialSection, LKeyName, S: String;
+//  j, i: Integer;
+//begin
+//  L := TStringList.Create;
+//  L.Sorted := True;
+//  L.Duplicates:=dupIgnore;
+//  try
+//    for i := 0 to Trials[ABlock]-1 do
+//      begin
+//        LTrialSection := TrialSection(ABlock, i);
+//
+//        // sample
+//        if ReadString(LTrialSection,_Kind,'') = T_MTS then
+//          begin
+//            LKeyName := _Samp+_cBnd;
+//            S := ReadString(LTrialSection,LKeyName,'');
+//            if S <> '' then
+//              L.Append(S);
+//          end;
+//
+//        // comparisons
+//        LNumComp := ReadInteger(LTrialSection,_NumComp,0);
+//        if LNumComp > 0 then
+//          for j := 0 to  LNumComp-1 do
+//            begin
+//              LKeyName := _Comp+IntToStr(j+1)+_cBnd;
+//              S := ReadString(LTrialSection,LKeyName,'');
+//              if S <> '' then
+//                L.Append(S);
+//            end;
+//      end;
+//
+//    j := 0;
+//    for i := L.Count-1 downto 0 do
+//      begin
+//        APositionsList.Values[IntToStr(j+1)] := L[i];
+//        Inc(j);
+//      end;
+//
+//  finally
+//    L.Clear;
+//    L.Free;
+//  end;
+//end;
 
 function TConfigurationFile.ReadTrialString(ABlock: integer; ATrial: integer;
   AName: string): string;
@@ -446,6 +451,8 @@ constructor TConfigurationFile.Create(const AConfigurationFile: string;
   AEscapeLineFeeds: Boolean);
 begin
   inherited Create(AConfigurationFile, AEscapeLineFeeds);
+  BoolTrueStrings := TrueBoolStrs;
+  BoolFalseStrings := FalseBoolStrs;
   FBlockCount := 0;
   GetBlockCount;
   FPositions := TShuffler.Create;

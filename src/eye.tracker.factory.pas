@@ -14,7 +14,7 @@ unit eye.tracker.factory;
 interface
 
 uses
-  Classes, SysUtils, eye.tracker.types, eye.tracker.contract;
+  SysUtils, eye.tracker.types, eye.tracker.contract;
 
 type
 
@@ -22,21 +22,35 @@ type
 
   TEyeTrackerFactory = class
     class function New(ACode : TEyeTrackerCode) : IEyeTracker;
+    class procedure Finalize;
   end;
 
 implementation
 
-uses eye.tracker.pupil, eye.tracker.eyelink;
+uses eye.tracker.client,  eye.tracker.pupil, eye.tracker.eyelink;
+
+var
+  Client : TEyeTrackerClient = nil;
 
 { TEyeTrackerFactory }
 
 class function TEyeTrackerFactory.New(ACode: TEyeTrackerCode): IEyeTracker;
 begin
   case ACode of
-    etPupilLabs : Result := TPupilEyeTracker.Create as IEyeTracker;
-    etEyeLink : Result := TEyeLinkEyeTracker.Create as IEyeTracker;
-    else Result := nil;
+    etPupilLabs : Client := TPupilEyeTracker.Create;
+    etEyeLink : Client := TEyeLinkEyeTracker.Create;
+    otherwise begin
+      Result := nil;
+      Exit;
+    end;
   end;
+  Result := Client as IEyeTracker;
+end;
+
+class procedure TEyeTrackerFactory.Finalize;
+begin
+  Client.Free;
+  Client := nil;
 end;
 
 end.

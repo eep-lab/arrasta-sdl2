@@ -16,13 +16,18 @@ unit eye.tracker.contract;
 interface
 
 uses
-  Classes, SysUtils, eye.tracker.types;
+  Classes, eye.tracker.types;
 
 type
+
+  { IEyeTracker }
+
   IEyeTracker = interface
     ['{510AF7AB-0F7F-416A-8B97-4CBE13950CB4}']
     function GetGazeOnScreenEvent : TGazeOnScreenEvent;
-    procedure SetGazeOnScreenEvent(AGazeOnScreenEvent: TGazeOnScreenEvent);
+    procedure SetGazeOnScreenEvent(AValue: TGazeOnScreenEvent);
+    procedure SetOnCalibrationSuccessful(AValue: TNotifyEvent);
+    procedure SetOnCalibrationFailed(AValue: TNotifyEvent);
     procedure StartRecording;
     procedure StopRecording;
     procedure StartCalibration;

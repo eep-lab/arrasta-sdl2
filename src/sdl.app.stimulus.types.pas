@@ -19,6 +19,7 @@ type
   { TStimulusID }
 
   TStimulusID = record
+    IsSample : Boolean;
     SubjcID : Byte;
     SessiID : Byte;
     BlockID : Integer;
@@ -27,6 +28,7 @@ type
     RespoID : Integer;
     Name    : string;
     function ToString : string;
+    function ToSpeechString : string;
   end;
 
 implementation
@@ -35,27 +37,43 @@ uses SysUtils;
 
 { TStimulusID }
 
+function Formated(AValue : integer): string;
+begin
+  Result := Format('%.2d', [AValue]);
+end;
+
+function FormatedID(AStimuID : integer; AIsSample: Boolean) : string;
+begin
+  if AIsSample then begin
+    Result := 'S';
+  end else begin
+    Result := 'C';
+  end;
+  Result := Result + Formated(AStimuID+1);
+end;
+
 function TStimulusID.ToString: string;
-  function Formated(AValue : integer): string;
-  begin
-    Result := Format('%.2d', [AValue]);
-  end;
-  function FormatedStimulusID : string;
-  begin
-    case StimuID of
-        -128..-1: Result := 'S' + Formated(Abs(StimuID));
-        0..127: Result := 'C' + Formated(StimuID+1);
-      end;
-  end;
 begin
   Result := ''.Join('-', [
     Name,
     'P'+Formated(SubjcID),
     'S'+Formated(SessiID),
-    'B'+Formated(BlockID),
-    'T'+Formated(TrialID),
-    FormatedStimulusID,
+    'B'+Formated(BlockID+1),
+    'T'+Formated(TrialID+1),
+    FormatedID(StimuID, IsSample),
     'R'+Formated(RespoID)]);
+end;
+
+function TStimulusID.ToSpeechString: string;
+begin
+  Result := ''.Join('-', [
+    'P'+Formated(SubjcID),
+    'S'+Formated(SessiID),
+    'B'+Formated(BlockID+1),
+    'T'+Formated(TrialID+1),
+    FormatedID(StimuID, IsSample),
+    'R'+Formated(RespoID),
+    Name.Replace('Speech' + #9, '')]);
 end;
 
 end.

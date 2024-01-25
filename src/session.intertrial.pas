@@ -62,7 +62,6 @@ uses
   , session.pool
   , sdl.colors
   , sdl.app.trials.types
-  , timestamps
   ;
 
 { TInterTrialEvents }

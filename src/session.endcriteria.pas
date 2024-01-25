@@ -27,8 +27,8 @@ type
   private
     //Pool.Block.ID : integer;
     //Pool.Trial.ID : integer;
-    FCurrentBlock : TBlockData;
-    FCurrentTrial : TTrialData;
+    FCurrentBlock : TBlockConfiguration;
+    FCurrentTrial : TTrialConfiguration;
     function NextTrial : SmallInt;
     function NextBlock : SmallInt;
     function HitPorcentageInBlock : real;
@@ -40,7 +40,7 @@ type
   public
     constructor Create;
     procedure InvalidateBlock;
-    procedure InvalidateTrial(ATrialData : TTrialData);
+    procedure InvalidateTrial(ATrialData : TTrialConfiguration);
     function OfSession : Boolean;
     function OfBlock : Boolean;
     function OfTrial : Boolean;
@@ -66,13 +66,12 @@ end;
 procedure TEndCriteria.InvalidateBlock;
 begin
   FCurrentBlock := ConfigurationFile.CurrentBlock;
-  ConfigurationFile.NewTrialOrder(FCurrentBlock);
-
+  ConfigurationFile.NewOrdereringForTrialsInBlock(FCurrentBlock);
   BlockName := FCurrentBlock.Name;
   //Pool.Trial.ID := 0;
 end;
 
-procedure TEndCriteria.InvalidateTrial(ATrialData : TTrialData);
+procedure TEndCriteria.InvalidateTrial(ATrialData : TTrialConfiguration);
 begin
   FCurrentTrial := ATrialData;
   TrialName := FCurrentTrial.Parameters.Values['Name'];
@@ -158,10 +157,38 @@ var
     end;
   end;
 
-  function NextBlockOnNotCriteria : SmallInt;
+  procedure SetNextBlock(AValue : SmallInt);
+  begin
+    // decide where to go based on repeat style
+    case LRepeatStyle of
+
+        // if none, just go to the block, may generate infinite loops
+        repsNone : begin
+          Result := AValue;
+        end;
+
+        // if global, go to a different block
+        repsGlobal: begin
+          if LRepeatValue > 0 then begin
+            if Pool.Session.Tree.Block[Pool.Block.ID].Count < LRepeatValue then begin
+              Result := AValue;
+            end;
+          end;
+        end;
+
+        // if consecutive, "go to" same block
+        repsConsecutive: begin
+          if Pool.Session.Block.Consecutives < LRepeatValue then begin
+            Result := Pool.Block.ID;
+          end;
+        end;
+      end;
+  end;
+
+  procedure NextBlockOnNotCriteria;
   begin
     if FCurrentBlock.NextBlockOnNotCriterion > -1 then begin
-      Result := FCurrentBlock.NextBlockOnNotCriterion;
+      SetNextBlock(FCurrentBlock.NextBlockOnNotCriterion);
     end;
   end;
 
@@ -180,36 +207,12 @@ begin
   // go to next block by default
   Result := Pool.Block.ID+1;
 
-  // go to back up block if it was setup and there are errors
+  // todo: refactoring, use case statements of TCustomNextBlockType
   if (FCurrentBlock.BackUpBlock > -1) then begin
     if (FCurrentBlock.BackUpBlockErrors > 0) then begin
       i := Pool.Block.Events.Misses.Count;
       if i >= FCurrentBlock.BackUpBlockErrors then begin
-
-        // decide where to go base of repeat style
-        case LRepeatStyle of
-
-            // if none, just go to the block, may generate infinite loops
-            repsNone : begin
-              Result := FCurrentBlock.BackUpBlock;
-            end;
-
-            // if global, go to a different block
-            repsGlobal: begin
-              if LRepeatValue > 0 then begin
-                if Pool.Session.Tree.Block[Pool.Block.ID].Count < LRepeatValue then begin
-                  Result := FCurrentBlock.BackUpBlock;
-                end;
-              end;
-            end;
-
-            // if consecutive, "go to" same block
-            repsConsecutive: begin
-              if Pool.Session.Block.Consecutives < LRepeatValue then begin
-                Result := Pool.Block.ID;
-              end;
-            end;
-          end;
+        SetNextBlock(FCurrentBlock.BackUpBlock);
         Exit;
       end;
     end;
@@ -219,9 +222,7 @@ begin
     if HitPercentageCriterionAchieved then begin
       Result := NextBlockOnHitCriteria;
     end else begin
-      //if FCurrentBlock.NextBlockOnNotCriterion > -1 then begin
-      //  AGoToValue := FCurrentBlock.NextBlockOnNotCriterion;
-      //end;
+      NextBlockOnNotCriteria;
     end;
     Exit;
   end;
@@ -232,7 +233,7 @@ begin
     if i >= FCurrentBlock.CrtConsecutiveHit then begin
       //Result := NextBlockOnHitCriteria;
     end else begin
-      Result := NextBlockOnNotCriteria;
+      NextBlockOnNotCriteria;
     end;
   end;
 end;
