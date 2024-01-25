@@ -84,7 +84,6 @@ uses
   , sdl.app.output
   , sdl.app.testmode
   , sdl.app.mouse
-  , session.pool
   ;
 
 { TToggleButton }

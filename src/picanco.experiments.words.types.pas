@@ -187,9 +187,7 @@ var
 
 implementation
 
-uses Classes, SysUtils, Session.Pool
-  , sdl.app.output
-  , picanco.experiments.constants
+uses Classes, SysUtils, picanco.experiments.constants
   , picanco.experiments.words.constants
   ;
 

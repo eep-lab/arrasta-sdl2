@@ -472,7 +472,10 @@ begin
       FLimitedHoldTimer.Start;
     end;
     FVisible := True;
-    Timestamp(FIStimuli.CustomName+'.Show');
+
+    with FIStimuli do begin
+      Timestamp(CustomName+'.Show'+#9+Selectables.ToJSON);
+    end;
   end;
   SDL_ShowCursor(SDL_ENABLE);
 end;

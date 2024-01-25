@@ -14,14 +14,14 @@ unit picanco.experiments.audio;
 interface
 
 uses
-  Classes, SysUtils, SpeechLib_TLB;
+  SysUtils, SpeechLib_TLB;
 
 
 implementation
 
 uses
-  sdl.app.output
-  , media.audio
+  //sdl.app.output
+    media.audio
   , picanco.experiments.words.types
   , picanco.experiments.words;
 
@@ -68,7 +68,7 @@ begin
 end;
 
 //var i : integer;
-initialization
+//initialization
   //ListAvailableVoices;
   //Synthetize;
   //for i := 0 to High(Words) do begin

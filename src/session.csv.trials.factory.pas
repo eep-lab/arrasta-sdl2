@@ -5,7 +5,7 @@ unit session.csv.trials.factory;
 interface
 
 uses
-  Classes, SysUtils, Generics.Collections, session.csv.trials.base;
+  SysUtils, Generics.Collections, session.csv.trials.base;
 
 type
   TCSVTrialClass = class of TCSVTrialsBase;

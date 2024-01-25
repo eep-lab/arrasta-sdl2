@@ -14,7 +14,7 @@ unit sdl.app.audio.recorder;
 interface
 
 uses
-  Classes, fgl
+  fgl
   , sdl.app.audio.recorder.devices
   , sdl.app.graphics.toggle;
 
@@ -44,8 +44,7 @@ type
 
 implementation
 
-uses SysUtils, session.pool
-  , sdl.app.output, sdl.app.stimulus, sdl.app.stimulus.contract;
+uses SysUtils, sdl.app.output, sdl.app.stimulus, sdl.app.stimulus.contract;
 
 { TRecorderDevice }
 

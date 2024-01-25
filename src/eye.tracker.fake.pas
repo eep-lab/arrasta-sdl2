@@ -14,7 +14,7 @@ unit eye.tracker.fake;
 interface
 
 uses
-  Classes, SysUtils
+  SysUtils
   , SDL2
   , eye.tracker.types
   , eye.tracker.client;

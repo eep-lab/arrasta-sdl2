@@ -13,7 +13,7 @@ unit generics.aggregator.table;
 
 interface
 
-uses Classes, SysUtils, Generics.Collections
+uses SysUtils, Generics.Collections
    , Generics.Aggregator.Table.Contract
    , Generics.Iterator.Table.Contract
    , Generics.Iterator.Table

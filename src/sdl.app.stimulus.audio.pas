@@ -60,8 +60,6 @@ uses sdl.app.audio
    , sdl.app.controls.custom
    , session.parameters.global
    , session.loggers.writerow.timestamp
-   , session.pool
-   , session.constants.mts
    , session.strutils
    , session.strutils.mts;
 
@@ -121,7 +119,6 @@ begin
       end;
     end;
     if ResponseID = 0 then begin
-      Timestamp('Stimulus.Response.' + GetStimulusName);
       DoResponse(True);
       OnResponse := nil;
     end;
@@ -132,7 +129,7 @@ begin
       if Assigned(OnMouseDown) then
         OnMouseDown(Self, Shift, X, Y);
 
-      Timestamp('Stimulus.Response.' + GetStimulusName);
+      Timestamp('Stimulus.Response.' + GetID.ToString);
       FLoops.Start;
     end;
   end;
@@ -187,6 +184,7 @@ begin
     FText.FontName := GlobalTrialParameters.FontName;
     //FText.FontSize := 50;
     FText.Load(FCustomName);
+    FText.CustomName := FCustomName;
     FText.CentralizeWith(ARect);
     FText.Parent := TSDLControl(AParent);
     FText.OnMouseDown := @MouseDown;
@@ -194,6 +192,7 @@ begin
     Selectables.Add(FText.AsISelectable);
   end else begin
     FPicture.LoadFromFile(AsAsset(LAudioPicture));
+    FPicture.CustomName := LAudioPicture;
     FPicture.BoundsRect := ARect;
     FPicture.Parent := TSDLControl(AParent);
     FPicture.OnMouseDown := @MouseDown;

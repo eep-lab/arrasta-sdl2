@@ -5,7 +5,7 @@ unit session.dynamics.types;
 interface
 
 uses
-  Classes, SysUtils, Generics.Collections;
+  Classes, Generics.Collections;
 
 type
 
@@ -13,7 +13,7 @@ type
 
   end;
 
-  TDynamicsList = TList<TTrialDynamic>;
+  TDynamicsList = specialize TList<TTrialDynamic>;
 
 implementation
 

@@ -30,7 +30,7 @@ type
 
   { TInstructionStimuli }
 
-  TInstructionStimuli = class sealed (TStimuli, IStimuli, INavigable)
+  TInstructionStimuli = class sealed (TStimuli, INavigable)
     private
       FNavigator : ITableNavigator;
       FText : TText;
@@ -82,6 +82,7 @@ end;
 
 constructor TInstructionStimuli.Create;
 begin
+  inherited Create;
   FText := TText.Create;
 end;
 
@@ -105,8 +106,11 @@ end;
 procedure TInstructionStimuli.Load(AParameters: TStringList; AParent: TObject);
 var
   Monitor : TSDL_Rect;
+  LInstruction : string;
 begin
   inherited Load(AParameters, AParent);
+  LInstruction := AParameters.Values['Instruction'];
+
   Monitor := Pool.App.Monitor;
   FText.OnMouseDown := @InstructionMouseDown;
   FText.FontName := 'Raleway-Regular';
@@ -114,9 +118,11 @@ begin
   //FText.FontStyle := TTF_STYLE_UNDERLINE;
   FText.Wrapped := True;
   FText.WrappedWidth := (Monitor.w div 3) * 2;
-  FText.LoadFromFile(AParameters.Values['Instruction']);
+  FText.LoadFromFile(LInstruction);
   FText.Parent := TSDLControl(AParent);
   FText.Centralize;
+  FText.CustomName := LInstruction;
+  FSelectables.Add(FText.AsISelectable);
 end;
 
 procedure TInstructionStimuli.Start;

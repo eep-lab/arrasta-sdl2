@@ -223,9 +223,9 @@ begin
   SDLSession.Free;
   SDLApp.Free;
   FreeConfigurationFile;
+  Controllers.Free;
   ToogleControlPanelEnabled;
   ProgressBar.Visible := False;
-  Controllers.Free;
 end;
 
 procedure TFormBackground.IniPropStorage1RestoreProperties(Sender: TObject);

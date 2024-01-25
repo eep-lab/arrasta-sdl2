@@ -37,29 +37,6 @@ uses
 const
   DeadZoneThreshold = 0.2;
 
-//procedure NormalizeDiagonals(var AX: Double; var AY : Double);
-//var
-//  Magnitude: Double;
-//begin
-//  Magnitude := Hypot(AX, AY);
-//  if Magnitude > 1.0 then begin
-//    AX := AX / Magnitude;
-//    AY := AY / Magnitude;
-//  end;
-//end;
-
-//var
-//  PreviousX : Double;
-//  PreviousY : Double;
-//
-//function IsDeadZoneLeaveEvent(AX, AY : Double) : Boolean;
-//begin
-//  Result := (not IsOutsideDeadZone(PreviousX, PreviousY)) and IsOutsideDeadZone(AX, AY);
-//  PreviousX := AX;
-//  PreviousY := AY;
-//end;
-
-
 // https://github.com/Minimuino/thumbstick-deadzones
 
 function MapRange(AValue, OldMin, OldMax, NewMin, NewMax: Double): Double;

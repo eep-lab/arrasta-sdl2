@@ -17,12 +17,13 @@ type
   { TSelectables }
 
   TSelectables = class(specialize TList<ISelectable>)
+    function ToJSON : string;
     class function ByOrigin : specialize IComparer<ISelectable>;
   end;
 
 implementation
 
-uses SDL2, Math;
+uses SysUtils, Math, SDL2, sdl.helpers;
 
 { TSelectableComparer }
 
@@ -40,6 +41,31 @@ begin
   end else begin
     Result := CompareValue(A.x, B.x);
   end;
+end;
+
+function TSelectables.ToJSON: string;
+var
+  LSeparator : string;
+  i: Integer;
+begin
+  Result := '{}';
+  if Count = 0 then Exit;
+
+  Result := '';
+  for i := 0 to Count-1 do begin
+    if i = 0 then begin
+      LSeparator := '';
+    end else begin
+      LSeparator := ',';
+    end;
+
+    with Items[i] do begin
+      Result := String.Join(
+        LSeparator, [Result,
+          CustomName + ':' + GetBoundsRect.ToJSON]);
+    end;
+  end;
+  Result := '{'+Result+'}';
 end;
 
 class function TSelectables.ByOrigin : specialize IComparer<ISelectable>;

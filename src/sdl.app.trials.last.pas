@@ -14,7 +14,7 @@ unit sdl.app.trials.last;
 interface
 
 uses
-  Classes, SysUtils
+  SysUtils
   , SDL2
   , sdl.app.trials
   , sdl.app.stimuli.contract

@@ -5,7 +5,7 @@ unit session.csv.trials.starters;
 interface
 
 uses
-  Classes, SysUtils, session.csv.enumerable;
+  SysUtils, session.csv.enumerable;
 
 type
 

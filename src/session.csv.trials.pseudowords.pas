@@ -38,7 +38,7 @@ uses
   session.constants.trials
   , session.constants.trials.pseudowords
   , picanco.experiments.words
-  , picanco.experiments.constants;
+  ;
 
 { TCSVPseudowordsTrials }
 

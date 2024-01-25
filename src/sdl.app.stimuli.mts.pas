@@ -26,6 +26,7 @@ uses
   , sdl.app.trials.types
   , sdl.app.events.abstract
   , sdl.app.audio.contract
+  , sdl.app.selectable.list
   ;
 
 type
@@ -69,6 +70,8 @@ type
       procedure NoResponse(Sender: TObject);
       procedure ComparisonResponse(Sender: TObject);
       procedure SampleResponse(Sender: TObject);
+    protected
+      function CustomName : string; override;
     public
       constructor Create; override;
       destructor Destroy; override;
@@ -96,7 +99,6 @@ uses
   , sdl.app.stimulus.audio
   , sdl.app.stimulus.speech
   , sdl.app.selectable.contract
-  , sdl.app.selectable.list
   , session.loggers.writerow
   , session.loggers.writerow.timestamp
   , session.constants.trials
@@ -139,11 +141,13 @@ begin
         for LStimulus in FSamples do begin
           for LSelectable in LStimulus.Selectables do begin
             LSelectables.Add(LSelectable);
+            FSelectables.Add(LSelectable); // for timestamps only
           end;
         end;
       end;
 
       startComparisons: begin
+        FSelectables.Clear;
         for LStimulus in FSamples do begin
           for LSelectable in LStimulus.Selectables do begin
             FNavigator.SetBaseControl(LSelectable);
@@ -154,17 +158,20 @@ begin
         for LStimulus in FComparisons do begin
           for LSelectable in LStimulus.Selectables do begin
             LSelectables.Add(LSelectable);
+            FSelectables.Add(LSelectable);
           end;
         end;
       end;
 
       startButtons: begin
+        FSelectables.Clear;
         for LStimulus in FComparisons do begin
           for LSelectable in LStimulus.Selectables do begin
             LSelectables.Add(LSelectable);
           end;
         end;
         LSelectables.Add(FButton.AsISelectable);
+        FSelectables.Add(FButton.AsISelectable);
       end;
 
     end;
@@ -353,8 +360,19 @@ begin
   for LStimulus in FComparisons do begin
     LStimulus.Start;
   end;
-  Timestamp('Comparison.Start');
   UpdateState(startComparisons);
+  Timestamp('Comparisons.Start'+#9+FSelectables.ToJSON);
+end;
+
+function TMTSStimuli.CustomName: string;
+var
+  LSampleModality : string;
+  LComparModality : string;
+begin
+  WriteStr(LSampleModality, FMTSModality.Samples);
+  WriteStr(LComparModality, FMTSModality.Comparisons);
+  Result := inherited CustomName + '.' +
+    LSampleModality + LComparModality.Replace('Modality', '');
 end;
 
 procedure TMTSStimuli.NoResponse(Sender: TObject);
@@ -432,6 +450,7 @@ end;
 
 procedure TMTSStimuli.Load(AParameters: TStringList; AParent: TObject);
 var
+  LButton      : string;
   LRelation    : string;
   SampleLetter : string;
   ComparLetter : string;
@@ -453,9 +472,6 @@ var
     LCallbacks.OnResponse  := @ComparisonResponse;
     LCallbacks.OnNoResponse := @NoResponse;
 
-    if not Assigned(Grid) then begin
-      Grid := TGrid.Create(3);
-    end;
     Grid.FixedSample:=True;
 
     if AComparisons = 1 then begin
@@ -536,22 +552,22 @@ begin
 
     case FMTSModality.Comparisons of
       ModalityA : begin
-        FButton.LoadFromFile(AsAsset('ConfirmButton'));
-        FButton.Parent := TSDLControl(AParent);
-        FButton.OnClick:=@ButtonClick;
+        LButton := 'ConfirmButton';
       end;
 
       ModalityD : begin
-        FButton.LoadFromFile(AsAsset('FinalizeButton'));
-        FButton.Parent := TSDLControl(AParent);
-        FButton.OnClick:=@ButtonClick;
-
+        LButton := 'FinalizeButton';
         LComparisons := 1;
       end;
 
       else { do nothing }
     end;
   end;
+
+  FButton.LoadFromFile(AsAsset(LButton));
+  FButton.Parent := TSDLControl(AParent);
+  FButton.OnClick:=@ButtonClick;
+  FButton.CustomName := LButton;
 
   NewGridItems(LSamples, LComparisons, goCustom);
 end;

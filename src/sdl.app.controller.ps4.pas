@@ -61,9 +61,7 @@ uses
   sdl.app.output,
   sdl.app.events.custom,
   sdl.app.video.methods,
-  sdl.app.controller.types,
-  timestamps.types,
-  timestamps;
+  sdl.app.controller.types;
 
 { TSDLPS4Controller }
 
@@ -73,17 +71,11 @@ const
   PS4_BUTTON_OPTIONS = 6;
   LHumbleTime = 100;
 
-var
-  LastClock : TLargerFloat = 0;
-
 procedure TSDLPS4Controller.ControllerAxisMotion(
   const event: TSDL_ControllerAxisEvent);
 begin
-  //if (ClockMonotonic-LastClock) < 0.250 then Exit;
-
-  if F2DAxis.IsOutSideDeadZone then begin
-    LastClock := ClockMonotonic;
-    with F2DAxis do begin
+  with F2DAxis do begin
+    if IsOutSideDeadZone then begin
       UpdateCurrentDirection;
       if CurrentDirection <> LastDirection then begin
         case CurrentDirection of
@@ -107,9 +99,10 @@ begin
         end;
       end;
       LastDirection := CurrentDirection;
+
+    end else begin
+      LastDirection := None;
     end;
-  end else begin
-    F2DAxis.LastDirection := None;
   end;
 end;
 

@@ -24,6 +24,7 @@ uses
   , sdl.app.grids
   , sdl.app.audio.contract
   , sdl.app.trials.types
+  , sdl.app.selectable.list
   ;
 
 type
@@ -33,7 +34,7 @@ type
 
   { TDragDropStimuli }
 
-  TDragDropStimuli = class(TStimuli, IStimuli)
+  TDragDropStimuli = class(TStimuli)
   private
     FResult : TTrialResult;
     FSoundRight : ISound;
@@ -85,7 +86,6 @@ uses
   , sdl.app.controls.custom
   , sdl.app.trials
   , sdl.app.audio
-  , session.constants.trials
   , session.constants.dragdrop
   , session.helpseries.dragdrop
   ;

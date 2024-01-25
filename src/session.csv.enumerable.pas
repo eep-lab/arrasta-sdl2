@@ -15,7 +15,6 @@ interface
 
 uses
   Classes, SysUtils
-  , csvdocument
   , session.parameters
   , session.csv.enumerator
   , session.csv.document;

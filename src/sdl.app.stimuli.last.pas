@@ -67,11 +67,15 @@ begin
 end;
 
 procedure TLastStimuli.Load(AParameters: TStringList; AParent: TObject);
+var
+  LText : string = 'Fim.';
 begin
   inherited Load(AParameters, AParent);
   FText.FontName := 'Raleway-Regular';
   FText.FontSize := 150;
-  FText.Load('Fim.');
+  FText.Load(LText);
+  FText.CustomName := LText;
+  FSelectables.Add(FText.AsISelectable);
   FText.Parent := TSDLControl(AParent);
   FText.Centralize;
 end;

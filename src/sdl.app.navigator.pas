@@ -5,7 +5,7 @@ unit sdl.app.navigator;
 interface
 
 uses
-  Classes, SysUtils,
+  SysUtils,
   sdl.app.navigator.contract,
   sdl.app.selectable.contract,
   sdl.app.selectable.list,

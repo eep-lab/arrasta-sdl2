@@ -15,7 +15,6 @@ interface
 
 uses
   Classes, SysUtils
-  , session.configuration
   , sdl.app.trials
   , sdl.app.stimuli.contract
   , sdl.app.stimuli.instruction

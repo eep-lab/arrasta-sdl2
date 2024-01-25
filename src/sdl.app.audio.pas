@@ -14,7 +14,7 @@ unit sdl.app.audio;
 interface
 
 uses
-  Classes, SysUtils, Generics.Collections
+  SysUtils, Generics.Collections
   , ctypes
   , sdl2
   , sdl2_mixer

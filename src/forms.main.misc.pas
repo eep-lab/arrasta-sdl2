@@ -5,7 +5,7 @@ unit forms.main.misc;
 interface
 
 uses
-  Classes, SysUtils, Forms, Controls, Graphics, Dialogs, StdCtrls,
+  Classes, SysUtils, Forms, Controls, StdCtrls,
   IniPropStorage, Spin, ComCtrls;
 
 type
@@ -69,7 +69,7 @@ var
 
 implementation
 
-uses sdl.app, session.pool, session.fileutils;
+uses sdl.app, session.fileutils;
 
 {$R *.lfm}
 

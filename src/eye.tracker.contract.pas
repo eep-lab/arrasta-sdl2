@@ -16,7 +16,7 @@ unit eye.tracker.contract;
 interface
 
 uses
-  Classes, SysUtils, eye.tracker.types;
+  Classes, eye.tracker.types;
 
 type
 

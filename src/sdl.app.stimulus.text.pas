@@ -51,9 +51,7 @@ implementation
 
 uses
   sdl.app.audio
-  , session.parameters.global
   , sdl.app.controls.custom
-  , session.constants.mts
   , session.strutils;
 
 { TTextStimuli }
@@ -96,6 +94,7 @@ begin
   //FText.FontSize := 50;
   FText.Load(FCustomName);
   FText.CentralizeWith(ARect);
+  FText.CustomName := FCustomName;
   Selectables.Add(FText.AsISelectable);
   FText.Parent := TSDLControl(AParent);
   FText.OnMouseDown := @MouseDown;

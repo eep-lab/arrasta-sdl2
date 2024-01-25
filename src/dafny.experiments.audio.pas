@@ -5,7 +5,7 @@ unit dafny.experiments.audio;
 interface
 
 uses
-  Classes, SysUtils;
+  SysUtils;
 
 type
   TWord = record

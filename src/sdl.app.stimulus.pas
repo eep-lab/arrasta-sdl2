@@ -14,8 +14,7 @@ unit sdl.app.stimulus;
 interface
 
 uses
-  Classes, SysUtils, Generics.Collections
-  , SDL2
+  Classes, SysUtils, SDL2
   , sdl.app.graphics.rectangule
   , sdl.app.stimulus.contract
   , sdl.app.selectable.list
@@ -108,15 +107,12 @@ end;
 
 function TStimulus.GetID: TStimulusID;
 begin
+  Result.IsSample := FIsSample;
   Result.SubjcID := Pool.Counters.Subject;
   Result.SessiID := Pool.Session.ID;
   Result.BlockID := Pool.Session.Block.UID;
   Result.TrialID := Pool.Session.Trial.UID;
-  if IsSample then begin
-    Result.StimuID := -FIndex;
-  end else begin
-    Result.StimuID := FIndex;
-  end;
+  Result.StimuID := FIndex;
   Result.RespoID := FResponseID;
   Result.Name := GetStimulusName;
 end;

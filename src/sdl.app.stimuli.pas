@@ -17,7 +17,8 @@ uses
   Classes, SysUtils, Controls, Schedules
   , sdl.app.stimuli.contract
   , sdl.app.trials.types
-  , sdl.app.navigable.contract;
+  , sdl.app.navigable.contract
+  , sdl.app.selectable.list;
 
 type
 
@@ -31,6 +32,7 @@ type
     FOnResponse: TNotifyEvent;
     FOnStop: TNotifyEvent;
     FTrial: TObject;
+    function Selectables : TSelectables;
     procedure Consequence(Sender : TObject);
     procedure Response(Sender : TObject);
     procedure SetOnConsequence(AValue: TNotifyEvent);
@@ -39,9 +41,10 @@ type
     procedure SetOnStop(AValue : TNotifyEvent);
     procedure SetTrial(AValue: TObject);
   protected
+    FSelectables : TSelectables;
     FResponse : string;
     function GetTrial : TObject;
-    function CustomName : string;
+    function CustomName : string; virtual;
     function MyResult : TTrialResult; virtual;
     function Header : string; virtual;
     function ToData : string; virtual;
@@ -77,7 +80,7 @@ end;
 
 function TStimuli.MyResult: TTrialResult;
 begin
-  Result := none;
+  Result := None;
 end;
 
 function TStimuli.Header: string;
@@ -93,6 +96,11 @@ end;
 function TStimuli.GetTrial: TObject;
 begin
   Result := FTrial;
+end;
+
+function TStimuli.Selectables: TSelectables;
+begin
+  Result := FSelectables;
 end;
 
 procedure TStimuli.Consequence(Sender: TObject);
@@ -154,6 +162,7 @@ end;
 constructor TStimuli.Create;
 begin
   inherited Create;
+  FSelectables := TSelectables.Create;
   FResponse := '';
   FSchedule := TSchedule.Create(nil);
   with FSchedule do begin
@@ -174,6 +183,7 @@ end;
 
 destructor TStimuli.Destroy;
 begin
+  FSelectables.Free;
   FSchedule.Free;
   FOnFinalize := nil;
   FOnConsequence := nil;

@@ -7,7 +7,7 @@ unit sdl.app.controller.contract;
 interface
 
 uses
-  Classes, SysUtils, sdl.app.navigator.contract;
+  sdl.app.navigator.contract;
 
 type
 

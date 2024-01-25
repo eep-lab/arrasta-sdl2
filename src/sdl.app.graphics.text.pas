@@ -63,7 +63,6 @@ uses
   sdl.app.video.methods,
   sdl.app.text,
   sdl.colors,
-  session.pool,
   session.strutils;
 
 { TText }

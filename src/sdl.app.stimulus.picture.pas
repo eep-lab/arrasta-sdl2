@@ -45,7 +45,6 @@ implementation
 
 uses
    sdl.app.controls.custom
-   , session.constants.mts
    , session.strutils.mts
    , session.strutils;
 
@@ -85,6 +84,7 @@ procedure TPictureStimulus.Load(AParameters: TStringList; AParent: TObject;
 begin
   FCustomName := GetWordValue(AParameters, IsSample, Index);
   FPicture.LoadFromFile(AsImage(FCustomName));
+  FPicture.CustomName := FCustomName;
   FPicture.BoundsRect := ARect;
   FPicture.Parent := TSDLControl(AParent);
   FPicture.OnMouseDown := @MouseDown;

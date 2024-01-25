@@ -15,7 +15,11 @@ unit sdl.app.stimuli.contract;
 
 interface
 
-uses Classes, sdl.app.trials.types, sdl.app.navigable.contract;
+uses
+  Classes,
+  sdl.app.trials.types,
+  sdl.app.navigable.contract,
+  sdl.app.selectable.list;
 
 type
   { IStimuli }
@@ -29,6 +33,7 @@ type
     function MyResult : TTrialResult;
     function ToData : string;
     function Header : string;
+    function Selectables : TSelectables;
     procedure DoExpectedResponse;
     procedure Load(AParameters : TStringList; AParent : TObject);
     procedure Start;

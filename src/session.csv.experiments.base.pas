@@ -36,7 +36,6 @@ implementation
 
 uses
   Forms
-  , sdl.app.output
   , session.csv.trials.base
   , session.csv.blocks
   , session.csv.trials

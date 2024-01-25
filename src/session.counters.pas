@@ -11,11 +11,11 @@ unit session.counters;
 
 {$mode objfpc}{$H+}
 
-{$ModeSwitch advancedrecords}
+{$ModeSwitch AdvancedRecords}
 
 interface
 
-uses session.configuration, session.counters.consecutive, session.counters.all;
+uses session.counters.consecutive, session.counters.all;
 
 type
 
@@ -47,7 +47,6 @@ var
 implementation
 
 uses Classes, SysUtils
-  , sdl.app.output
   , sdl.app.grids
   , session.loggers.writerow
   , session.pool
@@ -79,6 +78,7 @@ end;
 
 procedure TCounters.BeforeBeginSession;
 begin
+  Grid := TGrid.Create(3);
   Subject := GetSubjectIDFromFile;
   Session := TSessionCounters.Create;
   Session.Reset;
@@ -114,6 +114,7 @@ begin
     Session.SaveToFile(Pool.BaseFilename+'.bin')
   end;
   Session.Free;
+  Grid.Free;
 end;
 
 procedure TCounters.BeforeEndTrial;

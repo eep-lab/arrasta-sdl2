@@ -28,12 +28,13 @@ var
   TimestampsFilename : string = '';
 
 resourcestring
-  HSUBJECT_NAME      = 'Nome_Sujeito:';
-  HSESSION_NAME      = 'Nome_Sessão:';
-  HFIRST_TIMESTAMP   = 'Primeira_Timestamp:';
-  HBEGIN_TIME        = 'Início:';
-  HEND_TIME          = 'Término:';
-  HSESSION_CANCELED  = '----------Sessão Cancelada----------';
+  HSUBJECT_NAME      = 'Nome_do_sujeito:';
+  HSESSION_NAME      = 'Nome_da_sessao:';
+  HFIRST_TIMESTAMP   = 'Primeira_timestamp:';
+  HBEGIN_TIME        = 'Inicio:';
+  HEND_TIME          = 'Termino:';
+  HGRID              = 'Grade_de_estimulos:';
+  HSESSION_CANCELED  = '----------Sessao Cancelada----------';
   HTEST_MODE         = '(Modo de Teste)';
 
 implementation

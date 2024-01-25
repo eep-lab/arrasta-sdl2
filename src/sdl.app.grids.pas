@@ -54,6 +54,7 @@ type
       function PositionFromObject(AObject: TObject) : integer;
       function Header : string;
       function ToData : string;
+      function ToJSON : string;
       procedure UpdatePositions(ASamples, AComparisons: integer;
         AGridOrientation : TGridOrientation);
       {Cria seleção randômica de modelos e comparações em posições diferentes no AGrid}
@@ -76,6 +77,7 @@ implementation
 uses
   Math
   , session.parameters.global
+  , sdl.helpers
   , sdl.app.grids.methods
   , sdl.app.stimulus.contract
   ;
@@ -463,6 +465,29 @@ begin
   end;
 end;
 
+function TGrid.ToJSON: string;
+var
+  j, i: Integer;
+  LSeparator : string;
+begin
+  Result := '';
+  for j := Low(FGrid) to High(FGrid) do begin
+    for i := Low(FGrid[j]) to High(FGrid[j]) do begin
+      with FGrid[j][i] do begin
+        if (j = 0) and
+           (i = 0) then begin
+          LSeparator := '';
+        end else begin
+          LSeparator := ',';
+        end;
+        Result := String.Join(LSeparator, [Result,
+          Index.ToString + ':' + Rect.ToJSON])
+      end;
+    end;
+  end;
+  Result := '{grid:{'+Result+'}}'
+end;
+
 procedure TGrid.SetCellsCount(AValue: integer);
 begin
   if FCellsCount=AValue then Exit;
@@ -510,8 +535,8 @@ begin
     raise Exception.Create('Unknown position');
   end;
 
-  Result[Col] := AN div FSeed;  // Row
-  Result[Row] := AN mod FSeed;  // Column
+  Result[Col] := AN div FSeed;
+  Result[Row] := AN mod FSeed;
 end;
 
 constructor TGrid.Create(ASeed: integer);
@@ -551,9 +576,6 @@ begin
   end;
   RandomizePositions;
 end;
-
-finalization
-  if Assigned(Grid) then Grid.Free;
 
 end.
 

@@ -44,6 +44,7 @@ implementation
 uses SysUtils
   , DateUtils
   , LazFileUtils
+  , sdl.app.grids
   , session.pool
   , session.loggers.types
   , session.loggers.instances;
@@ -125,6 +126,7 @@ begin
   LHeader :=
     HSUBJECT_NAME + #9 + AParticipantName + LineEnding +
     HSESSION_NAME + #9 + ASessionName + LineEnding +
+    HGRID + #9 + Grid.ToJSON + LineEnding +
     HBEGIN_TIME + #9 + DateTimeToStr(Date) + #9 + TimeToStr(StartTime) + LineEnding;
   DataFilename := CreateLogger(LGData, LFirstFilename, LHeader);
   TimestampsFilename := CreateLogger(LGTimestamps, LFirstFilename, LHeader);

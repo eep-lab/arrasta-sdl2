@@ -5,7 +5,7 @@ unit sdl.app.navigator.lineiterator;
 interface
 
 uses
-  Classes, SysUtils, Generics.Collections,
+  SysUtils,
   Generics.Aggregator,
   sdl.app.selectable.contract,
   sdl.app.selectable.list;

@@ -14,8 +14,7 @@ unit sdl.app.trials.mts;
 interface
 
 uses
-  Classes, SysUtils
-  , session.configuration
+  SysUtils
   , sdl.app.trials
   , sdl.app.stimuli.contract
   , sdl.app.stimuli.mts

@@ -15,7 +15,7 @@ unit Generics.Aggregator.Table.Contract;
 
 interface
 
-uses Classes, Generics.Table, Generics.Iterator.Table.Contract;
+uses Generics.Table, Generics.Iterator.Table.Contract;
 
 type
 

@@ -11,7 +11,7 @@ unit Generics.Iterator.Table;
 
 interface
 
-uses Classes, SysUtils
+uses SysUtils
    , Generics.Iterator.Table.Contract
    , Generics.Aggregator.Table.Contract
    , Generics.Tables.Types;

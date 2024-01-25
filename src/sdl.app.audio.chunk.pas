@@ -48,7 +48,7 @@ type
 
 implementation
 
-uses FileUtil, LazFileUtils, session.pool, sdl.app.audio;
+uses LazFileUtils, sdl.app.audio;
 
 { TChunk }
 

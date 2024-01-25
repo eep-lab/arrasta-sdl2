@@ -58,11 +58,13 @@ type
     FOnMouseEnter: TNotifyEvent;
     FOnMouseExit: TNotifyEvent;
     FParent : TSDLControl;
+    function GetCustomName : string;
     function GetInFront: Boolean;
     function GetSDLMouseMotion    : TOnMouseMotionEvent;
     function GetSDLMouseButtonDown: TOnMouseButtonDownEvent;
     function GetSDLMouseButtonUp  : TOnMouseButtonUpEvent;
     function GetZIndex: integer;
+    procedure SetCustomName(AValue : string);
     procedure SetOnGazeEnter(AValue: TNotifyEvent);
     procedure SetOnGazeExit(AValue: TNotifyEvent);
     procedure SetOnGazeMove(AValue: TOnMouseEvent);
@@ -79,6 +81,7 @@ type
     procedure SDLMouseButtonUp(const event: TSDL_MouseButtonEvent);
     procedure BringChildToFront(AChild : TObject);
   protected
+    FCustomName : string;
     FRect : TSDL_Rect;
     FChildren : TChildren;
     function GetGazeInside : Boolean; virtual;
@@ -130,11 +133,12 @@ type
     property ZIndex : integer read GetZIndex;
     property InFront : Boolean read GetInFront;
     property Owner : TObject read FOwner write SetOwner;
+    property CustomName : string read GetCustomName write SetCustomName;
   end;
 
 implementation
 
-uses sdl.app.mouse, sdl.app.video.methods;
+uses sdl.app.mouse;
 
 { TSDLControl }
 
@@ -346,6 +350,7 @@ end;
 constructor TSDLControl.Create;
 begin
   inherited Create;
+  FCustomName := '';
   FChildren := TChildren.Create;
   FMouseInside := False;
   FGazeInside := False;
@@ -389,6 +394,11 @@ begin
   Result.Y := FRect.h div 2;
 end;
 
+function TSDLControl.GetCustomName: string;
+begin
+  Result := FCustomName;
+end;
+
 function TSDLControl.BottomRightPoint: TSDL_Point;
 begin
   Result.X := FRect.w;
@@ -425,6 +435,12 @@ end;
 procedure TSDLControl.Select;
 begin
   Mouse.MoveTo(ClientToParent(CenterPoint));
+end;
+
+procedure TSDLControl.SetCustomName(AValue: string);
+begin
+  if FCustomName = AValue then Exit;
+  FCustomName := AValue;
 end;
 
 end.

@@ -73,11 +73,9 @@ type
 
 implementation
 
-uses session.pool
-   , sdl.app.controls.custom
-   , session.constants.mts
+uses sdl.app.controls.custom
    , session.strutils
-   , session.strutils.mts;
+   ;
 
 { TTypeableStimulus }
 

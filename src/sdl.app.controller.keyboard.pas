@@ -5,7 +5,7 @@ unit sdl.app.controller.keyboard;
 interface
 
 uses
-  Classes, SysUtils, SDL2,
+  SysUtils, SDL2,
   sdl.app.events.abstract,
   sdl.app.navigator.contract,
   sdl.app.controller;

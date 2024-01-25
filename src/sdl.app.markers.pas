@@ -14,7 +14,7 @@ unit sdl.app.markers;
 interface
 
 uses
-  Classes, SysUtils, Generics.Collections
+  SysUtils, Generics.Collections
   , SDL2
   , sdl.app.graphics.marker
   ;

@@ -14,7 +14,7 @@ unit sdl.app.controller.factory;
 interface
 
 uses
-  Classes, SysUtils,
+  SysUtils,
   sdl.app.controller.types,
   sdl.app.controller;
 
@@ -29,6 +29,7 @@ type
 implementation
 
 uses
+  SDL2,
   sdl.app.controller.mouse,
   sdl.app.controller.keyboard,
   sdl.app.controller.wii,
@@ -38,6 +39,7 @@ uses
 
 class function TControllerFactory.New(ACode: TControllerCode): TController;
 begin
+  if SDL_NumJoysticks < 1 then ACode := gcMouse;
   case ACode of
     gcMouse: begin
       Result := TSDLMouseController.Create;

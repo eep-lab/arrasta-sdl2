@@ -55,7 +55,6 @@ uses
   //, sdl.colors
   , sdl.app.video.methods
   , sdl.app.output
-  , session.pool
   ;
 
 { TPicture }

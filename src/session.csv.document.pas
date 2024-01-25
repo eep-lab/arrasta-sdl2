@@ -5,7 +5,7 @@ unit session.csv.document;
 interface
 
 uses
-  Classes, SysUtils, csvdocument;
+  SysUtils, csvdocument;
 
 type
 

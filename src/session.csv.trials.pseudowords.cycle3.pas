@@ -4,7 +4,7 @@ unit session.csv.trials.pseudowords.cycle3;
 
 interface
 
-uses Classes, SysUtils, session.csv.trials.pseudowords;
+uses SysUtils, session.csv.trials.pseudowords;
 
 type
 

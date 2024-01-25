@@ -5,7 +5,7 @@ unit forms.modal.speechvalidation;
 interface
 
 uses
-  Classes, SysUtils, Forms, Controls, Graphics, Dialogs, StdCtrls;
+  Classes, Forms, Dialogs, StdCtrls;
 
 type
 

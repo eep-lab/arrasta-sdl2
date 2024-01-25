@@ -47,7 +47,6 @@ uses
   sdl2_image
   , sdl.app.video.methods
   , sdl.app.output
-  , session.pool
   ;
 
 { TChoiceablePicture }
