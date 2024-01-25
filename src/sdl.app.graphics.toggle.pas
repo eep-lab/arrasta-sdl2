@@ -61,10 +61,10 @@ type
     procedure MouseEnter(Sender: TObject); override;
     procedure MouseExit(Sender: TObject); override;
     procedure Paint; override;
-    procedure Confirm; override;
   public
     constructor Create; override;
     destructor Destroy; override;
+    procedure Confirm; override;
     procedure LoadFromFile(AFilename1, AFilename2: string); virtual;
     procedure Toggle;
     property Owner : TObject read FOwner write SetOwner;
