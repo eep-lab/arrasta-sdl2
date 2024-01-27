@@ -27,6 +27,7 @@ type
 
   TEyeLinkEyeTracker = class sealed (TEyeTrackerClient)
     private
+      FCurrentData : array of PALLF_DATA;
       FEyeLinkClient : TEyeLinkClient;
       FOnGazeOnScreenEvent : TGazeOnScreenEvent;
       procedure AllDataEvent(Sender: TObject; APALLF_DATA : array of PALLF_DATA);
@@ -44,6 +45,7 @@ type
     public
       constructor Create;
       destructor Destroy; override;
+      function CurrentGazes: TNormalizedGazes; override;
   end;
 
 implementation
@@ -108,33 +110,38 @@ begin
   inherited Destroy;
 end;
 
+function TEyeLinkEyeTracker.CurrentGazes: TNormalizedGazes;
+begin
+  // todo: implement me with FCurrentData
+end;
+
 procedure TEyeLinkEyeTracker.AllDataEvent(Sender: TObject;
   APALLF_DATA: array of PALLF_DATA);
-var
-  LLastGazes : TGazes = nil;
-  LLength : integer;
-  i : integer;
-  function NormToScreen(E : ALLF_DATA) : TGaze;
-  begin
-    if E.fe.eye = 2 then
-      E.fe.eye := 0;
-    Result.X :=
-      Round(E.fs.gx[E.fe.eye]*FEyeLinkClient.HostApp.Monitor.w);
-    Result.Y :=
-      Round((1.0 - E.fs.gy[E.fe.eye])*FEyeLinkClient.HostApp.Monitor.h);
-  end;
+//var
+//  LLastGazes : TGazes = nil;
+//  LLength : integer;
+//  i : integer;
+//  function NormToScreen(E : ALLF_DATA) : TGaze;
+//  begin
+//    if E.fe.eye = 2 then
+//      E.fe.eye := 0;
+//    Result.X :=
+//      Round(E.fs.gx[E.fe.eye]*FEyeLinkClient.HostApp.Monitor.w);
+//    Result.Y :=
+//      Round((1.0 - E.fs.gy[E.fe.eye])*FEyeLinkClient.HostApp.Monitor.h);
+//  end;
 
 begin
-  LLength := Length(APALLF_DATA);
-  if LLength > 0 then begin
-    SetLength(LLastGazes, LLength);
-    for i := Low(LLastGazes) to High(LLastGazes) do begin
-      LLastGazes[i] := NormToScreen(APALLF_DATA[i]^);
-      if Assigned(FOnGazeOnScreenEvent) then begin
-        FOnGazeOnScreenEvent(Self, LLastGazes);
-      end;
-    end;
-  end;
+  //LLength := Length(APALLF_DATA);
+  //if LLength > 0 then begin
+  //  SetLength(LLastGazes, LLength);
+  //  for i := Low(LLastGazes) to High(LLastGazes) do begin
+  //    LLastGazes[i] := NormToScreen(APALLF_DATA[i]^);
+  //    if Assigned(FOnGazeOnScreenEvent) then begin
+  //      FOnGazeOnScreenEvent(Self, LLastGazes);
+  //    end;
+  //  end;
+  //end;
 end;
 
 procedure TEyeLinkEyeTracker.CalibrationSuccessfulEvent(Sender: TObject);

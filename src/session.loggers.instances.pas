@@ -34,6 +34,7 @@ resourcestring
   HBEGIN_TIME        = 'Inicio:';
   HEND_TIME          = 'Termino:';
   HGRID              = 'Grade_de_estimulos:';
+  HMONITOR           = 'Monitor:';
   HSESSION_CANCELED  = '----------Sessao Cancelada----------';
   HTEST_MODE         = '(Modo de Teste)';
 

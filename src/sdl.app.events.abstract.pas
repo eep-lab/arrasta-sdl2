@@ -182,7 +182,7 @@ type
   function GetKeyState(KeyCode : TSDL_ScanCode) : Boolean;
 
 const
-  SDL_USEREVENTSTOREGISTER = 2;
+  SDL_USEREVENTSTOREGISTER = 3;
 
 implementation
 

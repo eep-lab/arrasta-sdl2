@@ -44,7 +44,9 @@ implementation
 uses SysUtils
   , DateUtils
   , LazFileUtils
+  , sdl.app.video.methods
   , sdl.app.grids
+  , sdl.helpers
   , session.pool
   , session.loggers.types
   , session.loggers.instances;
@@ -127,7 +129,9 @@ begin
     HSUBJECT_NAME + #9 + AParticipantName + LineEnding +
     HSESSION_NAME + #9 + ASessionName + LineEnding +
     HGRID + #9 + Grid.ToJSON + LineEnding +
-    HBEGIN_TIME + #9 + DateTimeToStr(Date) + #9 + TimeToStr(StartTime) + LineEnding;
+    HMONITOR + #9 + WindowSize.ToJSON + LineEnding +
+    HBEGIN_TIME + #9 + DateTimeToStr(Date) + #9 + TimeToStr(StartTime) +
+    LineEnding + LineEnding;
   DataFilename := CreateLogger(LGData, LFirstFilename, LHeader);
   TimestampsFilename := CreateLogger(LGTimestamps, LFirstFilename, LHeader);
   Pool.BaseFilename := GetBaseFilename;
@@ -140,9 +144,10 @@ var
   LStopTime : TDateTime;
 begin
   LStopTime := Time;
-  Footer := HEND_TIME + #9 + DateTimeToStr(Date) + #9 +
-    TimeToStr(LStopTime)+ LineEnding + LineEnding +
-    'Length:' + #9+ TimeToStr(Time - StartTime);
+  Footer := LineEnding +
+    HEND_TIME + #9 + DateTimeToStr(Date) + #9 +
+      TimeToStr(LStopTime) + LineEnding +
+    'Length:' + #9 + TimeToStr(Time - StartTime);
   FreeLogger(LGTimestamps, Footer);
   FreeLogger(LGData, Footer);
 end;

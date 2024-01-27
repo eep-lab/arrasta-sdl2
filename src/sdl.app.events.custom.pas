@@ -135,14 +135,21 @@ begin
 
     SESSION_CHUNK_STOPPED:
       DoOnEndSound;
+
+    EYE_TRACKER_GAZE_EVENT: begin
+      OnGazeOnScreen(EyeTracker.CurrentGazes);
+    end;
   end;
 end;
 
 constructor TCustomEventHandler.Create;
 var
   Event : TSDL_EventType;
-  SDLUserEvents : array [0..SDL_USEREVENTSTOREGISTER] of TSDL_EventType =
-    (SESSION_TRIALEND, SESSION_ONTIMER, SESSION_CHUNK_STOPPED);
+  SDLUserEvents : array [0..SDL_USEREVENTSTOREGISTER] of TSDL_EventType = (
+    SESSION_TRIALEND,
+    SESSION_ONTIMER,
+    SESSION_CHUNK_STOPPED,
+    EYE_TRACKER_GAZE_EVENT);
 begin
   inherited Create;
   FKeyboard := TSDLSystemKeyboard.Create;

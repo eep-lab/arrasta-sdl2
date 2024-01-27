@@ -13,20 +13,34 @@ unit eye.tracker.types;
 
 interface
 
+uses SDL2;
+
 type
 
   TEyeTrackerCode = (etNone, etEyeLink, etPupilLabs);
 
-  TGaze = record
-    X : Integer;
-    Y : Integer;
+  TNormalizedGaze = record
+    X : Double;
+    Y : Double;
   end;
 
-  TGazes = array of TGaze;
+  TNormalizedGazes = array of TNormalizedGaze;
 
-  TGazeOnScreenEvent = procedure (Sender : TObject; AGazes : TGazes) of object;
+  TGazeOnScreenEvent = procedure(AGazes : TNormalizedGazes) of object;
+
+function NormToScreen(AGaze: TNormalizedGaze; AScreen: TSDL_Rect): TSDL_Point;
+
+const
+  EYE_TRACKER_GAZE_EVENT = SDL_USEREVENT+3;
 
 implementation
+
+function NormToScreen(AGaze: TNormalizedGaze; AScreen: TSDL_Rect): TSDL_Point;
+begin
+  Result.X := Round(AGaze.X * AScreen.w);
+  Result.Y := Round((1.0 - AGaze.Y) * AScreen.h);
+end;
+
 
 end.
 

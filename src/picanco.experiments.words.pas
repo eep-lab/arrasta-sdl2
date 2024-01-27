@@ -40,7 +40,7 @@ implementation
 
 uses
   Classes, SysUtils, StrUtils
-  , sdl.app.output
+  //, sdl.app.output
   , picanco.experiments.constants
   , picanco.experiments.words.constants;
 
@@ -118,7 +118,7 @@ begin
 
     WriteStr(LM, AWord.CycleCode);
     WriteStr(LS, LLastPositiveCode);
-    Print(LM+'-'+LS);
+    //Print(LM+'-'+LS);
 
     case AWord.CycleCode of
       T1 : begin

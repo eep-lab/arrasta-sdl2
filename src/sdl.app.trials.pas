@@ -59,7 +59,7 @@ type
       procedure SetTestMode(AValue: Boolean);
       procedure EndStarterCallBack(Sender : TObject);
       procedure CreateStartersIfRequired;
-      procedure GazeOnScreen(Sender : TObject;  AGazes : TGazes);
+      procedure GazeOnScreen(AGazes : TNormalizedGazes);
     protected
       FHasConsequence : Boolean;
       FResult : TTrialResult;
@@ -105,7 +105,8 @@ const
 implementation
 
 uses
-    eye.tracker.client
+  Pupil.Queue
+  , eye.tracker.client
   , sdl.app.video.methods
   , sdl.app.stimuli.instruction
   , sdl.app.stimuli.calibration
@@ -346,31 +347,29 @@ begin
   end;
 end;
 
-procedure TTrial.GazeOnScreen(Sender: TObject; AGazes: TGazes);
+procedure TTrial.GazeOnScreen(AGazes : TNormalizedGazes);
 var
   Child : TObject;
-  SDLPoint : TSDL_Point;
+  Gaze : TSDL_Point;
   IChild : ILookable;
   i: Integer;
 begin
   if FVisible then begin
-    if Length(AGazes) > 0 then begin
-      for i := Low(AGazes) to High(AGazes) do begin
-        for Child in FChildren do begin
-          SDLPoint.x := AGazes[i].X;
-          SDLPoint.y := AGazes[i].Y;
-          IChild := ILookable(TSDLControl(Child));
-          if IChild.PointInside(SDLPoint) then begin
-            if not IChild.GazeInside then begin
-              IChild.GazeInside:=True;
-              IChild.GazeEnter(Sender);
-            end;
-            IChild.GazeMove(Sender, GetShiftState, AGazes[i].X, AGazes[i].Y);
-          end else begin
-            if IChild.GazeInside then begin
-              IChild.GazeInside:=False;
-              IChild.GazeExit(Sender);
-            end;
+    for i := Low(AGazes) to High(AGazes) do begin
+      for Child in FChildren do begin
+        Gaze := NormToScreen(AGazes[i], FRect);
+
+        IChild := ILookable(TSDLControl(Child));
+        if IChild.PointInside(Gaze) then begin
+          if not IChild.GazeInside then begin
+            IChild.GazeInside:=True;
+            IChild.GazeEnter(Self);
+          end;
+          IChild.GazeMove(Self, GetShiftState, Gaze.X, Gaze.Y);
+        end else begin
+          if IChild.GazeInside then begin
+            IChild.GazeInside:=False;
+            IChild.GazeExit(Self);
           end;
         end;
       end;
