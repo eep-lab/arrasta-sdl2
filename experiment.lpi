@@ -979,6 +979,16 @@
         <Filename Value="src\sdl.app.selectable.helpers.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit>
+      <Unit>
+        <Filename Value="dependencies\pupil-fpc\pupil.types.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Pupil.Types"/>
+      </Unit>
+      <Unit>
+        <Filename Value="dependencies\pupil-fpc\pupil.queue.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Pupil.Queue"/>
+      </Unit>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
