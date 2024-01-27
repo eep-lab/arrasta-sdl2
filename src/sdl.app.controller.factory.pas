@@ -39,6 +39,7 @@ uses
 
 class function TControllerFactory.New(ACode: TControllerCode): TController;
 begin
+  SDL_JoystickUpdate;
   if SDL_NumJoysticks < 1 then ACode := gcMouse;
   case ACode of
     gcMouse: begin
