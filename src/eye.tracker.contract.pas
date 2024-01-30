@@ -32,7 +32,7 @@ type
     procedure StartRecording;
     procedure StopRecording;
     procedure StartCalibration;
-    procedure StopCalibration;
+    procedure CalibrationSuccessful;
   end;
 
 implementation

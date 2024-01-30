@@ -3,14 +3,13 @@ object FormBackground: TFormBackground
   Height = 523
   Top = 152
   Width = 702
-  BorderStyle = bsNone
   Caption = 'Stimulus Control'
   ClientHeight = 523
   ClientWidth = 702
+  DefaultMonitor = dmPrimary
   PopupMenu = PopupMenuMisc
-  SessionProperties = 'ComboBoxCondition.ItemIndex;ComboBoxDesignFolder.ItemIndex;ComboBoxParticipant.Items;OpenDialog1.InitialDir;ComboBoxParticipant.ItemIndex;ComboBoxParticipant.Text'
+  SessionProperties = 'ComboBoxCondition.ItemIndex;ComboBoxDesignFolder.ItemIndex;ComboBoxParticipant.ItemIndex;ComboBoxParticipant.Items;ComboBoxParticipant.Text;OpenDialog1.InitialDir;Width;Left;Height;Top'
   LCLVersion = '3.99.0.0'
-  WindowState = wsFullScreen
   object Panel1: TPanel
     AnchorSideLeft.Control = Owner
     AnchorSideLeft.Side = asrCenter

@@ -84,6 +84,7 @@ implementation
 
 uses
   FileUtil
+  , Math
   , common.helpers
   , forms.main.misc
   , session
@@ -116,6 +117,7 @@ begin
 
   SDLApp := TSDLApplication.Create(@Pool.AppName[1]);
   SDLApp.SetupVideo(FormMisc.ComboBoxMonitor.ItemIndex);
+  SDLApp.PrintRendererSetup;
   SDLApp.SetupAudio;
   SDLApp.SetupText;
   SDLApp.OnClose := @CloseSDLApp;

@@ -45,6 +45,7 @@ type
 implementation
 
 uses Classes
+   , SDL2
    , session.intertrial
    , session.configuration
    , session.configurationfile
@@ -98,6 +99,8 @@ begin
   FCurrentTrial.TestMode := TestMode;
   FCurrentTrial.Data := TrialData;
   FCurrentTrial.Show;
+
+  Controllers.FirstController.Show;
 end;
 
 class function TTrialFactory.CurrentTrial: ITrial;

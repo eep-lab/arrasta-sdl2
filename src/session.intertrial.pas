@@ -62,6 +62,7 @@ uses
   , session.pool
   , sdl.colors
   , sdl.app.trials.types
+  , sdl.app.controller.manager
   ;
 
 { TInterTrialEvents }
@@ -74,7 +75,8 @@ end;
 
 procedure TInterTrialEvents.TrialEnd(Sender: TObject);
 begin
-  SDL_ShowCursor(SDL_DISABLE);
+  Controllers.FirstController.Hide;
+
   FTrial := Sender as ITrial;
 
   //Background.Cursor := -1;

@@ -44,15 +44,25 @@ begin
     TTrialFactory.CurrentTrial.AsIPaintable.Paint;
   end;
 
-  if Assigned(Markers) then begin
-    Markers.Paint;
-  end;
+  //if Assigned(Markers) then begin
+  //  Markers.Paint;
+  //end;
 
   //PaintDebugGraphics;
 
   SDL_RenderPresent(PSDLRenderer);
-  SDL_Delay(1000 div 50);
+  SDL_Delay(DELTA_TIME);
 end;
+
+
+const
+  MONITOR_HZ = 50;
+
+var
+  DELTA_TIME : ShortInt;
+
+initialization
+  DELTA_TIME := 1000 div MONITOR_HZ;
 
 end.
 

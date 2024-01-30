@@ -115,7 +115,8 @@ uses
   , sdl.app.moveable.contract
   , sdl.app.lookable.contract
   , session.constants.trials
-  , session.loggers.writerow.timestamp;
+  , session.loggers.writerow.timestamp
+  , sdl.app.mouse;
 
 { TTrial }
 
@@ -461,7 +462,10 @@ begin
 end;
 
 procedure TTrial.Show;
+var
+  Point : TSDL_Point = (x:0; y:0);
 begin
+  Mouse.MoveTo(Point);
   if TestMode then begin
     DoExpectedResponse;
   end else begin
@@ -476,7 +480,6 @@ begin
       Timestamp(CustomName+'.Show'+#9+Selectables.ToJSON);
     end;
   end;
-  SDL_ShowCursor(SDL_ENABLE);
 end;
 
 procedure TTrial.Hide;

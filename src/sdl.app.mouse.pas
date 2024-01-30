@@ -18,6 +18,8 @@ type
     constructor Create(APSDLWindow: PSDL_Window);
     procedure MoveTo(APoint : TSDL_Point);
     function State(out APoint : TSDL_Point): Uint32;
+    procedure Hide;
+    procedure Show;
   end;
 
 var
@@ -40,6 +42,16 @@ end;
 function TSDLMouseHandler.State(out APoint: TSDL_Point): Uint32;
 begin
   Result := SDL_GetMouseState(@APoint.X, @APoint.Y);
+end;
+
+procedure TSDLMouseHandler.Hide;
+begin
+  SDL_ShowCursor(SDL_DISABLE);
+end;
+
+procedure TSDLMouseHandler.Show;
+begin
+  SDL_ShowCursor(SDL_ENABLE);
 end;
 
 end.

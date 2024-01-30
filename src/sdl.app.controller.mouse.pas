@@ -8,12 +8,29 @@ uses sdl.app.controller;
 
 type
 
-  // TSDLMouseController is an opaque class
-  TSDLMouseController = class(TController)
+  { TSDLMouseController }
 
+  TSDLMouseController = class(TController)
+    public
+      procedure Hide; override;
+      procedure Show; override;
   end;
 
 implementation
+
+uses sdl.app.mouse;
+
+{ TSDLMouseController }
+
+procedure TSDLMouseController.Hide;
+begin
+  Mouse.Hide;
+end;
+
+procedure TSDLMouseController.Show;
+begin
+  Mouse.Show;
+end;
 
 end.
 

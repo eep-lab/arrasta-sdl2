@@ -28,9 +28,11 @@ type
   TEyeLinkEyeTracker = class sealed (TEyeTrackerClient)
     private
       FCurrentData : array of PALLF_DATA;
+      FCalibrationSuccessful : TNotifyEvent;
+      FCalibrationFailed : TNotifyEvent;
       FEyeLinkClient : TEyeLinkClient;
       FOnGazeOnScreenEvent : TGazeOnScreenEvent;
-      procedure AllDataEvent(Sender: TObject; APALLF_DATA : array of PALLF_DATA);
+      procedure AllDataEvent(Sender : TObject; APALLF_DATA : PALLF_DATA);
       procedure CalibrationSuccessfulEvent(Sender: TObject);
       procedure CalibrationFailedEvent(Sender: TObject);
     protected
@@ -42,6 +44,7 @@ type
       procedure StopRecording; override;
       procedure StartCalibration; override;
       procedure StopCalibration; override;
+      procedure CalibrationSuccessful; override;
     public
       constructor Create;
       destructor Destroy; override;
@@ -63,12 +66,12 @@ end;
 
 procedure TEyeLinkEyeTracker.SetOnCalibrationSuccessful(AValue: TNotifyEvent);
 begin
-
+  FCalibrationSuccessful := AValue;
 end;
 
 procedure TEyeLinkEyeTracker.SetOnCalibrationFailed(AValue: TNotifyEvent);
 begin
-
+  FCalibrationFailed := AValue;
 end;
 
 procedure TEyeLinkEyeTracker.StartRecording;
@@ -76,9 +79,10 @@ const
   LRootFolder = '_eyelink_data' + DirectorySeparator;
 begin
   FEyeLinkClient.OutputFolder := Pool.BaseFilename + LRootFolder;
-  FEyeLinkClient.Start;
+  FEyeLinkClient.OnAllDataEvent := @AllDataEvent;
   //FEyeLinkClient.StartRealTime;
   FEyeLinkClient.StartDataRecording;
+  FEyeLinkClient.Start;
 end;
 
 procedure TEyeLinkEyeTracker.StopRecording;
@@ -96,6 +100,13 @@ end;
 procedure TEyeLinkEyeTracker.StopCalibration;
 begin
   FEyeLinkClient.ExitCalibration;
+end;
+
+procedure TEyeLinkEyeTracker.CalibrationSuccessful;
+begin
+  //FEyeLinkClient.ExitCalibration;
+  //FEyeLinkClient.CloseExperimentGraphics;
+  FCalibrationSuccessful(Self);
 end;
 
 constructor TEyeLinkEyeTracker.Create;
@@ -116,7 +127,7 @@ begin
 end;
 
 procedure TEyeLinkEyeTracker.AllDataEvent(Sender: TObject;
-  APALLF_DATA: array of PALLF_DATA);
+  APALLF_DATA: PALLF_DATA);
 //var
 //  LLastGazes : TGazes = nil;
 //  LLength : integer;

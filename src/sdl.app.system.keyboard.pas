@@ -28,17 +28,37 @@ type
 
 implementation
 
-uses sdl.app.events.custom, sdl.app;
+uses sdl.app, eye.tracker, ctypes;
 
 { TSDLKeyboard }
 
 procedure TSDLSystemKeyboard.KeyDown(const event: TSDL_KeyboardEvent);
 var
   LOnKeyDown : TOnKeyDownEvent;
+  LKeyboardState: pcuint8 = nil;
 begin
+
   case Event.keysym.sym of
     SDLK_ESCAPE: begin
       SDLApp.Terminate;
+    end;
+
+    SDLK_c: begin
+      LKeyboardState := SDL_GetKeyboardState(nil);
+      if GetKeyState(SDL_SCANCODE_LCTRL, LKeyboardState) then begin
+        if EyeTracker <> nil then begin
+          EyeTracker.StartCalibration;
+        end;
+      end;
+    end;
+
+    SDLK_s: begin
+      LKeyboardState := SDL_GetKeyboardState(nil);
+      if GetKeyState(SDL_SCANCODE_LCTRL, LKeyboardState) then begin
+        if EyeTracker <> nil then begin
+          EyeTracker.CalibrationSuccessful;
+        end;
+      end;
     end;
 
     otherwise begin

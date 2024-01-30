@@ -29,6 +29,7 @@ type
       procedure StopRecording; virtual; abstract;
       procedure StartCalibration; virtual; abstract;
       procedure StopCalibration; virtual; abstract;
+      procedure CalibrationSuccessful; virtual; abstract;
     public
       class function Exists : Boolean;
       function CurrentGazes : TNormalizedGazes; virtual; abstract;

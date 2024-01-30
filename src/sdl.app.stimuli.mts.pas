@@ -224,6 +224,8 @@ begin
 end;
 
 procedure TMTSStimuli.ConsequenceDone(Sender: TObject);
+var
+  LStimulus : TStimulus;
 begin
   if (Sender as ISound) = FSoundCorrect then begin
     Timestamp('Hit.Stop');
@@ -304,6 +306,14 @@ begin
     ModalityA: begin
       for LIStimulus in FSamples do begin
         LIStimulus.Stop;
+      end;
+    end;
+
+    ModalityB: begin
+      if FMTSModality.Comparisons = ModalityB then begin
+        for LIStimulus in FSamples do begin
+          LIStimulus.Stop;
+        end;
       end;
     end;
 
