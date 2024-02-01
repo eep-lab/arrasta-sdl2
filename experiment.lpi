@@ -22,7 +22,7 @@
       <UseVersionInfo Value="True"/>
       <AutoIncrementBuild Value="True"/>
       <MajorVersionNr Value="1"/>
-      <BuildNr Value="23"/>
+      <BuildNr Value="25"/>
       <Language Value="0416"/>
       <Attributes pvaPrivateBuild="True"/>
       <StringTable Comments="Uma máquina de ensinar para experimentos comportamentais livres" InternalName="Stimulus Control" LegalCopyright="Carlos Rafael Fernandes Picanço" ProductName="Stimulus Control"/>
@@ -88,7 +88,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir);dependencies\FreeType\include"/>
-            <OtherUnitFiles Value="src;dependencies\epiktimer;src\schedules;dependencies\SDL2-for-Pascal\units;dependencies\EyeLink-for-Pascal\classes;dependencies\EyeLink-for-Pascal\bindings;dependencies\EyeLink-for-Pascal\utils;dependencies\mspeech;dependencies\fpc-zmq;dependencies\pupil-fpc;dependencies\msgpack-delphi;dependencies\glad"/>
+            <OtherUnitFiles Value="src;dependencies\epiktimer;src\schedules;dependencies\SDL2-for-Pascal\units;dependencies\EyeLink-for-Pascal\classes;dependencies\EyeLink-for-Pascal\bindings;dependencies\EyeLink-for-Pascal\utils;dependencies\mspeech;dependencies\fpc-zmq;dependencies\pupil-fpc;dependencies\msgpack-delphi"/>
             <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
           <Parsing>
@@ -988,6 +988,17 @@
         <Filename Value="dependencies\pupil-fpc\pupil.queue.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="Pupil.Queue"/>
+      </Unit>
+      <Unit>
+        <Filename Value="src\picanco.experiments.output.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="src\forms.canvas.playground.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="FormCanvas"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
       </Unit>
     </Units>
   </ProjectOptions>
