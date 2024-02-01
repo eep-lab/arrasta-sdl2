@@ -31,7 +31,7 @@ type
       class function Row(Cols: array of string;
         ALineEnding : string = LineEnding): string;
       class function GetBaseFilename: string; static;
-      class procedure SetHeader(ASessionName: string; AParticipantName: string); static;
+      class procedure SetHeader; static;
       class procedure SetFooter; static;
       procedure SaveData(S: string);
       procedure SaveLine(S: string);
@@ -44,9 +44,6 @@ implementation
 uses SysUtils
   , DateUtils
   , LazFileUtils
-  , sdl.app.video.methods
-  , sdl.app.grids
-  , sdl.helpers
   , session.pool
   , session.loggers.types
   , session.loggers.instances;
@@ -115,8 +112,7 @@ begin
       Result := Result + Cols[i]+ALineEnding;
 end;
 
-class procedure TLogger.SetHeader(ASessionName: string;
-  AParticipantName: string);
+class procedure TLogger.SetHeader;
 var
   LFirstFilename : string;
 begin

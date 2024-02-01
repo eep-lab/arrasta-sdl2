@@ -47,6 +47,8 @@ type
     MediaRootBasePath : string;
     ResponsesBasePath : string;
     RootAudio : string;
+    ParticipantName: string;
+    SessionName: string;
     MonitorToShow : Byte;
     TestMode : Boolean;
   end;

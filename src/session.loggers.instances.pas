@@ -15,11 +15,10 @@ interface
 
 uses session.loggers, session.loggers.types;
 
-procedure FreeLogger(ALogger: TLoggers; AFooter : string);
+procedure FreeLogger(ALogger: TLoggers);
 function GetSaveDataProc(ALogger: TLoggers): TDataProcedure;
 function GetLogger(var ALogger: TLoggers) : TLogger;
-function CreateLogger(ALogger: TLoggers;
-  AFilename, AHeader : string) : string;
+function CreateLogger(ALogger: TLoggers; AFilename : string) : string;
 
 var
   DataFilename : string = '';

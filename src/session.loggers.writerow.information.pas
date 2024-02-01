@@ -27,6 +27,12 @@ resourcestring
 
 implementation
 
+uses
+  session.pool,
+  sdl.helpers,
+  sdl.app.video.methods,
+  sdl.app.grids;
+
 var
   StartTime : TDateTime;
 
@@ -40,8 +46,8 @@ begin
   StartTime := Time;
 
   SaveData(
-    Line([HSUBJECT_NAME, AParticipantName]) +
-    Line([HSESSION_NAME, ASessionName]) +
+    Line([HSUBJECT_NAME, Pool.ParticipantName]) +
+    Line([HSESSION_NAME, Pool.SessionName]) +
     Line([HGRID, Grid.ToJSON]) +
     Line([HMONITOR, WindowSize.ToJSON]) +
     Line([HBEGIN_TIME, DateTimeToStr(Date), TimeToStr(StartTime)])

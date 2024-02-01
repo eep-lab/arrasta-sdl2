@@ -203,7 +203,9 @@ begin
   if Assigned(EyeTracker) then begin
     EyeTracker.StartRecording;
   end;
-  TLogger.SetHeader(SessionName, ParticipantFolderName);
+  Pool.SessionName := SessionName;
+  Pool.ParticipantName := ParticipantFolderName;
+  TLogger.SetHeader;
 end;
 
 procedure TFormBackground.ComboBoxDesignFolderEditingDone(Sender: TObject);
