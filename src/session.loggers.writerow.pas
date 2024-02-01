@@ -101,7 +101,7 @@ begin
 
   // write data
   LData := TLogger.Row([LData +
-    (ClockMonotonic - Pool.TimeStart).ToString,
+    ClockMonotonic.ToString,
     (Pool.Session.Trial.UID + 1).ToString,
     (Pool.Session.Block.UID + 1).ToString,
     (Pool.Session.Block.Trial.UID + 1).ToString,

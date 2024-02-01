@@ -51,9 +51,7 @@ uses SysUtils
   , session.loggers.types
   , session.loggers.instances;
 
-const FirstBasename: string = '001';
-
-var StartTime : TDateTime;
+const FirstBasename: string = '000';
 
 { TLogger }
 
@@ -120,36 +118,23 @@ end;
 class procedure TLogger.SetHeader(ASessionName: string;
   AParticipantName: string);
 var
-  LHeader : string;
   LFirstFilename : string;
 begin
-  StartTime := Time;
   LFirstFilename := Pool.BaseFileName + FirstBasename;
-  LHeader :=
-    HSUBJECT_NAME + #9 + AParticipantName + LineEnding +
-    HSESSION_NAME + #9 + ASessionName + LineEnding +
-    HGRID + #9 + Grid.ToJSON + LineEnding +
-    HMONITOR + #9 + WindowSize.ToJSON + LineEnding +
-    HBEGIN_TIME + #9 + DateTimeToStr(Date) + #9 + TimeToStr(StartTime) +
-    LineEnding + LineEnding;
-  DataFilename := CreateLogger(LGData, LFirstFilename, LHeader);
-  TimestampsFilename := CreateLogger(LGTimestamps, LFirstFilename, LHeader);
+
+  InformationFilename := CreateLogger(LGInfo, LFirstFilename);
+  DataFilename := CreateLogger(LGData, LFirstFilename);
+  TimestampsFilename := CreateLogger(LGTimestamps, LFirstFilename);
+
   Pool.BaseFilename := GetBaseFilename;
   Pool.Session.ID := ExtractFileNameOnly(Pool.BaseFilename).ToInteger;
 end;
 
 class procedure TLogger.SetFooter;
-var
-  Footer : string;
-  LStopTime : TDateTime;
 begin
-  LStopTime := Time;
-  Footer := LineEnding +
-    HEND_TIME + #9 + DateTimeToStr(Date) + #9 +
-      TimeToStr(LStopTime) + LineEnding +
-    'Length:' + #9 + TimeToStr(Time - StartTime);
-  FreeLogger(LGTimestamps, Footer);
-  FreeLogger(LGData, Footer);
+  FreeLogger(LGTimestamps);
+  FreeLogger(LGData);
+  FreeLogger(LGInfo);
 end;
 
 procedure TLogger.SaveData(S: string);

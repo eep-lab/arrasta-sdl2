@@ -1,0 +1,25 @@
+object FormCanvas: TFormCanvas
+  Left = 514
+  Height = 240
+  Top = 160
+  Width = 320
+  HorzScrollBar.Increment = 110
+  VertScrollBar.Increment = 100
+  Caption = 'FormCanvas'
+  PopupMenu = PopupMenuSave
+  LCLVersion = '3.99.0.0'
+  OnCreate = FormCreate
+  OnDestroy = FormDestroy
+  object SavePictureDialog1: TSavePictureDialog
+    Left = 232
+    Top = 24
+  end
+  object PopupMenuSave: TPopupMenu
+    Left = 128
+    Top = 24
+    object MenuItemDrawEquivalenceClasses: TMenuItem
+      Caption = 'Salvar'
+      OnClick = MenuItemDrawEquivalenceClassesClick
+    end
+  end
+end

@@ -32,6 +32,8 @@ type
     ComboBoxParticipant: TComboBox;
     IniPropStorage1: TIniPropStorage;
     LabelContact: TLabel;
+    MenuItemShowWordsPerCycle: TMenuItem;
+    MenuItemOutputWordsPerCyle: TMenuItem;
     MenuItemCyclesFromTemplate: TMenuItem;
     MenuItemConvertDesignFile: TMenuItem;
     MenuItemRemoveParticipant: TMenuItem;
@@ -63,7 +65,9 @@ type
     procedure MenuItemConvertDesignFileClick(Sender: TObject);
     procedure MenuItemCopyPNGFilesClick(Sender: TObject);
     procedure MenuItemCyclesFromTemplateClick(Sender: TObject);
+    procedure MenuItemOutputWordsPerCyleClick(Sender: TObject);
     procedure MenuItemRemoveParticipantClick(Sender: TObject);
+    procedure MenuItemShowWordsPerCycleClick(Sender: TObject);
   private
     procedure AssignGlobalVariables;
     procedure ToogleControlPanelEnabled(AException: TComponent = nil);
@@ -100,6 +104,7 @@ uses
   , sdl.app.testmode
   , eye.tracker
   , picanco.experiments.images
+  , picanco.experiments.output
   ;
 
 { ToDo: show next designed session of selected participant.
@@ -278,10 +283,20 @@ begin
   CyclesFromTemplate;
 end;
 
+procedure TFormBackground.MenuItemOutputWordsPerCyleClick(Sender: TObject);
+begin
+  PrintWordsPerCycle;
+end;
+
 procedure TFormBackground.MenuItemRemoveParticipantClick(Sender: TObject);
 begin
   with ComboBoxParticipant do
     Items.Delete(ItemIndex);
+end;
+
+procedure TFormBackground.MenuItemShowWordsPerCycleClick(Sender: TObject);
+begin
+  ShowWordsPerCycle;
 end;
 
 procedure TFormBackground.AssignGlobalVariables;

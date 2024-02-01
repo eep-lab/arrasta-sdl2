@@ -17,26 +17,26 @@ interface
 uses
   SysUtils, timestamps.types
 
-{$ifdef LINUX}
+{$IFDEF LINUX}
   , Linux
   , UnixType
-{$endif}
+{$ENDIF}
 
-{$ifdef WINDOWS}
-  , Windows
-{$endif}
-
-{$ifdef DARWIN}
+{$IFDEF DARWIN}
   , ctypes
   , MachTime
-{$endif}
+{$ENDIF}
+
+{$IFDEF WINDOWS}
+  , Windows
+{$ENDIF}
   ;
 
 function ClockMonotonic : TLargerFloat;
 
 implementation
 
-{$ifdef LINUX}
+{$IFDEF LINUX}
 function ClockMonotonic: TLargerFloat;
 var
   tp: timespec;
@@ -47,26 +47,9 @@ begin
   b := TLargerFloat(tp.tv_nsec) * 1e-9;
   Result := a+b;
 end;
-{$endif}
+{$ENDIF}
 
-{$ifdef WINDOWS}
-var
-  PerSecond : TLargeInteger;
-
-function ClockMonotonic: TLargerFloat;
-var
-  Count : TLargeInteger;
-begin
-  QueryPerformanceCounter(Count);
-  Result := Count / PerSecond;
-end;
-
-
-initialization
-   QueryPerformanceFrequency(PerSecond);
-{$endif}
-
-{$ifdef DARWIN}
+{$IFDEF DARWIN}
 {credits: https://github.com/pupil-labs/pyuvc/blob/master/pyuvc-source/darwin_time.pxi}
 
 var
@@ -83,8 +66,24 @@ begin
   end;
   Result := mach_absolute_time() * timeConvert;
 end;
+{$ENDIF}
 
-{$endif}
+{$IFDEF WINDOWS}
+var
+  PerSecond : TLargeInteger;
+
+function ClockMonotonic: TLargerFloat;
+var
+  Count : TLargeInteger;
+begin
+  QueryPerformanceCounter(Count);
+  Result := Count / PerSecond;
+end;
+
+
+initialization
+   QueryPerformanceFrequency(PerSecond);
+{$ENDIF}
 
 end.
 

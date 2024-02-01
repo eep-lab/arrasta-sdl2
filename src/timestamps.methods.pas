@@ -27,9 +27,12 @@ type
     function ToString: string;
   end;
 
+var
+  TimeStart : TLargerFloat;
+
 implementation
 
-uses session.pool, timestamps;
+uses timestamps;
 
 function GetLatency(AStart, ALatency: TLargerFloat): string;
 begin
@@ -42,14 +45,14 @@ end;
 
 function Elapsed: TLargerFloat;
 begin
-  Result := ClockMonotonic - Pool.TimeStart;
+  Result := ClockMonotonic - TimeStart;
 end;
 
 { TLargerFloatHelper }
 
 function TLargerFloatHelper.Elapsed: TLargerFloat;
 begin
-  Result := Self - Pool.TimeStart;
+  Result := Self - TimeStart;
 end;
 
 function TLargerFloatHelper.ToString: string;

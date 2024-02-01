@@ -173,6 +173,14 @@ object FormBackground: TFormBackground
       Caption = 'Criar ciclos do template'
       OnClick = MenuItemCyclesFromTemplateClick
     end
+    object MenuItemOutputWordsPerCyle: TMenuItem
+      Caption = 'Escrever palavras por ciclo no arquivo de depuração'
+      OnClick = MenuItemOutputWordsPerCyleClick
+    end
+    object MenuItemShowWordsPerCycle: TMenuItem
+      Caption = 'Mostrar palavras por ciclo'
+      OnClick = MenuItemShowWordsPerCycleClick
+    end
   end
   object OpenDialog2: TOpenDialog
     DefaultExt = '.csv'

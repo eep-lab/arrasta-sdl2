@@ -161,7 +161,7 @@ end;
 
 procedure TInterTrialEvents.InterTrialIntervalBegin;
 begin
-  //ITIBegin := TickCount - Pool.TimeStart;
+  //ITIBegin := ClockMonotonic;
 end;
 
 procedure TInterTrialEvents.InterTrialEnd(Sender: TObject);

@@ -17,8 +17,7 @@ uses
   sdl.app
   , session.endcriteria
   , session.counters
-  , session.counters.all
-  , timestamps.types;
+  , session.counters.all;
 
 type
 
@@ -50,7 +49,6 @@ type
     RootAudio : string;
     MonitorToShow : Byte;
     TestMode : Boolean;
-    TimeStart : TLargerFloat;
   end;
 
 var

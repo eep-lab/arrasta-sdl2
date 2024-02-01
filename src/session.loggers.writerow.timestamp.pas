@@ -28,12 +28,9 @@ begin
 end;
 
 procedure Timestamp(AEvent : string);
-var
-  LTimestamp : string;
 begin
-  LTimestamp := (ClockMonotonic - Pool.TimeStart).ToString;
   SaveData(TLogger.Row([
-    LTimestamp,
+    ClockMonotonic.ToString,
     (Pool.Session.Trial.UID + 1).ToString,
     (Pool.Session.Block.UID + 1).ToString,
     AEvent]));

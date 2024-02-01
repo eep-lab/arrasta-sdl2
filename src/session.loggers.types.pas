@@ -19,7 +19,7 @@ type
 
   // LGData have blc, trial data.
   // LGTimestamps for stm and response data.
-  TLoggers = (LGData, LGTimestamps);
+  TLoggers = (LGData, LGTimestamps, LGInfo);
 
 
 implementation

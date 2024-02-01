@@ -34,6 +34,9 @@ uses
   sdl.colors,
   sdl.app.markers;
 
+var
+  DELTA_TIME : ShortInt;
+
 procedure Render;
 begin
   SDL_SetRenderDrawColor(PSDLRenderer,
@@ -56,10 +59,7 @@ end;
 
 
 const
-  MONITOR_HZ = 50;
-
-var
-  DELTA_TIME : ShortInt;
+  MONITOR_HZ = 40;
 
 initialization
   DELTA_TIME := 1000 div MONITOR_HZ;

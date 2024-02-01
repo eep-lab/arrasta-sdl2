@@ -15,28 +15,16 @@ interface
 
 uses session.loggers, session.loggers.types;
 
+procedure FreeLogger(ALogger: TLoggers; AFooter : string);
 function GetSaveDataProc(ALogger: TLoggers): TDataProcedure;
 function GetLogger(var ALogger: TLoggers) : TLogger;
 function CreateLogger(ALogger: TLoggers;
   AFilename, AHeader : string) : string;
 
-procedure FreeLogger(ALogger: TLoggers; AFooter : string);
-function MockHeader : string;
-
 var
   DataFilename : string = '';
   TimestampsFilename : string = '';
-
-resourcestring
-  HSUBJECT_NAME      = 'Nome_do_sujeito:';
-  HSESSION_NAME      = 'Nome_da_sessao:';
-  HFIRST_TIMESTAMP   = 'Primeira_timestamp:';
-  HBEGIN_TIME        = 'Inicio:';
-  HEND_TIME          = 'Termino:';
-  HGRID              = 'Grade_de_estimulos:';
-  HMONITOR           = 'Monitor:';
-  HSESSION_CANCELED  = '----------Sessao Cancelada----------';
-  HTEST_MODE         = '(Modo de Teste)';
+  InformationFilename : string = '';
 
 implementation
 
@@ -44,11 +32,13 @@ uses SysUtils
    , session.pool
    , session.loggers.writerow
    , session.loggers.writerow.timestamp
+   , session.loggers.writerow.information
    ;
 
 var
   TimestampsLog : TLogger;
   DataLog : TLogger;
+  InfoLog : TLogger;
 
 function GetSaveDataProc(ALogger: TLoggers): TDataProcedure;
 var LRegdata : TLogger;
@@ -62,43 +52,53 @@ begin
   case ALogger of
     LGTimestamps: Result := TimestampsLog;
     LGData: Result := DataLog;
+    LGInfo: Result := InfoLog;
   end;
 end;
 
-procedure FreeLogger(ALogger: TLoggers; AFooter: string);
-var LRegdata : TLogger;
+procedure FreeLogger(ALogger: TLoggers);
+var
+  LRegdata : TLogger;
 begin
+  case ALogger of
+    LGInfo: begin
+      Session.Loggers.WriteRow.Information.Finalize;
+    end;
+
+    otherwise begin
+      { do nothing }
+    end;
+  end;
   LRegdata := GetLogger(ALogger);
-  LRegdata.SaveData(AFooter);
   LRegdata.Free;
   LRegdata := nil;
 end;
 
-function MockHeader: string;
-begin
-  Result := HSUBJECT_NAME + #9 + 'Sujeito X' + LineEnding +
-            HSESSION_NAME + #9 + 'Sessão X' + LineEnding +
-            HBEGIN_TIME + #9 + DateTimeToStr(Date) + #9 + TimeToStr(Time) + LineEnding;
-end;
 
-function CreateLogger(ALogger: TLoggers; AFilename, AHeader: string) : string;
+function CreateLogger(ALogger: TLoggers; AFilename: string) : string;
 var
   LLogger: TLogger;
 begin
   case ALogger of
     LGTimestamps: begin
       TimestampsLog := TLogger.Create(AFilename + '.timestamps');
-      TimestampsLog.SaveData(AHeader);
       Session.Loggers.WriteRow.Timestamp.SaveData := @TimestampsLog.SaveData;
       Session.Loggers.WriteRow.Timestamp.InitializeBaseHeader;
       LLogger := TimestampsLog;
     end;
+
     LGData: begin
       DataLog := TLogger.Create(AFilename + '.data');
-      DataLog.SaveData(AHeader);
-      Session.Loggers.Writerow.SaveData := @DataLog.SaveData;
-      Session.Loggers.Writerow.InitializeBaseHeader;
+      Session.Loggers.WriteRow.SaveData := @DataLog.SaveData;
+      Session.Loggers.WriteRow.InitializeBaseHeader;
       LLogger := DataLog;
+    end;
+
+    LGInfo: begin
+      DataLog := TLogger.Create(AFilename + '.info');
+      Session.Loggers.WriteRow.Information.SaveData := @InfoLog.SaveData;
+      Session.Loggers.WriteRow.Information.InitializeBaseHeader;
+      LLogger := InfoLog;
     end;
   end;
   Result := LLogger.FileName;
