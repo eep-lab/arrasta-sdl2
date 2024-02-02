@@ -55,6 +55,15 @@ uses Classes, SysUtils
   , sdl.app.trials.factory
   ;
 
+const
+  GID = 'ID';
+
+const
+  GExt = '.bin';
+
+const
+  GInterrupted = '.interrupted';
+
 { TCounterManager }
 
 function GetSubjectIDFromFile : Word;
@@ -64,7 +73,7 @@ begin
   LStringList := TStringList.Create;
   try
     try
-      LStringList.LoadFromFile(Pool.BaseFileName+'ID');
+      LStringList.LoadFromFile(Pool.BaseFileName + GID);
     except
       on EFileNotFoundException do
 
@@ -82,8 +91,8 @@ begin
   Subject := GetSubjectIDFromFile;
   Session := TSessionCounters.Create;
   Session.Reset;
-  if FileExists(Pool.BaseFilename+'.bin') then begin
-    Session.LoadFromFile(Pool.BaseFilename+'.bin');
+  if FileExists(Pool.BaseFilename + GInterrupted + GExt) then begin
+    Session.LoadFromFile(Pool.BaseFilename + GInterrupted + GExt);
     Session.NextID(Session.ID+1);
   end;
   Block := Session.Block;
@@ -102,7 +111,7 @@ var
   LStartAt : TStartAt;
 begin
   if Pool.EndCriteria.OfSession then begin
-    { do nothing }
+    Session.SaveToFile(Pool.BaseFilename + GExt)
   end else begin
     if GlobalTrialParameters.ShouldRestartAtBlockStart then begin
       LStartAt.Trial := 0;
@@ -111,7 +120,7 @@ begin
     end;
     LStartAt.Block := Block.ID;  // use block as checkpoint
     ConfigurationFile.StartAt := LStartAt;
-    Session.SaveToFile(Pool.BaseFilename+'.bin')
+    Session.SaveToFile(Pool.BaseFilename + GInterrupted + GExt)
   end;
   Session.Free;
   Grid.Free;

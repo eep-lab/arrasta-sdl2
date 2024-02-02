@@ -53,6 +53,9 @@ const FirstBasename: string = '000';
 { TLogger }
 
 constructor TLogger.Create(AFilename: string);
+const
+  L0 = #48;
+
   function FilenameNoOverride(S: string): string;
   var
     i : Integer;
@@ -70,7 +73,7 @@ constructor TLogger.Create(AFilename: string);
     while FileExistsUTF8(S) do begin
       Inc(i);
       S := FilePath +
-           StringOfChar(#48, 3 - Length(IntToStr(i))) + IntToStr(i) +
+           StringOfChar(L0, 3 - Length(IntToStr(i))) + IntToStr(i) +
            LExtension;
     end;
     FFileIndex := i;
@@ -98,7 +101,7 @@ end;
 
 class function TLogger.Row(Cols: array of string; ALineEnding: string): string;
 const
-  TAB = #9;
+  LTAB = #9;
 var
   i : Integer;
   LastColumn : Integer;
