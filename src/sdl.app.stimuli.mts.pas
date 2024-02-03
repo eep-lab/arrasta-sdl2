@@ -337,12 +337,7 @@ begin
       end;
 
       ModalityD: begin { TSpeechStimulus }
-        FButton.Sibling := LStimulus.Rectangule;
-        FButton.CentralizeAtRightWith(LStimulus.Rectangule.BoundsRect, 2);
-        FButton.Sender := Sender;
-        FButton.Show;
-        UpdateState(startButtons);
-        Exit;
+
       end;
 
       otherwise begin
@@ -360,7 +355,7 @@ end;
 
 procedure TMTSStimuli.SampleResponse(Sender: TObject);
 var
-  LStimulus: IStimulus;
+  LStimulus: TStimulus;
 begin
   //if FIsDMTS then
   //for LStimulus in FSamples do begin
@@ -370,7 +365,20 @@ begin
   for LStimulus in FComparisons do begin
     LStimulus.Start;
   end;
-  UpdateState(startComparisons);
+
+  case FMTSModality.Comparisons of
+    ModalityD: begin { Speech }
+      FButton.Sibling := LStimulus.Rectangule;
+      FButton.CentralizeAtRightWith(LStimulus.Rectangule.BoundsRect, 2);
+      FButton.Sender := LStimulus;
+      FButton.Show;
+      UpdateState(startButtons);
+    end;
+
+    otherwise begin
+      UpdateState(startComparisons);
+    end;
+  end;
   Timestamp('Comparisons.Start'+#9+FSelectables.ToJSON);
 end;
 
@@ -565,12 +573,26 @@ begin
         LButton := 'ConfirmButton';
       end;
 
+      ModalityB: begin
+        case FMTSModality.Samples of
+          ModalityC: begin
+            AParameters.Values[HasTextPromptKey] := 'F';
+          end;
+
+          otherwise begin
+            { do nothing }
+          end;
+        end;
+      end;
+
       ModalityD : begin
         LButton := 'FinalizeButton';
         LComparisons := 1;
       end;
 
-      else { do nothing }
+      otherwise begin
+        { do nothing }
+      end;
     end;
   end;
 
