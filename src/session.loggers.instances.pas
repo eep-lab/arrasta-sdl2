@@ -94,7 +94,7 @@ begin
     end;
 
     LGInfo: begin
-      DataLog := TLogger.Create(AFilename + '.info');
+      InfoLog := TLogger.Create(AFilename + '.info');
       Session.Loggers.WriteRow.Information.SaveData := @InfoLog.SaveData;
       Session.Loggers.WriteRow.Information.InitializeBaseHeader;
       LLogger := InfoLog;

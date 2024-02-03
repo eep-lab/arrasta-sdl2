@@ -110,7 +110,7 @@ begin
   LastColumn := High(Cols);
   for i := 0 to LastColumn do
     if i < LastColumn then
-      Result := Result + Cols[i]+TAB
+      Result := Result + Cols[i]+LTAB
     else
       Result := Result + Cols[i]+ALineEnding;
 end;
