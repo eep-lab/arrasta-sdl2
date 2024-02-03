@@ -28,6 +28,7 @@ type
   TMTS = class sealed (TTrial)
     private
       FStimuli : TMTSStimuli;
+      procedure DoInvalidate(Sender: TObject);
     protected
       function GetIStimuli: IStimuli; override;
     public
@@ -48,6 +49,7 @@ begin
   inherited Create;
   FStimuli := TMTSStimuli.Create;
   FStimuli.Trial:= Self;
+  FStimuli.OnResponse := @DoInvalidate;
   FStimuli.OnFinalize := @EndTrialCallBack;
 end;
 
@@ -56,6 +58,11 @@ begin
   { free stuff }
   FStimuli.Free;
   inherited Destroy;
+end;
+
+procedure TMTS.DoInvalidate(Sender: TObject);
+begin
+  Invalidate;
 end;
 
 function TMTS.GetIStimuli: IStimuli;

@@ -81,6 +81,7 @@ type
     procedure SDLMouseButtonUp(const event: TSDL_MouseButtonEvent);
     procedure BringChildToFront(AChild : TObject);
   protected
+    FInvalidated : Boolean;
     FCustomName : string;
     FRect : TSDL_Rect;
     FChildren : TChildren;
@@ -115,7 +116,10 @@ type
     function CenterPoint : TSDL_Point;
     function BottomRightPoint : TSDL_Point;
     function ClientToParent(APoint : TSDL_Point) : TSDL_Point;
+    function Invalidated : Boolean;
     function Origen : TSDL_Point;
+    procedure Invalidate;
+    procedure Validate;
     procedure BringToFront;
     procedure Confirm; virtual;
     procedure Select; virtual;
@@ -350,6 +354,7 @@ end;
 constructor TSDLControl.Create;
 begin
   inherited Create;
+  FInvalidated := False;
   FCustomName := '';
   FChildren := TChildren.Create;
   FMouseInside := False;
@@ -411,10 +416,25 @@ begin
   Result.Y := APoint.y + FRect.y;
 end;
 
+function TSDLControl.Invalidated: Boolean;
+begin
+  Result := FInvalidated;
+end;
+
 function TSDLControl.Origen: TSDL_Point;
 begin
   Result.X := FRect.x + (FRect.w div 2);
   Result.Y := FRect.y + (FRect.h div 2);
+end;
+
+procedure TSDLControl.Invalidate;
+begin
+  FInvalidated := True;
+end;
+
+procedure TSDLControl.Validate;
+begin
+  FInvalidated := False;
 end;
 
 procedure TSDLControl.BringToFront;
@@ -428,7 +448,7 @@ var
 begin
   Mouse.State(LPoint);
   if PointInside(LPoint) then begin
-    MouseDown(Self, GetShiftState, LPoint.X, LPoint.Y);
+    MouseUp(Self, GetShiftState, LPoint.X, LPoint.Y);
   end;
 end;
 

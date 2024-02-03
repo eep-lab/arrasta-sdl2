@@ -45,7 +45,6 @@ type
 implementation
 
 uses Classes
-   , SDL2
    , session.intertrial
    , session.configuration
    , session.configurationfile

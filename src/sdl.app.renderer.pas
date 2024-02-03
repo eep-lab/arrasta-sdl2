@@ -23,46 +23,54 @@ uses sdl2;
 //    class procedure Paint;
 //  end;
 
-procedure Render;
+//procedure Render;
+procedure RenderOptimized;
 
 implementation
 
 uses
+  //sdl.app.renderer.testmode,
+  sdl.app.renderer.types,
   sdl.app.video.methods,
   sdl.app.trials.factory,
   sdl.app.graphics.debug,
-  sdl.colors,
-  sdl.app.markers;
+  //sdl.app.markers,
+  sdl.colors;
 
-var
-  DELTA_TIME : ShortInt;
 
-procedure Render;
+//procedure Render;
+//begin
+//  SDL_SetRenderDrawColor(PSDLRenderer,
+//    clBackgroud.r, clBackgroud.g, clBackgroud.b, clBackgroud.a);
+//  SDL_RenderClear(PSDLRenderer);
+//
+//  if Assigned(TTrialFactory.CurrentTrial) then begin
+//    TTrialFactory.CurrentTrial.AsIPaintable.Paint;
+//  end;
+//
+//  SDL_RenderPresent(PSDLRenderer);
+//  SDL_Delay(DELTA_TIME);
+//end;
+
+procedure RenderOptimized;
 begin
-  SDL_SetRenderDrawColor(PSDLRenderer,
-    clBackgroud.r, clBackgroud.g, clBackgroud.b, clBackgroud.a);
-  SDL_RenderClear(PSDLRenderer);
-
   if Assigned(TTrialFactory.CurrentTrial) then begin
-    TTrialFactory.CurrentTrial.AsIPaintable.Paint;
+    if TTrialFactory.CurrentTrial.AsIPaintable.Invalidated then begin
+      TTrialFactory.CurrentTrial.AsIPaintable.Validate;
+
+      SDL_SetRenderDrawColor(PSDLRenderer,
+        clBackgroud.r, clBackgroud.g, clBackgroud.b, clBackgroud.a);
+      SDL_RenderClear(PSDLRenderer);
+
+      TTrialFactory.CurrentTrial.AsIPaintable.Paint;
+
+      SDL_RenderPresent(PSDLRenderer);
+      //SaveFrame;
+    end;
   end;
-
-  //if Assigned(Markers) then begin
-  //  Markers.Paint;
-  //end;
-
-  //PaintDebugGraphics;
-
-  SDL_RenderPresent(PSDLRenderer);
   SDL_Delay(DELTA_TIME);
 end;
 
-
-const
-  MONITOR_HZ = 40;
-
-initialization
-  DELTA_TIME := 1000 div MONITOR_HZ;
 
 end.
 

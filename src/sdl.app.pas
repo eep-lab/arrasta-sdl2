@@ -91,6 +91,7 @@ uses sdl2_image
   , sdl.app.text
   , sdl.app.audio
   , sdl.app.renderer
+  , sdl.app.renderer.testmode
 {$ENDIF}
   ;
 
@@ -229,14 +230,31 @@ begin
 end;
 
 procedure TSDLApplication.Run;
+//type
+//  TRenderMode = (rendNormal, rendTestMode);
+//var
+//  LRenderMode : TRenderMode = rendTestMode;
 begin
+  //case LRenderMode of
+  //  rendNormal: { do nothing };
+  //  rendTestMode: SDL.App.Renderer.TestMode.Initialize;
+  //end;
+
   FRunning:=True;
   try
     while FRunning do begin
       SDLEvents.HandlePending;
-      Render;
+      //Render;
+      RenderOptimized;
     end;
   finally
+
+    //case LRenderMode of
+    //  rendNormal: { do nothing };
+    //  rendTestMode: SDL.App.Renderer.TestMode.Finalize;
+    //end;
+
+
     {$IFNDEF NO_LCL}
     if Assigned(SDLText) then begin
       SDLText.Free;
@@ -338,7 +356,7 @@ begin
 
   // create sdl windows
   FSDLWindow := SDL_CreateWindow(FTitle, LMonitor.x, LMonitor.y,
-    LMonitor.w, LMonitor.h, 0 {or SDL_WINDOW_OPENGL});
+    LMonitor.w-100, LMonitor.h, 0 {or SDL_WINDOW_OPENGL});
 
   // todo: create sdl opengl context
   // https://stackoverflow.com/questions/41091875/is-sdl-renderer-useless-if-i-use-opengl-for-drawing
@@ -359,8 +377,8 @@ begin
 
   // create renderer
   FSDLRenderer := SDL_CreateRenderer(FSDLWindow, -1,
-    //SDL_RENDERER_ACCELERATED or SDL_RENDERER_PRESENTVSYNC
-    SDL_RENDERER_SOFTWARE
+    SDL_RENDERER_ACCELERATED or SDL_RENDERER_PRESENTVSYNC
+    //SDL_RENDERER_SOFTWARE
     );
 
   // expose window surface

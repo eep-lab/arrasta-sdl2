@@ -41,7 +41,7 @@ type
     function GetStimulusName : string; override;
     function GetRect: TRectangule; override;
     procedure SetRect(AValue: TRectangule); override;
-    procedure MouseDown(Sender: TObject; Shift: TCustomShiftState;
+    procedure MouseUp(Sender: TObject; Shift: TCustomShiftState;
       X, Y: Integer); override;
     procedure MouseEnter(Sender: TObject); override;
     procedure MouseExit(Sender: TObject); override;
@@ -109,7 +109,7 @@ begin
   end;
 end;
 
-procedure TAudioStimulus.MouseDown(Sender: TObject; Shift: TCustomShiftState;
+procedure TAudioStimulus.MouseUp(Sender: TObject; Shift: TCustomShiftState;
   X, Y: Integer);
 begin
   if IsSample then begin
@@ -126,8 +126,8 @@ begin
     if SDLAudio.Playing then begin
       { do nothing }
     end else begin
-      if Assigned(OnMouseDown) then
-        OnMouseDown(Self, Shift, X, Y);
+      if Assigned(OnMouseUp) then
+        OnMouseUp(Self, Shift, X, Y);
 
       Timestamp('Stimulus.Response.' + GetID.ToString);
       FLoops.Start;
@@ -187,7 +187,7 @@ begin
     FText.CustomName := FCustomName;
     FText.CentralizeWith(ARect);
     FText.Parent := TSDLControl(AParent);
-    FText.OnMouseDown := @MouseDown;
+    FText.OnMouseUp := @MouseUp;
 
     Selectables.Add(FText.AsISelectable);
   end else begin
@@ -195,7 +195,7 @@ begin
     FPicture.CustomName := LAudioPicture;
     FPicture.BoundsRect := ARect;
     FPicture.Parent := TSDLControl(AParent);
-    FPicture.OnMouseDown := @MouseDown;
+    FPicture.OnMouseUp := @MouseUp;
     FPicture.OnMouseEnter := @MouseEnter;
     FPicture.OnMouseExit := @MouseExit;
 

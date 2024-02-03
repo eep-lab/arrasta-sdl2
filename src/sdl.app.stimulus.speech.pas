@@ -113,6 +113,7 @@ end;
 constructor TSpeechStimulus.Create;
 begin
   inherited Create;
+  FormManualSpeechValidation.ExpectedText := '';
   FPlaybackButton := TToggleButton.Create;
   FPlaybackButton.Owner := Self as TObject;
   FRecorderButton := TToggleButton.Create;

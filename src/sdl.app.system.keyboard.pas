@@ -28,7 +28,7 @@ type
 
 implementation
 
-uses sdl.app, eye.tracker, ctypes;
+uses sdl.app, eye.tracker, ctypes, sdl.app.trials.factory;
 
 { TSDLKeyboard }
 
@@ -58,6 +58,13 @@ begin
         if EyeTracker <> nil then begin
           EyeTracker.CalibrationSuccessful;
         end;
+      end;
+    end;
+
+    SDLK_n: begin
+      LKeyboardState := SDL_GetKeyboardState(nil);
+      if GetKeyState(SDL_SCANCODE_LCTRL, LKeyboardState) then begin
+        TTrialFactory.CurrentTrial.DoExpectedResponse;
       end;
     end;
 

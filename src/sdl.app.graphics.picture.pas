@@ -33,10 +33,10 @@ type
     procedure SetStimulus(AValue: TObject);
   protected
     FTexture  : PSDL_Texture;
-    procedure MouseMove(Sender: TObject; Shift: TCustomShiftState; X, Y: Integer); override;
-    procedure MouseDown(Sender: TObject; Shift: TCustomShiftState; X, Y: Integer); override;
-    procedure MouseEnter(Sender: TObject); override;
-    procedure MouseExit(Sender: TObject); override;
+    //procedure MouseMove(Sender: TObject; Shift: TCustomShiftState; X, Y: Integer); override;
+    //procedure MouseUp(Sender: TObject; Shift: TCustomShiftState; X, Y: Integer); override;
+    //procedure MouseEnter(Sender: TObject); override;
+    //procedure MouseExit(Sender: TObject); override;
     procedure Paint; override;
   public
     constructor Create; override;
@@ -83,35 +83,35 @@ begin
   FStimulus := AValue;
 end;
 
-procedure TPicture.MouseMove(Sender: TObject; Shift: TCustomShiftState; X,
-  Y: Integer);
-begin
-  if Visible then
-    inherited MouseMove(Self, Shift, X, Y);
-end;
+//procedure TPicture.MouseMove(Sender: TObject; Shift: TCustomShiftState; X,
+//  Y: Integer);
+//begin
+//  if Visible then
+//    inherited MouseMove(Self, Shift, X, Y);
+//end;
 
-procedure TPicture.MouseDown(Sender: TObject; Shift: TCustomShiftState; X,
-  Y: Integer);
-begin
-  if Visible then
-    inherited MouseDown(Self, Shift, X, Y);
-end;
+//procedure TPicture.MouseUp(Sender: TObject; Shift: TCustomShiftState; X,
+//  Y: Integer);
+//begin
+//  if Visible then
+//    inherited MouseUp(Self, Shift, X, Y);
+//end;
 
-procedure TPicture.MouseEnter(Sender: TObject);
-begin
-  if Visible then begin
-    inherited MouseEnter(Self);
+//procedure TPicture.MouseEnter(Sender: TObject);
+//begin
+//  if Visible then begin
+//    inherited MouseEnter(Self);
+//
+//  end;
+//end;
 
-  end;
-end;
-
-procedure TPicture.MouseExit(Sender: TObject);
-begin
-  if Visible then begin
-    inherited MouseExit(Self);
-
-  end;
-end;
+//procedure TPicture.MouseExit(Sender: TObject);
+//begin
+//  if Visible then begin
+//    inherited MouseExit(Self);
+//
+//  end;
+//end;
 
 procedure TPicture.Paint;
 begin

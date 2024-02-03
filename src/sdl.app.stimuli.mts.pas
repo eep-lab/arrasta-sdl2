@@ -64,7 +64,7 @@ type
       procedure ConsequenceStart(Sender: TObject);
       procedure StimulusMouseEnter(Sender: TObject);
       procedure StimulusMouseExit(Sender: TObject);
-      procedure StimulusMouseDown(Sender: TObject; Shift: TCustomShiftState; X, Y: Integer);
+      //procedure StimulusMouseDown(Sender: TObject; Shift: TCustomShiftState; X, Y: Integer);
       procedure StimulusMouseUp(Sender: TObject; Shift: TCustomShiftState; X, Y: Integer);
       procedure ButtonClick(Sender: TObject);
       procedure NoResponse(Sender: TObject);
@@ -99,6 +99,7 @@ uses
   , sdl.app.stimulus.audio
   , sdl.app.stimulus.speech
   , sdl.app.selectable.contract
+  , sdl.app.testmode
   , session.loggers.writerow
   , session.loggers.writerow.timestamp
   , session.constants.trials
@@ -119,6 +120,11 @@ procedure TMTSStimuli.UpdateState(AState: TState);
 begin
   FState := AState;
   UpdateNavigator;
+
+  // informs TTrial Owner
+  if Assigned(OnResponse) then begin
+    OnResponse(Self);
+  end;
 end;
 
 procedure TMTSStimuli.SetNavigator(ANavigator: ITableNavigator);
@@ -262,7 +268,13 @@ begin
   //IStimulus(Sender as TStimulus).Stop;
 end;
 
-procedure TMTSStimuli.StimulusMouseDown(Sender: TObject;
+//procedure TMTSStimuli.StimulusMouseDown(Sender: TObject;
+//  Shift: TCustomShiftState; X, Y: Integer);
+//begin
+//
+//end;
+
+procedure TMTSStimuli.StimulusMouseUp(Sender: TObject;
   Shift: TCustomShiftState; X, Y: Integer);
 var
   LStimulus: TStimulus;
@@ -273,12 +285,6 @@ begin
       FButton.Hide;
     end;
   end;
-end;
-
-procedure TMTSStimuli.StimulusMouseUp(Sender: TObject;
-  Shift: TCustomShiftState; X, Y: Integer);
-begin
-
 end;
 
 procedure TMTSStimuli.ButtonClick(Sender: TObject);
@@ -337,7 +343,7 @@ begin
       end;
 
       ModalityD: begin { TSpeechStimulus }
-
+        Exit;
       end;
 
       otherwise begin
@@ -436,34 +442,51 @@ end;
 
 procedure TMTSStimuli.DoExpectedResponse;
 begin
-  // for real time simulations
-  //case High(FComparisons) of
-  //  0 : FComparisons[0].DoResponse(False);
-  //  else begin
-  //    if Random < (0.9/1.0) then begin
-  //      FComparisons[0].DoResponse(False);
-  //    end else begin
-  //      FComparisons[RandomRange(1, Length(FComparisons))].DoResponse(False);
-  //    end;
-  //  end;
-  //end;
-  //if Assigned(OnFinalize) then
-  //  OnFinalize(Self);
-
-  // for short time simulations
-  case FComparisons.Count-1 of
-    -MaxInt..-1: { do nothing };
-    0 : Pool.Counters.Hit;
-    else begin
-      if Random < (0.9/1.0) then begin
-        Pool.Counters.Hit;
-      end else begin
-        Pool.Counters.Miss;
+  if TestMode then begin
+    case FComparisons.Count-1 of
+      -MaxInt..-1: { do nothing };
+      0 : Pool.Counters.Hit;
+      else begin
+        if Random < (0.9/1.0) then begin
+          Pool.Counters.Hit;
+        end else begin
+          Pool.Counters.Miss;
+        end;
       end;
     end;
+
+    if Assigned(OnFinalize) then
+      OnFinalize(Self);
+  end else begin
+    case FState of
+      startNone: ;
+      startSamples: begin
+        FSamples[0].Selectables[0].Select;
+        FSamples[0].Selectables[0].Confirm;
+      end;
+      startComparisons: begin
+        FComparisons[0].Selectables[0].Select;
+        FComparisons[0].Selectables[0].Confirm;
+      end;
+      startButtons: begin
+        FButton.AsISelectable.Select;
+        FButton.AsISelectable.Confirm;
+      end;
+    end;
+
+    //case High(FComparisons) of
+    //  0 : FComparisons[0].DoResponse(False);
+    //  else begin
+    //    if Random < (0.9/1.0) then begin
+    //      FComparisons[0].DoResponse(False);
+    //    end else begin
+    //      FComparisons[RandomRange(1, Length(FComparisons))].DoResponse(False);
+    //    end;
+    //  end;
+    //end;
+    //if Assigned(OnFinalize) then
+    //  OnFinalize(Self);
   end;
-  if Assigned(OnFinalize) then
-    OnFinalize(Self);
 end;
 
 procedure TMTSStimuli.Load(AParameters: TStringList; AParent: TObject);
@@ -485,7 +508,7 @@ var
   begin
     LCallbacks.OnMouseExit := @StimulusMouseExit;
     LCallbacks.OnMouseEnter := @StimulusMouseEnter;
-    LCallbacks.OnMouseDown := @StimulusMouseDown;
+    //LCallbacks.OnMouseDown := @StimulusMouseDown;
     LCallbacks.OnMouseUp := @StimulusMouseUp;
     LCallbacks.OnResponse  := @ComparisonResponse;
     LCallbacks.OnNoResponse := @NoResponse;

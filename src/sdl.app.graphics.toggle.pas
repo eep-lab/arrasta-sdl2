@@ -64,7 +64,7 @@ type
   public
     constructor Create; override;
     destructor Destroy; override;
-    procedure Confirm; override;
+    //procedure Confirm; override;
     procedure LoadFromFile(AFilename1, AFilename2: string); virtual;
     procedure Toggle;
     property Owner : TObject read FOwner write SetOwner;
@@ -237,9 +237,11 @@ begin
           end;
         end;
       end;
-      with clLightRedShaded1 do
-        with FAnimationData do
-          SDL_SetRenderDrawColor(PSDLRenderer, r, g, b, Alpha);
+
+      with clLightRedShaded1, FAnimationData do begin
+        SDL_SetRenderDrawColor(PSDLRenderer, r, g, b, Alpha);
+      end;
+
       SDL_RenderFillRect(PSDLRenderer, @FRect);
       SDL_RenderCopy(PSDLRenderer, FTexture2, nil, @FRect);
     end;
@@ -252,15 +254,15 @@ begin
   end;
 end;
 
-procedure TToggleButton.Confirm;
-var
-  LPoint : TSDL_Point;
-begin
-  Mouse.State(LPoint);
-  if PointInside(LPoint) then begin
-    MouseUp(Self, GetShiftState, LPoint.X, LPoint.Y);
-  end;
-end;
+//procedure TToggleButton.Confirm;
+//var
+//  LPoint : TSDL_Point;
+//begin
+//  Mouse.State(LPoint);
+//  if PointInside(LPoint) then begin
+//    MouseUp(Self, GetShiftState, LPoint.X, LPoint.Y);
+//  end;
+//end;
 
 procedure TToggleButton.LoadFromFile(AFilename1, AFilename2: string);
 var

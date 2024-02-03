@@ -36,7 +36,7 @@ type
       FHasPrompt : Boolean;
     protected
       function GetStimulusName : string; override;
-      procedure MouseDown(Sender: TObject; Shift: TCustomShiftState;
+      procedure MouseUp(Sender: TObject; Shift: TCustomShiftState;
         X, Y: Integer); override;
     public
       constructor Create; override;
@@ -65,7 +65,7 @@ begin
   end;
 end;
 
-procedure TTextStimulus.MouseDown(Sender: TObject; Shift: TCustomShiftState;
+procedure TTextStimulus.MouseUp(Sender: TObject; Shift: TCustomShiftState;
   X, Y: Integer);
 begin
   DoResponse(True);
@@ -97,7 +97,7 @@ begin
   FText.CustomName := FCustomName;
   Selectables.Add(FText.AsISelectable);
   FText.Parent := TSDLControl(AParent);
-  FText.OnMouseDown := @MouseDown;
+  FText.OnMouseUp := @MouseUp;
 
   FHasPrompt := HasTextPrompt(AParameters);
   if FHasPrompt then begin

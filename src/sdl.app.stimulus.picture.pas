@@ -30,7 +30,7 @@ type
       FPicture : TPicture;
     protected
       function GetStimulusName : string; override;
-      procedure MouseDown(Sender: TObject; Shift: TCustomShiftState;
+      procedure MouseUp(Sender: TObject; Shift: TCustomShiftState;
         X, Y: Integer); override;
     public
       constructor Create; override;
@@ -59,7 +59,7 @@ begin
   end;
 end;
 
-procedure TPictureStimulus.MouseDown(Sender: TObject; Shift: TCustomShiftState;
+procedure TPictureStimulus.MouseUp(Sender: TObject; Shift: TCustomShiftState;
   X, Y: Integer);
 begin
   DoResponse(True);
@@ -87,7 +87,7 @@ begin
   FPicture.CustomName := FCustomName;
   FPicture.BoundsRect := ARect;
   FPicture.Parent := TSDLControl(AParent);
-  FPicture.OnMouseDown := @MouseDown;
+  FPicture.OnMouseUp := @MouseUp;
 end;
 
 procedure TPictureStimulus.Start;

@@ -69,7 +69,7 @@ type
       procedure Paint; override;
       procedure EndTrialCallBack(Sender : TObject);
       procedure MouseMove(Sender:TObject; Shift: TCustomShiftState; X, Y: Integer); override;
-      procedure MouseDown(Sender:TObject; Shift: TCustomShiftState; X, Y: Integer); override;
+      //procedure MouseDown(Sender:TObject; Shift: TCustomShiftState; X, Y: Integer); override;
       procedure MouseUp(Sender:TObject; Shift: TCustomShiftState; X, Y: Integer); override;
       procedure SetOnTrialEnd(ANotifyEvent: TNotifyEvent);
       procedure SetTrialConfiguration(ATrialData: TTrialConfiguration); virtual;
@@ -125,7 +125,7 @@ begin
   inherited Create;
   FRect := MonitorFromWindow;
   SDLEvents.AssignEvents;
-  SDLEvents.OnMouseButtonDown := AsIClickable.GetSDLMouseButtonDown;
+  //SDLEvents.OnMouseButtonDown := AsIClickable.GetSDLMouseButtonDown;
   SDLEvents.OnMouseButtonUp := AsIClickable.GetSDLMouseButtonUp;
   SDLEvents.OnMouseMotion := AsIMoveable.GetSDLMouseMotion;
   SDLEvents.OnGazeOnScreen := @GazeOnScreen;
@@ -223,34 +223,36 @@ begin
         if not IChild.MouseInside then begin
           IChild.MouseInside:=True;
           IChild.MouseEnter(Sender);
+          Invalidate;
         end;
         IChild.MouseMove(Sender, Shift, X, Y);
       end else begin
         if IChild.MouseInside then begin
           IChild.MouseInside:=False;
           IChild.MouseExit(Sender);
+          Invalidate;
         end;
       end;
     end;
   end;
 end;
 
-procedure TTrial.MouseDown(Sender:TObject; Shift: TCustomShiftState; X, Y: Integer);
-var
-  Child : TObject;
-  SDLPoint : TSDL_Point;
-  IChild : IClickable;
-begin
-  if FVisible then begin
-    for Child in FChildren do begin
-      SDLPoint.x := X;
-      SDLPoint.y := Y;
-      IChild := IClickable(TSDLControl(Child));
-      if IChild.PointInside(SDLPoint) then
-        IChild.MouseDown(Sender, Shift, X, Y);
-    end;
-  end;
-end;
+//procedure TTrial.MouseDown(Sender:TObject; Shift: TCustomShiftState; X, Y: Integer);
+//var
+//  Child : TObject;
+//  SDLPoint : TSDL_Point;
+//  IChild : IClickable;
+//begin
+//  if FVisible then begin
+//    for Child in FChildren do begin
+//      SDLPoint.x := X;
+//      SDLPoint.y := Y;
+//      IChild := IClickable(TSDLControl(Child));
+//      if IChild.PointInside(SDLPoint) then
+//        IChild.MouseDown(Sender, Shift, X, Y);
+//    end;
+//  end;
+//end;
 
 procedure TTrial.MouseUp(Sender: TObject; Shift: TCustomShiftState; X,
   Y: Integer);
@@ -365,12 +367,14 @@ begin
           if not IChild.GazeInside then begin
             IChild.GazeInside:=True;
             IChild.GazeEnter(Self);
+            Invalidate;
           end;
           IChild.GazeMove(Self, GetShiftState, Gaze.X, Gaze.Y);
         end else begin
           if IChild.GazeInside then begin
             IChild.GazeInside:=False;
             IChild.GazeExit(Self);
+            Invalidate;
           end;
         end;
       end;
@@ -480,6 +484,7 @@ begin
       Timestamp(CustomName+'.Show'+#9+Selectables.ToJSON);
     end;
   end;
+  Invalidate;
 end;
 
 procedure TTrial.Hide;
@@ -492,13 +497,18 @@ begin
     FIStimuli.Stop;
     FLimitedHoldTimer.Stop;
   end;
+  Invalidate;
 end;
 
 // test mode
 procedure TTrial.DoExpectedResponse;
 begin
-  FVisible := True;
-  FText.Show;
+  if TestMode then begin
+    FVisible := True;
+    FText.Show;
+  end else begin
+
+  end;
   FIStimuli.DoExpectedResponse;
 end;
 
