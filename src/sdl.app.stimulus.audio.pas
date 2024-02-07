@@ -168,7 +168,7 @@ begin
   //SDLAudio.UnregisterChannel(FSound);
   //FSound.Free;
   FText.Free;
-  FLoops.Sound.ShouldBeDeallocated := True;
+  //FLoops.Sound.ShouldBeDeallocated := True;
   FLoops.Free;
   FPicture.Free;
   inherited Destroy;
