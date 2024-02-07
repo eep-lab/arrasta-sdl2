@@ -29,10 +29,12 @@ type
 
   TStimulus = class(TInterfacedObject, IStimulus)
     private
+      FAnimated: Boolean;
       FName: string;
       FOnNoResponse: TNotifyEvent;
       FPosition: Integer;
       FResponseID : Integer;
+      FSibling: TStimulus;
       FStimuli: TObject;
       FIndex : integer;
       FIsSample: Boolean;
@@ -59,6 +61,7 @@ type
       function GetRect: TRectangule; virtual; abstract;
       function GetStimulusName : string; virtual; abstract;
       procedure SetRect(AValue: TRectangule); virtual; abstract;
+      procedure SetSibling(AValue: TStimulus); virtual;
       procedure MouseDown(Sender:TObject; Shift: TCustomShiftState; X, Y: Integer); virtual; abstract;
       procedure MouseUp(Sender:TObject; Shift: TCustomShiftState; X, Y: Integer); virtual; abstract;
       procedure MouseEnter(Sender:TObject); virtual; abstract;
@@ -90,6 +93,8 @@ type
       property Rectangule  : TRectangule read GetRect write SetRect;
       property ResponseID : integer read FResponseID;
       property Stimuli : TObject read FStimuli write SetStimuli;
+      property Animated : Boolean read FAnimated write FAnimated;
+      property Sibling : TStimulus read FSibling write FSibling;
   end;
 
 
@@ -157,6 +162,12 @@ procedure TStimulus.SetOnResponse(AValue: TNotifyEvent);
 begin
   if FOnResponse=AValue then Exit;
   FOnResponse:=AValue;
+end;
+
+procedure TStimulus.SetSibling(AValue: TStimulus);
+begin
+  if FSibling = AValue then Exit;
+  FSibling := AValue;
 end;
 
 procedure TStimulus.SetStimuli(AValue: TObject);

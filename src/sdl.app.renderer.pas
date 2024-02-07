@@ -31,6 +31,7 @@ implementation
 uses
   //sdl.app.renderer.testmode,
   sdl.app.renderer.types,
+  sdl.app.renderer.validation,
   sdl.app.video.methods,
   sdl.app.trials.factory,
   sdl.app.graphics.debug,
@@ -54,19 +55,17 @@ uses
 
 procedure RenderOptimized;
 begin
-  if Assigned(TTrialFactory.CurrentTrial) then begin
-    if TTrialFactory.CurrentTrial.AsIPaintable.Invalidated then begin
-      TTrialFactory.CurrentTrial.AsIPaintable.Validate;
+  if GPaintingInvalidated then begin
+    GPaintingInvalidated := False;
 
-      SDL_SetRenderDrawColor(PSDLRenderer,
-        clBackgroud.r, clBackgroud.g, clBackgroud.b, clBackgroud.a);
-      SDL_RenderClear(PSDLRenderer);
+    SDL_SetRenderDrawColor(PSDLRenderer,
+      clBackgroud.r, clBackgroud.g, clBackgroud.b, clBackgroud.a);
+    SDL_RenderClear(PSDLRenderer);
 
-      TTrialFactory.CurrentTrial.AsIPaintable.Paint;
+    TTrialFactory.CurrentTrial.AsIPaintable.Paint;
 
-      SDL_RenderPresent(PSDLRenderer);
-      //SaveFrame;
-    end;
+    SDL_RenderPresent(PSDLRenderer);
+    //SaveFrame;
   end;
   SDL_Delay(DELTA_TIME);
 end;

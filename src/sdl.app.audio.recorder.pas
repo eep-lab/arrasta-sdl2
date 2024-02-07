@@ -14,80 +14,63 @@ unit sdl.app.audio.recorder;
 interface
 
 uses
-  fgl
-  , sdl.app.audio.recorder.devices
-  , sdl.app.graphics.toggle;
+  Classes, sdl.app.audio.recorder.devices;
 
 type
-
-  TButtonContainer = specialize TFPGList<TToggleButton>;
 
   { TRecorderDevice }
 
   TRecorderDevice = class
   private
+    FOnFinished: TNotifyEvent;
+    FOnStopped: TNotifyEvent;
     FRecorder : TAudioRecorderComponent;
-    FPlayback : TAudioPlaybackComponent;
-    FContainer: TButtonContainer;
+    //FPlayback : TAudioPlaybackComponent;
     procedure DoFinished(Sender: TObject);
+    procedure DoStopped(Sender: TObject);
   public
     constructor Create;
     destructor Destroy; override;
     procedure Open;
     procedure Close;
-    procedure Append(AButton: TToggleButton);
-    procedure Clear;
-    procedure RadioToggle(AButton: TToggleButton);
     property Recorder : TAudioRecorderComponent read FRecorder;
-    property Playback : TAudioPlaybackComponent read FPlayback;
+    //property Playback : TAudioPlaybackComponent read FPlayback;
+    property OnStopped : TNotifyEvent read FOnStopped write FOnStopped;
+    property OnFinished : TNotifyEvent read FOnFinished write FOnFinished;
   end;
 
 implementation
 
-uses SysUtils, sdl.app.output, sdl.app.stimulus, sdl.app.stimulus.contract;
+uses SysUtils, sdl.app.output;
 
 { TRecorderDevice }
 
 procedure TRecorderDevice.DoFinished(Sender: TObject);
-var
-  LButton : TToggleButton = nil;
-  LStimulus : IStimulus;
 begin
-  if Assigned(Sender) then begin
-    if Sender = FRecorder then begin
-      if Assigned(FRecorder.Starter) then begin
-        LButton := TToggleButton(FRecorder.Starter);
-        LStimulus := LButton.Owner as IStimulus;
-        LStimulus.DoResponse(True);
-      end;
-    end;
+  if Assigned(OnFinished) then begin
+    OnFinished(Sender);
+  end;
+end;
 
-    if Sender = FPlayback then begin
-      if Assigned(FPlayback.Starter) then begin
-        LButton := TToggleButton(FPlayback.Starter);
-      end;
-    end;
-
-    if Assigned(LButton) then begin
-      RadioToggle(LButton);
-    end;
+procedure TRecorderDevice.DoStopped(Sender: TObject);
+begin
+  if Assigned(OnStopped) then begin
+    OnStopped(Sender);
   end;
 end;
 
 constructor TRecorderDevice.Create;
 begin
   inherited Create;
-  FContainer := TButtonContainer.Create;
   FRecorder := TAudioRecorderComponent.Create;
   FRecorder.Start;
-  FPlayback := TAudioPlaybackComponent.Create;
-  FPlayback.Start;
+  //FPlayback := TAudioPlaybackComponent.Create;
+  //FPlayback.Start;
 end;
 
 destructor TRecorderDevice.Destroy;
 begin
   Close;
-  FContainer.Free;
   inherited Destroy;
 end;
 
@@ -97,45 +80,23 @@ begin
     FRecorder.Open;
   end;
 
-  if not FPlayback.Opened then begin
-    FPlayback.Open;
-  end;
+  //if not FPlayback.Opened then begin
+  //  FPlayback.Open;
+  //end;
+  FRecorder.OnRecordingStopped := @DoStopped;
   FRecorder.OnRecordingFinished := @DoFinished;
-  FPlayback.OnPlaybackFinished := @DoFinished;
+  //FPlayback.OnPlaybackFinished := @DoFinished;
 end;
 
-procedure TRecorderDevice.Close; // todo: fix memory leak here
+procedure TRecorderDevice.Close;
 begin
   FRecorder.OnRecordingFinished := nil;
   FRecorder.Close;
   FRecorder.Terminate;
 
-  FPlayback.OnPlaybackFinished := nil;
-  FPlayback.Close;
-  FPlayback.Terminate;
-end;
-
-procedure TRecorderDevice.Append(AButton: TToggleButton);
-begin
-  FContainer.Add(AButton);
-end;
-
-procedure TRecorderDevice.Clear;
-begin
-  FContainer.Clear;
-end;
-
-procedure TRecorderDevice.RadioToggle(AButton: TToggleButton);
-var
-  LButton : TToggleButton;
-begin
-  for LButton in FContainer do begin
-    if LButton = AButton then begin
-      LButton.Enabled := False;
-    end else begin
-      LButton.Enabled := True;
-    end;
-  end;
+  //FPlayback.OnPlaybackFinished := nil;
+  //FPlayback.Close;
+  //FPlayback.Terminate;
 end;
 
 

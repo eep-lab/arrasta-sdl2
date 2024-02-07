@@ -18,7 +18,7 @@ uses
   , sdl.app.trials
   , sdl.app.stimuli.contract
   , sdl.app.stimuli.mts
-  , sdl.app.navigable.contract
+  //, sdl.app.navigable.contract
   ;
 
 type
@@ -28,7 +28,7 @@ type
   TMTS = class sealed (TTrial)
     private
       FStimuli : TMTSStimuli;
-      procedure DoInvalidate(Sender: TObject);
+      //procedure DoInvalidate(Sender: TObject);
     protected
       function GetIStimuli: IStimuli; override;
     public
@@ -49,7 +49,7 @@ begin
   inherited Create;
   FStimuli := TMTSStimuli.Create;
   FStimuli.Trial:= Self;
-  FStimuli.OnResponse := @DoInvalidate;
+  //FStimuli.OnResponse := @DoInvalidate;
   FStimuli.OnFinalize := @EndTrialCallBack;
 end;
 
@@ -60,10 +60,10 @@ begin
   inherited Destroy;
 end;
 
-procedure TMTS.DoInvalidate(Sender: TObject);
-begin
-  Invalidate;
-end;
+//procedure TMTS.DoInvalidate(Sender: TObject);
+//begin
+//  Invalidate;
+//end;
 
 function TMTS.GetIStimuli: IStimuli;
 begin

@@ -33,7 +33,7 @@ type
     constructor Create; override;
     destructor Destroy; override;
     procedure Click; virtual;
-    procedure LoadFromFile(AFilename: string); override;
+    procedure ShrinkHeight;
     property OnClick: TNotifyEvent read FOnClick write FOnClick;
     property Sender : TObject read FSender write FSender;
   end;
@@ -87,10 +87,9 @@ begin
     FOnClick(Self);
 end;
 
-procedure TButton.LoadFromFile(AFilename: string);
+procedure TButton.ShrinkHeight;
 begin
-  inherited LoadFromFile(AFilename);
-  Height:=Height div 3;
+  Height:= Height div 3;
 end;
 
 end.

@@ -14,7 +14,7 @@ unit sdl.app.trials;
 interface
 
 uses
-  Classes, SysUtils, fgl
+  Classes, SysUtils, Generics.Collections
   , SDL2
   , sdl.timer
   , sdl.app.controls.custom
@@ -33,7 +33,8 @@ uses
 
 type
 
-  TStimuliList = specialize TFPGObjectList<TStimuli>;
+  TStimuliList = specialize TObjectList<TStimuli>;
+  TIStimuliList = specialize TList<IStimuli>;
 
   { TTrial }
 
@@ -47,8 +48,7 @@ type
       FTestMode: Boolean;
       FVisible: Boolean;
       FIStimuli : IStimuli;
-      FICalibration : IStimuli;
-      FIInstruction : IStimuli;
+      FIStimuliList : TIStimuliList;
       FInterTrialInterval : Cardinal;
       FConsequenceInterval : Cardinal;
       FHasInstructions : Boolean;
@@ -107,6 +107,7 @@ implementation
 uses
   Pupil.Queue
   , eye.tracker.client
+  , sdl.app.renderer.validation
   , sdl.app.video.methods
   , sdl.app.stimuli.instruction
   , sdl.app.stimuli.calibration
@@ -130,14 +131,13 @@ begin
   SDLEvents.OnMouseMotion := AsIMoveable.GetSDLMouseMotion;
   SDLEvents.OnGazeOnScreen := @GazeOnScreen;
 
-  FICalibration := nil;
-  FIInstruction := nil;
   FVisible := False;
   FTestMode := False;
   FStimuliList := TStimuliList.Create;
+  FIStimuliList := TIStimuliList.Create;
   FText := TText.Create;
   FLimitedHoldTimer := TSDLTimer.Create;
-
+  FNavigator := nil;
   FLimitedHoldTimer.Interval := 0;
   FInterTrialInterval := 0;
   FConsequenceInterval := 0;
@@ -171,6 +171,7 @@ begin
 
   FLimitedHoldTimer.Free;
   FStimuliList.Free;
+  FIStimuliList.Free;
   FText.Free;
   inherited Destroy;
 end;
@@ -223,14 +224,14 @@ begin
         if not IChild.MouseInside then begin
           IChild.MouseInside:=True;
           IChild.MouseEnter(Sender);
-          Invalidate;
+          GPaintingInvalidated := True;
         end;
         IChild.MouseMove(Sender, Shift, X, Y);
       end else begin
         if IChild.MouseInside then begin
           IChild.MouseInside:=False;
           IChild.MouseExit(Sender);
-          Invalidate;
+          GPaintingInvalidated := True;
         end;
       end;
     end;
@@ -272,19 +273,14 @@ begin
   end;
 end;
 
-procedure DoEndTrial(PSelf: Pointer);
+procedure TTrial.EndTrial;
 var
   event : TSDL_Event;
 begin
-  event.type_ := SESSION_TRIALEND;
-  event.user.data1 := PSelf;
-  SDL_PushEvent(@event);
-end;
-
-procedure TTrial.EndTrial;
-begin
   Hide;
-  DoEndTrial(Pointer(Self));
+  event.type_ := SESSION_TRIALEND;
+  event.user.data1 := Pointer(Self);
+  SDL_PushEvent(@event);
 end;
 
 procedure TTrial.EndTrialCallBack(Sender: TObject);
@@ -300,29 +296,15 @@ begin
   end;
 end;
 
-// todo: refactor starters as an IStimuliList, call next stimuli here...
 procedure TTrial.EndStarterCallBack(Sender: TObject);
 begin
-  if Sender is TInstructionStimuli then begin
-    TInstructionStimuli(Sender).Stop;
-    if Assigned(FICalibration) then begin
-      FICalibration.Start;
-    end else begin
-      FIStimuli := GetIStimuli;
+  with FIStimuliList do begin
+    if Count > 0 then begin
+      FIStimuli.Stop;
+      FIStimuli := Extract(Last);
       Show;
     end;
   end;
-
-  if Sender is TCalibrationStimuli then begin
-    TCalibrationStimuli(Sender).Stop;
-    FIStimuli := GetIStimuli;
-    Show;
-  end;
-
-  //with FStimuliList do
-  //  if Count > 0 then begin
-  //    FIStimuli := Extract(Last);
-  //  end;
 end;
 
 // todo: refactor starters as an IStimuliList to allow many instructions ...
@@ -330,24 +312,31 @@ procedure TTrial.CreateStartersIfRequired;
 var
   LInstruction : TInstructionStimuli;
   LCalibration : TCalibrationStimuli;
+  LIStimuli : IStimuli;
 begin
+  FIStimuliList.Add(FIStimuli);
+
   if FHasInstructions then begin
     LInstruction := TInstructionStimuli.Create;
     LInstruction.OnFinalize := @EndStarterCallBack;
-    FIInstruction := LInstruction;
-    FIInstruction.Load(FConfiguration.Parameters, Self);
-    FIStimuli := FIInstruction;
     FStimuliList.Add(LInstruction);
+
+    LIStimuli := LInstruction as IStimuli;
+    LIStimuli.Load(FConfiguration.Parameters, Self);
+    FIStimuliList.Add(LIStimuli);
   end;
 
   if TEyeTrackerClient.Exists and FHasCalibration then begin
     LCalibration := TCalibrationStimuli.Create;
     LCalibration.OnFinalize := @EndStarterCallBack;
-    FICalibration := LCalibration;
-    FICalibration.Load(FConfiguration.Parameters, Self);
-    FIStimuli := LCalibration;
     FStimuliList.Add(LCalibration);
+
+    LIStimuli := LCalibration as IStimuli;
+    LIStimuli.Load(FConfiguration.Parameters, Self);
+    FIStimuliList.Add(LIStimuli);
   end;
+
+  EndStarterCallBack(Self);
 end;
 
 procedure TTrial.GazeOnScreen(AGazes : TNormalizedGazes);
@@ -367,14 +356,17 @@ begin
           if not IChild.GazeInside then begin
             IChild.GazeInside:=True;
             IChild.GazeEnter(Self);
-            Invalidate;
+            GPaintingInvalidated := True;
+            if FNavigator <> nil then begin
+              FNavigator.SelectTarget(TSDLControl(Child).AsISelectable);
+            end;
           end;
           IChild.GazeMove(Self, GetShiftState, Gaze.X, Gaze.Y);
         end else begin
           if IChild.GazeInside then begin
             IChild.GazeInside:=False;
             IChild.GazeExit(Self);
-            Invalidate;
+            GPaintingInvalidated := True;
           end;
         end;
       end;
@@ -484,7 +476,7 @@ begin
       Timestamp(CustomName+'.Show'+#9+Selectables.ToJSON);
     end;
   end;
-  Invalidate;
+  GPaintingInvalidated := True;
 end;
 
 procedure TTrial.Hide;
@@ -497,7 +489,7 @@ begin
     FIStimuli.Stop;
     FLimitedHoldTimer.Stop;
   end;
-  Invalidate;
+  GPaintingInvalidated := True;
 end;
 
 // test mode

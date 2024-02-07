@@ -13,15 +13,15 @@ unit eye.tracker.types;
 
 interface
 
-uses SDL2;
+uses SDL2, Math;
 
 type
 
   TEyeTrackerCode = (etNone, etEyeLink, etPupilLabs);
 
   TNormalizedGaze = record
-    X : Double;
-    Y : Double;
+    X : Float;
+    Y : Float;
   end;
 
   TNormalizedGazes = array of TNormalizedGaze;

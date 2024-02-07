@@ -104,7 +104,9 @@ end;
 
 class function TTrialFactory.CurrentTrial: ITrial;
 begin
-  Result := FCurrentTrial as ITrial;
+  if FCurrentTrial <> nil then begin
+    Result := FCurrentTrial as ITrial;
+  end;
 end;
 
 class function TTrialFactory.GetLastTrial: ITrial;

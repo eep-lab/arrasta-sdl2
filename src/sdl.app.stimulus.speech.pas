@@ -18,9 +18,6 @@ uses
   , SDL2
   , sdl.app.graphics.rectangule
   , sdl.app.stimulus
-  //, sdl.app.stimulus.typeable
-  , sdl.app.graphics.toggle
-  , sdl.app.events.abstract
   , sdl.app.audio
   , sdl.app.audio.recorder.devices
   ;
@@ -31,20 +28,13 @@ type
 
   TSpeechStimulus = class(TStimulus)
   private
-    //FTextFromVocalResponse : string;
-    FRect : TSDL_Rect;
+    FRectangule : TRectangule;
     FRecorder : TAudioRecorderComponent;
-    FPlayback : TAudioPlaybackComponent;
-    FRecorderButton : TToggleButton;
-    FPlaybackButton : TToggleButton;
+    procedure RecordingFinished(Sender: TObject);
+    procedure RecordingStopped(Sender: TObject);
   protected
     function GetRect: TRectangule; override;
     function GetStimulusName : string; override;
-    //procedure RecorderTerminated(Sender: TObject);
-    //procedure PlaybackTerminated(Sender: TObject);
-    procedure MouseUp(Sender: TObject; Shift: TCustomShiftState;
-      X, Y: Integer); override;
-    //procedure KeyUp;q
   public
     constructor Create; override;
     destructor Destroy; override;
@@ -61,8 +51,6 @@ implementation
 uses Controls
    , session.pool
    , sdl.app.output
-   , sdl.app.controls.custom
-   , session.strutils
    , session.strutils.mts
    , session.loggers.writerow.timestamp
    , session.parameters.global
@@ -75,15 +63,29 @@ procedure TSpeechStimulus.DoResponse(AHuman: Boolean);
 var
   LName: String;
 begin
-  inherited DoResponse(AHuman);
   LName := 'Speech-'+GetID.ToSpeechString;
-  FRecorder.SaveToFile(Pool.DataResponsesBasePath+LName);
-  FormManualSpeechValidation.ExpectedText := FCustomName;
+  if AHuman then begin
+    FRecorder.SaveToFile(Pool.DataResponsesBasePath+LName);
+    FormManualSpeechValidation.ExpectedText := FCustomName;
+  end else begin
+    { do nothing }
+  end;
+  inherited DoResponse(AHuman);
+end;
+
+procedure TSpeechStimulus.RecordingFinished(Sender: TObject);
+begin
+  DoResponse(False);
+end;
+
+procedure TSpeechStimulus.RecordingStopped(Sender: TObject);
+begin
+  DoResponse(True);
 end;
 
 function TSpeechStimulus.GetRect: TRectangule;
 begin
-  Result := FRecorderButton as TRectangule;
+  Result := FRectangule;
 end;
 
 function TSpeechStimulus.GetStimulusName: string;
@@ -91,52 +93,31 @@ begin
   Result := 'Speech' + #9 + FCustomName;
 end;
 
-procedure TSpeechStimulus.MouseUp(Sender: TObject; Shift: TCustomShiftState; X,
-  Y: Integer);
-begin
-  if Sender = FRecorderButton then begin
-    if FRecorder.CanRecord then begin
-      FRecorder.StartRecording(FRecorderButton);
-      FRecorderButton.Toggle;
-    end;
-    Exit;
-  end;
-
-  if Sender = FPlaybackButton then begin
-    if FRecorder.HasRecording then begin
-      FPlayback.StartPlayback(FPlaybackButton);
-      FPlaybackButton.Toggle;
-    end;
-  end;
-end;
-
 constructor TSpeechStimulus.Create;
 begin
   inherited Create;
   FormManualSpeechValidation.ExpectedText := '';
-  FPlaybackButton := TToggleButton.Create;
-  FPlaybackButton.Owner := Self as TObject;
-  FRecorderButton := TToggleButton.Create;
-  FRecorderButton.Owner := Self as TObject;
-
-  Selectables.Add(FRecorderButton.AsISelectable);
-  Selectables.Add(FPlaybackButton.AsISelectable);
+  FRectangule := TRectangule.Create;
 end;
 
 destructor TSpeechStimulus.Destroy;
 begin
-  FPlaybackButton.Free;
-  FRecorderButton.Free;
+  FRectangule.Free;
   inherited Destroy;
 end;
 
 function TSpeechStimulus.IsCorrectResponse: Boolean;
 begin
-  if GlobalTrialParameters.ShowModalFormForSpeechResponses then begin
-    Result := FormManualSpeechValidation.ShowModal = mrYes;
+  if FormManualSpeechValidation.ExpectedText.IsEmpty then begin
+    Result := False;
   end else begin
-    Result := True;
+    if GlobalTrialParameters.ShowModalFormForSpeechResponses then begin
+      Result := FormManualSpeechValidation.ShowModal = mrYes;
+    end else begin
+      Result := True;
+    end;
   end;
+
   if not Result then begin
     Timestamp(
       'Incorrect.Response' + #9 + FormManualSpeechValidation.EditSpeech.Text);
@@ -145,44 +126,16 @@ end;
 
 procedure TSpeechStimulus.Load(AParameters: TStringList; AParent: TObject;
   ARect: TSDL_Rect);
-const
-  LRecordButton    : string = 'RecordButton';
-  LRecordButtonOn  : string = 'RecordButtonOn';
-  LRecordButtonOff : string = 'RecordButtonOff';
-  LPlayButton    : string = 'PlayButton';
-  LPlayButtonOn  : string = 'PlayButtonOn';
-  LPlayButtonOff : string = 'PlayButtonOff';
 begin
-  //inherited Load(AParameters, AParent, ARect);
-  FRect := ARect;
+  FRectangule.BoundsRect := ARect;
+  // FRectangule.Visible := False;
+  // FRectangule.Parent := AParent; // speech do not have a visible square
   FCustomName := GetWordValue(AParameters, IsSample, Index);
 
-  SDLAudio.RecorderDevice.Clear;
+  SDLAUdio.RecorderDevice.Recorder.Clear;
+  SDLAUdio.RecorderDevice.OnStopped := @RecordingStopped;
+  SDLAUdio.RecorderDevice.OnFinished := @RecordingFinished;
   FRecorder := SDLAudio.RecorderDevice.Recorder;
-  FPlayback := SDLAudio.RecorderDevice.Playback;
-
-  if FPlayback.Opened then begin
-    FPlaybackButton.LoadFromFile(
-      AsAsset(LPlayButtonOff), AsAsset(LPlayButtonOn));
-    FPlaybackButton.CustomName := LPlayButton;
-    FPlaybackButton.BoundsRect := ARect;
-    FPlaybackButton.Parent := TSDLControl(AParent);
-    //FPlaybackButton.OnMouseDown := @MouseDown;
-    FPlaybackButton.OnMouseUp := @MouseUp;
-    SDLAudio.RecorderDevice.Append(FPlaybackButton);
-  end;
-
-  if FRecorder.Opened then begin
-    FRecorderButton.LoadFromFile(
-      AsAsset(LRecordButtonOff), AsAsset(LRecordButtonOn));
-    FRecorderButton.CustomName := LRecordButton;
-    FRecorderButton.BoundsRect := ARect;
-    FRecorderButton.Sibling := FPlaybackButton;
-    FRecorderButton.Parent := TSDLControl(AParent);
-    //FRecordButton.OnMouseDown := @MouseDown;
-    FRecorderButton.OnMouseUp := @MouseUp;
-    SDLAudio.RecorderDevice.Append(FRecorderButton);
-  end;
 end;
 
 procedure TSpeechStimulus.Start;
@@ -190,29 +143,15 @@ begin
   if IsSample then begin
     { do nothing }
   end else begin
-    if Assigned(FRecorderButton) then begin
-      FRecorderButton.Show;
-      FRecorderButton.Enabled := True;
-    end;
-    if Assigned(FPlaybackButton) then begin
-      FPlaybackButton.Show;
-      FPlaybackButton.Enabled := False;
+    if FRecorder.CanRecord then begin
+      FRecorder.StartRecording(Self);
     end;
   end;
 end;
 
 procedure TSpeechStimulus.Stop;
 begin
-  if IsSample then begin
-    { do nothing }
-  end else begin
-    if Assigned(FRecorderButton) then begin
-      FRecorderButton.Hide;
-    end;
-    if Assigned(FPlaybackButton) then begin
-      FPlaybackButton.Hide;
-    end;
-  end;
+  { do nothing }
 end;
 
 end.

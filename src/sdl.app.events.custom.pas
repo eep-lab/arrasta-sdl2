@@ -63,7 +63,12 @@ var
 
 implementation
 
-uses sdl.app.trials, sdl.timer, sdl.app.audio, eye.tracker;
+uses
+  sdl.app.trials,
+  sdl.timer,
+  sdl.app.audio,
+  sdl.app.audio.recorder.devices,
+  eye.tracker;
 
 { TCustomEventHandler }
 
@@ -125,6 +130,30 @@ procedure TCustomEventHandler.UserEvent(const event: TSDL_UserEvent);
     end;
   end;
 
+  procedure DoOnRecordingFinished;
+  var
+    LRecorder : TAudioRecorderComponent;
+  begin
+    LRecorder := TAudioRecorderComponent(event.data1);
+    if Assigned(LRecorder) then begin
+      if Assigned(LRecorder.OnRecordingFinished) then begin
+        LRecorder.OnRecordingFinished(LRecorder);
+      end;
+    end;
+  end;
+
+  procedure DoOnRecordingStopped;
+  var
+    LRecorder : TAudioRecorderComponent;
+  begin
+    LRecorder := TAudioRecorderComponent(event.data1);
+    if Assigned(LRecorder) then begin
+      if Assigned(LRecorder.OnRecordingStopped) then begin
+        LRecorder.OnRecordingStopped(LRecorder);
+      end;
+    end;
+  end;
+
 begin
   case event.type_ of
     SESSION_TRIALEND:
@@ -139,6 +168,12 @@ begin
     EYE_TRACKER_GAZE_EVENT: begin
       OnGazeOnScreen(EyeTracker.CurrentGazes);
     end;
+
+    SESSION_RECORDING_FINISHED:
+      DoOnRecordingFinished;
+
+    SESSION_RECORDING_STOPPED:
+      DoOnRecordingStopped;
   end;
 end;
 
@@ -149,7 +184,9 @@ var
     SESSION_TRIALEND,
     SESSION_ONTIMER,
     SESSION_CHUNK_STOPPED,
-    EYE_TRACKER_GAZE_EVENT);
+    EYE_TRACKER_GAZE_EVENT,
+    SESSION_RECORDING_FINISHED,
+    SESSION_RECORDING_STOPPED);
 begin
   inherited Create;
   FKeyboard := TSDLSystemKeyboard.Create;

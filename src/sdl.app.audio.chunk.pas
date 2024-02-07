@@ -22,14 +22,17 @@ type
 
   TChunk = class(TInterfacedObject, ISound)
   private
+    FShouldBeDeallocated : Boolean;
     FFilename : string;
     FChannel: cint;
     FOnStart: TNotifyEvent;
     FOnStop : TNotifyEvent;
     FChunk : PMix_Chunk;
     procedure DoOnStop;
+    function GetShouldBeDeallocated: Boolean;
     procedure SetOnStart(AValue: TNotifyEvent);
     procedure SetOnStop(AValue: TNotifyEvent);
+    procedure SetShouldBeDeallocated(AValue: Boolean);
   public
     constructor Create;
     destructor Destroy; override;
@@ -44,11 +47,13 @@ type
     property OnStart : TNotifyEvent read FOnStart write SetOnStart;
     property OnStop : TNotifyEvent read FOnStop write SetOnStop;
     property Channel : cint read FChannel write FChannel;
+    property ShouldBeDeallocated : Boolean
+      read GetShouldBeDeallocated write SetShouldBeDeallocated;
   end;
 
 implementation
 
-uses LazFileUtils, sdl.app.audio;
+uses LazFileUtils;
 
 { TChunk }
 
@@ -56,6 +61,11 @@ procedure TChunk.DoOnStop;
 begin
   if Assigned(OnStop) then
     OnStop(Self);
+end;
+
+function TChunk.GetShouldBeDeallocated: Boolean;
+begin
+  Result := FShouldBeDeallocated;
 end;
 
 procedure TChunk.SetOnStart(AValue: TNotifyEvent);
@@ -70,8 +80,16 @@ begin
   FOnStop := AValue;
 end;
 
+procedure TChunk.SetShouldBeDeallocated(AValue: Boolean);
+begin
+  if FShouldBeDeallocated = AValue then Exit;
+  FShouldBeDeallocated := AValue;
+end;
+
 constructor TChunk.Create;
 begin
+  inherited Create;
+  FShouldBeDeallocated := False;
   FOnStart := nil;
   FOnStop := nil;
 end;
@@ -117,13 +135,17 @@ end;
 
 procedure TChunk.Play;
 begin
-  if Assigned(OnStart) then OnStart(Self);
-  Mix_PlayChannel(FChannel, FChunk, 0);
+  if Assigned(OnStart) then begin
+    OnStart(Self);
+  end;
+  FChannel := Mix_PlayChannel(FChannel, FChunk, 0);
 end;
 
 procedure TChunk.Stop;
 begin
-  Mix_HaltChannel(FChannel);
+  if Playing then begin
+    Mix_HaltChannel(FChannel);
+  end;
 end;
 
 end.

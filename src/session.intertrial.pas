@@ -63,6 +63,7 @@ uses
   , sdl.colors
   , sdl.app.trials.types
   , sdl.app.controller.manager
+  , sdl.app.renderer.validation
   ;
 
 { TInterTrialEvents }
@@ -84,6 +85,7 @@ begin
   FConsequenceDuration.Interval := FTrial.ConsequenceInterval;
   FInterTrial.Interval := FTrial.InterTrialInterval;
 
+  FSerialTimer.Clear;
   if HasDelay then begin
     FSerialTimer.Append(FDelay);
   end;
@@ -146,7 +148,10 @@ end;
 procedure TInterTrialEvents.InterTrialConsequenceBegin;
 begin
   case FTrial.MyResult of
-    Miss: clBackgroud := clBlack;
+    Miss: begin
+      clBackgroud := clBlack;
+      GPaintingInvalidated := True;
+    end
     else { do nothing }
   end;
 end;
@@ -168,7 +173,6 @@ procedure TInterTrialEvents.InterTrialEnd(Sender: TObject);
 begin
   if Sender is TSerialTimer then begin
     FSerialTimer.Stop;
-    FSerialTimer.Clear;
   end;
 
   FDelay.Interval := 0;

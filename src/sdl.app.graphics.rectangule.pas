@@ -60,7 +60,7 @@ type
     procedure CentralizeWith(ARect: TSDL_Rect);
     procedure DoRandomMouseUp;
     procedure Inflate(AValue : cint);
-    procedure Hide;
+    procedure Hide; virtual;
     procedure ToOriginalBounds;
     procedure SetOriginalBounds;
     procedure Show;

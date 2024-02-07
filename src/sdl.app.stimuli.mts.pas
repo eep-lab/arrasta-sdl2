@@ -89,6 +89,7 @@ implementation
 
 uses
   StrUtils
+  , sdl.app.renderer.validation
   , sdl.app.controls.custom
   , sdl.app.graphics.picture
   , sdl.app.output
@@ -122,9 +123,7 @@ begin
   UpdateNavigator;
 
   // informs TTrial Owner
-  if Assigned(OnResponse) then begin
-    OnResponse(Self);
-  end;
+  GPaintingInvalidated := True;
 end;
 
 procedure TMTSStimuli.SetNavigator(ANavigator: ITableNavigator);
@@ -230,8 +229,6 @@ begin
 end;
 
 procedure TMTSStimuli.ConsequenceDone(Sender: TObject);
-var
-  LStimulus : TStimulus;
 begin
   if (Sender as ISound) = FSoundCorrect then begin
     Timestamp('Hit.Stop');
@@ -343,7 +340,7 @@ begin
       end;
 
       ModalityD: begin { TSpeechStimulus }
-        Exit;
+
       end;
 
       otherwise begin
@@ -368,24 +365,21 @@ begin
   //  LStimulus.Stop;
   //end;
 
-  for LStimulus in FComparisons do begin
-    LStimulus.Start;
-  end;
-
   case FMTSModality.Comparisons of
     ModalityD: begin { Speech }
-      FButton.Sibling := LStimulus.Rectangule;
-      FButton.CentralizeAtRightWith(LStimulus.Rectangule.BoundsRect, 2);
-      FButton.Sender := LStimulus;
-      FButton.Show;
-      UpdateState(startButtons);
+      SDLAudio.RecorderDevice.Recorder.Stop;
+      //TStimulus(Sender).Stop;
     end;
 
     otherwise begin
+      for LStimulus in FComparisons do begin
+        LStimulus.Start;
+      end;
+
       UpdateState(startComparisons);
+      Timestamp('Comparisons.Start'+#9+FSelectables.ToJSON);
     end;
   end;
-  Timestamp('Comparisons.Start'+#9+FSelectables.ToJSON);
 end;
 
 function TMTSStimuli.CustomName: string;
@@ -513,9 +507,8 @@ var
     LCallbacks.OnResponse  := @ComparisonResponse;
     LCallbacks.OnNoResponse := @NoResponse;
 
-    Grid.FixedSample:=True;
-
-    if AComparisons = 1 then begin
+    if (FMTSModality.Samples = ModalityC) and
+       (FMTSModality.Comparisons = ModalityD) then begin
       Grid.FixedComparison:=True;
     end else begin
       Grid.FixedComparison:=False;
@@ -549,6 +542,12 @@ var
         Samples[i].Item := LItem as TObject;
         FSamples.Add(LItem);
       end;
+
+      if (FMTSModality.Samples = ModalityC) and
+         (FMTSModality.Comparisons = ModalityD) then begin
+        FSamples[0].Sibling := FComparisons[0];
+      end;
+
       AppendToTrialHeader(Pool.Session.Trial.Events.Header);
       AppendToTrialHeader(Grid.Header);
       AppendToTrialHeader(Header);
@@ -558,6 +557,7 @@ var
 begin
   if not Assigned(AParent) then
     raise Exception.Create('You must assign a parent.');
+
   FSoundCorrect := SDLAudio.SoundFromName('acerto');
   FSoundWrong   := SDLAudio.SoundFromName('erro');
   FSoundCorrect.SetOnStart(@ConsequenceStart);
@@ -619,18 +619,21 @@ begin
     end;
   end;
 
+  NewGridItems(LSamples, LComparisons, goCustom);
+
   FButton.LoadFromFile(AsAsset(LButton));
   FButton.Parent := TSDLControl(AParent);
   FButton.OnClick:=@ButtonClick;
   FButton.CustomName := LButton;
-
-  NewGridItems(LSamples, LComparisons, goCustom);
+  FButton.BoundsRect := Grid.RandomPositions.Samples[0].Rect;
+  FButton.ShrinkHeight;
 end;
 
 procedure TMTSStimuli.Start;
 var
   LStimulus : TStimulus;
 begin
+  SDLAudio.Clean;
   for LStimulus in FSamples do
     LStimulus.Start;
   UpdateState(startSamples);

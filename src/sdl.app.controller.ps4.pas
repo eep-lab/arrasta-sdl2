@@ -58,6 +58,7 @@ type
 implementation
 
 uses
+  Math,
   sdl.app.output,
   sdl.app.events.custom,
   sdl.app.video.methods,
@@ -158,7 +159,7 @@ procedure TSDLPS4Controller.ControllerTouchPadMotion(
 var
   touchpad, finger: cint32;
   state: Uint8;
-  x, y, pressure: Single;
+  x, y, pressure: Float;
 begin
   // Get the touchpad and finger indices
   touchpad := event.touchpad;

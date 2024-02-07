@@ -14,7 +14,7 @@ unit session.loggers.writerow;
 interface
 
 uses
-  Classes, SysUtils, session.loggers.types;
+  Classes, SysUtils, Math, session.loggers.types;
 
 procedure WriteDataRow;
 
@@ -22,8 +22,8 @@ var
   SaveData : TDataProcedure = nil;
   BlockName : string;
   TrialName : string;
-  //ITIBegin  : TLargerFloat;
-  //ITIEnd    : TLargerFloat;
+  //ITIBegin  : Float;
+  //ITIEnd    : Float;
 
 procedure AppendToTrialHeader(AHeader : string);
 procedure AppendToTrialData(AData : string);

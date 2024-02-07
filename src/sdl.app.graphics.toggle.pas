@@ -14,25 +14,15 @@ unit sdl.app.graphics.toggle;
 interface
 
 uses
-  Classes, SysUtils
+  Classes, SysUtils, Math
   , SDL2
   , sdl.app.graphics.rectangule
   , sdl.app.paintable.contract
   , sdl.app.events.abstract
-  , timestamps.types
+  , animation.easing
   ;
 
 type
-
-  TAnimationData = record
-    Acum: TLargerFloat;
-    Growing: boolean;
-    Step: TLargerFloat;
-    Alpha : byte;
-    FixedAlpha : integer;
-    MinAlpha : integer;
-    MaxAlpha : integer;
-  end;
 
   { TToggleButton }
 
@@ -46,7 +36,7 @@ type
     FTexture1  : PSDL_Texture;
     FTexture2  : PSDL_Texture;
     FIsTexture1 : Boolean;
-    FAnimationData : TAnimationData;
+    FAnimation : TEasingAnimation;
     procedure SetEnabled(AValue: Boolean);
     procedure SetOwner(AValue: TObject);
     procedure SetSibling(AValue: TToggleButton);
@@ -94,14 +84,12 @@ begin
   FEnabled := True;
   FCanShade := True;
   FIsTexture1 := True;
-  FAnimationData.Step := 0.025;
-  FAnimationData.MinAlpha := 0;
-  FAnimationData.MaxAlpha := 255;
-  FAnimationData.FixedAlpha := 125;
+  FAnimation := TEasingAnimation.Create;
 end;
 
 destructor TToggleButton.Destroy;
 begin
+  FAnimation.Free;
   SDL_DestroyTexture(FTexture1);
   SDL_DestroyTexture(FTexture2);
   inherited Destroy;
@@ -185,16 +173,6 @@ begin
 end;
 
 procedure TToggleButton.Paint;
-var
-  TempSize: TLargerFloat;
-  function easeInOutQuad(t: TLargerFloat): TLargerFloat;
-  begin
-    if t < 0.5 then
-      Result := 2 * t * t
-    else
-      Result := -1 + (4 - 2 * t) * t;
-  end;
-
 begin
   if Visible then begin
     SDL_SetRenderDrawBlendMode(PSDLRenderer, SDL_BLENDMODE_BLEND);
@@ -212,34 +190,10 @@ begin
         SDL_RenderFillRect(PSDLRenderer, @FRect);
       end;
     end else begin
-      with FAnimationData do begin
-        if Step > 1 then
-           Step := 1;
-        Acum := Acum + Step;
-        TempSize := easeInOutQuad(Acum);
-        if Growing then begin
-          Alpha := Round(FixedAlpha * TempSize);
-          if Alpha >= FixedAlpha then
-          begin
-            Alpha := FixedAlpha;
-            Growing := False;
-            Acum:= 0;
-          end;
-        end else begin
-          TempSize := FixedAlpha - Round(FixedAlpha * TempSize);
-          if TempSize <= MinAlpha then
-          begin
-            Alpha := MinAlpha;
-            Growing := true;
-            Acum:= 0;
-          end else begin
-            Alpha := Trunc(TempSize);
-          end;
-        end;
-      end;
+      FAnimation.StepIt;
 
-      with clLightRedShaded1, FAnimationData do begin
-        SDL_SetRenderDrawColor(PSDLRenderer, r, g, b, Alpha);
+      with clLightRedShaded1 do begin
+        SDL_SetRenderDrawColor(PSDLRenderer, r, g, b, FAnimation.Value);
       end;
 
       SDL_RenderFillRect(PSDLRenderer, @FRect);
@@ -278,7 +232,7 @@ procedure TToggleButton.Toggle;
 begin
   if FEnabled then begin
     FIsTexture1 := not FIsTexture1;
-    FAnimationData.Acum := 0;
+    FAnimation.Reset;
   end;
 end;
 

@@ -22,7 +22,7 @@ type
     FSpeechToText: string;
     procedure SetExpectedText(AValue: string);
   public
-    property ExpectedText : string write SetExpectedText;
+    property ExpectedText : string read FExpectedText write SetExpectedText;
     property SpeechToText : string read FSpeechToText;
   end;
 

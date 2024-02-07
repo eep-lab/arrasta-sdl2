@@ -182,7 +182,7 @@ type
   function GetKeyState(KeyCode : TSDL_ScanCode; AKeyboardState: pcuint8) : Boolean;
 
 const
-  SDL_USEREVENTSTOREGISTER = 3;
+  SDL_USEREVENTSTOREGISTER = 5;
 
 implementation
 

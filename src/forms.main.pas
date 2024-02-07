@@ -306,7 +306,7 @@ begin
   TestMode := FormMisc.CheckBoxTestMode.Checked;
 
   GlobalTrialParameters.Cursor := 1;
-  GlobalTrialParameters.FixedComparisonPosition := 7;
+  GlobalTrialParameters.FixedComparisonPosition := 4;
 
   with GlobalTrialParameters, FormMisc.SpinEditAprilTagsSize do
     MarkerSize := Value;

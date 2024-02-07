@@ -37,6 +37,7 @@ type
       function IsCellEmpty(ACol, ARow: UInt32): Boolean; overload;
       function AsString : string;
       function CellOf(AValue : T) : TCell;
+      function CellOfTarget(AValue: T; out ATargetFound : Boolean) : TCell;
       procedure AppendRow;
       procedure AppendCol;
       procedure InsertRow(ARow: UInt32; const AValues: array of T);
@@ -241,6 +242,25 @@ begin
   for LCol := 0 to FColCount-1 do begin
     for LRow := 0 to FRowCount-1 do begin
       if AValue = FTableData[KeyOf(LCol, LRow)] then begin
+        Result.Col := LCol;
+        Result.Row := LRow;
+        Break;
+      end;
+    end;
+  end;
+end;
+
+function TTable.CellOfTarget(AValue: T; out ATargetFound: Boolean): TCell;
+var
+  LCol, LRow: Integer;
+begin
+  ATargetFound := False;
+  Result.Col := 0;
+  Result.Row := 0;
+  for LCol := 0 to FColCount-1 do begin
+    for LRow := 0 to FRowCount-1 do begin
+      if AValue = FTableData[KeyOf(LCol, LRow)] then begin
+        ATargetFound := True;
         Result.Col := LCol;
         Result.Row := LRow;
         Break;

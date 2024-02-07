@@ -24,7 +24,9 @@ type
   ISound = interface
     ['{362597B2-A0D1-4F6C-8536-DE41AA52A7A4}']
     function Duration : cuint32;
+    function GetShouldBeDeallocated: Boolean;
     function Playing : Boolean;
+    procedure SetShouldBeDeallocated(AValue: Boolean);
     function ShortName : string;
     //function ShortPath : string;
     procedure DoOnStop;
@@ -34,6 +36,8 @@ type
     procedure Play;
     procedure Stop;
     procedure Free;
+    property ShouldBeDeallocated : Boolean
+      read GetShouldBeDeallocated write SetShouldBeDeallocated;
   end;
 
 implementation

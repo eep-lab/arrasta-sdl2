@@ -65,16 +65,16 @@ type
 implementation
 
 uses
+  Math,
   sdl.app.output,
   sdl.app.events.custom,
   sdl.app.video.methods,
   sdl.app.controller.types,
   sdl.app.graphics.debug,
-  timestamps.types,
   timestamps;
 
 var
-  LastClock : TLargerFloat = 0;
+  LastClock : Float = 0;
 
 { TSDLWiiRemote }
 
