@@ -277,6 +277,7 @@ end;
 
 procedure TFormBackground.MenuItemCopyPNGFilesClick(Sender: TObject);
 begin
+  SetupFolders;
   E1CopyRandomImagesToParticipantFolder;
 end;
 
@@ -306,7 +307,6 @@ begin
   TestMode := FormMisc.CheckBoxTestMode.Checked;
 
   GlobalTrialParameters.Cursor := 1;
-  GlobalTrialParameters.FixedComparisonPosition := 4;
 
   with GlobalTrialParameters, FormMisc.SpinEditAprilTagsSize do
     MarkerSize := Value;
@@ -353,6 +353,7 @@ begin
     case ItemIndex of
       1: begin // centralize sample, use 4 corners for comparisions
         FixedSamplePosition := 4;
+        FixedComparisonPosition := 4;
         SetLength(ComparisonPositions, 4);
         ComparisonPositions[0] := 0;
         ComparisonPositions[1] := 2;
