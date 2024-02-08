@@ -53,6 +53,7 @@ type
     procedure ComboBoxDesignFolderEditingDone(Sender: TObject);
     procedure EndSession(Sender : TObject);
     procedure CloseSDLApp(Sender : TObject);
+    procedure FormCreate(Sender: TObject);
     procedure IniPropStorage1RestoreProperties(Sender: TObject);
     procedure IniPropStorage1StoredValues0Restore(Sender: TStoredValue;
       var Value: TStoredType);
@@ -69,6 +70,7 @@ type
     procedure MenuItemRemoveParticipantClick(Sender: TObject);
     procedure MenuItemShowWordsPerCycleClick(Sender: TObject);
   private
+    FSessionName : string;
     procedure AssignGlobalVariables;
     procedure ToogleControlPanelEnabled(AException: TComponent = nil);
     function ParticipantFolderName : string;
@@ -92,6 +94,7 @@ uses
   , common.helpers
   , forms.main.misc
   , session
+  , session.information
   , session.parameters.global
   , session.pool
   , session.loggers
@@ -183,10 +186,12 @@ end;
 
 procedure TFormBackground.ButtonLoadConfigurationFileClick(Sender: TObject);
 begin
-  SetupFolders;         // todo: pass filename id of loaded file into session.counters.loadfromfile
+  SetupFolders; // todo: pass filename id of loaded file into session.counters.loadfromfile
   OpenDialog1.InitialDir := Pool.BaseFileName;
   if OpenDialog1.Execute then begin
     Pool.ConfigurationFilename := LoadConfigurationFile(OpenDialog1.FileName);
+    FSessionName := LoadInformationFromFile(OpenDialog1.FileName).SessionName;
+    ShowMessage(FSessionName);
     ProgressBar.Max := 1;
     ProgressBar.StepIt;
     ProgressBar.Visible := True;
@@ -235,6 +240,12 @@ begin
   Controllers.Free;
   ToogleControlPanelEnabled;
   ProgressBar.Visible := False;
+  FSessionName := '';
+end;
+
+procedure TFormBackground.FormCreate(Sender: TObject);
+begin
+  FSessionName := '';
 end;
 
 procedure TFormBackground.IniPropStorage1RestoreProperties(Sender: TObject);
@@ -393,7 +404,13 @@ end;
 
 function TFormBackground.SessionName: string;
 begin
-  Result := 'Sessão';
+  if FSessionName.IsEmpty then begin
+    with ComboBoxCondition do begin
+      Result := Items[ItemIndex];
+    end;
+  end else begin
+    Result := FSessionName;
+  end;
 end;
 
 function TFormBackground.SetupFolders: Boolean;

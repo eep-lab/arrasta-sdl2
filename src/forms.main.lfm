@@ -10,6 +10,7 @@ object FormBackground: TFormBackground
   PopupMenu = PopupMenuMisc
   SessionProperties = 'ComboBoxCondition.ItemIndex;ComboBoxDesignFolder.ItemIndex;ComboBoxParticipant.ItemIndex;ComboBoxParticipant.Items;ComboBoxParticipant.Text;OpenDialog1.InitialDir;Width;Left;Height;Top'
   LCLVersion = '3.99.0.0'
+  OnCreate = FormCreate
   object Panel1: TPanel
     AnchorSideLeft.Control = Owner
     AnchorSideLeft.Side = asrCenter
