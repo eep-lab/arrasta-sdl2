@@ -355,7 +355,7 @@ begin
                 case AWord.Phase.Condition of
                   Condition_BC_CB_Testing:
                     Image :=
-                      GetNextComparison(LCandidateNegativeWordsWithNewImages);
+                      GetRandomWord(LCandidateNegativeWordsWithNewImages);
                   else
                     Image :=
                       GetNextComparison(LCandidateNegativeComparisons);
