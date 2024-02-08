@@ -56,7 +56,8 @@ type
       function ToData : string;
       function ToJSON : string;
       procedure UpdatePositions(ASamples, AComparisons: integer;
-        AGridOrientation : TGridOrientation);
+        AGridOrientation : TGridOrientation;
+        AFixedSample: Boolean; AFixedComparison: Boolean);
       {Cria seleção randômica de modelos e comparações em posições diferentes no AGrid}
       procedure RandomizePositions;
       property GridStyle : TGridStyle read FGridStyle write SetGridStyle;
@@ -564,11 +565,16 @@ begin
 end;
 
 procedure TGrid.UpdatePositions(ASamples, AComparisons : integer;
-  AGridOrientation : TGridOrientation);
+  AGridOrientation : TGridOrientation;
+  AFixedSample: Boolean; AFixedComparison: Boolean);
 begin
   if (FSamplesCount <> ASamples) or
      (FComparisonsCount <> AComparisons) or
-     (FGridOrientation <> AGridOrientation) then begin
+     (FGridOrientation <> AGridOrientation) or
+     (FFixedSample <> AFixedSample) or
+     (FFixedComparison <> AFixedComparison) then begin
+    FFixedSample := AFixedSample;
+    FFixedComparison := AFixedComparison;
     FSamplesCount := ASamples;
     FComparisonsCount := AComparisons;
     FGridOrientation := AGridOrientation;

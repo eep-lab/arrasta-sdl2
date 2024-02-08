@@ -499,6 +499,7 @@ var
     LItem : TStimulus;
     i : integer;
     LCallbacks : TCallbacks;
+    LFixedComparison: Boolean;
   begin
     LCallbacks.OnMouseExit := @StimulusMouseExit;
     LCallbacks.OnMouseEnter := @StimulusMouseEnter;
@@ -509,12 +510,14 @@ var
 
     if (FMTSModality.Samples = ModalityC) and
        (FMTSModality.Comparisons = ModalityD) then begin
-      Grid.FixedComparison:=True;
+      LFixedComparison := True;
     end else begin
-      Grid.FixedComparison:=False;
+      LFixedComparison := False;
     end;
 
-    Grid.UpdatePositions(ASamples, AComparisons, AGridOrientation);
+    Grid.UpdatePositions(
+      ASamples, AComparisons, AGridOrientation, True, LFixedComparison);
+
     with Grid.RandomPositions, MTSKeys do begin
       for i := Low(Comparisons) to High(Comparisons) do begin
         LItem := TStimulusFactory.New(Self, ComparLetter, LCallbacks);

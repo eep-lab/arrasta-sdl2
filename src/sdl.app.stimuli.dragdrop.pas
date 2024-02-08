@@ -132,7 +132,8 @@ var
     LComparisons : TDragDropablePictures;
     i : integer;
   begin
-    Grid.UpdatePositions(ASamples, AComparisons, AGridOrientation);
+    Grid.UpdatePositions(ASamples, AComparisons, AGridOrientation,
+      Grid.FixedSample, Grid.FixedComparison);
     with Grid.RandomPositions do begin
       LComparisons := TDragDropablePictures.Create;
       for i := low(Comparisons) to high(Comparisons) do
