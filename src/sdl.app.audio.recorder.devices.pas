@@ -439,6 +439,20 @@ end;
 procedure TAudioRecorderComponent.SaveToFile(AFilename: string);
 var
   LWavWriter : TWavWriter;
+
+  function GetBufferByteSize : UInt32; // After cutting end silence
+  var
+    i: Integer;
+  begin
+    for i := GBufferByteMaxPosition - 1 downto 0 do begin
+      if GPRecordingBuffer[i] > 0 then
+      begin
+        Result := i + 1; // Update the buffer size
+        Break; // Exit the loop once non-silent audio is found
+      end;
+    end;
+  end;
+
 begin
   LWavWriter := TWavWriter.Create;
   try
@@ -451,7 +465,7 @@ begin
           fmt.SampleRate * fmt.Channels * fmt.BitsPerSample div 8;
         fmt.BlockAlign       := fmt.Channels * fmt.BitsPerSample div 8;
       end;
-      LWavWriter.WriteBuf(GPRecordingBuffer^, GBufferByteSize);
+      LWavWriter.WriteBuf(GPRecordingBuffer^, GetBufferByteSize);
       LWavWriter.FlushHeader;
     end else begin
       Print('Error creating WAV file: ' + AFileName);

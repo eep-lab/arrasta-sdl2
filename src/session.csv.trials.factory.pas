@@ -38,7 +38,8 @@ uses
   session.csv.trials.pseudowords.cycle4,
   session.csv.trials.pseudowords.cycle5,
   session.csv.trials.pseudowords.cycle6,
-  session.csv.trials.dapaap;
+  session.csv.trials.dapaap,
+  session.csv.trials.multisample;
 
 { TCSVTrialsFactory }
 
@@ -99,7 +100,8 @@ initialization
   TCSVTrialsFactory.RegisterCSVTrialClass(
     'mts-dapa-ap', TCSVDAPAAPTrials);
 
-  //TCSVTrialsFactory.RegisterTrialClass('mm-eep', TDragDrop);
+  TCSVTrialsFactory.RegisterCSVTrialClass(
+    'multi-sample', TCSVMultiSample);
 
   TCSVTrialsFactory.Initialize;
 

@@ -72,11 +72,10 @@ type
       procedure SampleResponse(Sender: TObject);
     protected
       function CustomName : string; override;
+      function MyResult : TTrialResult; override;
     public
       constructor Create; override;
       destructor Destroy; override;
-      function MyResult : TTrialResult; override;
-      function AsIStimuli : IStimuli;
       function AsINavigable : INavigable; override;
       procedure DoExpectedResponse; override;
       procedure Load(AParameters : TStringList;
@@ -377,7 +376,7 @@ begin
       end;
 
       UpdateState(startComparisons);
-      Timestamp('Comparisons.Start'+#9+FSelectables.ToJSON);
+      Timestamp('Comparisons.Start', FSelectables.ToJSON);
     end;
   end;
 end;
@@ -422,11 +421,6 @@ begin
   FSamples.Free;
   FComparisons.Free;
   inherited Destroy;
-end;
-
-function TMTSStimuli.AsIStimuli: IStimuli;
-begin
-  Result := Self as IStimuli;
 end;
 
 function TMTSStimuli.AsINavigable: INavigable;
@@ -515,7 +509,7 @@ var
       LFixedComparison := False;
     end;
 
-    Grid.UpdatePositions(
+    Grid.UpdatePositions(Grid.Seed,
       ASamples, AComparisons, AGridOrientation, True, LFixedComparison);
 
     with Grid.RandomPositions, MTSKeys do begin
@@ -637,6 +631,7 @@ var
   LStimulus : TStimulus;
 begin
   SDLAudio.Clean;
+
   for LStimulus in FSamples do
     LStimulus.Start;
   UpdateState(startSamples);

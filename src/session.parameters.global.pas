@@ -28,6 +28,7 @@ type
     AudioLoopInterval : UInt32;
     DefaultAudioLoops : SmallInt;
     MarkerSize : SmallInt;
+    HideMouse : Boolean;
   end;
 
 var
@@ -35,6 +36,26 @@ var
 
 implementation
 
-
+initialization
+  with GlobalTrialParameters do begin
+    Cursor := 0;
+    LimitedHold := 0;
+    InterTrialInterval := 0;
+    TimeOutInterval := 0;
+    HasConsequence := False;
+    FontName := 'Arimo-Regular';
+    FixedSamplePosition := 4;
+    FixedComparisonPosition := 4;
+    ComparisonPositions := nil;
+    GridOrientation := goCustom;
+    FontSize := 12;
+    ShowModalFormForSpeechResponses := False;
+    AudioPromptForText := '';
+    RecordingSeconds := 1;
+    ShouldRestartAtBlockStart := False;
+    AudioLoopInterval := 0;
+    DefaultAudioLoops := 1;
+    MarkerSize := 100;
+  end;
 end.
 

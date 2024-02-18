@@ -20,14 +20,19 @@ uses
   , sdl.app.choiceable.rectangule
   , sdl.app.dragdropable.contract
   , sdl.app.events.abstract
+  , sdl.app.stimulus.contract
+  , sdl.app.stimulus.types
+  , SDL2
   ;
 
 type
 
   { TDragDropablePicture }
 
-  TDragDropablePicture = class(TChoiceablePicture, IDragDropable)
+  TDragDropablePicture = class(TChoiceablePicture, IDragDropable, IStimulus)
   private
+    FIsSample: Boolean;
+    FPosition : integer;
     FDraggable: Boolean;
     FIsDragging : Boolean;
     FOnOtherDragDrop: TDragDropEvent;
@@ -49,15 +54,24 @@ type
   public
     constructor Create; override;
     destructor Destroy; override;
+    procedure Load(AParameters : TStringList;
+      AParent : TObject; ARect: TSDL_Rect);
+    procedure Start;
+    procedure Stop;
+    procedure DoResponse(AHuman : Boolean);
+    function GetID: TStimulusID;
+    function ToData : string;
     property OnRightDragDrop : TDragDropEvent read FOnRightDragDrop write SetOnRightDragDrop;
     property OnWrongDragDrop : TDragDropEvent read FOnWrongDragDrop write SetOnWrongDragDrop;
     property OnOtherDragDrop : TDragDropEvent read FOnOtherDragDrop write SetOnOtherDragDrop;
     property Draggable : Boolean read FDraggable write SetDraggable;
+    property Position : integer read FPosition write FPosition;
+    property IsSample : Boolean read FIsSample write FIsSample;
   end;
 
 implementation
 
-//uses SDL2, math.bresenhamline.classes;
+uses session.pool;
 
 var SomeInstanceIsDragging : Boolean;
 
@@ -111,7 +125,7 @@ end;
 procedure TDragDropablePicture.MouseMove(Sender: TObject;
   Shift: TCustomShiftState; X, Y: Integer);
 begin
-  if Draggable then begin
+  if FDraggable then begin
     if FIsDragging and SomeInstanceIsDragging then begin
       Left := X - FOffSet.X;
       Top  := Y - FOffSet.Y;
@@ -185,6 +199,44 @@ destructor TDragDropablePicture.Destroy;
 begin
 
   inherited Destroy;
+end;
+
+procedure TDragDropablePicture.Load(AParameters: TStringList; AParent: TObject;
+  ARect: TSDL_Rect);
+begin
+
+end;
+
+procedure TDragDropablePicture.Start;
+begin
+  Show;
+end;
+
+procedure TDragDropablePicture.Stop;
+begin
+  Hide;
+end;
+
+procedure TDragDropablePicture.DoResponse(AHuman: Boolean);
+begin
+
+end;
+
+function TDragDropablePicture.GetID: TStimulusID;
+begin
+  Result.IsSample := FIsSample;
+  Result.SubjcID := Pool.Counters.Subject;
+  Result.SessiID := Pool.Session.ID;
+  Result.BlockID := Pool.Session.Block.UID;
+  Result.TrialID := Pool.Session.Trial.UID;
+  //Result.StimuID := FIndex;
+  //Result.RespoID := FResponseID;
+  Result.Name := FCustomName;
+end;
+
+function TDragDropablePicture.ToData: string;
+begin
+  Result := FCustomName+'-'+FPosition.ToString;
 end;
 
 

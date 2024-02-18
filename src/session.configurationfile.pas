@@ -260,7 +260,7 @@ begin
   LTrialSection := TrialSection(BlockIndex, i);
   FCurrentTrialParameters.Clear;
   with Result, TrialKeys do begin
-    Id :=  i + 1;
+    Id :=  i;
     Kind := ReadString(LTrialSection, KindKey, '');
     ReferenceName := ReadString(LTrialSection, ReferenceNameKey, '');
     ReadSectionValues(LTrialSection, FCurrentTrialParameters);
@@ -277,7 +277,7 @@ var
 begin
   LTrialSection := TrialSection(BlockIndex, TrialIndex);
   with Result do begin
-    Id :=  TrialIndex + 1;
+    Id :=  TrialIndex;
     Kind := ReadString(LTrialSection, _Kind, '');
     ReferenceName := ReadString(LTrialSection, 'ReferenceName', '');
     Parameters := TStringList.Create;

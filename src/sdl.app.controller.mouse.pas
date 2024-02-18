@@ -18,7 +18,7 @@ type
 
 implementation
 
-uses sdl.app.mouse;
+uses session.parameters.global, sdl.app.mouse;
 
 { TSDLMouseController }
 
@@ -29,7 +29,11 @@ end;
 
 procedure TSDLMouseController.Show;
 begin
-  Mouse.Show;
+  if GlobalTrialParameters.HideMouse then begin
+    { do not show }
+  end else begin
+    Mouse.Show;
+  end;
 end;
 
 end.

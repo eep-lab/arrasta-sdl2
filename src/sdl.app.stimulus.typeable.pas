@@ -208,7 +208,7 @@ begin
   inherited Destroy;
 end;
 
-function TTypeableStimulus.IsCorrectResponse: Boolean;
+function TTypeableStimulus.IsCorrectResponse : Boolean;
 begin
   //Result := LowerCase(FTextFromVocalResponse) = FWord;
 end;

@@ -27,6 +27,7 @@ type
     ReferenceName: string;
     Parameters: TStringList;
     class operator = (A, B: TTrialConfiguration): Boolean;
+    function ToData : string;
   end;
 
   TTrials = array of TTrialConfiguration;
@@ -62,12 +63,17 @@ type
     CrtCsqHit : integer;
     Trials: TTrials;
     class operator = (A, B: TBlockConfiguration): Boolean;
+    function ToData : string;
   end;
 
   TBlocks = array of TBlockConfiguration;
 
 implementation
 
+function AsNameValue(AName, AValue: string):string;
+begin
+  Result := String.Join('=', [AName, AValue]);
+end;
 
 { TTrialConfiguration }
 
@@ -76,11 +82,53 @@ begin
   Result := A.ID = B.ID;
 end;
 
+function TTrialConfiguration.ToData: string;
+begin
+  Result := String.Join(LineEnding,[
+    AsNameValue('ID', ID.ToString),
+    AsNameValue('Kind', Kind),
+    AsNameValue('ReferenceName', ReferenceName),
+    'Parameters:',
+    Parameters.Text]);
+end;
+
 { TBlockConfiguration }
 
 class operator TBlockConfiguration.=(A, B: TBlockConfiguration): Boolean;
 begin
   Result := A.ID = B.ID;
+end;
+
+function TBlockConfiguration.ToData: string;
+begin
+  Result := String.Join(LineEnding,[
+    AsNameValue('ID', ID.ToString),
+    AsNameValue('Name', Name),
+    AsNameValue('TotalTrials', TotalTrials.ToString),
+    AsNameValue('BackUpBlock', BackUpBlock.ToString),
+    AsNameValue('BackUpBlockErrors', BackUpBlockErrors.ToString),
+    AsNameValue('MaxBlockRepetition', MaxBlockRepetition.ToString),
+    AsNameValue('MaxBlockRepetitionInSession', MaxBlockRepetitionInSession.ToString),
+    AsNameValue('EndSessionOnHitCriterion', EndSessionOnHitCriterion.ToString),
+    AsNameValue('NextBlockOnHitCriterion', NextBlockOnHitCriterion.ToString),
+    AsNameValue('NextBlockOnNotCriterion', NextBlockOnNotCriterion.ToString),
+    AsNameValue('CrtHitPorcentage', CrtHitPorcentage.ToString),
+    AsNameValue('Reinforcement', Reinforcement.ToString),
+
+    //AsNameValue('Counter', Counter),
+    //AsNameValue('AutoEndSession', AutoEndSession.ToString),
+    //AsNameValue('MaxCorrection', MaxCorrection.ToString),
+    //AsNameValue('BackgroundColor', BkGnd.ToString),
+    //AsNameValue('InterTrialInterval', ITI.ToString),
+    //AsNameValue(DefNextBlock: string;
+    //AsNameValue(CrtConsecutive: integer;
+    //AsNameValue(CrtHitValue: integer;
+    //AsNameValue(CrtConsecutiveHit: integer;
+    //AsNameValue(CrtConsecutiveHitPerType : integer;
+    //AsNameValue(CrtConsecutiveMiss : integer;
+    //AsNameValue(CrtMaxTrials : integer;
+    //AsNameValue(CrtCsqHit : integer;
+    AsNameValue('TrialsLength', Length(Trials).ToString)]);
 end;
 
 end.

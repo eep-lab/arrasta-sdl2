@@ -14,7 +14,7 @@ unit session.endcriteria;
 interface
 
 uses
-  SysUtils
+  Classes, SysUtils, Math
   , session.configuration
   , session.configurationfile
   ;
@@ -29,11 +29,15 @@ type
     //Pool.Trial.ID : integer;
     FCurrentBlock : TBlockConfiguration;
     FCurrentTrial : TTrialConfiguration;
+    FOnHitCriteriaAtSessionEnd: TNotifyEvent;
+    FOnNotHitCriteriaAtSessionEnd: TNotifyEvent;
     function NextTrial : SmallInt;
     function NextBlock : SmallInt;
-    function HitPorcentageInBlock : real;
+    function HitPorcentageInBlock : Float;
     function IsEndBlock(ATrialID : Word) : Boolean;
     function IsEndSession(ABlockID : Word) : Boolean;
+    procedure SetOnHitCriteriaAtSessionEnd(AValue: TNotifyEvent);
+    procedure SetOnNotHitCriteriaAtSessionEnd(AValue: TNotifyEvent);
     function ShouldEndSession(var ABlockID : Word) : Boolean;
     function ShouldEndBlock(var ATrialID : Word) : Boolean;
     function HitPercentageCriterionAchieved : Boolean;
@@ -44,6 +48,10 @@ type
     function OfSession : Boolean;
     function OfBlock : Boolean;
     function OfTrial : Boolean;
+    property OnHitCriteriaAtSessionEnd : TNotifyEvent
+      read FOnHitCriteriaAtSessionEnd write SetOnHitCriteriaAtSessionEnd;
+    property OnNotHitCriteriaAtSessionEnd : TNotifyEvent
+      read FOnNotHitCriteriaAtSessionEnd write SetOnNotHitCriteriaAtSessionEnd;
   end;
 
 var
@@ -61,6 +69,8 @@ uses
 
 constructor TEndCriteria.Create;
 begin
+  inherited Create;
+
 end;
 
 procedure TEndCriteria.InvalidateBlock;
@@ -183,6 +193,7 @@ var
           end;
         end;
       end;
+    //ShouldEndSession(Result);
   end;
 
   procedure NextBlockOnNotCriteria;
@@ -221,8 +232,14 @@ begin
   if FCurrentBlock.CrtHitPorcentage > 0 then begin
     if HitPercentageCriterionAchieved then begin
       Result := NextBlockOnHitCriteria;
+      if IsEndSession(Result) then begin
+        OnHitCriteriaAtSessionEnd(Self);
+      end;
     end else begin
       NextBlockOnNotCriteria;
+      if IsEndSession(Result) then begin
+        OnNotHitCriteriaAtSessionEnd(Self);
+      end;
     end;
     Exit;
   end;
@@ -248,7 +265,7 @@ function TEndCriteria.ShouldEndSession(var ABlockID: Word): Boolean;
   procedure EvaluateCriteriaToForceEndSession;
   begin
     if FCurrentBlock.MaxBlockRepetitionInSession > 0 then begin
-      if Pool.Session.Tree.Block[Pool.Block.ID].Count =
+      if Pool.Session.Tree.Block[Pool.Block.ID].Count >=
          FCurrentBlock.MaxBlockRepetitionInSession then begin
          ForceEndSession;
       end;
@@ -265,7 +282,7 @@ begin
   Result := HitPorcentageInBlock >= FCurrentBlock.CrtHitPorcentage;
 end;
 
-function TEndCriteria.HitPorcentageInBlock: real;
+function TEndCriteria.HitPorcentageInBlock: Float;
 var
   LHits : integer;
 begin
@@ -281,6 +298,18 @@ end;
 function TEndCriteria.IsEndSession(ABlockID: Word): Boolean;
 begin
   Result := ABlockID >= ConfigurationFile.TotalBlocks;
+end;
+
+procedure TEndCriteria.SetOnHitCriteriaAtSessionEnd(AValue: TNotifyEvent);
+begin
+  if FOnHitCriteriaAtSessionEnd = AValue then Exit;
+  FOnHitCriteriaAtSessionEnd := AValue;
+end;
+
+procedure TEndCriteria.SetOnNotHitCriteriaAtSessionEnd(AValue: TNotifyEvent);
+begin
+  if FOnNotHitCriteriaAtSessionEnd = AValue then Exit;
+  FOnNotHitCriteriaAtSessionEnd := AValue;
 end;
 
 function TEndCriteria.ShouldEndBlock(var ATrialID: Word): Boolean;

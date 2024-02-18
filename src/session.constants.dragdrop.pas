@@ -6,28 +6,26 @@ interface
 
 type
   TDragDropKeys = record
-    DragDropOrientation : string;
-    UseHelpProgression : string;
-    RepeatTrials : string;
-    Distance : string;
-    SamplesDragMode : string;
-    Relation : string;
-    Samples : string;
-    Comparisons : string;
-    DragMoveFactor : string;
+    DragDropOrientationKey : string;
+    UseHelpProgressionKey : string;
+    DistanceKey : string;
+    DragModeKey : string;
+    DragMoveFactorKey : string;
+    DragableAnimationKey : string;
+    GridSizeKey : string;
+    StimuliFolderKey: string;
   end;
 
 const
   DragDropKeys : TDragDropKeys = (
-    DragDropOrientation : 'Orientation';
-    UseHelpProgression : 'UseHelpProgression';
-    RepeatTrials : 'RepeatTrial';
-    Distance : 'Distance';
-    SamplesDragMode : 'Style.Samples.DragMode';
-    Relation : 'Relation';
-    Samples : 'Samples';
-    Comparisons : 'Comparisons';
-    DragMoveFactor : 'DragMoveFactor');
+    DragDropOrientationKey : 'Orientation';
+    UseHelpProgressionKey : 'UseHelpProgression';
+    DistanceKey : 'Distance';
+    DragModeKey : 'DragMode';
+    DragMoveFactorKey : 'DragMoveFactor';
+    DragableAnimationKey : 'DragableAnimation';
+    GridSizeKey : 'GridSize';
+    StimuliFolderKey : 'StimuliFolder');
 
 implementation
 

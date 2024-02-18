@@ -88,8 +88,7 @@ end;
 
 function TestModeFolder: string;
 begin
-  Result := ConcatPaths([
-    Pool.BaseFileName]);
+  Result := ConcatPaths([Pool.BaseDataPath, Pool.BaseFileName]);
 end;
 
 function AsPath(A, B: string): string;

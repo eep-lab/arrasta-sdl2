@@ -175,7 +175,7 @@ type
       property OnUserEvent : TOnUserEvent read FOnUserEvent write SetOnUserEvent;
     public
       procedure HandlePending;
-      constructor Create; reintroduce;
+      constructor Create;
   end;
 
   function GetShiftState: TCustomShiftState;
@@ -512,6 +512,7 @@ end;
 
 constructor TEventHandler.Create;
 begin
+  inherited Create;
   SDL_RegisterEvents(SDL_USEREVENTSTOREGISTER);
   FOnControllerAxisMotion:= nil;
   FOnControllerButtonDown:= nil;

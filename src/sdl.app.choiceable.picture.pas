@@ -45,6 +45,7 @@ implementation
 
 uses
   sdl2_image
+  , LazFileUtils
   , sdl.app.video.methods
   , sdl.app.output
   ;
@@ -100,6 +101,7 @@ const
 var
   Media : PAnsiChar;
 begin
+  CustomName := ExtractFileNameOnly(AFilename);
   Media := PAnsiChar(AFilename+IMG_EXT);
   FTexture := IMG_LoadTexture(PSDLRenderer, Media);
 end;

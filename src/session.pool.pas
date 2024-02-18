@@ -34,6 +34,7 @@ type
     AssetsRootBasePath : string;
     AudioBasePath : string;
     AudioRootBasePath : string;
+    BaseDataPath : string;
     BaseFileName : string;
     BasePath : string;
     ConfigurationFilename : string;
@@ -71,6 +72,9 @@ initialization
     ForceDirectories(DataRootBasePath);
 
     // data/{Participant}
+    BaseDataPath := '';
+
+    // {Filename} 000
     BaseFileName := '';
 
     // data/{Participant}/{Filename}.ini

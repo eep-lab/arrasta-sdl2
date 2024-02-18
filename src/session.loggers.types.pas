@@ -13,6 +13,8 @@ unit session.loggers.types;
 
 interface
 
+uses Math;
+
 type
   { TDataProcedure }
   TDataProcedure = procedure (S : string) of object;
@@ -20,6 +22,14 @@ type
   // LGData have blc, trial data.
   // LGTimestamps for stm and response data.
   TLoggers = (LGData, LGTimestamps, LGInfo);
+
+  TTimestampedEvent = record
+    Timestamp : Float;
+    Block : Word;
+    Trial : Word;
+    Code : string;
+    Annotation : string;
+  end;
 
 
 implementation

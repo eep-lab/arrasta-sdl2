@@ -28,6 +28,7 @@ type
 
   TSpeechStimulus = class(TStimulus)
   private
+    FHasConsequence : Boolean;
     FRectangule : TRectangule;
     FRecorder : TAudioRecorderComponent;
     procedure RecordingFinished(Sender: TObject);
@@ -51,26 +52,94 @@ implementation
 uses Controls
    , session.pool
    , sdl.app.output
+   , session.constants.trials
    , session.strutils.mts
    , session.loggers.writerow.timestamp
+   , session.loggers.types
    , session.parameters.global
    , forms.modal.speechvalidation
+   , forms.speechvalidation
    ;
 
 { TSpeechStimulus }
 
+{
+  Without speech-to-text capabilities,
+  it is necessary to manually record
+  speech responses. Some computer-assisted
+  annotation support has been implemented:
+
+  1) Empty ExpectedText entries represent
+  incorrect responses (or non-responses,
+  as one might consider them) triggered
+  by a limited hold. These are automatically
+  recorded.
+
+  2) Expected correct responses are
+  auto-completed. Therefore, if a
+  participant emits a correct response,
+  the experimenter can promptly
+  press Enter to record it.
+
+  3) Common incorrect responses (e.g.,
+  "I don't know") are triggered by
+  a reserved keyboard key (- key).
+
+  Other incorrect responses may be typed
+  using the keyboard.
+
+  Thus, manual annotation may consistently
+  take varying amounts of time in some cases
+  (for example, 2 and 4), with a slightly
+  longer time for wrong responses. Therefore,
+  for assessment trials programmed to have
+  no differential consequences, computer-assisted
+  annotation must be non-blocking to avoid
+  consistent differential timing.
+
+  Non-blocking annotation during a trial
+  requires asynchronous writing in the
+  .timestamps file. This may result in
+  unordered lines regarding monotonic time,
+  trials, and blocks. One may sort them
+  by time post-facto to recover the correct
+  event ordering.
+
+  Non-blocking annotation between trials
+  in the .data file is not covered.
+}
 procedure TSpeechStimulus.DoResponse(AHuman: Boolean);
 var
   LName: String;
+  LEvent: TTimestampedEvent;
 begin
+  LEvent := TimestampedEvent;
+  DoResponseIncrement;
+
+  if AHuman then begin
+    LEvent.Code := 'Stimulus.Response.Speech';
+  end else begin
+    LEvent.Code := 'Stimulus.Robot.Response.Speech';
+  end;
+  LEvent.Annotation := FCustomName;
+
+  Timestamp(LEvent);
+
   LName := 'Speech-'+GetID.ToSpeechString;
   if AHuman then begin
     FRecorder.SaveToFile(Pool.DataResponsesBasePath+LName);
-    FormManualSpeechValidation.ExpectedText := FCustomName;
+    if FHasConsequence then begin
+      FormManualSpeechValidation.ExpectedText := FCustomName;
+    end else begin
+      LEvent.Annotation := FCustomName;
+      FormSpeechValidationQueue.ExpectedText := LEvent;
+    end;
   end else begin
     { do nothing }
   end;
-  inherited DoResponse(AHuman);
+
+  if Assigned(OnResponse) then
+    OnResponse(Self);
 end;
 
 procedure TSpeechStimulus.RecordingFinished(Sender: TObject);
@@ -90,13 +159,18 @@ end;
 
 function TSpeechStimulus.GetStimulusName: string;
 begin
-  Result := 'Speech' + #9 + FCustomName;
+  if IsSample then begin // currently not using speech as samples...
+    Result := 'Speech.Sample' + #9 + FCustomName;
+  end else begin
+    Result := 'Speech.Comparison' + #9 + FCustomName;
+  end;
 end;
 
 constructor TSpeechStimulus.Create;
 begin
   inherited Create;
   FormManualSpeechValidation.ExpectedText := '';
+
   FRectangule := TRectangule.Create;
 end;
 
@@ -106,21 +180,42 @@ begin
   inherited Destroy;
 end;
 
-function TSpeechStimulus.IsCorrectResponse: Boolean;
+function TSpeechStimulus.IsCorrectResponse : Boolean;
+var
+  LExpectedResponse : string = '';
+  LAnnotation : string = '';
 begin
-  if FormManualSpeechValidation.ExpectedText.IsEmpty then begin
+  if FHasConsequence then begin
+    LExpectedResponse := FormManualSpeechValidation.ExpectedText;
+  end else begin
+    LExpectedResponse := FormSpeechValidationQueue.ExpectedText.Annotation;
+  end;
+
+  if LExpectedResponse.IsEmpty then begin
     Result := False;
   end else begin
     if GlobalTrialParameters.ShowModalFormForSpeechResponses then begin
-      Result := FormManualSpeechValidation.ShowModal = mrYes;
+      if FHasConsequence then begin
+        with FormManualSpeechValidation do begin
+          ShowModal; // blocking
+          Result := EditSpeech.Text = ExpectedText; // change in real-time
+        end;
+      end else begin
+        Result := True; // unchanged in real-time, requires post-fact analysis
+      end;
     end else begin
-      Result := True;
+      Result := True; // unchanged in real-time, requires post-fact analysis
     end;
   end;
 
   if not Result then begin
-    Timestamp(
-      'Incorrect.Response' + #9 + FormManualSpeechValidation.EditSpeech.Text);
+    if FHasConsequence then begin
+      LAnnotation :=
+        LExpectedResponse + '-' + FormManualSpeechValidation.EditSpeech.Text;
+    end else begin
+      { do nothing }
+    end;
+    Timestamp('Incorrect.Response', LAnnotation);
   end;
 end;
 
@@ -131,6 +226,7 @@ begin
   // FRectangule.Visible := False;
   // FRectangule.Parent := AParent; // speech do not have a visible square
   FCustomName := GetWordValue(AParameters, IsSample, Index);
+  FHasConsequence := AParameters.Values[TrialKeys.HasConsequenceKey].ToBoolean;
 
   SDLAUdio.RecorderDevice.Recorder.Clear;
   SDLAUdio.RecorderDevice.OnStopped := @RecordingStopped;

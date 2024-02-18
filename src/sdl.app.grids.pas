@@ -14,7 +14,7 @@ unit sdl.app.grids;
 interface
 
 uses
-  Classes, SysUtils, SDL2, Math.LatinSquares, sdl.app.grids.types;
+  Classes, SysUtils, SDL2, Math, Math.LatinSquares, sdl.app.grids.types;
 
 type
 
@@ -27,7 +27,7 @@ type
       //FComparGridList : TGridList;
       FSeed : integer;
       FCellsCount: integer;
-      FCellsSize: real;
+      FCellsSize: Float;
       FComparisonsCount: integer;
       FGrid : TMatrix;
       FGridStyle : TGridStyle;
@@ -35,7 +35,7 @@ type
       FRandomPositions : TRandomPositions;
       FSamplesCount: integer;
       procedure SetCellsCount(AValue: integer);
-      procedure SetCellsSize(AValue: real);
+      procedure SetCellsSize(AValue: Float);
       procedure SetFixedComparison(AValue: Boolean);
       procedure SetFixedSample(AValue: Boolean);
       procedure SetGridOrientation(AValue: TGridOrientation);
@@ -55,14 +55,15 @@ type
       function Header : string;
       function ToData : string;
       function ToJSON : string;
-      procedure UpdatePositions(ASamples, AComparisons: integer;
+      procedure UpdatePositions(AGridSize: Byte;
+        ASamples, AComparisons: integer;
         AGridOrientation : TGridOrientation;
         AFixedSample: Boolean; AFixedComparison: Boolean);
       {Cria seleção randômica de modelos e comparações em posições diferentes no AGrid}
       procedure RandomizePositions;
       property GridStyle : TGridStyle read FGridStyle write SetGridStyle;
       property CellsCount : integer read FCellsCount write SetCellsCount;
-      property CellsSize : real read FCellsSize write SetCellsSize;
+      property CellsSize : Float read FCellsSize write SetCellsSize;
       property FixedSample : Boolean read FFixedSample write SetFixedSample;
       property FixedComparison : Boolean read FFixedComparison write SetFixedComparison;
       property RandomPositions : TRandomPositions read FRandomPositions;
@@ -76,12 +77,10 @@ var
 implementation
 
 uses
-  Math
-  , session.parameters.global
-  , sdl.helpers
-  , sdl.app.grids.methods
-  , sdl.app.stimulus.contract
-  ;
+  sdl.helpers,
+  session.parameters.global,
+  sdl.app.grids.methods,
+  sdl.app.stimulus.contract;
 
 { TGrid }
 
@@ -495,7 +494,7 @@ begin
   FCellsCount:=AValue;
 end;
 
-procedure TGrid.SetCellsSize(AValue: real);
+procedure TGrid.SetCellsSize(AValue: Float);
 begin
   if FCellsSize=AValue then Exit;
   FCellsSize:=AValue;
@@ -564,11 +563,13 @@ begin
   end;
 end;
 
-procedure TGrid.UpdatePositions(ASamples, AComparisons : integer;
+procedure TGrid.UpdatePositions(AGridSize: Byte;
+  ASamples, AComparisons : integer;
   AGridOrientation : TGridOrientation;
   AFixedSample: Boolean; AFixedComparison: Boolean);
 begin
-  if (FSamplesCount <> ASamples) or
+  if (FSeed <> AGridSize) or
+     (FSamplesCount <> ASamples) or
      (FComparisonsCount <> AComparisons) or
      (FGridOrientation <> AGridOrientation) or
      (FFixedSample <> AFixedSample) or
@@ -578,6 +579,22 @@ begin
     FSamplesCount := ASamples;
     FComparisonsCount := AComparisons;
     FGridOrientation := AGridOrientation;
+
+
+    if FSeed <> AGridSize then begin
+      FSeed := AGridSize;
+      case FSeed of
+        2: FCellsSize := 10;
+        3: FCellsSize := 6;
+        4: FCellsSize := 6;
+        5: FCellsSize := 5;
+        6: FCellsSize := 5;
+        otherwise
+          FCellsSize := 3;
+      end;
+      FCellsCount:=FSeed*FSeed;
+      FGrid := GetCentralGrid(FSeed, FCellsSize, DispersionStyle);
+    end;
     CreatePositions;
   end;
   RandomizePositions;

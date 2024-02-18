@@ -25,10 +25,10 @@ function GetCentralRect(AWidth,AHeight,ALeftBorder,ATopBorder,
 
 // 0 degrees = rect right; increments clockwise, squares only
 function GetPointFromAngle(AAngle: float; ARect:TRect): TPoint;
-function GetCentralGrid(AN: integer; ASquareSide: real;
+function GetCentralGrid(AN: integer; ASquareSide: Float;
   ADistribute: Boolean): TMatrix;
 procedure InitMonitor;
-function GetCircularCentralGrid(AN: integer; ASquareSide: real): TMatrix;
+function GetCircularCentralGrid(AN: integer; ASquareSide: Float): TMatrix;
 
 
 implementation
@@ -39,7 +39,7 @@ uses
   ;
 
 var
-  ScreenInCentimeters : real = 39.624;
+  ScreenInCentimeters : Float = 39.624;
   MonitorWidth : integer;
   MonitorHeight: integer;
   BorderTop    : TRect;
@@ -134,7 +134,7 @@ begin
   Result := Round((LSize*AStep)-((LSize*ASteps)/2)+((ASegment+AInterStimulusSpace)/2));
 end;
 
-function CmToScreenPixels(AMeasure : real) : integer;
+function CmToScreenPixels(AMeasure : Float) : integer;
 begin
   Result := Round(AMeasure*(MonitorWidth/ScreenInCentimeters));
 end;
@@ -166,7 +166,7 @@ end;
 {Cria grade quadrada como uma matriz AN x AN. Quando ADistribute = true, a
 distância horizontal e vertical entre os estímulos é diferente, e quando false
 é igual}
-function GetCentralGrid(AN: integer; ASquareSide: real;
+function GetCentralGrid(AN: integer; ASquareSide: Float;
   ADistribute: Boolean): TMatrix;
 var
   LIndex      : integer = 0;
@@ -214,7 +214,7 @@ end;
 {Cria grade circular considerando j como modelo central e i como comparações em
 torno de um diâmetro. AN = número de estímulos i; ASquareSide = lado do quadrado
 dos estímulos}
-function GetCircularCentralGrid(AN: integer; ASquareSide: real): TMatrix;
+function GetCircularCentralGrid(AN: integer; ASquareSide: Float): TMatrix;
 var
   LIndex      : integer = 0;
   //LSegment    : integer = 0;

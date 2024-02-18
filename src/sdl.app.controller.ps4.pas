@@ -70,7 +70,7 @@ const
   PS4_BUTTON_SHARE = 4;
   PS4_BUTTON_HOME = 5;
   PS4_BUTTON_OPTIONS = 6;
-  LHumbleTime = 100;
+  //LHumbleTime = 100;
 
 procedure TSDLPS4Controller.ControllerAxisMotion(
   const event: TSDL_ControllerAxisEvent);

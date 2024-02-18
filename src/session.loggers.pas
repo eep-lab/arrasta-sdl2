@@ -44,6 +44,7 @@ implementation
 uses SysUtils
   , DateUtils
   , LazFileUtils
+  , session.fileutils
   , session.pool
   , session.loggers.types
   , session.loggers.instances;
@@ -53,34 +54,8 @@ const FirstBasename: string = '000';
 { TLogger }
 
 constructor TLogger.Create(AFilename: string);
-const
-  L0 = #48;
-
-  function FilenameNoOverride(S: string): string;
-  var
-    i : Integer;
-    FilePath, LExtension: string;
-  begin
-    if S.IsEmpty then
-      raise Exception.Create('TLogger.Create: Filename cannot be empty.');
-    ForceDirectoriesUTF8(ExtractFilePath(S));
-    FilePath := ExtractFilePath(S);
-    LExtension := ExtractFileExt(S);
-    i := 0;
-
-    // ensure to never override an exinting file
-    S := AFilename;
-    while FileExistsUTF8(S) do begin
-      Inc(i);
-      S := FilePath +
-           StringOfChar(L0, 3 - Length(IntToStr(i))) + IntToStr(i) +
-           LExtension;
-    end;
-    FFileIndex := i;
-    Result := S;
-  end;
 begin
-  FFilename := FilenameNoOverride(AFilename);
+  FFilename := FilenameNoOverride(AFilename, FFileIndex);
   AssignFile(FTextFile, FFilename);
   System.Rewrite(FTextFile);
 end;
@@ -92,11 +67,15 @@ begin
 end;
 
 class function TLogger.GetBaseFilename: string;
+var
+  LFilename : string;
 begin
-  if DataFilename = '' then
-    Result := FirstBasename
-  else
-    Result := ExtractFileNameWithoutExt(DataFilename);
+  LFilename := InformationFilename;
+  if LFilename.IsEmpty then begin
+    Result := FirstBasename;
+  end else begin
+    Result := ExtractFileNameOnly(LFilename);
+  end;
 end;
 
 class function TLogger.Row(Cols: array of string; ALineEnding: string): string;
@@ -119,14 +98,14 @@ class procedure TLogger.SetHeader;
 var
   LFirstFilename : string;
 begin
-  LFirstFilename := Pool.BaseFileName + FirstBasename;
+  LFirstFilename := Pool.BaseDataPath + FirstBasename;
 
   InformationFilename := CreateLogger(LGInfo, LFirstFilename);
   DataFilename := CreateLogger(LGData, LFirstFilename);
   TimestampsFilename := CreateLogger(LGTimestamps, LFirstFilename);
 
   Pool.BaseFilename := GetBaseFilename;
-  Pool.Session.ID := ExtractFileNameOnly(Pool.BaseFilename).ToInteger;
+  Pool.Session.ID := Pool.BaseFilename.ToInteger;
 end;
 
 class procedure TLogger.SetFooter;

@@ -36,24 +36,15 @@ type
 
   TDragDrop = class sealed (TTrial)
   private
-    FUseHelpProgression : Boolean;
-    FTimer : TSDLTimer;
     FReportData : TReportData;
     FStimuli : TDragDropStimuli;
-    procedure DragDropDone(Sender : TObject);
-    procedure TimerEndTrial(Sender: TObject);
   protected
     function GetIStimuli: IStimuli; override;
-    procedure MouseMove(Sender: TObject; Shift: TCustomShiftState; X, Y: Integer);
-      override;
-    procedure SetTrialConfiguration(ATrialConfiguration: TTrialConfiguration); override;
-    procedure TrialLimitedHold(Sender: TObject);
+    procedure MouseMove(Sender: TObject;
+      Shift: TCustomShiftState; X, Y: Integer); override;
   public
     constructor Create; override;
     destructor Destroy; override;
-    procedure EndTrial; override;
-    procedure Show; override;
-    procedure Hide; override;
   end;
 
 implementation
@@ -68,78 +59,24 @@ constructor TDragDrop.Create;
 begin
   inherited Create;
 
-  FTimer := TSDLTimer.Create;
-  FTimer.Interval := 2000;
-  FTimer.OnTimer := @TimerEndTrial;
-
   FStimuli := TDragDropStimuli.Create;
-  FStimuli.Trial := Self as TObject;
-  FStimuli.OnDragDropDone:=@DragDropDone;
+  FStimuli.Trial := Self;
+  FStimuli.OnFinalize:=@EndTrialCallBack;
 
   //FStimuli.LogEvent := @LogEvent;
   FReportData.WrongDragDrops := 0;
   FReportData.Latency := -1;
-
-  FUseHelpProgression := False;
 end;
 
 destructor TDragDrop.Destroy;
 begin
   FStimuli.Free;
-  FTimer.Free;
   inherited Destroy;
-end;
-
-procedure TDragDrop.EndTrial;
-begin
-  inherited EndTrial;
-end;
-
-procedure TDragDrop.Show;
-begin
-  inherited Show;
-end;
-
-procedure TDragDrop.Hide;
-begin
-  inherited Hide;
-end;
-
-procedure TDragDrop.TrialLimitedHold(Sender: TObject);
-begin
-  FStimuli.Stop;
-end;
-
-procedure TDragDrop.SetTrialConfiguration(ATrialConfiguration: TTrialConfiguration);
-var
-  LParameters: TStringList;
-begin
-  inherited SetTrialConfiguration(ATrialConfiguration);
-  LParameters := ATrialConfiguration.Parameters;
-  with DragDropKeys do
-    FUseHelpProgression := LParameters.Values[UseHelpProgression].ToBoolean;
-
-  //if FUseHelpProgression or FHasLimitedHold then begin
-  //  if Counters.BlcTrials = 0 then begin
-  //    IDragDropHelpSerie.AssignCurrent(LParameters);
-  //  end;
-  //  IDragDropHelpSerie.AssignParameters(LParameters);
-  //end;
-end;
-
-procedure TDragDrop.DragDropDone(Sender: TObject);
-begin
-  FTimer.Start;
-end;
-
-procedure TDragDrop.TimerEndTrial(Sender: TObject);
-begin
-  EndTrial;
 end;
 
 function TDragDrop.GetIStimuli: IStimuli;
 begin
-  Result := FStimuli.AsInterface;
+  Result := FStimuli.AsIStimuli;
 end;
 
 procedure TDragDrop.MouseMove(Sender: TObject; Shift: TCustomShiftState; X,

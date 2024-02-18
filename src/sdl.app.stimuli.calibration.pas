@@ -43,18 +43,24 @@ type
 
 implementation
 
-uses sdl.app.video.methods, sdl.app.controls.custom, eye.tracker;
+uses
+  sdl.app.video.methods,
+  sdl.app.controls.custom,
+  session.loggers.writerow.timestamp,
+  eye.tracker;
 
 { TCalibrationStimuli }
 
 procedure TCalibrationStimuli.CalibrationSuccessful(Sender: TObject);
 begin
+  Timestamp(EyeTracker.TrackerClassName+'.StopCalibration');
   RaiseWindow;
   OnFinalize(Self);
 end;
 
 procedure TCalibrationStimuli.CalibrationFailed(Sender: TObject);
 begin
+  Timestamp(EyeTracker.TrackerClassName+'.StopCalibration');
   RaiseWindow;
   FText.Load('A calibragem falhou.');
   FText.Centralize;
@@ -105,6 +111,7 @@ end;
 procedure TCalibrationStimuli.Start;
 begin
   EyeTracker.StartCalibration;
+  Timestamp(EyeTracker.TrackerClassName+'.StartCalibration');
 end;
 
 procedure TCalibrationStimuli.Stop;

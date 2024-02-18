@@ -1,13 +1,13 @@
 object FormManualSpeechValidation: TFormManualSpeechValidation
-  Left = 357
-  Height = 350
-  Top = 137
+  Left = 846
+  Height = 263
+  Top = 206
   Width = 420
   AutoSize = True
   BorderStyle = bsSingle
   BorderWidth = 5
   Caption = 'Manual Speech Validation'
-  ClientHeight = 350
+  ClientHeight = 263
   ClientWidth = 420
   SnapOptions.SnapToMonitor = True
   LCLVersion = '3.99.0.0'
@@ -21,8 +21,8 @@ object FormManualSpeechValidation: TFormManualSpeechValidation
     Width = 410
     Alignment = taCenter
     Anchors = [akTop, akLeft, akRight]
-    TabOrder = 1
-    Text = 'EditSpeech'
+    TabOrder = 0
+    OnEditingDone = EditSpeechEditingDone
   end
   object LabelQuestion1: TLabel
     AnchorSideLeft.Control = Owner
@@ -38,25 +38,6 @@ object FormManualSpeechValidation: TFormManualSpeechValidation
     Caption = 'LabelQuestion1'
     Font.Height = -20
     ParentFont = False
-  end
-  object ButtonYes: TButton
-    Left = 288
-    Height = 41
-    Top = 296
-    Width = 120
-    Caption = 'Acerto (Sim)'
-    Color = clGreen
-    ModalResult = 6
-    TabOrder = 0
-  end
-  object ButtonNo: TButton
-    Left = 8
-    Height = 41
-    Top = 296
-    Width = 120
-    Caption = 'Erro (Não)'
-    ModalResult = 7
-    TabOrder = 2
   end
   object LabelQuestion2: TLabel
     AnchorSideLeft.Control = Owner

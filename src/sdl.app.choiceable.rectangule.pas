@@ -14,15 +14,14 @@ unit sdl.app.choiceable.rectangule;
 interface
 
 uses
-  SysUtils
-  , fgl
+  SysUtils, Generics.Collections
   , sdl.app.graphics.rectangule
   , sdl.app.choiceable.contract
   ;
 
 type
 
-  TChoices = specialize TFPGList<TObject>;
+  TChoices = specialize TList<TObject>;
 
   { TChoiceableRect }
 

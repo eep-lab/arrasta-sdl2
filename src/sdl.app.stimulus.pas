@@ -21,6 +21,7 @@ uses
   , sdl.app.controls.custom
   , sdl.app.events.abstract
   , sdl.app.stimulus.types
+  , session.loggers.types
   ;
 
 type
@@ -60,6 +61,7 @@ type
       function ToData: string;
       function GetRect: TRectangule; virtual; abstract;
       function GetStimulusName : string; virtual; abstract;
+      procedure DoResponseIncrement;
       procedure SetRect(AValue: TRectangule); virtual; abstract;
       procedure SetSibling(AValue: TStimulus); virtual;
       procedure MouseDown(Sender:TObject; Shift: TCustomShiftState; X, Y: Integer); virtual; abstract;
@@ -179,6 +181,11 @@ end;
 function TStimulus.ToData: string;
 begin
   Result := FCustomName+'-'+FPosition.ToString;
+end;
+
+procedure TStimulus.DoResponseIncrement;
+begin
+ Inc(FResponseID);
 end;
 
 constructor TStimulus.Create;

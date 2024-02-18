@@ -69,7 +69,7 @@ type
       procedure Paint; override;
       procedure EndTrialCallBack(Sender : TObject);
       procedure MouseMove(Sender:TObject; Shift: TCustomShiftState; X, Y: Integer); override;
-      //procedure MouseDown(Sender:TObject; Shift: TCustomShiftState; X, Y: Integer); override;
+      procedure MouseDown(Sender:TObject; Shift: TCustomShiftState; X, Y: Integer); override;
       procedure MouseUp(Sender:TObject; Shift: TCustomShiftState; X, Y: Integer); override;
       procedure SetOnTrialEnd(ANotifyEvent: TNotifyEvent);
       procedure SetTrialConfiguration(ATrialData: TTrialConfiguration); virtual;
@@ -125,11 +125,13 @@ constructor TTrial.Create;
 begin
   inherited Create;
   FRect := MonitorFromWindow;
-  SDLEvents.AssignEvents;
-  //SDLEvents.OnMouseButtonDown := AsIClickable.GetSDLMouseButtonDown;
-  SDLEvents.OnMouseButtonUp := AsIClickable.GetSDLMouseButtonUp;
-  SDLEvents.OnMouseMotion := AsIMoveable.GetSDLMouseMotion;
-  SDLEvents.OnGazeOnScreen := @GazeOnScreen;
+  if Assigned(SDLEvents) then begin
+    SDLEvents.AssignEvents;
+    SDLEvents.OnMouseButtonDown := AsIClickable.GetSDLMouseButtonDown;
+    SDLEvents.OnMouseButtonUp := AsIClickable.GetSDLMouseButtonUp;
+    SDLEvents.OnMouseMotion := AsIMoveable.GetSDLMouseMotion;
+    SDLEvents.OnGazeOnScreen := @GazeOnScreen;
+  end;
 
   FVisible := False;
   FTestMode := False;
@@ -163,10 +165,12 @@ end;
 
 destructor TTrial.Destroy;
 begin
-  SDLEvents.OnMouseButtonDown := nil;
-  SDLEvents.OnMouseButtonUp := nil;
-  SDLEvents.OnMouseMotion := nil;
-  SDLEvents.OnUserEvent:=nil;
+  if Assigned(SDLEvents) then begin
+    SDLEvents.OnMouseButtonDown := nil;
+    SDLEvents.OnMouseButtonUp := nil;
+    SDLEvents.OnMouseMotion := nil;
+    SDLEvents.OnUserEvent:=nil;
+  end;
   FConfiguration.Parameters := nil;
 
   FLimitedHoldTimer.Free;
@@ -238,22 +242,22 @@ begin
   end;
 end;
 
-//procedure TTrial.MouseDown(Sender:TObject; Shift: TCustomShiftState; X, Y: Integer);
-//var
-//  Child : TObject;
-//  SDLPoint : TSDL_Point;
-//  IChild : IClickable;
-//begin
-//  if FVisible then begin
-//    for Child in FChildren do begin
-//      SDLPoint.x := X;
-//      SDLPoint.y := Y;
-//      IChild := IClickable(TSDLControl(Child));
-//      if IChild.PointInside(SDLPoint) then
-//        IChild.MouseDown(Sender, Shift, X, Y);
-//    end;
-//  end;
-//end;
+procedure TTrial.MouseDown(Sender:TObject; Shift: TCustomShiftState; X, Y: Integer);
+var
+  Child : TObject;
+  SDLPoint : TSDL_Point;
+  IChild : IClickable;
+begin
+  if FVisible then begin
+    for Child in FChildren do begin
+      SDLPoint.x := X;
+      SDLPoint.y := Y;
+      IChild := IClickable(TSDLControl(Child));
+      if IChild.PointInside(SDLPoint) then
+        IChild.MouseDown(Sender, Shift, X, Y);
+    end;
+  end;
+end;
 
 procedure TTrial.MouseUp(Sender: TObject; Shift: TCustomShiftState; X,
   Y: Integer);
@@ -473,7 +477,7 @@ begin
     FVisible := True;
 
     with FIStimuli do begin
-      Timestamp(CustomName+'.Show'+#9+Selectables.ToJSON);
+      Timestamp(CustomName+'.Show', Selectables.ToJSON);
     end;
   end;
   GPaintingInvalidated := True;

@@ -48,6 +48,7 @@ implementation
 
 uses Classes, SysUtils
   , sdl.app.grids
+  , session.loggers
   , session.loggers.writerow
   , session.pool
   , session.configurationfile
@@ -69,14 +70,17 @@ const
 function GetSubjectIDFromFile : Word;
 var
   LStringList : TStringList;
+  LFilename : string;
 begin
   LStringList := TStringList.Create;
   try
     try
-      LStringList.LoadFromFile(Pool.BaseFileName + GID);
+      LFilename := Pool.BaseDataPath + GID;
+      LStringList.LoadFromFile(LFilename);
     except
-      on EFileNotFoundException do
+      on EFileNotFoundException do begin
 
+      end;
     end;
     Result := LStringList[0].ToInteger;
   finally
@@ -86,13 +90,16 @@ begin
 end;
 
 procedure TCounters.BeforeBeginSession;
+var
+  LFilename : string;
 begin
   Grid := TGrid.Create(3);
   Subject := GetSubjectIDFromFile;
   Session := TSessionCounters.Create;
   Session.Reset;
-  if FileExists(Pool.BaseFilename + GInterrupted + GExt) then begin
-    Session.LoadFromFile(Pool.BaseFilename + GInterrupted + GExt);
+  LFilename := Pool.BaseDataPath + Pool.BaseFileName + GInterrupted + GExt;
+  if FileExists(LFilename) then begin
+    Session.LoadFromFile(LFilename);
     Session.NextID(Session.ID+1);
   end;
   Block := Session.Block;
@@ -104,14 +111,18 @@ begin
 
   Trial.ID := ConfigurationFile.StartAt.Trial;
   Block.ID := ConfigurationFile.StartAt.Block;
+  TLogger.SetHeader;
 end;
 
 procedure TCounters.BeforeEndSession;
 var
   LStartAt : TStartAt;
+  LFilename : string;
 begin
+  TLogger.SetFooter;
   if Pool.EndCriteria.OfSession then begin
-    Session.SaveToFile(Pool.BaseFilename + GExt)
+    LFilename := Pool.BaseDataPath + Pool.BaseFilename + GExt;
+    Session.SaveToFile(LFilename);
   end else begin
     if GlobalTrialParameters.ShouldRestartAtBlockStart then begin
       LStartAt.Trial := 0;
@@ -120,7 +131,8 @@ begin
     end;
     LStartAt.Block := Block.ID;  // use block as checkpoint
     ConfigurationFile.StartAt := LStartAt;
-    Session.SaveToFile(Pool.BaseFilename + GInterrupted + GExt)
+    LFilename := Pool.BaseDataPath + Pool.BaseFilename + GInterrupted + GExt;
+    Session.SaveToFile(LFilename)
   end;
   Session.Free;
   Grid.Free;
@@ -132,7 +144,7 @@ begin
   AppendToTrialData(Session.Block.Trial.Events.Last);
   AppendToTrialData(Session.Trial.Events.ToData);
   AppendToTrialData(Grid.ToData);
-  AppendToTrialData(TTrialFactory.CurrentTrial.ToData);
+  AppendToTrialData(TTrialFactory.ToData);
   WriteDataRow;
 end;
 

@@ -14,10 +14,7 @@ unit math.bresenhamline.classes;
 interface
 
 uses
-  Classes, SysUtils
-  //, sdl.app.renderer.custom
-  , math.bresenhamline
-  ;
+  Classes, SysUtils, Math, Math.BresenhamLine;
 
 type
 
@@ -26,14 +23,14 @@ type
   TBresenhamLine = class(TObject)
   private
     FBresenhamLine : TPoints;
-    FIndex        : integer;
+    FIndex         : integer;
   public
     constructor Create; overload;
     constructor Create(AOrigin, ADestin : TRect); overload;
     destructor Destroy; override;
     procedure Update(AOrigin, ADestin : TRect);
     function NextPoint : TPoint;
-    function GetPoint(AValue : real) : TPoint;
+    function GetPoint(AValue : Float) : TPoint;
     property Points : TPoints read FBresenhamLine;
   end;
 
@@ -97,10 +94,10 @@ begin
     FIndex := LLength-1;
 end;
 
-function TBresenhamLine.GetPoint(AValue: real): TPoint;
+function TBresenhamLine.GetPoint(AValue: Float): TPoint;
 var
-  LLength: real;
-  LLineIndex : real;
+  LLength: Float;
+  LLineIndex : Float;
 begin
   LLength := Length(FBresenhamLine);
   LLineIndex := AValue * LLength / 100;

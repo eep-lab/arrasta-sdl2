@@ -191,6 +191,7 @@ begin
   inherited Create;
   FKeyboard := TSDLSystemKeyboard.Create;
   OnKeyDown := FKeyboard.OnKeyDown;
+  OnTextInput := FKeyboard.OnTextInput;
   for Event in SDLUserEvents do
     if not UserEventRegistered(Event) then
       raise Exception.Create('Event not registered:'+IntToStr(Event));

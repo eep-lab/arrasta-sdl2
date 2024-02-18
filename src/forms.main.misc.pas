@@ -13,6 +13,7 @@ type
   { TFormMisc }
 
   TFormMisc = class(TForm)
+    CheckBoxHideMouse: TCheckBox;
     CheckBoxShowMarkers: TCheckBox;
     CheckBoxShowModalFormForSpeechResponses: TCheckBox;
     CheckBoxTestMode: TCheckBox;
@@ -26,6 +27,7 @@ type
     ComboBoxMonitor: TComboBox;
     IniPropStorage1: TIniPropStorage;
     Label1: TLabel;
+    LabelHideMouse: TLabel;
     LabelAprilTagsSize: TLabel;
     LabelDefaultAudioLoops: TLabel;
     LabelAudioLoopInterval: TLabel;

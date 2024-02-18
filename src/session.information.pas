@@ -30,8 +30,6 @@ uses LazFileUtils, session.loggers.writerow.information;
 function LoadInformationFromFile(const AFileName: string): TInformation;
 var
   LInfoFile: TStringList;
-  Line: string;
-  i, j: Integer;
   LExtension : string;
   LFilename : string;
 begin
