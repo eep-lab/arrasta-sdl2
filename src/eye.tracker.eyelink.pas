@@ -78,7 +78,8 @@ procedure TEyeLinkEyeTracker.StartRecording;
 const
   LRootFolder = '_eyelink_data' + DirectorySeparator;
 begin
-  FEyeLinkClient.OutputFolder := Pool.BaseFilename + LRootFolder;
+  FEyeLinkClient.OutputFolder :=
+    ConcatPaths([Pool.BaseDataPath, LRootFolder]);
   FEyeLinkClient.OnAllDataEvent := @AllDataEvent;
   //FEyeLinkClient.StartRealTime;
   FEyeLinkClient.StartDataRecording;

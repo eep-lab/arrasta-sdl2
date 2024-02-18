@@ -33,6 +33,7 @@ type
       FGazeOnScreenEvent : TGazeOnScreenEvent;
       procedure GazeOnSurface(Sender : TObject; AGazeOnSurface: TGazeOnSurface);
     protected
+      function TrackerClassName : string; override;
       function GetGazeOnScreenEvent: TGazeOnScreenEvent; override;
       procedure SetGazeOnScreenEvent(AValue: TGazeOnScreenEvent); override;
       procedure SetOnCalibrationSuccessful(AValue: TNotifyEvent); override;
@@ -41,6 +42,7 @@ type
       procedure StopRecording; override;
       procedure StartCalibration; override;
       procedure StopCalibration; override;
+      procedure CalibrationSuccessful; override;
     public
       constructor Create;
       destructor Destroy; override;
@@ -95,6 +97,11 @@ begin
   FPupilClient.Request(REQ_SHOULD_STOP_CALIBRATION);
 end;
 
+procedure TPupilEyeTracker.CalibrationSuccessful;
+begin
+
+end;
+
 constructor TPupilEyeTracker.Create;
 begin
   FPupilClient := TPupilClient.Create;
@@ -124,6 +131,11 @@ begin
   event.type_ := EYE_TRACKER_GAZE_EVENT;
   event.user.data1 := Pointer(Self);
   SDL_PushEvent(@event);
+end;
+
+function TPupilEyeTracker.TrackerClassName: string;
+begin
+  Result := Self.ClassName;
 end;
 
 function TPupilEyeTracker.GetGazeOnScreenEvent: TGazeOnScreenEvent;
