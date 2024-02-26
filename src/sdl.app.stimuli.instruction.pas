@@ -35,7 +35,7 @@ type
       FNavigator : ITableNavigator;
       FText : TText;
       //FInstruction : TTypeableStimulus;
-      procedure InstructionMouseDown(Sender: TObject;
+      procedure InstructionMouseUp(Sender: TObject;
         Shift: TCustomShiftState; X, Y: Integer);
       procedure SetNavigator(ANavigator: ITableNavigator);
       procedure UpdateNavigator;
@@ -56,7 +56,7 @@ uses session.pool;
 
 { TInstructionStimuli }
 
-procedure TInstructionStimuli.InstructionMouseDown(Sender: TObject;
+procedure TInstructionStimuli.InstructionMouseUp(Sender: TObject;
   Shift: TCustomShiftState; X, Y: Integer);
 begin
   DoExpectedResponse;
@@ -112,7 +112,7 @@ begin
   LInstruction := AParameters.Values['Instruction'];
 
   Monitor := Pool.App.Monitor;
-  FText.OnMouseDown := @InstructionMouseDown;
+  FText.OnMouseUp := @InstructionMouseUp;
   FText.FontName := 'Raleway-Regular';
   FText.FontSize := 50;
   //FText.FontStyle := TTF_STYLE_UNDERLINE;

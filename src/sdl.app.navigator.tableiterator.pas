@@ -31,6 +31,7 @@ type
     function GoTopLeft : ISelectable;
     function GoBottomRight : ISelectable;
     function GoBaseControl : ISelectable;
+    function GoTarget(AControl: ISelectable) : ISelectable;
 
     //function TopLeft
     procedure Update(ASelectables : TSelectables);
@@ -39,7 +40,7 @@ type
 
 implementation
 
-uses sdl.app.output, integers.list;
+uses Generics.Tables.Types, sdl.app.output, integers.list;
 
 { TPossibleSelections }
 
@@ -253,6 +254,20 @@ function TPossibleSelections.GoBaseControl: ISelectable;
 begin
   Iterator.GoToCell(Table.CellOf(FBaseControl));
   Result := FBaseControl;
+end;
+
+function TPossibleSelections.GoTarget(AControl: ISelectable): ISelectable;
+var
+  LCell : TCell;
+  LTargetFound : Boolean = False;
+begin
+  LCell := Table.CellOfTarget(AControl, LTargetFound);
+  if LTargetFound then begin
+    Iterator.GoToCell(LCell);
+    Result := AControl;
+  end else begin
+    Result := nil;
+  end;
 end;
 
 procedure TPossibleSelections.Update(ASelectables: TSelectables);

@@ -1,0 +1,62 @@
+object FormSpeechValidationQueue: TFormSpeechValidationQueue
+  Left = 824
+  Height = 517
+  Top = 50
+  Width = 513
+  Caption = 'FormSpeechValidationQueue'
+  ClientHeight = 517
+  ClientWidth = 513
+  Position = poMainFormCenter
+  LCLVersion = '3.99.0.0'
+  object StringGridSpeechEvents: TStringGrid
+    Left = 0
+    Height = 494
+    Top = 0
+    Width = 513
+    Align = alClient
+    AutoAdvance = aaDown
+    AutoEdit = False
+    Enabled = False
+    ExtendedSelect = False
+    FixedCols = 0
+    Flat = True
+    Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goSmoothScroll]
+    RowCount = 1
+    TabOrder = 0
+    ColWidths = (
+      64
+      36
+      38
+      167
+      205
+    )
+    Cells = (
+      5
+      0
+      0
+      'Time'
+      1
+      0
+      'Trial'
+      2
+      0
+      'Block'
+      3
+      0
+      'Event'
+      4
+      0
+      'Annotation'
+    )
+  end
+  object EditSpeech: TEdit
+    Left = 0
+    Height = 23
+    Top = 494
+    Width = 513
+    Align = alBottom
+    TabOrder = 1
+    Text = 'EditSpeech'
+    OnKeyPress = EditSpeechKeyPress
+  end
+end

@@ -5,10 +5,10 @@ unit sdl.app.graphics.debug;
 interface
 
 uses
-  Classes, SysUtils;
+  Classes, SysUtils, Math;
 
   procedure PaintDebugGraphics;
-  procedure DrawDebugCircle(ADegree : Double);
+  procedure DrawDebugCircle(ADegree : Float);
 
 implementation
 
@@ -28,22 +28,22 @@ const
 var
   Text : TText = nil;
   Aim : TPoint;
-  AimDegree : Double;
+  AimDegree : Float;
 
-function CircumferencePoint(ADegree : Double) : TPoint;
+function CircumferencePoint(ADegree : Float) : TPoint;
 var
-  LAngleRadians: Double = 0;
+  LAngleRadians: Float = 0;
 begin
-  LAngleRadians := ADegree * (Pi / 180);
+  LAngleRadians := ADegree * (Pi / Float(180));
 
   Result.X := CenterX + Radius * Cos(LAngleRadians);
   Result.Y := CenterY + Radius * Sin(LAngleRadians);
 end;
 
 procedure PaintDebugGraphics;
-  procedure DrawLines(Color: TSDL_Color; ADegress : array of Double);
+  procedure DrawLines(Color: TSDL_Color; ADegress : array of Float);
   var
-    Degree : Double;
+    Degree : Float;
     Point : TPoint;
   begin
     for Degree in ADegress do begin
@@ -95,7 +95,7 @@ begin
   end;
 end;
 
-procedure DrawDebugCircle(ADegree: Double);
+procedure DrawDebugCircle(ADegree: Float);
 begin
   if not Assigned(Text) then begin
     Text := TText.Create;

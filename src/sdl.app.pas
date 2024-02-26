@@ -33,7 +33,7 @@ type
 
   TSDLApplication = class
     private
-      FKeyboard : TSDLSystemKeyboard;
+      //FSDLGLContext : TSDL_GLContext;
       FTitle : PAnsichar;
       FCurrentMonitorIndex : cint;
       FOnClose: TNotifyEvent;
@@ -64,6 +64,7 @@ type
       constructor Create(ATitle : PAnsiChar = 'Stimulus Control'); reintroduce;
       destructor Destroy; override;
       procedure Run;
+      procedure PrintRendererSetup;
       procedure SetupVideo(AMonitor : cint = 0);
       procedure Terminate;
       property Running : Boolean read FRunning write FRunning;
@@ -79,8 +80,8 @@ var
 implementation
 
 uses sdl2_image
+  //, GL, GLext
   , sdl.app.output
-  , sdl.app.controller.manager
   , sdl.app.video.methods
   , sdl.app.mouse
 {$IFDEF NO_LCL}
@@ -90,6 +91,7 @@ uses sdl2_image
   , sdl.app.text
   , sdl.app.audio
   , sdl.app.renderer
+  , sdl.app.renderer.testmode
 {$ENDIF}
   ;
 
@@ -228,14 +230,31 @@ begin
 end;
 
 procedure TSDLApplication.Run;
+//type
+//  TRenderMode = (rendNormal, rendTestMode);
+//var
+//  LRenderMode : TRenderMode = rendTestMode;
 begin
+  //case LRenderMode of
+  //  rendNormal: { do nothing };
+  //  rendTestMode: SDL.App.Renderer.TestMode.Initialize;
+  //end;
+
   FRunning:=True;
   try
     while FRunning do begin
       SDLEvents.HandlePending;
-      Render;
+      //Render;
+      RenderOptimized;
     end;
   finally
+
+    //case LRenderMode of
+    //  rendNormal: { do nothing };
+    //  rendTestMode: SDL.App.Renderer.TestMode.Finalize;
+    //end;
+
+
     {$IFNDEF NO_LCL}
     if Assigned(SDLText) then begin
       SDLText.Free;
@@ -258,6 +277,7 @@ begin
       Mouse := nil;
     end;
 
+    //SDL_GL_DeleteContext(FSDLGLContext);
     SDL_DestroyRenderer(FSDLRenderer);
     SDL_DestroyWindow(FSDLWindow);
     SDL_Quit;
@@ -268,10 +288,37 @@ begin
     OnClose(Self);
 end;
 
+procedure TSDLApplication.PrintRendererSetup;
+var
+  LSDLRendererInfo : TSDL_RendererInfo;
+
+  function FlagsToNames(flags: Cardinal): string;
+  begin
+    Result := '';
+
+    if (flags and SDL_RENDERER_SOFTWARE) <> 0 then
+      Result := Result + 'SDL_RENDERER_SOFTWARE | ';
+    if (flags and SDL_RENDERER_ACCELERATED) <> 0 then
+      Result := Result + 'SDL_RENDERER_ACCELERATED | ';
+    if (flags and SDL_RENDERER_PRESENTVSYNC) <> 0 then
+      Result := Result + 'SDL_RENDERER_PRESENTVSYNC | ';
+    if (flags and SDL_RENDERER_TARGETTEXTURE) <> 0 then
+      Result := Result + 'SDL_RENDERER_TARGETTEXTURE | ';
+
+    // Remove the trailing ' | ' if any
+    if Result <> '' then
+      Delete(Result, Length(Result) - 2, 3);
+  end;
+begin
+  SDL_GetRendererInfo(FSDLRenderer, @LSDLRendererInfo);
+  Print(StrPas(LSDLRendererInfo.name)+' renderer initialized with flags:');
+  Print(FlagsToNames(LSDLRendererInfo.flags)+LineEnding)
+end;
+
 class procedure TSDLApplication.GetAvailableMonitors(AStrings: TStrings);
 var
   i: Integer;
-  LMonitors : array of TSDL_Rect;
+  LMonitors : array of TSDL_Rect = nil;
   LError: PAnsiChar;
 begin
   if SDL_InitSubSystem(SDL_INIT_VIDEO) < 0 then begin
@@ -294,15 +341,50 @@ var
   LMonitor : TSDL_Rect;
 begin
   if AMonitor > SDL_GetNumVideoDisplays then Exit;
+  //SDL_SetHint(SDL_HINT_RENDER_DRIVER, 'opengl');
 
+  // setup monitor
   FCurrentMonitorIndex := AMonitor;
-
   LMonitor := FMonitors[AMonitor];
+
+  // global opengl variables
+  //SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+  //SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+  //SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+  //SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 0);
+  //SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+
+  // create sdl windows
   FSDLWindow := SDL_CreateWindow(FTitle, LMonitor.x, LMonitor.y,
-    LMonitor.w, LMonitor.h, 0);
+    LMonitor.w, LMonitor.h, 0 {or SDL_WINDOW_OPENGL});
+
+  // todo: create sdl opengl context
+  // https://stackoverflow.com/questions/41091875/is-sdl-renderer-useless-if-i-use-opengl-for-drawing
+  // FSDLGLContext := SDL_GL_CreateContext(FSDLWindow);
+
+  // import opengl functions:
+  // https://www.freepascal-meets-sdl.net/chapter-10-sdl-modern-opengl/
+  // https://www.pascalgamedevelopment.com/archive/index.php/t-32663.html
+  // https://wiki.libsdl.org/SDL2/SDL_GL_GetProcAddress
+  // gladLoadGL(@SDL_GL_GetProcAddress);
+
+  //if not Load_GL_VERSION_3_0_CORE then begin
+  //  raise Exception.Create('Load_GL_VERSION_3_0_CORE error');
+  //end;
+
+  // create mouse handler
   Mouse := TSDLMouseHandler.Create(FSDLWindow);
-  FSDLRenderer := SDL_CreateRenderer(FSDLWindow, -1, SDL_RENDERER_ACCELERATED);
+
+  // create renderer
+  FSDLRenderer := SDL_CreateRenderer(FSDLWindow, -1,
+    SDL_RENDERER_ACCELERATED {or SDL_RENDERER_PRESENTVSYNC}
+    //SDL_RENDERER_SOFTWARE
+    );
+
+  // expose window surface
   FSDLSurface  := SDL_GetWindowSurface(FSDLWindow);
+
+  // expose global variables
   AssignVariables(FSDLWindow, FSDLRenderer, FSDLSurface);
 
   {$IFDEF NO_LCL}

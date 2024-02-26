@@ -81,12 +81,15 @@ type
     procedure SDLMouseButtonUp(const event: TSDL_MouseButtonEvent);
     procedure BringChildToFront(AChild : TObject);
   protected
+    FInvalidated : Boolean;
     FCustomName : string;
     FRect : TSDL_Rect;
     FChildren : TChildren;
     function GetGazeInside : Boolean; virtual;
     function GetMouseInside : Boolean; virtual;
     function PointInside(SDLPoint : TSDL_Point) : Boolean;
+    function IsGazeInside(SDLPoint : TSDL_Point;
+      AInflateFactor: UInt32 = 0) : Boolean;
     function GetBoundsRect : TSDL_Rect; virtual;
     procedure SetBoundsRect(AValue : TSDL_Rect); virtual;
     procedure SetMouseInside(AValue : Boolean);
@@ -107,6 +110,7 @@ type
   public
     constructor Create; virtual;
     destructor Destroy; override;
+    function InflateBoundsRect(AFactor: UInt32) : TSDL_Rect;
     function AsIClickable : IClickable;
     function AsIPaintable : IPaintable;
     function AsIMoveable : IMoveable;
@@ -115,7 +119,10 @@ type
     function CenterPoint : TSDL_Point;
     function BottomRightPoint : TSDL_Point;
     function ClientToParent(APoint : TSDL_Point) : TSDL_Point;
+    //function Invalidated : Boolean;
     function Origen : TSDL_Point;
+    //procedure Invalidate;
+    //procedure Validate;
     procedure BringToFront;
     procedure Confirm; virtual;
     procedure Select; virtual;
@@ -138,7 +145,7 @@ type
 
 implementation
 
-uses sdl.app.mouse;
+uses sdl.app.mouse, sdl.app.trials.factory;
 
 { TSDLControl }
 
@@ -309,6 +316,19 @@ begin
   Result := SDL_PointInRect(@SDLPoint, @SDLRect);
 end;
 
+function TSDLControl.IsGazeInside(SDLPoint: TSDL_Point;
+  AInflateFactor: UInt32): Boolean;
+var
+  SDLRect  : TSDL_Rect;
+begin
+  if AInflateFactor > 0 then begin
+    SDLRect := InflateBoundsRect(AInflateFactor);
+  end else begin
+    SDLRect := GetBoundsRect;
+  end;
+  Result := SDL_PointInRect(@SDLPoint, @SDLRect);
+end;
+
 procedure TSDLControl.SDLMouseMotion(const event: TSDL_MouseMotionEvent);
 begin
   MouseMove(Self, GetShiftState, event.x, event.y);
@@ -350,6 +370,7 @@ end;
 constructor TSDLControl.Create;
 begin
   inherited Create;
+  FInvalidated := False;
   FCustomName := '';
   FChildren := TChildren.Create;
   FMouseInside := False;
@@ -361,6 +382,14 @@ destructor TSDLControl.Destroy;
 begin
   FChildren.Free;
   inherited Destroy;
+end;
+
+function TSDLControl.InflateBoundsRect(AFactor: UInt32): TSDL_Rect;
+begin
+  Result.x := FRect.x - AFactor;
+  Result.y := FRect.y - AFactor;
+  Result.w := FRect.w + (2 * AFactor);
+  Result.h := FRect.h + (2 * AFactor);
 end;
 
 function TSDLControl.AsIClickable: IClickable;
@@ -411,11 +440,26 @@ begin
   Result.Y := APoint.y + FRect.y;
 end;
 
+//function TSDLControl.Invalidated: Boolean;
+//begin
+//  Result := FInvalidated;
+//end;
+
 function TSDLControl.Origen: TSDL_Point;
 begin
   Result.X := FRect.x + (FRect.w div 2);
   Result.Y := FRect.y + (FRect.h div 2);
 end;
+
+//procedure TSDLControl.Invalidate;
+//begin
+//  FInvalidated := True;
+//end;
+//
+//procedure TSDLControl.Validate;
+//begin
+//  FInvalidated := False;
+//end;
 
 procedure TSDLControl.BringToFront;
 begin
@@ -428,7 +472,7 @@ var
 begin
   Mouse.State(LPoint);
   if PointInside(LPoint) then begin
-    MouseDown(Self, GetShiftState, LPoint.X, LPoint.Y);
+    MouseUp(Self, GetShiftState, LPoint.X, LPoint.Y);
   end;
 end;
 

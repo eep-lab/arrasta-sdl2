@@ -31,6 +31,7 @@ type
       FStimuli : TStimuli;
     protected
       function GetIStimuli: IStimuli; override;
+      //function Header : string; override;
     public
       constructor Create; override;
       destructor Destroy; override;
@@ -45,6 +46,11 @@ function TLastTrial.GetIStimuli: IStimuli;
 begin
   Result := FStimuli.AsIStimuli;
 end;
+
+//function TLastTrial.Header: string;
+//begin
+//  Result := 'Response';
+//end;
 
 constructor TLastTrial.Create;
 begin

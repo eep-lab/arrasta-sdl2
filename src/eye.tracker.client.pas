@@ -19,22 +19,21 @@ type
 
   { TEyeTrackerClient }
 
-  TEyeTrackerClient = class(IEyeTracker)
+  TEyeTrackerClient = class(TObject, IEyeTracker)
     protected
+      function TrackerClassName : string; virtual; abstract;
       function GetGazeOnScreenEvent : TGazeOnScreenEvent; virtual; abstract;
-      procedure SetGazeOnScreenEvent(
-        AValue: TGazeOnScreenEvent); virtual; abstract;
-      procedure SetOnCalibrationSuccessful(
-        AValue: TNotifyEvent); virtual; abstract;
-      procedure SetOnCalibrationFailed(
-        AValue: TNotifyEvent); virtual; abstract;
+      procedure SetGazeOnScreenEvent(AValue: TGazeOnScreenEvent); virtual; abstract;
+      procedure SetOnCalibrationSuccessful(AValue: TNotifyEvent); virtual; abstract;
+      procedure SetOnCalibrationFailed(AValue: TNotifyEvent); virtual; abstract;
       procedure StartRecording; virtual; abstract;
       procedure StopRecording; virtual; abstract;
       procedure StartCalibration; virtual; abstract;
       procedure StopCalibration; virtual; abstract;
+      procedure CalibrationSuccessful; virtual; abstract;
     public
       class function Exists : Boolean;
-
+      function CurrentGazes : TNormalizedGazes; virtual; abstract;
   end;
 
 implementation

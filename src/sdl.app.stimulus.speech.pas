@@ -18,9 +18,6 @@ uses
   , SDL2
   , sdl.app.graphics.rectangule
   , sdl.app.stimulus
-  //, sdl.app.stimulus.typeable
-  , sdl.app.graphics.toggle
-  , sdl.app.events.abstract
   , sdl.app.audio
   , sdl.app.audio.recorder.devices
   ;
@@ -31,20 +28,14 @@ type
 
   TSpeechStimulus = class(TStimulus)
   private
-    //FTextFromVocalResponse : string;
-    FRect : TSDL_Rect;
+    FHasConsequence : Boolean;
+    FRectangule : TRectangule;
     FRecorder : TAudioRecorderComponent;
-    FPlayback : TAudioPlaybackComponent;
-    FRecorderButton : TToggleButton;
-    FPlaybackButton : TToggleButton;
+    procedure RecordingFinished(Sender: TObject);
+    procedure RecordingStopped(Sender: TObject);
   protected
     function GetRect: TRectangule; override;
     function GetStimulusName : string; override;
-    //procedure RecorderTerminated(Sender: TObject);
-    //procedure PlaybackTerminated(Sender: TObject);
-    procedure MouseUp(Sender: TObject; Shift: TCustomShiftState;
-      X, Y: Integer); override;
-    //procedure KeyUp;q
   public
     constructor Create; override;
     destructor Destroy; override;
@@ -61,127 +52,186 @@ implementation
 uses Controls
    , session.pool
    , sdl.app.output
-   , sdl.app.controls.custom
-   , session.strutils
+   , session.constants.trials
    , session.strutils.mts
    , session.loggers.writerow.timestamp
+   , session.loggers.types
    , session.parameters.global
    , forms.modal.speechvalidation
+   , forms.speechvalidation
    ;
 
 { TSpeechStimulus }
 
+{
+  Without speech-to-text capabilities,
+  it is necessary to manually record
+  speech responses. Some computer-assisted
+  annotation support has been implemented:
+
+  1) Empty ExpectedText entries represent
+  incorrect responses (or non-responses,
+  as one might consider them) triggered
+  by a limited hold. These are automatically
+  recorded.
+
+  2) Expected correct responses are
+  auto-completed. Therefore, if a
+  participant emits a correct response,
+  the experimenter can promptly
+  press Enter to record it.
+
+  3) Common incorrect responses (e.g.,
+  "I don't know") are triggered by
+  a reserved keyboard key (- key).
+
+  Other incorrect responses may be typed
+  using the keyboard.
+
+  Thus, manual annotation may consistently
+  take varying amounts of time in some cases
+  (for example, 2 and 4), with a slightly
+  longer time for wrong responses. Therefore,
+  for assessment trials programmed to have
+  no differential consequences, computer-assisted
+  annotation must be non-blocking to avoid
+  consistent differential timing.
+
+  Non-blocking annotation during a trial
+  requires asynchronous writing in the
+  .timestamps file. This may result in
+  unordered lines regarding monotonic time,
+  trials, and blocks. One may sort them
+  by time post-facto to recover the correct
+  event ordering.
+
+  Non-blocking annotation between trials
+  in the .data file is not covered.
+}
 procedure TSpeechStimulus.DoResponse(AHuman: Boolean);
 var
   LName: String;
+  LEvent: TTimestampedEvent;
 begin
-  inherited DoResponse(AHuman);
+  LEvent := TimestampedEvent;
+  DoResponseIncrement;
+
+  if AHuman then begin
+    LEvent.Code := 'Stimulus.Response.Speech';
+  end else begin
+    LEvent.Code := 'Stimulus.Robot.Response.Speech';
+  end;
+  LEvent.Annotation := FCustomName;
+
+  Timestamp(LEvent);
+
   LName := 'Speech-'+GetID.ToSpeechString;
-  FRecorder.SaveToFile(Pool.DataResponsesBasePath+LName);
-  FormManualSpeechValidation.ExpectedText := FCustomName;
+  if AHuman then begin
+    FRecorder.SaveToFile(Pool.DataResponsesBasePath+LName);
+    if FHasConsequence then begin
+      FormManualSpeechValidation.ExpectedText := FCustomName;
+    end else begin
+      LEvent.Annotation := FCustomName;
+      FormSpeechValidationQueue.ExpectedText := LEvent;
+    end;
+  end else begin
+    { do nothing }
+  end;
+
+  if Assigned(OnResponse) then
+    OnResponse(Self);
+end;
+
+procedure TSpeechStimulus.RecordingFinished(Sender: TObject);
+begin
+  DoResponse(False);
+end;
+
+procedure TSpeechStimulus.RecordingStopped(Sender: TObject);
+begin
+  DoResponse(True);
 end;
 
 function TSpeechStimulus.GetRect: TRectangule;
 begin
-  Result := FRecorderButton as TRectangule;
+  Result := FRectangule;
 end;
 
 function TSpeechStimulus.GetStimulusName: string;
 begin
-  Result := 'Speech' + #9 + FCustomName;
-end;
-
-procedure TSpeechStimulus.MouseUp(Sender: TObject; Shift: TCustomShiftState; X,
-  Y: Integer);
-begin
-  if Sender = FRecorderButton then begin
-    if FRecorder.CanRecord then begin
-      FRecorder.StartRecording(FRecorderButton);
-      FRecorderButton.Toggle;
-    end;
-    Exit;
-  end;
-
-  if Sender = FPlaybackButton then begin
-    if FRecorder.HasRecording then begin
-      FPlayback.StartPlayback(FPlaybackButton);
-      FPlaybackButton.Toggle;
-    end;
+  if IsSample then begin // currently not using speech as samples...
+    Result := 'Speech.Sample' + #9 + FCustomName;
+  end else begin
+    Result := 'Speech.Comparison' + #9 + FCustomName;
   end;
 end;
 
 constructor TSpeechStimulus.Create;
 begin
   inherited Create;
-  FPlaybackButton := TToggleButton.Create;
-  FPlaybackButton.Owner := Self as TObject;
-  FRecorderButton := TToggleButton.Create;
-  FRecorderButton.Owner := Self as TObject;
+  FormManualSpeechValidation.ExpectedText := '';
 
-  Selectables.Add(FRecorderButton.AsISelectable);
-  Selectables.Add(FPlaybackButton.AsISelectable);
+  FRectangule := TRectangule.Create;
 end;
 
 destructor TSpeechStimulus.Destroy;
 begin
-  FPlaybackButton.Free;
-  FRecorderButton.Free;
+  FRectangule.Free;
   inherited Destroy;
 end;
 
-function TSpeechStimulus.IsCorrectResponse: Boolean;
+function TSpeechStimulus.IsCorrectResponse : Boolean;
+var
+  LExpectedResponse : string = '';
+  LAnnotation : string = '';
 begin
-  if GlobalTrialParameters.ShowModalFormForSpeechResponses then begin
-    Result := FormManualSpeechValidation.ShowModal = mrYes;
+  if FHasConsequence then begin
+    LExpectedResponse := FormManualSpeechValidation.ExpectedText;
   end else begin
-    Result := True;
+    LExpectedResponse := FormSpeechValidationQueue.ExpectedText.Annotation;
   end;
+
+  if LExpectedResponse.IsEmpty then begin
+    Result := False;
+  end else begin
+    if GlobalTrialParameters.ShowModalFormForSpeechResponses then begin
+      if FHasConsequence then begin
+        with FormManualSpeechValidation do begin
+          ShowModal; // blocking
+          Result := EditSpeech.Text = ExpectedText; // change in real-time
+        end;
+      end else begin
+        Result := True; // unchanged in real-time, requires post-fact analysis
+      end;
+    end else begin
+      Result := True; // unchanged in real-time, requires post-fact analysis
+    end;
+  end;
+
   if not Result then begin
-    Timestamp(
-      'Incorrect.Response' + #9 + FormManualSpeechValidation.EditSpeech.Text);
+    if FHasConsequence then begin
+      LAnnotation :=
+        LExpectedResponse + '-' + FormManualSpeechValidation.EditSpeech.Text;
+    end else begin
+      { do nothing }
+    end;
+    Timestamp('Incorrect.Response', LAnnotation);
   end;
 end;
 
 procedure TSpeechStimulus.Load(AParameters: TStringList; AParent: TObject;
   ARect: TSDL_Rect);
-const
-  LRecordButton    : string = 'RecordButton';
-  LRecordButtonOn  : string = 'RecordButtonOn';
-  LRecordButtonOff : string = 'RecordButtonOff';
-  LPlayButton    : string = 'PlayButton';
-  LPlayButtonOn  : string = 'PlayButtonOn';
-  LPlayButtonOff : string = 'PlayButtonOff';
 begin
-  //inherited Load(AParameters, AParent, ARect);
-  FRect := ARect;
+  FRectangule.BoundsRect := ARect;
+  // FRectangule.Visible := False;
+  // FRectangule.Parent := AParent; // speech do not have a visible square
   FCustomName := GetWordValue(AParameters, IsSample, Index);
+  FHasConsequence := AParameters.Values[TrialKeys.HasConsequenceKey].ToBoolean;
 
-  SDLAudio.RecorderDevice.Clear;
+  SDLAUdio.RecorderDevice.Recorder.Clear;
+  SDLAUdio.RecorderDevice.OnStopped := @RecordingStopped;
+  SDLAUdio.RecorderDevice.OnFinished := @RecordingFinished;
   FRecorder := SDLAudio.RecorderDevice.Recorder;
-  FPlayback := SDLAudio.RecorderDevice.Playback;
-
-  if FPlayback.Opened then begin
-    FPlaybackButton.LoadFromFile(
-      AsAsset(LPlayButtonOff), AsAsset(LPlayButtonOn));
-    FPlaybackButton.CustomName := LPlayButton;
-    FPlaybackButton.BoundsRect := ARect;
-    FPlaybackButton.Parent := TSDLControl(AParent);
-    //FPlaybackButton.OnMouseDown := @MouseDown;
-    FPlaybackButton.OnMouseUp := @MouseUp;
-    SDLAudio.RecorderDevice.Append(FPlaybackButton);
-  end;
-
-  if FRecorder.Opened then begin
-    FRecorderButton.LoadFromFile(
-      AsAsset(LRecordButtonOff), AsAsset(LRecordButtonOn));
-    FRecorderButton.CustomName := LRecordButton;
-    FRecorderButton.BoundsRect := ARect;
-    FRecorderButton.Sibling := FPlaybackButton;
-    FRecorderButton.Parent := TSDLControl(AParent);
-    //FRecordButton.OnMouseDown := @MouseDown;
-    FRecorderButton.OnMouseUp := @MouseUp;
-    SDLAudio.RecorderDevice.Append(FRecorderButton);
-  end;
 end;
 
 procedure TSpeechStimulus.Start;
@@ -189,29 +239,15 @@ begin
   if IsSample then begin
     { do nothing }
   end else begin
-    if Assigned(FRecorderButton) then begin
-      FRecorderButton.Show;
-      FRecorderButton.Enabled := True;
-    end;
-    if Assigned(FPlaybackButton) then begin
-      FPlaybackButton.Show;
-      FPlaybackButton.Enabled := False;
+    if FRecorder.CanRecord then begin
+      FRecorder.StartRecording(Self);
     end;
   end;
 end;
 
 procedure TSpeechStimulus.Stop;
 begin
-  if IsSample then begin
-    { do nothing }
-  end else begin
-    if Assigned(FRecorderButton) then begin
-      FRecorderButton.Hide;
-    end;
-    if Assigned(FPlaybackButton) then begin
-      FPlaybackButton.Hide;
-    end;
-  end;
+  { do nothing }
 end;
 
 end.

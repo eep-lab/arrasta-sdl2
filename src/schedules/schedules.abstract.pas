@@ -15,7 +15,7 @@ unit Schedules.Abstract;
 interface
 
 uses
-  Classes, SysUtils, ExtCtrls, timestamps.types;
+  Classes, SysUtils, ExtCtrls, Math;
 
 type
 
@@ -23,10 +23,10 @@ type
     MustUpdate   : Boolean;
     Enabled      : Boolean;
     TimerEnabled : Boolean;
-    Interval     : TLargerFloat;
-    Elapsed      : TLargerFloat;
-    Started      : TLargerFloat;
-    Paused       : TLargerFloat;
+    Interval     : Float;
+    Elapsed      : Float;
+    Started      : Float;
+    Paused       : Float;
   end;
 
   TRandomIntervalType = (ritRandomAmplitude, ritFleshlerHoffman);
@@ -77,10 +77,10 @@ type
     destructor Destroy; override;
     procedure DoResponse; virtual; abstract;
     procedure Reset; virtual; abstract;
-    function Start : TLargerFloat;
-    function Stop : TLargerFloat;
-    function Pause : TLargerFloat;
-    function Resume : TLargerFloat;
+    function Start : Float;
+    function Stop : Float;
+    function Pause : Float;
+    function Resume : Float;
     function NextInterval : Cardinal;
     procedure PostponeLastInterval;
     property OnConsequence : TNotifyEvent read FOnConsequence write SetOnConsequence;
@@ -201,7 +201,7 @@ end;
 
 procedure TSchedules.SetPaused(AValue : Boolean);
 var
-  LElapsed      : TLargerFloat;
+  LElapsed      : Float;
 begin
   FPausedState.Enabled := AValue;
   if Assigned(FTimer) then begin
@@ -332,7 +332,7 @@ begin
   inherited Destroy;
 end;
 
-function TSchedules.Start : TLargerFloat;
+function TSchedules.Start : Float;
 begin
   if Paused then begin
     Result := Resume;
@@ -347,7 +347,7 @@ begin
   end;
 end;
 
-function TSchedules.Stop : TLargerFloat;
+function TSchedules.Stop : Float;
 begin
   with FPausedState do begin
     Enabled := False;
@@ -362,14 +362,14 @@ begin
   Result := ClockMonotonic;
 end;
 
-function TSchedules.Pause : TLargerFloat;
+function TSchedules.Pause : Float;
 begin
   if Paused then Exit;
   Paused := True;
   Result := FPausedState.Paused;
 end;
 
-function TSchedules.Resume : TLargerFloat;
+function TSchedules.Resume : Float;
 begin
   if Paused then begin
     Paused := False;

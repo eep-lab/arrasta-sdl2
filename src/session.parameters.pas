@@ -39,13 +39,14 @@ implementation
 
 constructor TParametricObject.Create;
 begin
+  inherited Create;
   FParameters := TParameters.Create;
 end;
 
 destructor TParametricObject.Destroy;
 begin
   FParameters.Free;
-  inherited;
+  inherited Destroy;
 end;
 
 procedure TParametricObject.LoadParameters(AParameters: TStringList);

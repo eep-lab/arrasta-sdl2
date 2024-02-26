@@ -14,24 +14,30 @@ unit timestamps.methods;
 
 interface
 
-uses  SysUtils, timestamps.types;
+uses  SysUtils, Math;
 
 
-function GetLatency(AStart, ALatency : TLargerFloat) : string;
-function Elapsed : TLargerFloat;
+function GetLatency(AStart, ALatency : Float) : string;
+function Elapsed : Float;
 
 type
 
-  TLargerFloatHelper = type helper for TLargerFloat
-    function Elapsed: TLargerFloat;
+
+  { TFloatHelper }
+
+  TFloatHelper = type helper for Float
+    function Elapsed: Float;
     function ToString: string;
   end;
 
+var
+  TimeStart : Float;
+
 implementation
 
-uses session.pool, timestamps;
+uses timestamps;
 
-function GetLatency(AStart, ALatency: TLargerFloat): string;
+function GetLatency(AStart, ALatency: Float): string;
 begin
   if ALatency > 0 then begin
       Result := (ALatency - AStart).ToString;
@@ -40,19 +46,19 @@ begin
     end;
 end;
 
-function Elapsed: TLargerFloat;
+function Elapsed: Float;
 begin
-  Result := ClockMonotonic - Pool.TimeStart;
+  Result := ClockMonotonic - TimeStart;
 end;
 
-{ TLargerFloatHelper }
+{ TFloatHelper }
 
-function TLargerFloatHelper.Elapsed: TLargerFloat;
+function TFloatHelper.Elapsed: Float;
 begin
-  Result := Self - Pool.TimeStart;
+  Result := Self - TimeStart;
 end;
 
-function TLargerFloatHelper.ToString: string;
+function TFloatHelper.ToString: string;
 begin
   Result := FloatToStrF(Self, ffFixed, 0, 9);
 end;

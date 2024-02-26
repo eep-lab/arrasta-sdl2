@@ -4,6 +4,8 @@ unit sdl.app.controller.types;
 
 interface
 
+uses Math;
+
 type
   TControllerCode = (gcMouse, gcKeyboard, gcWii, gcPS4);
 
@@ -12,36 +14,34 @@ type
     TopLeft, TopRight, BottomLeft, BottomRight);
 
   TPoint = record
-    X : Double;
-    Y : Double;
+    X : Float;
+    Y : Float;
   end;
 
-function CalculateAngleDegrees(APoint : TPoint): Double;
-function GetDirection(Degree: Double): TDirection;
+function CalculateAngleDegrees(APoint : TPoint): Float;
+function GetDirection(Degree: Float): TDirection;
 
 var
-  SectorPad : Double;
-  Sector0 : Double;
-  Sector1 : Double;
-  Sector2 : Double;
-  Sector3 : Double;
-  Sector4 : Double;
-  Sector5 : Double;
-  Sector6 : Double;
-  Sector7 : Double;
+  SectorPad : Float;
+  Sector0 : Float;
+  Sector1 : Float;
+  Sector2 : Float;
+  Sector3 : Float;
+  Sector4 : Float;
+  Sector5 : Float;
+  Sector6 : Float;
+  Sector7 : Float;
 
 implementation
 
-uses Math;
-
 const
-  SectorSize: Double = 45;
-  MaxDegress : Double = 360;
-  HalfDegree : Double = 180;
+  SectorSize: Float = 45;
+  MaxDegress : Float = 360;
+  HalfDegree : Float = 180;
 
-function CalculateAngleDegrees(APoint: TPoint): Double;
+function CalculateAngleDegrees(APoint: TPoint): Float;
 var
-  AngleRadians, AngleDegrees: Double;
+  AngleRadians, AngleDegrees: Float;
 begin
   AngleRadians := ArcTan2(APoint.Y, APoint.X);
   AngleDegrees := AngleRadians * (HalfDegree/PI);
@@ -49,7 +49,7 @@ begin
   Result := AngleDegrees - Trunc(AngleDegrees/MaxDegress) * MaxDegress;
 end;
 
-function GetDirection(Degree: Double): TDirection;
+function GetDirection(Degree: Float): TDirection;
 begin
   if      (Degree >= Sector0) or  (Degree < Sector1) then
     Result := TDirection.Right
@@ -70,7 +70,7 @@ begin
 end;
 
 initialization
-  SectorPad := SectorSize/2;
+  SectorPad := Float(SectorSize)/Float(2);
   Sector0:= MaxDegress-SectorPad;
   Sector1:= (Sectorsize * 1)-SectorPad;
   Sector2:= (SectorSize * 2)-SectorPad;

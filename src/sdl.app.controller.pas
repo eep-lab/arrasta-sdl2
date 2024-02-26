@@ -20,9 +20,13 @@ type
     public
       constructor Create; virtual;
       destructor Destroy; override;
+      procedure Hide; virtual;
+      procedure Show; virtual;
   end;
 
 implementation
+
+uses sdl.app.mouse;
 
 { TController }
 
@@ -34,11 +38,22 @@ end;
 constructor TController.Create;
 begin
   FNavigator := TTableNavigator.Create;
+  Mouse.Hide;
 end;
 
 destructor TController.Destroy;
 begin
   FNavigator.Free;
+end;
+
+procedure TController.Hide;
+begin
+  { do nothing }
+end;
+
+procedure TController.Show;
+begin
+  { do nothing }
 end;
 
 end.

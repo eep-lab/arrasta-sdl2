@@ -11,80 +11,79 @@ unit timestamps;
 
 {$mode objfpc}{$H+}
 
-
 interface
 
 uses
-  SysUtils, timestamps.types
+  SysUtils, Math
 
-{$ifdef LINUX}
+{$IFDEF LINUX}
   , Linux
   , UnixType
-{$endif}
+{$ENDIF}
 
-{$ifdef WINDOWS}
-  , Windows
-{$endif}
-
-{$ifdef DARWIN}
+{$IFDEF DARWIN}
   , ctypes
   , MachTime
-{$endif}
+{$ENDIF}
+
+{$IFDEF WINDOWS}
+  , Windows
+{$ENDIF}
   ;
 
-function ClockMonotonic : TLargerFloat;
+function ClockMonotonic : Float;
 
 implementation
 
-{$ifdef LINUX}
-function ClockMonotonic: TLargerFloat;
+{$IFDEF LINUX}
+function ClockMonotonic: Float;
 var
   tp: timespec;
-  a, b : TLargerFloat;
+  a, b : Float;
 begin
   clock_gettime(CLOCK_MONOTONIC, @tp);
-  a := TLargerFloat(tp.tv_sec);
-  b := TLargerFloat(tp.tv_nsec) * 1e-9;
+  a := Float(tp.tv_sec);
+  b := Float(tp.tv_nsec) * 1e-9;
   Result := a+b;
 end;
-{$endif}
+{$ENDIF}
 
-{$ifdef WINDOWS}
-var
-  PerSecond : TLargeInteger;
-
-function ClockMonotonic: TLargerFloat;
-var
-  Count : TLargeInteger;
-begin
-  QueryPerformanceCounter(Count);
-  Result := Count / PerSecond;
-end;
-
-
-initialization
-   QueryPerformanceFrequency(PerSecond);
-{$endif}
-
-{$ifdef DARWIN}
+{$IFDEF DARWIN}
 {credits: https://github.com/pupil-labs/pyuvc/blob/master/pyuvc-source/darwin_time.pxi}
 
 var
-  timeConvert: TLargerFloat = 0.0;
+  timeConvert: Float = 0.0;
 
-//function get_sys_time_monotonic: TLargerFloat;
-function ClockMonotonic : TLargerFloat;
+//function get_sys_time_monotonic: Float;
+function ClockMonotonic : Float;
 var
   timeBase: mach_timebase_info_data_t;
 begin
   if timeConvert = 0.0 then begin
     mach_timebase_info(@timeBase);
-    timeConvert := (timeBase.numer / timeBase.denom) / 1000000000.0;
+    timeConvert :=
+      (Float(timeBase.numer) / Float(timeBase.denom) / Float(1000000000.0);
   end;
   Result := mach_absolute_time() * timeConvert;
 end;
+{$ENDIF}
 
-{$endif}
+{$IFDEF WINDOWS}
+var
+  PerSecond : TLargeInteger;
+
+function ClockMonotonic: Float;
+var
+  Count : TLargeInteger;
+begin
+  QueryPerformanceCounter(Count);
+  Result := Float(Count) / Float(PerSecond);
+end;
+
+
+initialization
+   QueryPerformanceFrequency(PerSecond);
+{$ENDIF}
 
 end.
 

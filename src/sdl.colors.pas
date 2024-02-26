@@ -23,7 +23,7 @@ const
     (r: 128; g: 128; b: 128; a: SDL_ALPHA_OPAQUE);
 
   clLightBlueShaded1 : TSDL_Color =
-    (r: 134; g: 150; b: 254; a: 25);
+    (r: 134; g: 150; b: 254; a: 50);
 
   clLightBlueShaded2 : TSDL_Color =
     (r: 134; g: 150; b: 254; a: 150);

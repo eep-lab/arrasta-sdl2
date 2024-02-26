@@ -52,6 +52,16 @@ begin
   Result := Result + Formated(AStimuID+1);
 end;
 
+function FormatedSpeechName(AName : string; AIsSample: Boolean) : string;
+begin
+  if AIsSample then begin
+    Result:= AName.Replace('Speech.Sample' + #9, '')
+  end else begin
+    Result:= AName.Replace('Speech.Comparison' + #9, '');
+  end;
+end;
+
+
 function TStimulusID.ToString: string;
 begin
   Result := ''.Join('-', [
@@ -73,7 +83,7 @@ begin
     'T'+Formated(TrialID+1),
     FormatedID(StimuID, IsSample),
     'R'+Formated(RespoID),
-    Name.Replace('Speech' + #9, '')]);
+    FormatedSpeechName(Name, IsSample)]);
 end;
 
 end.

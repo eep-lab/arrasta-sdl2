@@ -16,6 +16,8 @@ interface
 uses
   Classes, SysUtils;
 
+
+
 procedure FindFilesFor(out AStimuliArray: TStringArray;
   AFolder : string;
   AExtensions : string = '*.bmp;*.jpg');
@@ -33,7 +35,7 @@ procedure GetFontFilesFor(AStrings : TStrings);
 procedure FreeConfigurationFile;
 procedure LoadMessageFromFile(var AMessage : string; AFilename : string);
 
-
+function FilenameNoOverride(AFilename: string; out AFileIndex: integer): string;
 function NewConfigurationFile : string;
 function LoadConfigurationFile(AFilename : string) : string;
 
@@ -47,6 +49,35 @@ uses
   , session.constants
   , session.configurationfile
   ;
+
+function FilenameNoOverride(AFilename: string; out AFileIndex: integer): string;
+const
+  L0 = #48;
+var
+  i : Integer;
+  LFilePath, LExtension: string;
+  LFilename : string;
+begin
+  if AFilename.IsEmpty then begin
+    raise Exception.Create('Filename cannot be empty.');
+  end;
+  ForceDirectoriesUTF8(ExtractFilePath(AFilename));
+  LFilePath := ExtractFilePath(AFilename);
+  LExtension := ExtractFileExt(AFilename);
+
+  // ensure to never override an exinting file
+  LFilename := AFilename;
+  i := 0;
+  while FileExistsUTF8(LFilename) do begin
+    Inc(i);
+    LFilename := LFilePath +
+         StringOfChar(L0, 3 - Length(IntToStr(i))) + IntToStr(i) +
+         LExtension;
+  end;
+  AFileIndex := i;
+  Result := LFilename;
+end;
+
 
 procedure FindFilesFor(out AStimuliArray: TStringArray;
   AFolder: string;
@@ -174,7 +205,8 @@ procedure FreeConfigurationFile;
 begin
   if Assigned(ConfigurationFile) then begin
     ConfigurationFile.UpdateFile;
-    CopyFile(Pool.ConfigurationFilename, Pool.BaseFilename+'.ini');
+    CopyFile(Pool.ConfigurationFilename,
+      ConcatPaths([Pool.BaseDataPath, Pool.BaseFilename+'.ini']));
     ConfigurationFile.Free;
     ConfigurationFile := nil;
     Pool.ConfigurationFilename := '';

@@ -22,16 +22,21 @@ type
   { TFormBackground }
 
   TFormBackground = class(TForm)
+    ButtonOpenSpeechValidation: TButton;
+    ButtonTestCondition: TButton;
     ButtonMisc: TButton;
     ButtonNewParticipant: TButton;
     ButtonLoadConfigurationFile: TButton;
     ButtonNewConfigurationFile: TButton;
     ButtonRunSession: TButton;
-    ComboBoxCondition: TComboBox;
     ComboBoxDesignFolder: TComboBox;
     ComboBoxParticipant: TComboBox;
     IniPropStorage1: TIniPropStorage;
+    LabelSessionEndCriteria: TLabel;
     LabelContact: TLabel;
+    ListBoxCondition: TListBox;
+    MenuItemShowWordsPerCycle: TMenuItem;
+    MenuItemOutputWordsPerCyle: TMenuItem;
     MenuItemCyclesFromTemplate: TMenuItem;
     MenuItemConvertDesignFile: TMenuItem;
     MenuItemRemoveParticipant: TMenuItem;
@@ -42,6 +47,8 @@ type
     PopupMenuParticipants: TPopupMenu;
     PopupMenuMisc: TPopupMenu;
     ProgressBar: TProgressBar;
+    procedure ButtonOpenSpeechValidationClick(Sender: TObject);
+    procedure ButtonTestConditionClick(Sender: TObject);
     procedure ButtonLoadConfigurationFileClick(Sender: TObject);
     procedure ButtonMiscClick(Sender: TObject);
     procedure ButtonNewConfigurationFileClick(Sender: TObject);
@@ -51,6 +58,7 @@ type
     procedure ComboBoxDesignFolderEditingDone(Sender: TObject);
     procedure EndSession(Sender : TObject);
     procedure CloseSDLApp(Sender : TObject);
+    procedure FormCreate(Sender: TObject);
     procedure IniPropStorage1RestoreProperties(Sender: TObject);
     procedure IniPropStorage1StoredValues0Restore(Sender: TStoredValue;
       var Value: TStoredType);
@@ -63,8 +71,13 @@ type
     procedure MenuItemConvertDesignFileClick(Sender: TObject);
     procedure MenuItemCopyPNGFilesClick(Sender: TObject);
     procedure MenuItemCyclesFromTemplateClick(Sender: TObject);
+    procedure MenuItemOutputWordsPerCyleClick(Sender: TObject);
     procedure MenuItemRemoveParticipantClick(Sender: TObject);
+    procedure MenuItemShowWordsPerCycleClick(Sender: TObject);
   private
+    FSessionName : string;
+    procedure HitCriteriaAtSessionEnd(Sender : TObject);
+    procedure NotHitCriteriaAtSessionEnd(Sender : TObject);
     procedure AssignGlobalVariables;
     procedure ToogleControlPanelEnabled(AException: TComponent = nil);
     function ParticipantFolderName : string;
@@ -84,12 +97,15 @@ implementation
 
 uses
   FileUtil
+  , Graphics
   , common.helpers
   , forms.main.misc
+  , forms.test.session.endcriteria
+  , forms.speechvalidation
   , session
+  , session.information
   , session.parameters.global
   , session.pool
-  , session.loggers
   , session.fileutils
   , session.csv.experiments
   , session.design.conversion
@@ -99,6 +115,7 @@ uses
   , sdl.app.testmode
   , eye.tracker
   , picanco.experiments.images
+  , picanco.experiments.output
   ;
 
 { ToDo: show next designed session of selected participant.
@@ -111,11 +128,13 @@ uses
 procedure TFormBackground.ButtonRunSessionClick(Sender: TObject);
 begin
   if not Validated then Exit;
+  FormMisc.Initialize;
   AssignGlobalVariables;
   ToogleControlPanelEnabled;
 
   SDLApp := TSDLApplication.Create(@Pool.AppName[1]);
   SDLApp.SetupVideo(FormMisc.ComboBoxMonitor.ItemIndex);
+  //SDLApp.PrintRendererSetup;
   SDLApp.SetupAudio;
   SDLApp.SetupText;
   SDLApp.OnClose := @CloseSDLApp;
@@ -128,9 +147,14 @@ begin
 
   InitializeEyeTracker(FormMisc.ComboBoxEyeTracker.ItemIndex);
 
+  Pool.SessionName := SessionName;
+  Pool.ParticipantName := ParticipantFolderName;
+
   SDLSession := TSession.Create(Self);
   SDLSession.OnBeforeStart := @BeginSession;
   SDLSession.OnEndSession  := @EndSession;
+  SDLSession.OnHitCriteriaAtSessionEnd := @HitCriteriaAtSessionEnd;
+  SDLSession.OnNotHitCriteriaAtSessionEnd := @NotHitCriteriaAtSessionEnd;
   SDLSession.Play;
 
   SDLApp.Run;
@@ -141,18 +165,20 @@ var
   LFilename : string;
 begin
   AssignGlobalVariables;
-  if ComboBoxCondition.Items.Count = 0 then begin
+  if ListBoxCondition.Items.Count = 0 then begin
     ShowMessage('A pasta de parâmetros (design) está vazia.');
     Exit;
   end;
-  if ComboBoxCondition.ItemIndex = -1 then begin
+
+  if ListBoxCondition.ItemIndex = -1 then begin
     ShowMessage('Escolha um parâmetro.');
     Exit;
   end else begin
-    with ComboBoxCondition do begin
+    with ListBoxCondition do begin
       LFilename := Items[ItemIndex];
     end;
   end;
+
   ToogleControlPanelEnabled(ProgressBar);
   Pool.ConfigurationFilename := MakeConfigurationFile(LFilename);
   ProgressBar.Visible := True;
@@ -176,14 +202,26 @@ end;
 
 procedure TFormBackground.ButtonLoadConfigurationFileClick(Sender: TObject);
 begin
-  SetupFolders;         // todo: pass filename id of loaded file into session.counters.loadfromfile
-  OpenDialog1.InitialDir := Pool.BaseFileName;
+  SetupFolders; // todo: pass filename id of loaded file into session.counters.loadfromfile
+  OpenDialog1.InitialDir := Pool.BaseDataPath;
   if OpenDialog1.Execute then begin
     Pool.ConfigurationFilename := LoadConfigurationFile(OpenDialog1.FileName);
+    FSessionName := LoadInformationFromFile(OpenDialog1.FileName).SessionName;
+    ShowMessage(FSessionName);
     ProgressBar.Max := 1;
     ProgressBar.StepIt;
     ProgressBar.Visible := True;
   end;
+end;
+
+procedure TFormBackground.ButtonTestConditionClick(Sender: TObject);
+begin
+  FormEndCriteriaTest.Show;
+end;
+
+procedure TFormBackground.ButtonOpenSpeechValidationClick(Sender: TObject);
+begin
+  FormSpeechValidationQueue.Show;
 end;
 
 procedure TFormBackground.ButtonMiscClick(Sender: TObject);
@@ -196,7 +234,6 @@ begin
   if Assigned(EyeTracker) then begin
     EyeTracker.StartRecording;
   end;
-  TLogger.SetHeader(SessionName, ParticipantFolderName);
 end;
 
 procedure TFormBackground.ComboBoxDesignFolderEditingDone(Sender: TObject);
@@ -204,8 +241,8 @@ begin
   with Pool, ComboBoxDesignFolder do begin
     DesignBasePath := Items[ItemIndex];
   end;
-  ComboBoxCondition.Clear;
-  GetDesignFilesFor(ComboBoxCondition.Items);
+  ListBoxCondition.Clear;
+  GetDesignFilesFor(ListBoxCondition.Items);
 end;
 
 procedure TFormBackground.EndSession(Sender: TObject);
@@ -219,13 +256,19 @@ begin
     EyeTracker.StopRecording;
     FinalizeEyeTracker;
   end;
-  TLogger.SetFooter;
+  FormMisc.Finalize;
   SDLSession.Free;
   SDLApp.Free;
   FreeConfigurationFile;
   Controllers.Free;
   ToogleControlPanelEnabled;
   ProgressBar.Visible := False;
+  FSessionName := '';
+end;
+
+procedure TFormBackground.FormCreate(Sender: TObject);
+begin
+  FSessionName := '';
 end;
 
 procedure TFormBackground.IniPropStorage1RestoreProperties(Sender: TObject);
@@ -251,14 +294,14 @@ end;
 procedure TFormBackground.IniPropStorage1StoredValues1Restore(
   Sender: TStoredValue; var Value: TStoredType);
 begin
-  GetDesignFilesFor(ComboBoxCondition.Items);
-  ComboBoxCondition.ItemIndex := Value.ToInteger;
+  GetDesignFilesFor(ListBoxCondition.Items);
+  ListBoxCondition.ItemIndex := Value.ToInteger;
 end;
 
 procedure TFormBackground.IniPropStorage1StoredValues1Save(
   Sender: TStoredValue; var Value: TStoredType);
 begin
-  Value := ComboBoxCondition.ItemIndex.ToString;
+  Value := ListBoxCondition.ItemIndex.ToString;
 end;
 
 procedure TFormBackground.MenuItemConvertDesignFileClick(Sender: TObject);
@@ -268,6 +311,7 @@ end;
 
 procedure TFormBackground.MenuItemCopyPNGFilesClick(Sender: TObject);
 begin
+  SetupFolders;
   E1CopyRandomImagesToParticipantFolder;
 end;
 
@@ -276,10 +320,38 @@ begin
   CyclesFromTemplate;
 end;
 
+procedure TFormBackground.MenuItemOutputWordsPerCyleClick(Sender: TObject);
+begin
+  PrintWordsPerCycle;
+end;
+
 procedure TFormBackground.MenuItemRemoveParticipantClick(Sender: TObject);
 begin
   with ComboBoxParticipant do
     Items.Delete(ItemIndex);
+end;
+
+procedure TFormBackground.MenuItemShowWordsPerCycleClick(Sender: TObject);
+begin
+  ShowWordsPerCycle;
+end;
+
+procedure TFormBackground.HitCriteriaAtSessionEnd(Sender: TObject);
+begin
+  LabelSessionEndCriteria.Color := clGreen;
+  with ListBoxCondition do begin
+    LabelSessionEndCriteria.Caption :=
+      'Critério Atingido:' + Items[ItemIndex];
+  end;
+end;
+
+procedure TFormBackground.NotHitCriteriaAtSessionEnd(Sender: TObject);
+begin
+  LabelSessionEndCriteria.Color := clRed;
+  with ListBoxCondition do begin
+    LabelSessionEndCriteria.Caption :=
+      'Critério não atingido:' + Items[ItemIndex];
+  end;
 end;
 
 procedure TFormBackground.AssignGlobalVariables;
@@ -287,7 +359,15 @@ begin
   TestMode := FormMisc.CheckBoxTestMode.Checked;
 
   GlobalTrialParameters.Cursor := 1;
-  GlobalTrialParameters.FixedComparisonPosition := 7;
+
+  with GlobalTrialParameters, FormMisc.FloatSpinEditScreenWidth do
+    ScreenInCentimeters := Value;
+
+  with GlobalTrialParameters, FormMisc.FloatSpinEditCellsSize do
+    CellsSizeInCentimenter := Value;
+
+  with GlobalTrialParameters, FormMisc.CheckBoxHideMouse do
+    HideMouse := Checked;
 
   with GlobalTrialParameters, FormMisc.SpinEditAprilTagsSize do
     MarkerSize := Value;
@@ -334,6 +414,7 @@ begin
     case ItemIndex of
       1: begin // centralize sample, use 4 corners for comparisions
         FixedSamplePosition := 4;
+        FixedComparisonPosition := 4;
         SetLength(ComparisonPositions, 4);
         ComparisonPositions[0] := 0;
         ComparisonPositions[1] := 2;
@@ -373,19 +454,26 @@ end;
 
 function TFormBackground.SessionName: string;
 begin
-  Result := 'Sessão';
+  if FSessionName.IsEmpty then begin
+    with ListBoxCondition do begin
+      Result := Items[ItemIndex];
+    end;
+  end else begin
+    Result := FSessionName;
+  end;
 end;
 
 function TFormBackground.SetupFolders: Boolean;
 begin
   Pool.ImageBasePath := ParticipantFolderName;
-  Pool.BaseFileName :=
+  Pool.BaseDataPath :=
     ConcatPaths([Pool.DataRootBasePath, ParticipantFolderName]);
+
   Pool.DataResponsesBasePath :=
-    ConcatPaths([Pool.BaseFileName, Pool.ResponsesBasePath]);
+    ConcatPaths([Pool.BaseDataPath, Pool.ResponsesBasePath]);
 
   Result :=
-    ForceDirectories(Pool.BaseFileName) and
+    ForceDirectories(Pool.BaseDataPath) and
     ForceDirectories(Pool.DataResponsesBasePath);
 end;
 
@@ -441,10 +529,12 @@ begin
     ShowMessage('Crie uma nova sessão ou carregue uma sessão interrompida.');
     Exit;
   end;
+
   if ComboBoxParticipant.Items.Count = 0 then begin
     ShowMessage('Crie um novo participante.');
     Exit;
   end;
+
   if ComboBoxParticipant.ItemIndex < 0 then begin
     ShowMessage('Escolha um participante.');
     Exit;

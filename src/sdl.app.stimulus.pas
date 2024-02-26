@@ -21,6 +21,7 @@ uses
   , sdl.app.controls.custom
   , sdl.app.events.abstract
   , sdl.app.stimulus.types
+  , session.loggers.types
   ;
 
 type
@@ -29,10 +30,12 @@ type
 
   TStimulus = class(TInterfacedObject, IStimulus)
     private
+      FAnimated: Boolean;
       FName: string;
       FOnNoResponse: TNotifyEvent;
       FPosition: Integer;
       FResponseID : Integer;
+      FSibling: TStimulus;
       FStimuli: TObject;
       FIndex : integer;
       FIsSample: Boolean;
@@ -58,7 +61,9 @@ type
       function ToData: string;
       function GetRect: TRectangule; virtual; abstract;
       function GetStimulusName : string; virtual; abstract;
+      procedure DoResponseIncrement;
       procedure SetRect(AValue: TRectangule); virtual; abstract;
+      procedure SetSibling(AValue: TStimulus); virtual;
       procedure MouseDown(Sender:TObject; Shift: TCustomShiftState; X, Y: Integer); virtual; abstract;
       procedure MouseUp(Sender:TObject; Shift: TCustomShiftState; X, Y: Integer); virtual; abstract;
       procedure MouseEnter(Sender:TObject); virtual; abstract;
@@ -90,6 +95,8 @@ type
       property Rectangule  : TRectangule read GetRect write SetRect;
       property ResponseID : integer read FResponseID;
       property Stimuli : TObject read FStimuli write SetStimuli;
+      property Animated : Boolean read FAnimated write FAnimated;
+      property Sibling : TStimulus read FSibling write FSibling;
   end;
 
 
@@ -159,6 +166,12 @@ begin
   FOnResponse:=AValue;
 end;
 
+procedure TStimulus.SetSibling(AValue: TStimulus);
+begin
+  if FSibling = AValue then Exit;
+  FSibling := AValue;
+end;
+
 procedure TStimulus.SetStimuli(AValue: TObject);
 begin
   if FStimuli = AValue then Exit;
@@ -168,6 +181,11 @@ end;
 function TStimulus.ToData: string;
 begin
   Result := FCustomName+'-'+FPosition.ToString;
+end;
+
+procedure TStimulus.DoResponseIncrement;
+begin
+ Inc(FResponseID);
 end;
 
 constructor TStimulus.Create;

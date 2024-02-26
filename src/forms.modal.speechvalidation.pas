@@ -12,17 +12,16 @@ type
   { TFormManualSpeechValidation }
 
   TFormManualSpeechValidation = class(TForm)
-    ButtonYes: TButton;
-    ButtonNo: TButton;
     EditSpeech: TEdit;
     LabelQuestion1: TLabel;
     LabelQuestion2: TLabel;
+    procedure EditSpeechEditingDone(Sender: TObject);
   private
     FExpectedText: string;
     FSpeechToText: string;
     procedure SetExpectedText(AValue: string);
   public
-    property ExpectedText : string write SetExpectedText;
+    property ExpectedText : string read FExpectedText write SetExpectedText;
     property SpeechToText : string read FSpeechToText;
   end;
 
@@ -34,6 +33,11 @@ implementation
 {$R *.lfm}
 
 { TFormManualSpeechValidation }
+
+procedure TFormManualSpeechValidation.EditSpeechEditingDone(Sender: TObject);
+begin
+  Close;
+end;
 
 procedure TFormManualSpeechValidation.SetExpectedText(AValue: string);
 begin

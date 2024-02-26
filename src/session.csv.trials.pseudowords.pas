@@ -51,10 +51,10 @@ begin
   FWord := GetWord(FPhase, ToAlphaNumericCode(FCode));
   FName :=
     TrialID.ToString + #32 +
-    '(Cycle ' + FCycle.ToString + #32 +
+    'Cycle ' + FCycle.ToString + #32 +
     FWord.Caption + #32 +
     Relation + #32 +
-    Comparisons.ToString + 'C)';
+    Comparisons.ToString + 'C';
   FRefName := FCode+'-'+Relation;
 end;
 

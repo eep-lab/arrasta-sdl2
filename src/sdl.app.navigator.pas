@@ -26,6 +26,7 @@ type
     constructor Create;
     destructor Destroy; override;
     procedure Select;
+    procedure SelectTarget(AControl : ISelectable);
     procedure GoTop;
     procedure GoBottom;
     procedure GoLeft;
@@ -76,6 +77,11 @@ end;
 procedure TTableNavigator.Select;
 begin
   SelectControl(FControls.Select);
+end;
+
+procedure TTableNavigator.SelectTarget(AControl: ISelectable);
+begin
+  SelectControl(FControls.GoTarget(AControl));
 end;
 
 procedure TTableNavigator.GoTop;

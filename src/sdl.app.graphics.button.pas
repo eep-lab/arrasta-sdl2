@@ -33,7 +33,7 @@ type
     constructor Create; override;
     destructor Destroy; override;
     procedure Click; virtual;
-    procedure LoadFromFile(AFilename: string); override;
+    procedure ShrinkHeight;
     property OnClick: TNotifyEvent read FOnClick write FOnClick;
     property Sender : TObject read FSender write FSender;
   end;
@@ -61,8 +61,7 @@ begin
   if Visible then begin
     inherited MouseDown(Sender, Shift, X, Y);
     FIsPressed := True;
-    if Assigned(OnClick) then
-      OnClick(Self);
+
   end;
 end;
 
@@ -71,7 +70,8 @@ begin
   if Visible then begin
     inherited MouseUp(Sender, Shift, X, Y);
     FIsPressed := False;
-    // test if InRect(BoundsRect, Point(X, Y)) is needed
+    if Assigned(OnClick) then
+      OnClick(Self);
   end;
 end;
 
@@ -87,10 +87,9 @@ begin
     FOnClick(Self);
 end;
 
-procedure TButton.LoadFromFile(AFilename: string);
+procedure TButton.ShrinkHeight;
 begin
-  inherited LoadFromFile(AFilename);
-  Height:=Height div 3;
+  Height:= Height div 3;
 end;
 
 end.

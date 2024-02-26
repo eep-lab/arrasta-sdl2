@@ -39,17 +39,17 @@ const
 
 // https://github.com/Minimuino/thumbstick-deadzones
 
-function MapRange(AValue, OldMin, OldMax, NewMin, NewMax: Double): Double;
+function MapRange(AValue, OldMin, OldMax, NewMin, NewMax: Float): Float;
 begin
   Result :=
     (NewMin + (NewMax - NewMin)) * ((AValue - OldMin) / (OldMax - OldMin));
 end;
 
-function SlopedScaledAxialDeadzone(AX, AY: Double): TPoint;
+function SlopedScaledAxialDeadzone(AX, AY: Float): TPoint;
 var
-  LX, LY, DeadzoneX, DeadzoneY: Double;
-  SignX: Double;
-  SignY: Double;
+  LX, LY, DeadzoneX, DeadzoneY: Float;
+  SignX: Float;
+  SignY: Float;
 begin
   LX := 0;
   LY := 0;
@@ -68,11 +68,11 @@ begin
   Result.Y := LY;
 end;
 
-function ScaledRadialDeadzone(AX, AY : Double): TPoint;
+function ScaledRadialDeadzone(AX, AY : Float): TPoint;
 var
-  Magnitude: Double;
-  NormalizedX : Double;
-  NormalizedY : Double;
+  Magnitude: Float;
+  NormalizedX : Float;
+  NormalizedY : Float;
 begin
   Magnitude := Hypot(AX, AY);
 
@@ -88,9 +88,9 @@ begin
   end;
 end;
 
-function IsOutDeadZone(var AX : Double; var AY : Double) : Boolean;
+function IsOutDeadZone(var AX : Float; var AY : Float) : Boolean;
 var
-  Magnitude: Double;
+  Magnitude: Float;
   Output : TPoint;
 begin
   Magnitude := Hypot(AX, AY);
@@ -126,11 +126,11 @@ end;
 
 function TController2DAxis.IsOutSideDeadZone: Boolean;
 begin
-  FPoint.X := SDL_GameControllerGetAxis(
-    FGameController, SDL_CONTROLLER_AXIS_LEFTX)/MaxSmallint;
+  FPoint.X := Float(SDL_GameControllerGetAxis(
+    FGameController, SDL_CONTROLLER_AXIS_LEFTX))/Float(MaxSmallint);
 
-  FPoint.Y := SDL_GameControllerGetAxis(
-    FGameController, SDL_CONTROLLER_AXIS_LEFTY)/MaxSmallint;
+  FPoint.Y := Float(SDL_GameControllerGetAxis(
+    FGameController, SDL_CONTROLLER_AXIS_LEFTY))/Float(MaxSmallint);
 
   Result := IsOutDeadZone(FPoint.X, FPoint.Y);
   //if Result then begin

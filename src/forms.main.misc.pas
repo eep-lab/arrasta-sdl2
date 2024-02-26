@@ -6,62 +6,72 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, StdCtrls,
-  IniPropStorage, Spin, ComCtrls;
+  IniPropStorage, Spin, ComCtrls, ExtCtrls;
 
 type
 
   { TFormMisc }
 
   TFormMisc = class(TForm)
+    ButtonTestDispenser: TButton;
+    CheckBoxHideMouse: TCheckBox;
     CheckBoxShowMarkers: TCheckBox;
     CheckBoxShowModalFormForSpeechResponses: TCheckBox;
     CheckBoxTestMode: TCheckBox;
-    ComboBoxController: TComboBox;
-    ComboBoxShouldRestartAt: TComboBox;
-    ComboBoxEyeTracker: TComboBox;
     ComboBoxAudioFolder: TComboBox;
     ComboBoxAudioPromptForText: TComboBox;
+    ComboBoxController: TComboBox;
     ComboBoxFixedSamplePosition: TComboBox;
     ComboBoxFontName: TComboBox;
+    ComboBoxShouldRestartAt: TComboBox;
+    ComboBoxEyeTracker: TComboBox;
     ComboBoxMonitor: TComboBox;
+    FloatSpinEditScreenWidth: TFloatSpinEdit;
+    FloatSpinEditCellsSize: TFloatSpinEdit;
     IniPropStorage1: TIniPropStorage;
     Label1: TLabel;
-    LabelAprilTagsSize: TLabel;
-    LabelDefaultAudioLoops: TLabel;
-    LabelAudioLoopInterval: TLabel;
-    LabelController: TLabel;
-    LabelShoudRestartAtBlockStart: TLabel;
-    LabelMonitor: TLabel;
-    LabelTestMode: TLabel;
-    LabelEyeTracker: TLabel;
+    LabelScreenWidth: TLabel;
     LabelAudioFolder: TLabel;
+    LabelAudioLoopInterval: TLabel;
     LabelAudioPromptForText: TLabel;
+    LabelDefaultAudioLoops: TLabel;
     LabelFixedSamplePosition: TLabel;
     LabelFont: TLabel;
     LabelFontsize: TLabel;
+    LabelHideMouse: TLabel;
+    LabelAprilTagsSize: TLabel;
+    LabelController: TLabel;
+    LabelRecordingSeconds: TLabel;
+    LabelCellsSize: TLabel;
+    LabelShoudRestartAtBlockStart: TLabel;
+    LabelMonitor: TLabel;
+    LabelShowModal: TLabel;
+    LabelTestMode: TLabel;
+    LabelEyeTracker: TLabel;
     LabelInterTrialInterval: TLabel;
     LabelLimitedHold: TLabel;
-    LabelRecordingSeconds: TLabel;
-    LabelShowModal: TLabel;
     LabelTimeOut: TLabel;
     PageControl: TPageControl;
+    RadioGroupDispenser: TRadioGroup;
     SpinEditAprilTagsSize: TSpinEdit;
-    SpinEditDefaultAudioLoops: TSpinEdit;
     SpinEditAudioLoopInterval: TSpinEdit;
+    SpinEditDefaultAudioLoops: TSpinEdit;
     SpinEditFontSize: TSpinEdit;
     SpinEditInterTrialInterval: TSpinEdit;
     SpinEditLimitedHold: TSpinEdit;
     SpinEditRecordingSeconds: TSpinEdit;
     SpinEditTimeOut: TSpinEdit;
+    TabSheetPseudowords: TTabSheet;
     TabSheetControllers: TTabSheet;
     TabSheetGeneral: TTabSheet;
     TabSheetEyeTracking: TTabSheet;
-    procedure ComboBoxDesignFolderChange(Sender: TObject);
+    procedure ButtonTestDispenserClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
   private
 
   public
-
+    procedure Initialize;
+    procedure Finalize;
   end;
 
 var
@@ -69,7 +79,7 @@ var
 
 implementation
 
-uses sdl.app, session.fileutils;
+uses sdl.app, session.fileutils, Devices.RS232i;
 
 {$R *.lfm}
 
@@ -103,9 +113,43 @@ begin
   end;
 end;
 
-procedure TFormMisc.ComboBoxDesignFolderChange(Sender: TObject);
+procedure TFormMisc.Initialize;
 begin
+  case RadioGroupDispenser.ItemIndex of
+    0: { do nothing };
+    otherwise begin
+      RS232 := TRS232.Create;
+      case RadioGroupDispenser.ItemIndex of
+        1 : RS232.DefaultDispenser := disp1;
+        2 : RS232.DefaultDispenser := disp2;
+        3 : RS232.DefaultDispenser := disp3;
+        4 : RS232.DefaultDispenser := disp4;
+      end;
+    end;
+  end;
+end;
 
+procedure TFormMisc.Finalize;
+begin
+  case RadioGroupDispenser.ItemIndex of
+    0: { do nothing };
+    otherwise begin
+      RS232.Free;
+      RS232 := nil;
+    end;
+  end;
+end;
+
+procedure TFormMisc.ButtonTestDispenserClick(Sender: TObject);
+begin
+  RS232 := TRS232.Create;
+  case RadioGroupDispenser.ItemIndex of
+    0 : RS232.Dispenser(disp1);
+    1 : RS232.Dispenser(disp2);
+    2 : RS232.Dispenser(disp3);
+    3 : RS232.Dispenser(disp4);
+  end;
+  RS232.Free;
 end;
 
 { TFormMisc }

@@ -16,9 +16,11 @@ interface
 uses
   Classes, SysUtils
   , SDL2
+  , Pupil.Types
+  , Pupil.Client
   , eye.tracker.types
   , eye.tracker.client
-  , pupil.client;
+  ;
 
 type
 
@@ -26,15 +28,12 @@ type
 
   TPupilEyeTracker = class sealed (TEyeTrackerClient)
     private
-      FMonitor : TSDL_Rect;
+      FCurrentData : TGazeOnSurface;
       FPupilClient : TPupilClient;
-      FOnGazeOnScreenEvent : TGazeOnScreenEvent;
-      FOnCalibrationSuccessfulEvent : TNotifyEvent;
-      FOnCalibrationFailedEvent : TNotifyEvent;
-      procedure SurfaceEvent(Sender: TObject; AMultiPartMessage : TPupilMessage);
-      procedure CalibrationSuccessful(Sender: TObject; AMultiPartMessage : TPupilMessage);
-      procedure CalibrationFailed(Sender: TObject; AMultiPartMessage : TPupilMessage);
+      FGazeOnScreenEvent : TGazeOnScreenEvent;
+      procedure GazeOnSurface(Sender : TObject; AGazeOnSurface: TGazeOnSurface);
     protected
+      function TrackerClassName : string; override;
       function GetGazeOnScreenEvent: TGazeOnScreenEvent; override;
       procedure SetGazeOnScreenEvent(AValue: TGazeOnScreenEvent); override;
       procedure SetOnCalibrationSuccessful(AValue: TNotifyEvent); override;
@@ -43,37 +42,39 @@ type
       procedure StopRecording; override;
       procedure StartCalibration; override;
       procedure StopCalibration; override;
+      procedure CalibrationSuccessful; override;
     public
       constructor Create;
       destructor Destroy; override;
-      procedure Invalidate;
+      function CurrentGazes : TNormalizedGazes; override;
   end;
 
 implementation
 
-uses SimpleMsgPack, sdl.app.video.methods;
-
 { TPupilEyeTracker }
 
-procedure TPupilEyeTracker.SetGazeOnScreenEvent(
-  AValue: TGazeOnScreenEvent);
+procedure TPupilEyeTracker.SetGazeOnScreenEvent(AValue: TGazeOnScreenEvent);
 begin
-  if FOnGazeOnScreenEvent = AValue then Exit;
-  FOnGazeOnScreenEvent := AValue;
+  if FGazeOnScreenEvent = AValue then Exit;
+  FGazeOnScreenEvent := AValue;
 end;
 
 procedure TPupilEyeTracker.SetOnCalibrationSuccessful(
   AValue: TNotifyEvent);
 begin
-  if FOnCalibrationSuccessfulEvent = AValue then Exit;
-  FOnCalibrationSuccessfulEvent := AValue;
+  with FPupilClient do begin
+    if OnCalibrationSuccessful = AValue then Exit;
+    OnCalibrationSuccessful := AValue;
+  end;
 end;
 
 procedure TPupilEyeTracker.SetOnCalibrationFailed(
   AValue: TNotifyEvent);
 begin
-  if FOnCalibrationFailedEvent = AValue then Exit;
-  FOnCalibrationFailedEvent := AValue;
+  with FPupilClient do begin
+    if OnCalibrationFailed = AValue then Exit;
+    OnCalibrationFailed := AValue;
+  end;
 end;
 
 procedure TPupilEyeTracker.StartRecording;
@@ -83,7 +84,7 @@ end;
 
 procedure TPupilEyeTracker.StopRecording;
 begin
-  FPupilClient.Request(REQ_SHOULD_STOP_RECORDING);
+  FPupilClient.Request(REQ_SHOULD_STOP_RECORDING, True);
 end;
 
 procedure TPupilEyeTracker.StartCalibration;
@@ -96,82 +97,50 @@ begin
   FPupilClient.Request(REQ_SHOULD_STOP_CALIBRATION);
 end;
 
+procedure TPupilEyeTracker.CalibrationSuccessful;
+begin
+
+end;
+
 constructor TPupilEyeTracker.Create;
 begin
   FPupilClient := TPupilClient.Create;
-  FPupilClient.OnSurfacesEvent := @SurfaceEvent;
-  FPupilClient.OnCalibrationSuccessful := @CalibrationSuccessful;
-  FPupilClient.OnCalibrationFailed := @CalibrationFailed;
   FPupilClient.Start;
   FPupilClient.StartSubscriber;
-  FPupilClient.Subscribe(SUB_SURFACES_EVENT);
-  FPupilClient.Subscribe(NOTIFY_CALIBRATION_SUCCESSFUL);
-  FPupilClient.Subscribe(NOTIFY_CALIBRATION_FAILED);
-  Invalidate;
+  FPupilClient.OnGazeOnSurface := @GazeOnSurface;
 end;
 
 destructor TPupilEyeTracker.Destroy;
 begin
-  FPupilClient.UnSubscribe(SUB_SURFACES_EVENT);
   FPupilClient.Close;
   //FPupilClient.Free;
   inherited Destroy;
 end;
 
-procedure TPupilEyeTracker.Invalidate;
+function TPupilEyeTracker.CurrentGazes: TNormalizedGazes;
 begin
-  FMonitor := MonitorFromWindow;
+  Result := TNormalizedGazes(FCurrentData.Gazes);
 end;
 
-procedure TPupilEyeTracker.SurfaceEvent(Sender: TObject;
-  AMultiPartMessage: TPupilMessage);
-
+procedure TPupilEyeTracker.GazeOnSurface(Sender : TObject;
+  AGazeOnSurface: TGazeOnSurface);
 var
-  LGazeOnSurface : TSimpleMsgPack;
-  LLastGazes : TGazes = nil;
-  Li : integer;
-  function NormToScreen(AGaze : TSimpleMsgPack) : TGaze;
-  begin
-    Result.X := Round(AGaze[0].AsFloat*FMonitor.w);
-    Result.Y := Round((1.0 - AGaze[1].AsFloat)*FMonitor.h);
-  end;
-
+  event : TSDL_Event;
 begin
-  with AMultiPartMessage.Payload do begin
-    if LowerCase(S['name']) = 'screen' then begin
-      LGazeOnSurface := O['gaze_on_surfaces'];
-      if LGazeOnSurface.Count > 0 then begin
-        SetLength(LLastGazes, LGazeOnSurface.Count);
-        for Li := Low(LLastGazes) to High(LLastGazes) do begin
-          LLastGazes[Li] := NormToScreen(LGazeOnSurface[Li].O['norm_pos']);
-        end;
-        if Assigned(FOnGazeOnScreenEvent) then begin
-          FOnGazeOnScreenEvent(Self, LLastGazes);
-        end;
-      end;
-    end;
-  end;
+  FCurrentData := AGazeOnSurface;
+  event.type_ := EYE_TRACKER_GAZE_EVENT;
+  event.user.data1 := Pointer(Self);
+  SDL_PushEvent(@event);
 end;
 
-procedure TPupilEyeTracker.CalibrationSuccessful(Sender: TObject;
-  AMultiPartMessage: TPupilMessage);
+function TPupilEyeTracker.TrackerClassName: string;
 begin
-  if Assigned(FOnCalibrationSuccessfulEvent) then begin
-    FOnCalibrationSuccessfulEvent(Self);
-  end;
-end;
-
-procedure TPupilEyeTracker.CalibrationFailed(Sender: TObject;
-  AMultiPartMessage: TPupilMessage);
-begin
-  if Assigned(FOnCalibrationSuccessfulEvent) then begin
-    FOnCalibrationFailedEvent(Self);
-  end;
+  Result := Self.ClassName;
 end;
 
 function TPupilEyeTracker.GetGazeOnScreenEvent: TGazeOnScreenEvent;
 begin
-  Result := FOnGazeOnScreenEvent;
+  Result := FGazeOnScreenEvent;
 end;
 
 end.

@@ -25,7 +25,7 @@ type
   ILookable = interface
   ['{C6AB5C2C-2AA4-4FFD-9892-A368BD6C4E03}']
     function GetGazeInside: Boolean;
-    function PointInside(SDLPoint : TSDL_Point) : Boolean;
+    function IsGazeInside(SDLPoint : TSDL_Point; AInflateFactor: UInt32 = 0) : Boolean;
     procedure GazeMove(Sender: TObject; Shift: TCustomShiftState; X, Y: Integer);
     procedure GazeEnter(Sender: TObject);
     procedure GazeExit(Sender: TObject);

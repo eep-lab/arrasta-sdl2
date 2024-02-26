@@ -13,7 +13,7 @@ unit eye.tracker;
 
 interface
 
-uses eye.tracker.contract;
+uses SDL2, eye.tracker.contract;
 
 procedure InitializeEyeTracker(AItemIndex : integer);
 procedure FinalizeEyeTracker;

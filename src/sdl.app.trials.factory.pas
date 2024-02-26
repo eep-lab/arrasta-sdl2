@@ -17,6 +17,7 @@ uses
   SysUtils, Generics.Collections
   , sdl.app.trials.contract
   , sdl.app.trials
+  , session.configuration
   ;
 
 type
@@ -33,6 +34,8 @@ type
       class var FRegistry: TTrialRegistry;
       class constructor Create;
       class destructor Destroy;
+      class procedure InvalidateTrialData(
+        out ATrialData : TTrialConfiguration; out ATrialClass : TTrialClass);
     public
       class procedure RegisterTrialClass(
         ATrialKind: string; ATrialClass: TTrialClass); static;
@@ -40,13 +43,14 @@ type
       class function CurrentTrial : ITrial;
       class function GetLastTrial : ITrial; static;
       class procedure FreeCurrentTrial;
+      class function ToData : string; static;
   end;
 
 implementation
 
 uses Classes
    , session.intertrial
-   , session.configuration
+
    , session.configurationfile
    , session.endcriteria
    , session.pool
@@ -71,6 +75,16 @@ begin
   FRegistry.Free;
 end;
 
+class procedure TTrialFactory.InvalidateTrialData(out
+  ATrialData: TTrialConfiguration; out ATrialClass: TTrialClass);
+begin
+  ATrialData := ConfigurationFile.CurrentTrial;
+  if not FRegistry.TryGetValue(ATrialData.Kind, ATrialClass) then
+    raise EArgumentException.CreateFmt(
+      'Trial kind is not registered: %s %s', [ATrialData.Kind, ATrialClass]);
+  EndCriteria.InvalidateTrial(ATrialData);
+end;
+
 class procedure TTrialFactory.RegisterTrialClass(ATrialKind: string;
   ATrialClass: TTrialClass);
 begin
@@ -83,12 +97,7 @@ var
   TrialClass : TTrialClass;
 begin
   FreeCurrentTrial;
-
-  TrialData := ConfigurationFile.CurrentTrial;
-  if not FRegistry.TryGetValue(TrialData.Kind, TrialClass) then
-    raise EArgumentException.CreateFmt(
-      'Trial kind is not registered: %s %s', [TrialData.Kind, TrialClass]);
-  EndCriteria.InvalidateTrial(TrialData);
+  InvalidateTrialData(TrialData, TrialClass);
 
   FCurrentTrial := TrialClass.Create;
   FCurrentTrial.Navigator := Controllers.FirstController.Navigator;
@@ -98,11 +107,15 @@ begin
   FCurrentTrial.TestMode := TestMode;
   FCurrentTrial.Data := TrialData;
   FCurrentTrial.Show;
+
+  Controllers.FirstController.Show;
 end;
 
 class function TTrialFactory.CurrentTrial: ITrial;
 begin
-  Result := FCurrentTrial as ITrial;
+  if FCurrentTrial <> nil then begin
+    Result := FCurrentTrial as ITrial;
+  end;
 end;
 
 class function TTrialFactory.GetLastTrial: ITrial;
@@ -126,6 +139,13 @@ begin
   if Assigned(FCurrentTrial) then begin
     FCurrentTrial.Free;
     FCurrentTrial := nil;
+  end;
+end;
+
+class function TTrialFactory.ToData: string;
+begin
+  if Assigned(FCurrentTrial) then begin
+    Result := CurrentTrial.ToData;
   end;
 end;
 

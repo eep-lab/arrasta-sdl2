@@ -11,7 +11,12 @@ uses
   {$IFDEF HASAMIGA}athreads,{$ENDIF}
   Interfaces, // this includes the LCL widgetset
   SysUtils,
-  Forms, Forms.Main, Forms.Modal.SpeechValidation, Forms.Main.Misc;
+  Forms,
+  Forms.Main,
+  Forms.Main.Misc,
+  Forms.SpeechValidation,
+  Forms.Modal.SpeechValidation,
+  Forms.Test.Session.EndCriteria;
 
 {$R *.res}
 
@@ -31,7 +36,10 @@ begin
   Application.CreateForm(TFormMisc, FormMisc);
   Application.CreateForm(
     TFormManualSpeechValidation, FormManualSpeechValidation);
-
+  Application.CreateForm(
+    TFormSpeechValidationQueue, FormSpeechValidationQueue);
+  Application.CreateForm(
+    TFormEndCriteriaTest, FormEndCriteriaTest);
   Application.Run;
 end.
 

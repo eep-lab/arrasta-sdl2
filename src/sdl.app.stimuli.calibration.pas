@@ -29,7 +29,7 @@ type
       FText : TText;
       procedure CalibrationSuccessful(Sender: TObject);
       procedure CalibrationFailed(Sender: TObject);
-      procedure MouseDown(Sender: TObject; Shift: TCustomShiftState;
+      procedure MouseUp(Sender: TObject; Shift: TCustomShiftState;
         X, Y: Integer);
     public
       constructor Create; override;
@@ -43,25 +43,31 @@ type
 
 implementation
 
-uses sdl.app.video.methods, sdl.app.controls.custom, eye.tracker;
+uses
+  sdl.app.video.methods,
+  sdl.app.controls.custom,
+  session.loggers.writerow.timestamp,
+  eye.tracker;
 
 { TCalibrationStimuli }
 
 procedure TCalibrationStimuli.CalibrationSuccessful(Sender: TObject);
 begin
+  Timestamp(EyeTracker.TrackerClassName+'.StopCalibration');
   RaiseWindow;
   OnFinalize(Self);
 end;
 
 procedure TCalibrationStimuli.CalibrationFailed(Sender: TObject);
 begin
+  Timestamp(EyeTracker.TrackerClassName+'.StopCalibration');
   RaiseWindow;
   FText.Load('A calibragem falhou.');
   FText.Centralize;
   FText.Show;
 end;
 
-procedure TCalibrationStimuli.MouseDown(Sender: TObject;
+procedure TCalibrationStimuli.MouseUp(Sender: TObject;
   Shift: TCustomShiftState; X, Y: Integer);
 begin
   FText.Hide;
@@ -96,7 +102,7 @@ begin
   FText.FontName := 'Raleway-Regular';
   FText.FontSize := 50;
   FText.Parent := TSDLControl(AParent);
-  FText.OnMouseDown := @MouseDown;
+  FText.OnMouseUp := @MouseUp;
 
   EyeTracker.SetOnCalibrationSuccessful(@CalibrationSuccessful);
   EyeTracker.SetOnCalibrationFailed(@CalibrationFailed);
@@ -105,6 +111,7 @@ end;
 procedure TCalibrationStimuli.Start;
 begin
   EyeTracker.StartCalibration;
+  Timestamp(EyeTracker.TrackerClassName+'.StartCalibration');
 end;
 
 procedure TCalibrationStimuli.Stop;

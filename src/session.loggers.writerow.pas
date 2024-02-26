@@ -14,7 +14,7 @@ unit session.loggers.writerow;
 interface
 
 uses
-  Classes, SysUtils, session.loggers.types;
+  Classes, SysUtils, Math, session.loggers.types;
 
 procedure WriteDataRow;
 
@@ -22,8 +22,8 @@ var
   SaveData : TDataProcedure = nil;
   BlockName : string;
   TrialName : string;
-  //ITIBegin  : TLargerFloat;
-  //ITIEnd    : TLargerFloat;
+  //ITIBegin  : Float;
+  //ITIEnd    : Float;
 
 procedure AppendToTrialHeader(AHeader : string);
 procedure AppendToTrialData(AData : string);
@@ -101,7 +101,7 @@ begin
 
   // write data
   LData := TLogger.Row([LData +
-    (ClockMonotonic - Pool.TimeStart).ToString,
+    ClockMonotonic.ToString,
     (Pool.Session.Trial.UID + 1).ToString,
     (Pool.Session.Block.UID + 1).ToString,
     (Pool.Session.Block.Trial.UID + 1).ToString,

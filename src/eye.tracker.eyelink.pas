@@ -27,9 +27,12 @@ type
 
   TEyeLinkEyeTracker = class sealed (TEyeTrackerClient)
     private
+      FCurrentData : array of PALLF_DATA;
+      FCalibrationSuccessful : TNotifyEvent;
+      FCalibrationFailed : TNotifyEvent;
       FEyeLinkClient : TEyeLinkClient;
       FOnGazeOnScreenEvent : TGazeOnScreenEvent;
-      procedure AllDataEvent(Sender: TObject; APALLF_DATA : array of PALLF_DATA);
+      procedure AllDataEvent(Sender : TObject; APALLF_DATA : PALLF_DATA);
       procedure CalibrationSuccessfulEvent(Sender: TObject);
       procedure CalibrationFailedEvent(Sender: TObject);
     protected
@@ -41,9 +44,11 @@ type
       procedure StopRecording; override;
       procedure StartCalibration; override;
       procedure StopCalibration; override;
+      procedure CalibrationSuccessful; override;
     public
       constructor Create;
       destructor Destroy; override;
+      function CurrentGazes: TNormalizedGazes; override;
   end;
 
 implementation
@@ -61,22 +66,24 @@ end;
 
 procedure TEyeLinkEyeTracker.SetOnCalibrationSuccessful(AValue: TNotifyEvent);
 begin
-
+  FCalibrationSuccessful := AValue;
 end;
 
 procedure TEyeLinkEyeTracker.SetOnCalibrationFailed(AValue: TNotifyEvent);
 begin
-
+  FCalibrationFailed := AValue;
 end;
 
 procedure TEyeLinkEyeTracker.StartRecording;
 const
   LRootFolder = '_eyelink_data' + DirectorySeparator;
 begin
-  FEyeLinkClient.OutputFolder := Pool.BaseFilename + LRootFolder;
-  FEyeLinkClient.Start;
+  FEyeLinkClient.OutputFolder :=
+    ConcatPaths([Pool.BaseDataPath, LRootFolder]);
+  FEyeLinkClient.OnAllDataEvent := @AllDataEvent;
   //FEyeLinkClient.StartRealTime;
   FEyeLinkClient.StartDataRecording;
+  FEyeLinkClient.Start;
 end;
 
 procedure TEyeLinkEyeTracker.StopRecording;
@@ -96,6 +103,13 @@ begin
   FEyeLinkClient.ExitCalibration;
 end;
 
+procedure TEyeLinkEyeTracker.CalibrationSuccessful;
+begin
+  //FEyeLinkClient.ExitCalibration;
+  //FEyeLinkClient.CloseExperimentGraphics;
+  FCalibrationSuccessful(Self);
+end;
+
 constructor TEyeLinkEyeTracker.Create;
 begin
   FEyeLinkClient := TEyeLinkClient.Create;
@@ -108,33 +122,38 @@ begin
   inherited Destroy;
 end;
 
+function TEyeLinkEyeTracker.CurrentGazes: TNormalizedGazes;
+begin
+  // todo: implement me with FCurrentData
+end;
+
 procedure TEyeLinkEyeTracker.AllDataEvent(Sender: TObject;
-  APALLF_DATA: array of PALLF_DATA);
-var
-  LLastGazes : TGazes = nil;
-  LLength : integer;
-  i : integer;
-  function NormToScreen(E : ALLF_DATA) : TGaze;
-  begin
-    if E.fe.eye = 2 then
-      E.fe.eye := 0;
-    Result.X :=
-      Round(E.fs.gx[E.fe.eye]*FEyeLinkClient.HostApp.Monitor.w);
-    Result.Y :=
-      Round((1.0 - E.fs.gy[E.fe.eye])*FEyeLinkClient.HostApp.Monitor.h);
-  end;
+  APALLF_DATA: PALLF_DATA);
+//var
+//  LLastGazes : TGazes = nil;
+//  LLength : integer;
+//  i : integer;
+//  function NormToScreen(E : ALLF_DATA) : TGaze;
+//  begin
+//    if E.fe.eye = 2 then
+//      E.fe.eye := 0;
+//    Result.X :=
+//      Round(E.fs.gx[E.fe.eye]*FEyeLinkClient.HostApp.Monitor.w);
+//    Result.Y :=
+//      Round((1.0 - E.fs.gy[E.fe.eye])*FEyeLinkClient.HostApp.Monitor.h);
+//  end;
 
 begin
-  LLength := Length(APALLF_DATA);
-  if LLength > 0 then begin
-    SetLength(LLastGazes, LLength);
-    for i := Low(LLastGazes) to High(LLastGazes) do begin
-      LLastGazes[i] := NormToScreen(APALLF_DATA[i]^);
-      if Assigned(FOnGazeOnScreenEvent) then begin
-        FOnGazeOnScreenEvent(Self, LLastGazes);
-      end;
-    end;
-  end;
+  //LLength := Length(APALLF_DATA);
+  //if LLength > 0 then begin
+  //  SetLength(LLastGazes, LLength);
+  //  for i := Low(LLastGazes) to High(LLastGazes) do begin
+  //    LLastGazes[i] := NormToScreen(APALLF_DATA[i]^);
+  //    if Assigned(FOnGazeOnScreenEvent) then begin
+  //      FOnGazeOnScreenEvent(Self, LLastGazes);
+  //    end;
+  //  end;
+  //end;
 end;
 
 procedure TEyeLinkEyeTracker.CalibrationSuccessfulEvent(Sender: TObject);

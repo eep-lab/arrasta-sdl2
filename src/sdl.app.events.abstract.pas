@@ -15,7 +15,7 @@ unit sdl.app.events.abstract;
 
 interface
 
-uses sdl2;
+uses sdl2, ctypes;
 
 type
   { keyboard state }
@@ -175,70 +175,67 @@ type
       property OnUserEvent : TOnUserEvent read FOnUserEvent write SetOnUserEvent;
     public
       procedure HandlePending;
-      constructor Create; reintroduce;
+      constructor Create;
   end;
 
   function GetShiftState: TCustomShiftState;
-  function GetKeyState(KeyCode : TSDL_ScanCode) : Boolean;
+  function GetKeyState(KeyCode : TSDL_ScanCode; AKeyboardState: pcuint8) : Boolean;
 
 const
-  SDL_USEREVENTSTOREGISTER = 2;
+  SDL_USEREVENTSTOREGISTER = 5;
 
 implementation
-
-uses ctypes;
 
 const
   SDL_USEREVENT_HIGH = SDL_USEREVENT+SDL_USEREVENTSTOREGISTER;
 
-var
-  KeyboardState: pcuint8 = nil;
-
-function GetKeyState(KeyCode: TSDL_ScanCode): Boolean;
+function GetKeyState(KeyCode: TSDL_ScanCode; AKeyboardState: pcuint8): Boolean;
 begin
-  Result := KeyboardState[KeyCode] <> 0;
+  Result := AKeyboardState[KeyCode] <> 0;
 end;
 
 function GetShiftState: TCustomShiftState;
+var
+  KeyboardState: pcuint8 = nil;
 begin
   Result := [];
   if not Assigned(KeyboardState) then
     KeyboardState := SDL_GetKeyboardState(nil);
 
-  if GetKeyState(SDL_SCANCODE_LSHIFT) then
+  if GetKeyState(SDL_SCANCODE_LSHIFT, KeyboardState) then
     Include(Result, ssShift);
 
-  if GetKeyState(SDL_SCANCODE_RSHIFT) then
+  if GetKeyState(SDL_SCANCODE_RSHIFT, KeyboardState) then
     Include(Result, ssShift);
 
-  if GetKeyState(SDL_SCANCODE_LALT) then
+  if GetKeyState(SDL_SCANCODE_LALT, KeyboardState) then
     Include(Result, ssAlt);
 
-  if GetKeyState(SDL_SCANCODE_RALT) then
+  if GetKeyState(SDL_SCANCODE_RALT, KeyboardState) then
     Include(Result, ssAlt);
 
-  if GetKeyState(SDL_SCANCODE_LCTRL) then
+  if GetKeyState(SDL_SCANCODE_LCTRL, KeyboardState) then
     Include(Result, ssCtrl);
 
-  if GetKeyState(SDL_SCANCODE_RCTRL) then
+  if GetKeyState(SDL_SCANCODE_RCTRL, KeyboardState) then
     Include(Result, ssCtrl);
 
-  if GetKeyState(SDL_SCANCODE_SPACE) then
+  if GetKeyState(SDL_SCANCODE_SPACE, KeyboardState) then
     Include(Result, ssSpace);
 
-  if GetKeyState(SDL_SCANCODE_UP) then
+  if GetKeyState(SDL_SCANCODE_UP, KeyboardState) then
     Include(Result, ssUp);
 
-  if GetKeyState(SDL_SCANCODE_DOWN) then
+  if GetKeyState(SDL_SCANCODE_DOWN, KeyboardState) then
     Include(Result, ssDown);
 
-  if GetKeyState(SDL_SCANCODE_LEFT) then
+  if GetKeyState(SDL_SCANCODE_LEFT, KeyboardState) then
     Include(Result, ssLeft);
 
-  if GetKeyState(SDL_SCANCODE_RIGHT) then
+  if GetKeyState(SDL_SCANCODE_RIGHT, KeyboardState) then
     Include(Result, ssRight);
 
-  if GetKeyState(SDL_SCANCODE_RETURN2) then
+  if GetKeyState(SDL_SCANCODE_RETURN2, KeyboardState) then
     Include(Result, ssEnter);
 end;
 
@@ -515,6 +512,7 @@ end;
 
 constructor TEventHandler.Create;
 begin
+  inherited Create;
   SDL_RegisterEvents(SDL_USEREVENTSTOREGISTER);
   FOnControllerAxisMotion:= nil;
   FOnControllerButtonDown:= nil;

@@ -14,7 +14,7 @@ unit sdl.app.audio.music;
 interface
 
 uses
-  Classes, SysUtils, sdl2, sdl2_mixer, sdl.app.audio.contract;
+  Classes, SysUtils, Math, sdl2, sdl2_mixer, sdl.app.audio.contract;
 
 type
 
@@ -31,7 +31,7 @@ type
   public
     constructor Create; reintroduce;
     destructor Destroy; override;
-    function Duration : Single;
+    function Duration : Float;
     function Playing : Boolean;
     function ShortName : string;
     procedure LoadFromFile(AFilename : string);
@@ -71,7 +71,7 @@ begin
   inherited Destroy;
 end;
 
-function TSDLMusic.Duration: Single;
+function TSDLMusic.Duration: Float;
 begin
 
 end;

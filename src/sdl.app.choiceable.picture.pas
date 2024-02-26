@@ -30,7 +30,7 @@ type
     FTexture  : PSDL_Texture;
   protected
     procedure MouseMove(Sender: TObject; Shift: TCustomShiftState; X, Y: Integer); override;
-    procedure MouseDown(Sender: TObject; Shift: TCustomShiftState; X, Y: Integer); override;
+    procedure MouseUp(Sender: TObject; Shift: TCustomShiftState; X, Y: Integer); override;
     procedure MouseEnter(Sender: TObject); override;
     procedure MouseExit(Sender: TObject); override;
     procedure Paint; override;
@@ -45,6 +45,7 @@ implementation
 
 uses
   sdl2_image
+  , LazFileUtils
   , sdl.app.video.methods
   , sdl.app.output
   ;
@@ -69,10 +70,10 @@ begin
   inherited MouseMove(Self, Shift, X, Y);
 end;
 
-procedure TChoiceablePicture.MouseDown(Sender: TObject; Shift: TCustomShiftState; X,
+procedure TChoiceablePicture.MouseUp(Sender: TObject; Shift: TCustomShiftState; X,
   Y: Integer);
 begin
-  inherited MouseDown(Self, Shift, X, Y);
+  inherited MouseUp(Self, Shift, X, Y);
 end;
 
 procedure TChoiceablePicture.MouseEnter(Sender: TObject);
@@ -100,6 +101,7 @@ const
 var
   Media : PAnsiChar;
 begin
+  CustomName := ExtractFileNameOnly(AFilename);
   Media := PAnsiChar(AFilename+IMG_EXT);
   FTexture := IMG_LoadTexture(PSDLRenderer, Media);
 end;

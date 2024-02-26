@@ -58,6 +58,7 @@ type
 implementation
 
 uses
+  Math,
   sdl.app.output,
   sdl.app.events.custom,
   sdl.app.video.methods,
@@ -69,7 +70,7 @@ const
   PS4_BUTTON_SHARE = 4;
   PS4_BUTTON_HOME = 5;
   PS4_BUTTON_OPTIONS = 6;
-  LHumbleTime = 100;
+  //LHumbleTime = 100;
 
 procedure TSDLPS4Controller.ControllerAxisMotion(
   const event: TSDL_ControllerAxisEvent);
@@ -158,7 +159,7 @@ procedure TSDLPS4Controller.ControllerTouchPadMotion(
 var
   touchpad, finger: cint32;
   state: Uint8;
-  x, y, pressure: Single;
+  x, y, pressure: Float;
 begin
   // Get the touchpad and finger indices
   touchpad := event.touchpad;

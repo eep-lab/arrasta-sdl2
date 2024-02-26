@@ -5,7 +5,7 @@ unit session.strutils.mts;
 interface
 
 uses
-  Classes, SysUtils;
+  Classes, SysUtils, sdl.app.audio.contract;
 
 
 
@@ -13,7 +13,7 @@ function GetWordValue(const AParameters: TStringList; AIsSample : boolean;
   AIndex : integer = -1) : string;
 
 function GetFontName(const AParameters: TStringList) : string;
-function GetAudioPromptForText(const AParameters: TStringList) : string;
+function GetAudioPromptForText(const AParameters: TStringList) : ISound;
 
 function HasTextPrompt(const AParameters: TStringList) : Boolean;
 function HasDAPAAPPrompt(const AParameters: TStringList) : Boolean;
@@ -23,6 +23,8 @@ function GetTotalLoopsValue(const AParameters: TStringList) : integer;
 implementation
 
 uses
+  sdl.app.audio,
+  session.strutils,
   session.parameters.global,
   session.constants.mts,
   session.constants.trials.dapaap;
@@ -45,11 +47,16 @@ begin
   end;
 end;
 
-function GetAudioPromptForText(const AParameters: TStringList): string;
+function GetAudioPromptForText(const AParameters: TStringList): ISound;
+var
+  LSoundFileName : string;
 begin
-  Result := AParameters.Values[MTSKeys.PromptKey];
-  if Result.IsEmpty then begin
-    Result := GlobalTrialParameters.AudioPromptForText;
+  LSoundFileName := AParameters.Values[MTSKeys.PromptKey];
+  if LSoundFileName.IsEmpty then begin
+    Result := SDLAudio.SoundFromName(
+      GlobalTrialParameters.AudioPromptForText);
+  end else begin
+    Result := SDLAudio.LoadFromFile(AsAsset(LSoundFileName));
   end;
 end;
 

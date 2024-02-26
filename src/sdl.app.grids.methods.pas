@@ -14,10 +14,8 @@ unit sdl.app.grids.methods;
 interface
 
 uses
-  Classes, SysUtils
-  , Math
-  , sdl.app.grids.types
-  ;
+  Classes, SysUtils, Math,
+  sdl.app.grids.types;
 
 function GetCentralRect(AWidth,AHeight,ASize:integer):TRect; overload;
 function GetCentralRect(AWidth,AHeight,ALeftBorder,ATopBorder,
@@ -25,32 +23,34 @@ function GetCentralRect(AWidth,AHeight,ALeftBorder,ATopBorder,
 
 // 0 degrees = rect right; increments clockwise, squares only
 function GetPointFromAngle(AAngle: float; ARect:TRect): TPoint;
-function GetCentralGrid(AN: integer; ASquareSide: real;
+function GetCentralGrid(AN: integer; ASquareSide: Float;
   ADistribute: Boolean): TMatrix;
 procedure InitMonitor;
-function GetCircularCentralGrid(AN: integer; ASquareSide: real): TMatrix;
-
+function GetCircularCentralGrid(AN: integer; ASquareSide: Float): TMatrix;
+function Border : TBorder;
 
 implementation
 
 uses
   SDL2
+  , session.parameters.global
   {$IFNDEF GRIDS_TEST}, sdl.app{$ENDIF}
   ;
 
 var
-  ScreenInCentimeters : real = 39.624;
+  ScreenInCentimeters : Float;
   MonitorWidth : integer;
   MonitorHeight: integer;
-  BorderTop    : TRect;
-  BorderBottom : TRect;
-  BorderLeft   : TRect;
-  BorderRight  : TRect;
+  BorderTop    : TSDL_Rect;
+  BorderBottom : TSDL_Rect;
+  BorderLeft   : TSDL_Rect;
+  BorderRight  : TSDL_Rect;
 
 procedure InitMonitor;
 var
   LRect : TSDL_Rect;
 begin
+  ScreenInCentimeters := GlobalTrialParameters.ScreenInCentimeters;
   {$IFNDEF GRIDS_TEST}
   if Assigned(SDLApp) then begin
     LRect := SDLApp.Monitor;
@@ -134,39 +134,46 @@ begin
   Result := Round((LSize*AStep)-((LSize*ASteps)/2)+((ASegment+AInterStimulusSpace)/2));
 end;
 
-function CmToScreenPixels(AMeasure : real) : integer;
+function CmToScreenPixels(AMeasure : Float) : integer;
 begin
   Result := Round(AMeasure*(MonitorWidth/ScreenInCentimeters));
 end;
 
 procedure SetBorders(ASize: integer);
 begin
-  BorderTop := Rect(
-    0,
-    0,
-    MonitorWidth,
-    ASize);
-  BorderBottom := Rect(
-    0,
-    BorderTop.Height + MonitorHeight-(ASize*2),
-    MonitorWidth,
-    MonitorHeight);
-  BorderLeft := Rect(
-    0,
-    0,
-    ASize,
-    MonitorHeight);
-  BorderRight := Rect(
-    BorderLeft.Width + MonitorWidth-(ASize*2),
-    0,
-    MonitorWidth,
-    MonitorHeight);
+  with BorderTop do begin
+    x := 0;
+    y := 0;
+    w := MonitorWidth;
+    h := ASize;
+  end;
+
+  with BorderBottom do begin
+    x := 0;
+    y := BorderTop.h + MonitorHeight-(ASize*2);
+    w := MonitorWidth;
+    h := MonitorHeight;
+  end;
+
+  with BorderLeft do begin
+    x := 0;
+    y := 0;
+    w := ASize;
+    h := MonitorHeight;
+  end;
+
+  with BorderRight do begin
+    x := BorderLeft.w + MonitorWidth-(ASize*2);
+    y := 0;
+    w := MonitorWidth;
+    h := MonitorHeight;
+  end;
 end;
 
 {Cria grade quadrada como uma matriz AN x AN. Quando ADistribute = true, a
 distância horizontal e vertical entre os estímulos é diferente, e quando false
 é igual}
-function GetCentralGrid(AN: integer; ASquareSide: real;
+function GetCentralGrid(AN: integer; ASquareSide: Float;
   ADistribute: Boolean): TMatrix;
 var
   LIndex      : integer = 0;
@@ -214,7 +221,7 @@ end;
 {Cria grade circular considerando j como modelo central e i como comparações em
 torno de um diâmetro. AN = número de estímulos i; ASquareSide = lado do quadrado
 dos estímulos}
-function GetCircularCentralGrid(AN: integer; ASquareSide: real): TMatrix;
+function GetCircularCentralGrid(AN: integer; ASquareSide: Float): TMatrix;
 var
   LIndex      : integer = 0;
   //LSegment    : integer = 0;
@@ -264,6 +271,16 @@ begin
       end;
       Inc(LIndex);
     end;
+  end;
+end;
+
+function Border: TBorder;
+begin
+  with Result do begin
+    Top := BorderTop;
+    Bottom := BorderBottom;
+    Left := BorderLeft;
+    Right := BorderRight;
   end;
 end;
 

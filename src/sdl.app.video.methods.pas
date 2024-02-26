@@ -18,7 +18,7 @@ uses SDL2, SysUtils;
 procedure AssignVariables(APSDLWindow : PSDL_Window;
   APSDLRenderer : PSDL_Renderer; APSDLSurface : PSDL_Surface);
 function MonitorFromWindow : TSDL_Rect;
-procedure Invalidate;
+procedure InvalidateWindow;
 procedure RaiseWindow;
 function WindowDeviceContextHandle : THandle;
 function WindowHandle : THandle;
@@ -44,7 +44,7 @@ begin
   SDL_GetDisplayBounds(SDL_GetWindowDisplayIndex(PSDLWindow), @Result);
 end;
 
-procedure Invalidate;
+procedure InvalidateWindow;
 begin
   SDL_UpdateWindowSurface(PSDLWindow);
 end;

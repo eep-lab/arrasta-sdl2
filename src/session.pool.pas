@@ -17,8 +17,7 @@ uses
   sdl.app
   , session.endcriteria
   , session.counters
-  , session.counters.all
-  , timestamps.types;
+  , session.counters.all;
 
 type
 
@@ -35,6 +34,7 @@ type
     AssetsRootBasePath : string;
     AudioBasePath : string;
     AudioRootBasePath : string;
+    BaseDataPath : string;
     BaseFileName : string;
     BasePath : string;
     ConfigurationFilename : string;
@@ -48,9 +48,10 @@ type
     MediaRootBasePath : string;
     ResponsesBasePath : string;
     RootAudio : string;
+    ParticipantName: string;
+    SessionName: string;
     MonitorToShow : Byte;
     TestMode : Boolean;
-    TimeStart : TLargerFloat;
   end;
 
 var
@@ -71,6 +72,9 @@ initialization
     ForceDirectories(DataRootBasePath);
 
     // data/{Participant}
+    BaseDataPath := '';
+
+    // {Filename} 000
     BaseFileName := '';
 
     // data/{Participant}/{Filename}.ini

@@ -7,12 +7,11 @@ interface
 uses
   SysUtils
   , SDL2
-  //, ctypes
+  , sdl2_gfx
   , sdl.app.graphics.rectangule
   , sdl.app.paintable.contract
   , sdl.app.grids.types
-  , sdl.app.grids
-  //, sdl.timer
+  , sdl.colors
   ;
 
 type
@@ -38,17 +37,16 @@ type
 implementation
 
 uses
-  LazFileUtils
+  LazFileUtils, Math
   , sdl.app.video.methods
-  , timestamps.types
   ;
 
 type
 
   TAnimationData = record
-    Acum: TLargerFloat;
+    Acum: Float;
     Growing: boolean;
-    Step: TLargerFloat;
+    Step: Float;
     FixedHeight : integer;
     MinHeight : integer;
     MaxHeight : integer;
@@ -63,14 +61,34 @@ var
 
 procedure TAnimation.Paint;
 var
-  TempSize: TLargerFloat;
-  function easeInOutQuad(t: TLargerFloat): TLargerFloat;
+  TempSize: Float;
+  function easeInOutQuad(t: Float): Float;
   begin
     if t < 0.5 then
       Result := 2 * t * t
     else
       Result := -1 + (4 - 2 * t) * t;
   end;
+
+  procedure Line(x1, y1, x2, y2 : LongInt);
+  begin
+    with clRed do begin
+      thickLineRGBA(PSDLRenderer,
+        x1, y1, x2, y2,
+        4, r, g, b, a)
+    end;
+  end;
+
+  procedure Square(ARect : TSDL_Rect);
+  begin
+    with ARect do begin
+      Line(x, y, x+w, y);
+      Line(x+w, y, x+w, y+h);
+      Line(x+w, y+h, x, y+h);
+      Line(x, y+h, x, y);
+    end;
+  end;
+
 begin
   if Assigned(FSibling) and FVisible then begin
     with AnimationData do begin
@@ -104,9 +122,8 @@ begin
       end;
     end;
     CentralizeWith(FSibling.BoundsRect);
+    Square(FRect);
   end;
-  SDL_SetRenderDrawColor(PSDLRenderer, 255, 0, 0 , 0);
-  SDL_RenderDrawRect(PSDLRenderer, @FRect);
 end;
 
 procedure TAnimation.Animate(ASibling : TRectangule);
@@ -155,12 +172,14 @@ begin
       Width := AComparison.Width + ASample.Width + 30;
       Height := AComparison.Height + 30;
     end;
+    otherwise begin
+
+    end;
   end;
 end;
 
 procedure TAnimation.Stop;
 begin
-
   // change color
 end;
 
@@ -175,7 +194,6 @@ end;
 
 destructor TAnimation.Destroy;
 begin
-
   inherited Destroy;
 end;
 

@@ -36,13 +36,14 @@ type
     function AsIPaintable : IPaintable;
     function GetIStimuli : IStimuli;
     function MyResult : TTrialResult;
-    function Header : string;
+    //function Header : string;
     function ToData : string;
+    procedure DoExpectedResponse;
+    procedure EndTrial;
     procedure Hide;
     procedure SetOnTrialEnd(ANotifyEvent: TNotifyEvent);
     procedure SetTrialConfiguration(TrialData: TTrialConfiguration);
     procedure Show;
-    procedure EndTrial;
     property Configuration : TTrialConfiguration read GetTrialConfiguration write SetTrialConfiguration;
     property OnTrialEnd : TNotifyEvent read GetOnTrialEnd write SetOnTrialEnd;
   end;

@@ -27,6 +27,7 @@ type
 
   TMarker = class(IPaintable)
   private
+    FInvalidated : Boolean;
     FParent: TSDL_Rect;
     FRect : TSDL_Rect;
     function GetHeight: cint;
@@ -42,7 +43,10 @@ type
   public
     constructor Create;
     destructor Destroy; override;
+    function Invalidated : Boolean;
     procedure LoadFromFile(AFilename: string); virtual;
+    procedure Invalidate;
+    procedure Validate;
     procedure ToTopLeft;
     procedure ToTopRight;
     procedure ToBottomLeft;
@@ -70,6 +74,11 @@ destructor TMarker.Destroy;
 begin
   SDL_DestroyTexture(FTexture);
   inherited Destroy;
+end;
+
+function TMarker.Invalidated: Boolean;
+begin
+  Result := FInvalidated;
 end;
 
 function TMarker.GetHeight: cint;
@@ -134,6 +143,16 @@ var
 begin
   Media := PAnsiChar(AFilename+IMG_EXT);
   FTexture := IMG_LoadTexture(PSDLRenderer, Media);
+end;
+
+procedure TMarker.Invalidate;
+begin
+  FInvalidated := True;
+end;
+
+procedure TMarker.Validate;
+begin
+  FInvalidated := False;
 end;
 
 procedure TMarker.ToTopLeft;

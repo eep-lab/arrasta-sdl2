@@ -40,7 +40,7 @@ implementation
 
 uses
   Classes, SysUtils, StrUtils
-  , sdl.app.output
+  //, sdl.app.output
   , picanco.experiments.constants
   , picanco.experiments.words.constants;
 
@@ -91,8 +91,7 @@ var
   LCandidateNegativeComparisons : TWordList;
   LCandidateNegativeWordsWithNewImages : TWordList;
   LCode2, LCode3: TAlphaNumericCode;
-
-  LM, LS : string;
+  //LM, LS : string;
 begin
   for i := Low(AWord.Comparisons) to High(AWord.Comparisons) do begin
     with AWord.Comparisons[i] do begin
@@ -107,6 +106,12 @@ begin
   LCandidateNegativeComparisons := TWordList.Create;
   LCandidateNegativeWordsWithNewImages := TWordList.Create;
   try
+
+    for i := Low(E1WordsWithNewImages) to High(E1WordsWithNewImages) do begin
+      LCandidateNegativeWordsWithNewImages.Add(
+        HashNewWords[E1WordsWithNewImages[i]]);
+    end;
+
     for i := Low(AWord.CandidateNegativeWords) to
              High(AWord.CandidateNegativeWords) do begin
       LCandidateNegativeWords.Add(AWord.CandidateNegativeWords[i]);
@@ -116,9 +121,9 @@ begin
       LLastPositiveCode := ALastWord.CycleCode;
     end;
 
-    WriteStr(LM, AWord.CycleCode);
-    WriteStr(LS, LLastPositiveCode);
-    Print(LM+'-'+LS);
+    //WriteStr(LM, AWord.CycleCode);
+    //WriteStr(LS, LLastPositiveCode);
+    //Print(LM+'-'+LS);
 
     case AWord.CycleCode of
       T1 : begin
@@ -324,11 +329,6 @@ begin
         raise EArgumentOutOfRangeException.Create('SetComparisons error');
     end;
 
-
-    for i := Low(E1WordsWithNewImages) to High(E1WordsWithNewImages) do begin
-      LCandidateNegativeWordsWithNewImages.Add(
-        HashNewWords[E1WordsWithNewImages[i]]);
-    end;
     for i := Low(AWord.Comparisons) to High(AWord.Comparisons) do begin
       with AWord.Comparisons[i] do begin
         Audio  := @EmptyWord;
@@ -532,12 +532,6 @@ begin
   HashPreTrainingWords.Free;
   SessionCodes.Free;
 end;
-
-//initialization
-//  Initialize;
-//
-//finalization
-//  Finalize;
 
 end.
 

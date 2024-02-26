@@ -22,7 +22,7 @@
       <UseVersionInfo Value="True"/>
       <AutoIncrementBuild Value="True"/>
       <MajorVersionNr Value="1"/>
-      <BuildNr Value="21"/>
+      <BuildNr Value="49"/>
       <Language Value="0416"/>
       <Attributes pvaPrivateBuild="True"/>
       <StringTable Comments="Uma máquina de ensinar para experimentos comportamentais livres" InternalName="Stimulus Control" LegalCopyright="Carlos Rafael Fernandes Picanço" ProductName="Stimulus Control"/>
@@ -38,7 +38,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir);dependencies\FreeType\include"/>
-            <OtherUnitFiles Value="src;dependencies\epiktimer;src\schedules;dependencies\SDL2-for-Pascal\units;dependencies\EyeLink-for-Pascal\classes;dependencies\EyeLink-for-Pascal\bindings;dependencies\EyeLink-for-Pascal\utils"/>
+            <OtherUnitFiles Value="src;src\schedules;dependencies\SDL2-for-Pascal\units;dependencies\EyeLink-for-Pascal\classes;dependencies\EyeLink-for-Pascal\bindings;dependencies\EyeLink-for-Pascal\utils"/>
             <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
           <Parsing>
@@ -88,7 +88,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir);dependencies\FreeType\include"/>
-            <OtherUnitFiles Value="src;dependencies\epiktimer;src\schedules;dependencies\SDL2-for-Pascal\units;dependencies\EyeLink-for-Pascal\classes;dependencies\EyeLink-for-Pascal\bindings;dependencies\EyeLink-for-Pascal\utils;dependencies\mspeech;dependencies\fpc-zmq;dependencies\pupil-fpc;dependencies\msgpack-delphi"/>
+            <OtherUnitFiles Value="src;src\schedules;dependencies\SDL2-for-Pascal\units;dependencies\EyeLink-for-Pascal\classes;dependencies\EyeLink-for-Pascal\bindings;dependencies\EyeLink-for-Pascal\utils;dependencies\mspeech;dependencies\fpc-zmq;dependencies\pupil-fpc;dependencies\msgpack-delphi;dependencies\synaser"/>
             <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
           <Parsing>
@@ -140,7 +140,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir);dependencies\FreeType\include"/>
-            <OtherUnitFiles Value="src;dependencies\epiktimer;src\schedules;dependencies\SDL2-for-Pascal\units;dependencies\EyeLink-for-Pascal\classes;dependencies\EyeLink-for-Pascal\bindings;dependencies\EyeLink-for-Pascal\utils;dependencies\mspeech;dependencies\fpc-zmq;dependencies\pupil-fpc;dependencies\msgpack-delphi"/>
+            <OtherUnitFiles Value="src;src\schedules;dependencies\SDL2-for-Pascal\units;dependencies\EyeLink-for-Pascal\classes;dependencies\EyeLink-for-Pascal\bindings;dependencies\EyeLink-for-Pascal\utils;dependencies\mspeech;dependencies\fpc-zmq;dependencies\pupil-fpc;dependencies\msgpack-delphi;dependencies\synaser"/>
             <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
           <CodeGeneration>
@@ -185,7 +185,7 @@
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir);dependencies\FreeType\include"/>
             <Libraries Value="\usr\lib\x86_64-linux-gnu"/>
-            <OtherUnitFiles Value="src;dependencies\epiktimer;src\schedules;dependencies\SDL2-for-Pascal\units;dependencies\EyeLink-for-Pascal\classes;dependencies\EyeLink-for-Pascal\bindings;dependencies\EyeLink-for-Pascal\utils;dependencies\mspeech;dependencies\pupil-fpc;dependencies\msgpack-delphi;dependencies\fpc-zmq"/>
+            <OtherUnitFiles Value="src;src\schedules;dependencies\SDL2-for-Pascal\units;dependencies\EyeLink-for-Pascal\classes;dependencies\EyeLink-for-Pascal\bindings;dependencies\EyeLink-for-Pascal\utils;dependencies\mspeech;dependencies\pupil-fpc;dependencies\msgpack-delphi;dependencies\fpc-zmq"/>
             <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
           <Parsing>
@@ -399,11 +399,6 @@
         <IsPartOfProject Value="True"/>
       </Unit>
       <Unit>
-        <Filename Value="dependencies\epiktimer\epiktimer.pas"/>
-        <IsPartOfProject Value="True"/>
-        <UnitName Value="EpikTimer"/>
-      </Unit>
-      <Unit>
         <Filename Value="src\session.csv.experiments.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit>
@@ -511,11 +506,7 @@
         <IsPartOfProject Value="True"/>
       </Unit>
       <Unit>
-        <Filename Value="src\session.constants.dragdrop.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit>
-      <Unit>
-        <Filename Value="src\session.helpseries.dragdrop.pas"/>
+        <Filename Value="src\session.constants.trials.dragdrop.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit>
       <Unit>
@@ -678,6 +669,7 @@
         <Filename Value="src\forms.modal.speechvalidation.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="FormManualSpeechValidation"/>
+        <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
       </Unit>
       <Unit>
@@ -802,10 +794,6 @@
       </Unit>
       <Unit>
         <Filename Value="src\session.constants.trials.starters.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit>
-      <Unit>
-        <Filename Value="src\timestamps.types.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit>
       <Unit>
@@ -976,7 +964,90 @@
         <IsPartOfProject Value="True"/>
       </Unit>
       <Unit>
-        <Filename Value="src\sdl.app.selectable.helpers.pas"/>
+        <Filename Value="dependencies\pupil-fpc\pupil.types.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Pupil.Types"/>
+      </Unit>
+      <Unit>
+        <Filename Value="dependencies\pupil-fpc\pupil.queue.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Pupil.Queue"/>
+      </Unit>
+      <Unit>
+        <Filename Value="src\picanco.experiments.output.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="src\forms.canvas.playground.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="FormCanvas"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+      </Unit>
+      <Unit>
+        <Filename Value="src\session.loggers.writerow.information.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="src\sdl.app.renderer.testmode.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="src\sdl.app.renderer.types.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="src\sdl.app.renderer.validation.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="src\sdl.app.graphics.animatedtext.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="src\animation.easing.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="src\session.information.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="src\forms.speechvalidation.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="FormSpeechValidationQueue"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+      </Unit>
+      <Unit>
+        <Filename Value="src\forms.test.session.endcriteria.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="FormEndCriteriaTest"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+      </Unit>
+      <Unit>
+        <Filename Value="src\bot.types.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="src\session.csv.trials.multisample.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="src\session.dragdrop.types.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="src\sdl.app.stimuli.dragdrop.types.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="src\sdl.app.renderer.thread.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="src\sdl.app.stimulus.dragdrop.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit>
     </Units>
@@ -989,7 +1060,7 @@
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir)"/>
-      <OtherUnitFiles Value="src;dependencies\epiktimer;src\schedules"/>
+      <OtherUnitFiles Value="src;src\schedules"/>
       <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <Parsing>

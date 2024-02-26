@@ -24,7 +24,7 @@ uses
   , sdl.app.grids
   , sdl.app.audio.contract
   , sdl.app.trials.types
-  , sdl.app.selectable.list
+  , sdl.app.renderer.thread
   ;
 
 type
@@ -36,6 +36,9 @@ type
 
   TDragDropStimuli = class(TStimuli)
   private
+    FAutoAnimateOnStart : Boolean;
+    FWrongDragDrops : integer;
+    FRenderer : TRendererThread;
     FResult : TTrialResult;
     FSoundRight : ISound;
     FSoundWrong : ISound;
@@ -49,6 +52,8 @@ type
     FDoneAnimations : TAnimations;
     FGridOrientation : TGridOrientation;
     function GetRandomSample : TDragDropablePicture;
+    function ToJSON(ADrag, ADrop : TDragDropablePicture) : string; overload;
+    function ToJSON(ASamples, AComparisons: TDragDropablePictures) : string; overload;
     procedure OtherDragDrop(Sender, Source: TObject; X, Y: Integer);
     procedure RightDragDrop(Sender, Source: TObject; X, Y: Integer);
     procedure SetFocus(Sender:TObject; Shift: TCustomShiftState; X, Y: Integer);
@@ -59,13 +64,17 @@ type
     procedure FreeGridItems;
     procedure WrongDragDrop(Sender, Source: TObject; X, Y: Integer);
     procedure Animate(ASample : TDragDropablePicture);
+    procedure SoundStart(Sender: TObject);
+    procedure SoundStop(Sender: TObject);
   protected
     function MyResult : TTrialResult; override;
+    function Header : string; override;
+    function ToData : string; override;
   public
     constructor Create; override;
     destructor Destroy; override;
     //procedure ResetGrid;
-    function AsInterface : IStimuli;
+    function AsIStimuli : IStimuli;
     procedure DoExpectedResponse; override;
     procedure Load(AParameters : TStringList; AParent: TObject); override;
     procedure Start; override;
@@ -81,21 +90,21 @@ implementation
 uses
   Math
   , StrUtils
+  , Devices.RS232i
   , math.bresenhamline.classes
+  , sdl.app.stimuli.dragdrop.types
   , sdl.colors
   , sdl.app.controls.custom
-  , sdl.app.trials
   , sdl.app.audio
-  , session.constants.dragdrop
-  , session.helpseries.dragdrop
+  , session.constants.trials.dragdrop
+  , session.constants.mts
+  , session.pool
+  , session.strutils
+  , session.loggers.writerow
+  , session.loggers.writerow.timestamp
   ;
 
 { TDragDropStimuli }
-
-function TDragDropStimuli.AsInterface : IStimuli;
-begin
-  Result := Self as IStimuli;
-end;
 
 procedure TDragDropStimuli.DoExpectedResponse;
 begin
@@ -106,21 +115,23 @@ procedure TDragDropStimuli.Load(AParameters: TStringList; AParent: TObject);
 var
   S1           : string;
   SampleLetter : string;
-  ComparLetter , LExt: string;
+  ComparLetter : string;
+  GridSize     : Byte;
   LSamples      : integer;
   LComparisons  : integer;
   LItem : TDragDropablePicture;
   i: Integer;
 
   function DragDropToGridOrientation(
-      DragDropOrientation : TDragDropOrientation) : TGridOrientation;
+      ADragDropOrientation : TDragDropOrientation) : TGridOrientation;
   begin
-    case DragDropOrientation of
-      goTopToBottom : Result := TGridOrientation.goTopToBottom;
-      goBottomToTop : Result := TGridOrientation.goBottomToTop;
-      goLeftToRight : Result := TGridOrientation.goLeftToRight;
-      goRightToLeft : Result := TGridOrientation.goRightToLeft;
-      goRandom : Result:= Grid.GetRandomGridOrientation;
+    case ADragDropOrientation of
+      None : Result := TGridOrientation.goNone;
+      TopToBottom : Result := TGridOrientation.goTopToBottom;
+      BottomToTop : Result := TGridOrientation.goBottomToTop;
+      LeftToRight : Result := TGridOrientation.goLeftToRight;
+      RightToLeft : Result := TGridOrientation.goRightToLeft;
+      Random : Result:= Grid.GetRandomGridOrientation;
     end;
   end;
 
@@ -132,14 +143,18 @@ var
     LComparisons : TDragDropablePictures;
     i : integer;
   begin
-    Grid.UpdatePositions(ASamples, AComparisons, AGridOrientation);
+    Grid.UpdatePositions(GridSize,
+      ASamples, AComparisons, AGridOrientation,
+      Grid.FixedSample, Grid.FixedComparison);
     with Grid.RandomPositions do begin
       LComparisons := TDragDropablePictures.Create;
       for i := low(Comparisons) to high(Comparisons) do
       begin
         LItem := TDragDropablePicture.Create;
         LItem.BoundsRect := Comparisons[i].Rect;
-
+        LItem.SetOriginalBounds;
+        LItem.Position := Comparisons[i].Position;
+        LItem.IsSample := False;
         Comparisons[i].Item := LItem as TObject;
         FComparisons.Add(LItem);
         LComparisons.Add(LItem);
@@ -155,6 +170,7 @@ var
         LItem.BoundsRect := Samples[i].Rect;
         LItem.SetOriginalBounds;
         LItem.Draggable := True;
+        LItem.IsSample := True;
         case i of
           0 : // do nothing;
 
@@ -165,47 +181,63 @@ var
         for LComparison in LComparisons do
           LItem.AddOrderedChoice(LComparison);
 
+        LItem.Position := Samples[i].Position;
         Samples[i].Item := LItem as TObject;
         FSamples.Add(LItem);
       end;
       LComparisons.Free;
     end;
+    AppendToTrialHeader(Pool.Session.Trial.Events.Header);
+    AppendToTrialHeader(Grid.Header);
+    AppendToTrialHeader(Header);
   end;
 
 begin
   inherited Load(AParameters, AParent);
-  if not Assigned(Grid) then
-    Grid := TGrid.Create(3);
-    Grid.FixedSample := False;
+  Grid.FixedSample := False;
+  Grid.FixedComparison := False;
   //Cursor := StrToIntDef(AParameters.Values['Cursor'], -1);
-  FAnimation.Parent := TSDLControl(AParent);
-  FSoundRight := SDLAudio.SoundFromName('acerto');
-  FSoundWrong := SDLAudio.SoundFromName('erro');
 
-  with DragDropKeys do begin
+  FAnimation.Parent := TSDLControl(AParent);
+
+  FSoundRight := SDLAudio.SoundFromName('acerto');
+  FSoundRight.SetOnStart(@SoundStart);
+  FSoundRight.SetOnStop(@SoundStop);
+
+  FSoundWrong := SDLAudio.SoundFromName('erro');
+  FSoundWrong.SetOnStart(@SoundStart);
+  FSoundWrong.SetOnStop(@SoundStop);
+
+  with DragDropKeys, MTSKeys do begin
     //ChannelDragMouseMoveFactor :=
       //AParameters.Values[DragMoveFactor].ToInteger;
     //DragMouseMoveMode :=
     //  AParameters.Values[SamplesDragMode].ToDragMouseMoveMode;
 
-    S1 := AParameters.Values[Relation];
+    case AParameters.Values[GridSizeKey].ToInteger of
+      1..255: GridSize := Byte(AParameters.Values[GridSizeKey].ToInteger);
+      otherwise
+        raise Exception.Create('GridSize not supported.');
+    end;
+
+    S1 := AParameters.Values[RelationKey];
     SampleLetter := ExtractDelimited(1,S1,['-']);
     ComparLetter := ExtractDelimited(2,S1,['-']);
 
-    LSamples := AParameters.Values[Samples].ToInteger;
-    LComparisons := AParameters.Values[Comparisons].ToInteger;
+    LSamples := AParameters.Values[SamplesKey].ToInteger;
+    LComparisons := AParameters.Values[ComparisonsKey].ToInteger;
     FGridOrientation := DragDropToGridOrientation(
-      AParameters.Values[DragDropOrientation].ToDragDropOrientation);
+      AParameters.Values[DragDropOrientationKey].ToDragDropOrientation);
+    FAutoAnimateOnStart := AParameters.Values[AutoAnimateOnStartKey].ToBoolean;
   end;
 
-  LExt := '.jpg';
   NewGridItems(LSamples, LComparisons, FGridOrientation);
   with Grid.RandomPositions do begin
     for i := low(Comparisons) to high(Comparisons) do
     begin
       LItem := Comparisons[i].Item as TDragDropablePicture;
       //LItem.Cursor := Cursor;
-      LItem.LoadFromFile(ComparLetter+(i+1).ToString+LExt);
+      LItem.LoadFromFile(AsImage(ComparLetter+(i+1).ToString));
       LItem.Parent := TSDLControl(AParent);
     end;
 
@@ -213,7 +245,7 @@ begin
     begin
       LItem := Samples[i].Item as TDragDropablePicture;
       //LItem.Cursor := Cursor;
-      LItem.LoadFromFile(SampleLetter+(i+1).ToString+LExt);
+      LItem.LoadFromFile(AsImage(SampleLetter+(i+1).ToString));
       //LItem.DragMouseMoveMode:=DragMouseMoveMode;
       LItem.Parent := TSDLControl(AParent);
       //with DragDropKeys do begin
@@ -229,8 +261,12 @@ var
 begin
   for LItem in FComparisons do LItem.Show;
   for LItem in FSamples do LItem.Show;
-  LItem := GetRandomSample;
-  Animate(LItem);
+
+  if FAutoAnimateOnStart then begin
+    LItem := GetRandomSample;
+    Animate(LItem);
+  end;
+  FRenderer.Render;
 end;
 
 procedure TDragDropStimuli.Stop;
@@ -238,6 +274,7 @@ var
   LItem : TDragDropablePicture;
   LAnimation: TAnimation;
 begin
+  FRenderer.Stop;
   for LItem in FComparisons do
     LItem.Hide;
   for LItem in FSamples do
@@ -252,16 +289,19 @@ end;
 procedure TDragDropStimuli.OtherDragDrop(Sender, Source: TObject;
   X, Y: Integer);
 var
-  LSample , LSourceSample: TDragDropablePicture;
+  LSample, LSourceSample: TDragDropablePicture;
 begin
   LSourceSample := Source as TDragDropablePicture;
   for LSample in FSamples do begin
     if LSample = LSourceSample then Continue;
     if LSample.IntersectsWith(LSourceSample) then begin
       LSourceSample.ToOriginalBounds;
+      Timestamp(ClassName+'.OtherDragDrop', ToJSON(LSourceSample, nil));
     end;
   end;
   //LItem.Color := clWhite;
+
+
   if Assigned(OnOtherDragDrop) then
     OnOtherDragDrop(Sender, Source, X, Y);
 end;
@@ -275,9 +315,15 @@ var
   FDragDropDone : Boolean = False;
   S1 : string;
 begin
-  //FSoundRight.Play;
+  FSoundRight.Play;
+  if Assigned(RS232) then begin
+    RS232.Dispenser;
+  end;
+
   Sample := Source as TDragDropablePicture;
   Comparison := Sender as TDragDropablePicture;
+
+  Timestamp(ClassName+'.RightDragDrop', ToJSON(Sample, Comparison));
 
   //Sample.Color := clGreen;
   case FGridOrientation of
@@ -285,20 +331,28 @@ begin
       Sample.Left := Comparison.Left;
       Sample.Top := Comparison.Top - Sample.Height - 10;
     end;
+
     TGridOrientation.goBottomToTop : begin
       Sample.Left := Comparison.Left;
       Sample.Top := Comparison.Top + Sample.Height + 10;
     end;
+
     TGridOrientation.goLeftToRight : begin
       Sample.Left := Comparison.Left - Sample.Width - 10;
       Sample.Top := Comparison.Top;
     end;
+
     TGridOrientation.goRightToLeft : begin
       Sample.Left := Comparison.Left + Sample.Width + 10;
       Sample.Top := Comparison.Top;
     end;
-    else
-    begin
+
+    TGridOrientation.goNone : begin
+      Sample.Hide;
+      Comparison.Hide;
+    end;
+
+    otherwise begin
       WriteStr(S1, FGridOrientation);
       raise Exception.Create(
         'TDragDropStimuli.RightDragDrop: ' + S1);
@@ -306,7 +360,8 @@ begin
   end;
 
   LAnimation := TAnimation.Create;
-  //LAnimation.Cursor:=Cursor;
+  // LAnimation.Parent := FAnimation.Parent;
+  // LAnimation.Cursor:=Cursor;
   LAnimation.Join(Sample, Comparison, FGridOrientation);
   LAnimation.Show;
   FDoneAnimations.Add(LAnimation);
@@ -328,11 +383,13 @@ begin
 
   if FDragDropDone then begin
     //FResult := Hit; todo: dragdrop trial have different hit types
+    Pool.Counters.Hit;
+    FResult := Hit;
     FAnimation.Stop;
     FAnimation.Hide;
-    if Assigned(OnDragDropDone) then begin
-      TTrial(TDragDropablePicture(Sender).Parent).EndTrial;
-      //OnDragDropDone(Self);
+    Timestamp(ClassName+'.DragDropDone');
+    if Assigned(OnFinalize) then begin
+      OnFinalize(Self);
     end;
   end;
 end;
@@ -342,13 +399,15 @@ var
   LSample : TDragDropablePicture;
 begin
   LSample := Sender as TDragDropablePicture;
-  if Assigned(OnResponse) then
+  if Assigned(OnResponse) then begin
     OnResponse(LSample);
+  end;
+
   if LSample.Draggable then begin
-    if (FAnimation.Sibling as TDragDropablePicture) <> LSample then
-    begin
-      if Assigned(FAnimation.Sibling) then
+    if (FAnimation.Sibling as TDragDropablePicture) <> LSample then begin
+      if Assigned(FAnimation.Sibling) then begin
         FAnimation.Sibling.EdgeColor:=clGray;
+      end;
       Animate(LSample);
     end;
   end;
@@ -383,30 +442,80 @@ begin
   Result := FSamples[RandomRange(0, FSamples.Count)];
 end;
 
+function TDragDropStimuli.ToJSON(
+  ADrag, ADrop: TDragDropablePicture): string;
+var
+  LDropString : string;
+begin
+  if ADrop = nil then begin
+    LDropString := 'NA';
+  end else begin
+    LDropString := ADrop.ToJSON;
+  end;
+
+  Result := '{'+String.Join(',', [
+    'drag:'+ ADrag.ToJSON,
+    'drop:'+ LDropString])+'}';
+end;
+
+function TDragDropStimuli.ToJSON(
+  ASamples, AComparisons: TDragDropablePictures): string;
+var
+  LSamples : array of string;
+  LComparisons : array of string;
+  i: Integer;
+begin
+  LSamples := Nil;
+  LComparisons := Nil;
+
+  SetLength(LSamples, ASamples.Count);
+  for i := Low(LSamples) to High(LSamples) do begin
+    LSamples[i] := ASamples[i].ToJSON;
+  end;
+
+  SetLength(LComparisons, AComparisons.Count);
+  for i := Low(LComparisons) to High(LComparisons) do begin
+    LSamples[i] := AComparisons[i].ToJSON;
+  end;
+
+  Result := '{'+
+    String.Join(',',[
+      'samples:'+'{'+ String.Join(',', LSamples) +'}',
+      'comparisons:'+'{'+ String.Join(',', LComparisons) +'}'
+    ])+'}';
+end;
+
 procedure TDragDropStimuli.FreeGridItems;
 var
   i: Integer;
 begin
   with Grid.RandomPositions do begin
-    for i := low(Comparisons) to high(Comparisons) do
+    for i := low(Comparisons) to high(Comparisons) do begin
       Comparisons[i].Item.Free;
+    end;
 
-    for i := low(Samples) to high(Samples) do
+    for i := low(Samples) to high(Samples) do begin
       Samples[i].Item.Free
+    end;
   end;
 end;
 
 procedure TDragDropStimuli.WrongDragDrop(Sender, Source: TObject;
   X, Y: Integer);
 var
-  Sample : TDragDropablePicture;
+  Comparison, Sample : TDragDropablePicture;
 begin
+  Inc(FWrongDragDrops);
   FSoundWrong.Play;
+  Comparison := Sender as TDragDropablePicture;
   Sample := Source as TDragDropablePicture;
+  Timestamp('WrongDragDrop', ToJSON(Sample, Comparison));
+
   Sample.ToOriginalBounds;
   //FAnimation.Animate(Sample);
-  if Assigned(OnWrongDragDrop) then
+  if Assigned(OnWrongDragDrop) then begin
     OnWrongDragDrop(Sender, Source, X, Y);
+  end;
 end;
 
 procedure TDragDropStimuli.Animate(ASample: TDragDropablePicture);
@@ -420,29 +529,86 @@ begin
   //Parent.Invalidate;
 end;
 
+procedure TDragDropStimuli.SoundStart(Sender: TObject);
+begin
+  if (Sender as ISound) = FSoundRight then begin
+    Timestamp('Hit.Start');
+  end;
+
+  if (Sender as ISound) = FSoundWrong then begin
+    Timestamp('Miss.Start');
+  end;
+end;
+
+procedure TDragDropStimuli.SoundStop(Sender: TObject);
+begin
+  if (Sender as ISound) = FSoundRight then begin
+    Timestamp('Hit.Stop');
+  end;
+
+  if (Sender as ISound) = FSoundWrong then begin
+    Timestamp('Miss.Stop');
+  end;
+end;
+
 function TDragDropStimuli.MyResult: TTrialResult;
 begin
   Result := FResult;
 end;
 
+function TDragDropStimuli.Header: string;
+begin
+  Result := 'WrongDragDrops';
+end;
+
+function TDragDropStimuli.ToData: string;
+begin
+  Result := FWrongDragDrops.ToString;
+end;
+
 constructor TDragDropStimuli.Create;
 begin
   inherited Create;
+  FAutoAnimateOnStart := False;
+  FWrongDragDrops := 0;
   DragDropLine := TBresenhamLine.Create;
   FSamples := TDragDropablePictures.Create;
   FComparisons := TDragDropablePictures.Create;
   FAnimation := TAnimation.Create;
   FDoneAnimations := TAnimations.Create;
+  FRenderer := TRendererThread.Create;
 end;
 
 destructor TDragDropStimuli.Destroy;
+var
+  LDragDropablePicture : TDragDropablePicture;
+  LAnimation : TAnimation;
 begin
+  FRenderer.Close;
+  FRenderer.Terminate;
   DragDropLine.Free;
   FAnimation.Free;
+
+  for LAnimation in FDoneAnimations do begin
+    LAnimation.Free;
+  end;
   FDoneAnimations.Free;
+
+  for LDragDropablePicture in FSamples do begin
+    LDragDropablePicture.Free;
+  end;
   FSamples.Free;
+
+  for LDragDropablePicture in FComparisons do begin
+    LDragDropablePicture.Free;
+  end;
   FComparisons.Free;
   inherited Destroy;
+end;
+
+function TDragDropStimuli.AsIStimuli: IStimuli;
+begin
+  Result := Self as IStimuli;
 end;
 
 end.

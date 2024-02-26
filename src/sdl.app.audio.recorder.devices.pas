@@ -26,10 +26,12 @@ type
   TAudioDevice = class (TThread)
   strict private
     FMsg: string;
+    FShouldStop : Boolean;
     FStarter : TObject;
     FRTLEventMainThread : PRTLEvent;
     procedure BufferFinished;
     procedure PrintMessage;
+    procedure DoInvalidate;
     function GetAudioSpec: TSDL_AudioSpec;
     function GetOpened: Boolean;
   protected
@@ -42,12 +44,15 @@ type
     procedure Execute; override;
     procedure ListDevices(AIsCapture : cint; var ADevices: TDevices);
     procedure StartDevice(AStarter : TObject);
-    procedure DeviceFinished(Sender: TObject); virtual; abstract;
+    procedure DeviceFinished(Sender: TObject); virtual;
+    procedure DeviceStopped(Sender: TObject); virtual;
   public
     constructor Create; virtual;
     destructor Destroy; override;
     function Open: Boolean; virtual; abstract;
+    procedure Stop;
     procedure Close; virtual;
+    procedure Clear; virtual;
     procedure Log(const AMsg: string; AppendLineEnd: boolean = true);
     property AudioSpec: TSDL_AudioSpec read GetAudioSpec;
     property DeviceId: TSDL_AudioDeviceID read FDeviceID;
@@ -61,9 +66,12 @@ type
   TAudioRecorderComponent = class sealed (TAudioDevice)
   private
     FOnRecordingFinished: TNotifyEvent;
+    FOnRecordingStopped: TNotifyEvent;
     procedure SetOnRecordingFinished(AValue: TNotifyEvent);
+    procedure SetOnRecordingStopped(AValue: TNotifyEvent);
   protected
     procedure DeviceFinished(Sender: TObject); override;
+    procedure DeviceStopped(Sender: TObject); override;
   public
     constructor Create; override;
     destructor Destroy; override;
@@ -71,10 +79,11 @@ type
     function HasRecording : Boolean;
     function Open: Boolean; override;
     procedure Close; override;
-    procedure Clear;
+    procedure Clear; override;
     procedure SaveToFile(AFilename : string); overload;
     procedure StartRecording(AStarter : TObject);
     property OnRecordingFinished : TNotifyEvent read FOnRecordingFinished write SetOnRecordingFinished;
+    property OnRecordingStopped :  TNotifyEvent read FOnRecordingStopped write SetOnRecordingStopped;
   end;
 
   { TAudioPlaybackComponent }
@@ -93,10 +102,18 @@ type
     property OnPlaybackFinished : TNotifyEvent read FOnPlaybackFinished write SetOnPlaybackFinished;
   end;
 
+const
+  SESSION_RECORDING_FINISHED = SDL_USEREVENT+4;
+  SESSION_RECORDING_STOPPED = SDL_USEREVENT+5;
+
 implementation
 
-uses SysUtils, sdl.app.output, session.parameters.global
-  ;
+uses
+  SysUtils,
+  sdl.app.output,
+  sdl.app.renderer.types,
+  sdl.app.renderer.validation,
+  session.parameters.global;
 
 var
   MAX_RECORDING_SECONDS : UInt8;
@@ -109,23 +126,29 @@ var
 
 procedure TAudioDevice.Execute;
   procedure DoWork;
+  var
+    LShouldStop : Boolean;
   begin
     if not Terminated then begin
       SDL_PauseAudioDevice(FDeviceID, 0);
       while not Terminated do begin
+        EnterCriticalSection(ACriticalSection);
+        LShouldStop := FShouldStop;
+        LeaveCriticalSection(ACriticalSection);
         SDL_LockAudioDevice(FDeviceID);
-        if (GBufferBytePosition > GBufferByteMaxPosition) then begin
+        if (GBufferBytePosition > GBufferByteMaxPosition) or
+          LShouldStop then begin
+
           SDL_PauseAudioDevice(FDeviceID, 1);
           SDL_UnlockAudioDevice(FDeviceID);
-          Break
+          Break;
         end;
         SDL_UnlockAudioDevice(FDeviceID);
-        Sleep(15);
+        Sleep(DELTA_TIME);
+        Queue(@DoInvalidate);
         //Log(ClassName+':'+ (GetTickCount64 - First).ToString+ ':'+ GBufferBytePosition.ToString);
       end;
-      EnterCriticalSection(ACriticalSection);
-      Synchronize(@BufferFinished);
-      LeaveCriticalSection(ACriticalSection);
+      Queue(@BufferFinished);
     end;
   end;
 begin
@@ -201,6 +224,13 @@ begin
   inherited Destroy;
 end;
 
+procedure TAudioDevice.Stop;
+begin
+  EnterCriticalSection(ACriticalSection);
+  FShouldStop := True;
+  LeaveCriticalSection(ACriticalSection);
+end;
+
 procedure TAudioDevice.Close;
 begin
   if FDeviceID <> 0 then
@@ -214,14 +244,38 @@ begin
   RTLEventDestroy(FRTLEventMainThread);
 end;
 
-procedure TAudioDevice.BufferFinished;
+procedure TAudioDevice.Clear;
 begin
-  DeviceFinished(Self);
+  EnterCriticalSection(ACriticalSection);
+  FShouldStop := False;
+  LeaveCriticalSection(ACriticalSection);
+end;
+
+procedure TAudioDevice.BufferFinished;
+var
+  event : TSDL_Event;
+  LShouldStop : Boolean;
+begin
+  LShouldStop := FShouldStop;
+  FShouldStop := False;
+
+  if LShouldStop then begin
+    event.type_ := SESSION_RECORDING_STOPPED;
+  end else begin
+    event.type_ := SESSION_RECORDING_FINISHED;
+  end;
+  event.user.data1 := Pointer(Self);
+  SDL_PushEvent(@event);
 end;
 
 procedure TAudioDevice.PrintMessage;
 begin
   Print(Msg);
+end;
+
+procedure TAudioDevice.DoInvalidate;
+begin
+  GPaintingInvalidated := True;
 end;
 
 procedure TAudioDevice.Log(const AMsg: string; AppendLineEnd: boolean);
@@ -263,9 +317,20 @@ end;
 
 procedure TAudioDevice.StartDevice(AStarter: TObject);
 begin
+  Clear;
   GBufferBytePosition := 0;
   FStarter := AStarter;
   RTLEventSetEvent(FRTLEventMainThread);
+end;
+
+procedure TAudioDevice.DeviceFinished(Sender: TObject);
+begin
+  DoInvalidate;
+end;
+
+procedure TAudioDevice.DeviceStopped(Sender: TObject);
+begin
+  DoInvalidate;
 end;
 
 procedure TAudioRecorderComponent.SetOnRecordingFinished(AValue: TNotifyEvent);
@@ -274,10 +339,24 @@ begin
   FOnRecordingFinished := AValue;
 end;
 
+procedure TAudioRecorderComponent.SetOnRecordingStopped(AValue: TNotifyEvent);
+begin
+  if FOnRecordingStopped = AValue then Exit;
+  FOnRecordingStopped := AValue;
+end;
+
 procedure TAudioRecorderComponent.DeviceFinished(Sender: TObject);
 begin
+  inherited DeviceFinished(Sender);
   if Assigned(OnRecordingFinished) then
     OnRecordingFinished(Self);
+end;
+
+procedure TAudioRecorderComponent.DeviceStopped(Sender: TObject);
+begin
+  inherited DeviceStopped(Sender);
+  if Assigned(OnRecordingStopped) then
+    OnRecordingStopped(Self);
 end;
 
 constructor TAudioRecorderComponent.Create;
@@ -351,6 +430,7 @@ end;
 
 procedure TAudioRecorderComponent.Clear;
 begin
+  inherited Clear;
   // fill the entire memory block pointed to by GPRecordingBuffer with zeros
   GBufferBytePosition := 0;
   FillChar(GPRecordingBuffer^, GBufferByteSize, 0);
@@ -359,6 +439,20 @@ end;
 procedure TAudioRecorderComponent.SaveToFile(AFilename: string);
 var
   LWavWriter : TWavWriter;
+
+  function GetBufferByteSize : UInt32; // After cutting end silence
+  var
+    i: Integer;
+  begin
+    for i := GBufferByteMaxPosition - 1 downto 0 do begin
+      if GPRecordingBuffer[i] > 0 then
+      begin
+        Result := i + 1; // Update the buffer size
+        Break; // Exit the loop once non-silent audio is found
+      end;
+    end;
+  end;
+
 begin
   LWavWriter := TWavWriter.Create;
   try
@@ -371,7 +465,7 @@ begin
           fmt.SampleRate * fmt.Channels * fmt.BitsPerSample div 8;
         fmt.BlockAlign       := fmt.Channels * fmt.BitsPerSample div 8;
       end;
-      LWavWriter.WriteBuf(GPRecordingBuffer^, GBufferByteSize);
+      LWavWriter.WriteBuf(GPRecordingBuffer^, GetBufferByteSize);
       LWavWriter.FlushHeader;
     end else begin
       Print('Error creating WAV file: ' + AFileName);
@@ -384,7 +478,7 @@ end;
 procedure TAudioRecorderComponent.StartRecording(AStarter: TObject);
 begin
   Clear;
-  inherited StartDevice(AStarter);
+  StartDevice(AStarter);
 end;
 
 procedure TAudioPlaybackComponent.SetOnPlaybackFinished(AValue: TNotifyEvent);
@@ -395,6 +489,7 @@ end;
 
 procedure TAudioPlaybackComponent.DeviceFinished(Sender: TObject);
 begin
+  inherited DeviceFinished(Sender);
   if Assigned(OnPlaybackFinished) then
     OnPlaybackFinished(Self);
 end;

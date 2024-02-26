@@ -41,7 +41,7 @@ type
     procedure SetTop(AValue: cint);
     procedure SetWidth(AValue: cint);
   protected
-    procedure MouseDown(Sender: TObject; Shift: TCustomShiftState;
+    procedure MouseUp(Sender: TObject; Shift: TCustomShiftState;
       X, Y: Integer); override;
     procedure MouseEnter(Sender: TObject); override;
     procedure MouseExit(Sender: TObject); override;
@@ -53,14 +53,15 @@ type
     destructor Destroy; override;
     function IntersectsWith(ARect: TSDL_Rect) : Boolean; overload;
     function IntersectsWith(ARect: TRectangule) : Boolean; overload;
+    function GetOriginalBounds : TSDL_Rect;
     procedure Centralize;
     procedure CentralizeAtTopWith(ARect: TSDL_Rect);
     procedure MoveToBottomRightScreen;
     procedure CentralizeAtRightWith(ARect: TSDL_Rect; AFactor : Byte);
     procedure CentralizeWith(ARect: TSDL_Rect);
-    procedure DoRandomMouseDown;
+    procedure DoRandomMouseUp;
     procedure Inflate(AValue : cint);
-    procedure Hide;
+    procedure Hide; virtual;
     procedure ToOriginalBounds;
     procedure SetOriginalBounds;
     procedure Show;
@@ -100,11 +101,11 @@ begin
   Result := FRect.w;
 end;
 
-procedure TRectangule.MouseDown(Sender: TObject; Shift: TCustomShiftState; X,
+procedure TRectangule.MouseUp(Sender: TObject; Shift: TCustomShiftState; X,
   Y: Integer);
 begin
   if Visible then begin
-    inherited MouseDown(Sender, Shift, X, Y);
+    inherited MouseUp(Sender, Shift, X, Y);
   end;
 end;
 
@@ -230,6 +231,11 @@ begin
   Result := IntersectsWith(ARect.BoundsRect);
 end;
 
+function TRectangule.GetOriginalBounds: TSDL_Rect;
+begin
+  Result := FOriginalBounds;
+end;
+
 procedure TRectangule.CentralizeWith(ARect: TSDL_Rect);
 begin
   Left := ARect.x + (ARect.w div 2) - (Width  div 2);
@@ -272,14 +278,14 @@ begin
   FOriginalBounds := FRect;
 end;
 
-procedure TRectangule.DoRandomMouseDown;
+procedure TRectangule.DoRandomMouseUp;
 var
   X : cint;
   Y : cint;
 begin
   X := RandomRange(0, Width);
   Y := RandomRange(0, Height);
-  MouseDown(Self, [], Left+X, Top+Y);
+  MouseUp(Self, [], Left+X, Top+Y);
 end;
 
 initialization

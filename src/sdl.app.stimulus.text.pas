@@ -17,7 +17,7 @@ uses
   Classes, SysUtils
   , SDL2
   , sdl.app.audio.contract
-  , sdl.app.graphics.text
+  , sdl.app.graphics.animatedtext
   , sdl.app.stimulus
   , sdl.app.events.abstract
   , session.strutils.mts
@@ -32,11 +32,12 @@ type
   TTextStimulus = class(TStimulus)
     private
       FPrompt : ISound;
-      FText : TText;
+      FText : TAnimatedText;
       FHasPrompt : Boolean;
+      procedure PromptStopped(Sender: TObject);
     protected
       function GetStimulusName : string; override;
-      procedure MouseDown(Sender: TObject; Shift: TCustomShiftState;
+      procedure MouseUp(Sender: TObject; Shift: TCustomShiftState;
         X, Y: Integer); override;
     public
       constructor Create; override;
@@ -50,11 +51,20 @@ type
 implementation
 
 uses
-  sdl.app.audio
-  , sdl.app.controls.custom
-  , session.strutils;
+  sdl.app.output,
+  sdl.app.controls.custom,
+  session.parameters.global;
 
 { TTextStimuli }
+
+procedure TTextStimulus.PromptStopped(Sender: TObject);
+begin
+  (Sender as ISound).SetOnStop(nil);
+  FText.Animate;
+
+  // starts CD recording
+  Sibling.Start;
+end;
 
 function TTextStimulus.GetStimulusName: string;
 begin
@@ -65,16 +75,23 @@ begin
   end;
 end;
 
-procedure TTextStimulus.MouseDown(Sender: TObject; Shift: TCustomShiftState;
+procedure TTextStimulus.MouseUp(Sender: TObject; Shift: TCustomShiftState;
   X, Y: Integer);
 begin
+  if FHasPrompt then begin
+    if IsSample then begin
+      if FPrompt.Playing then begin
+        Exit;
+      end;
+    end;
+  end;
   DoResponse(True);
 end;
 
 constructor TTextStimulus.Create;
 begin
   inherited Create;
-  FText := TText.Create;
+  FText := TAnimatedText.Create;
   FPrompt := nil;
   FHasPrompt := False;
 end;
@@ -90,30 +107,30 @@ procedure TTextStimulus.Load(AParameters: TStringList; AParent: TObject;
   ARect: TSDL_Rect);
 begin
   FCustomName := GetWordValue(AParameters, IsSample, Index);
+
   FText.FontName := GetFontName(AParameters);
-  //FText.FontSize := 50;
   FText.Load(FCustomName);
   FText.CentralizeWith(ARect);
   FText.CustomName := FCustomName;
   Selectables.Add(FText.AsISelectable);
   FText.Parent := TSDLControl(AParent);
-  FText.OnMouseDown := @MouseDown;
+  FText.OnMouseUp := @MouseUp;
 
   FHasPrompt := HasTextPrompt(AParameters);
-  if FHasPrompt then begin
-    if IsSample then
-      FPrompt := SDLAudio.LoadFromFile(
-        AsAsset(GetAudioPromptForText(AParameters)));
+  if FHasPrompt and IsSample then begin
+    FPrompt := GetAudioPromptForText(AParameters);
+    FPrompt.SetOnStop(@PromptStopped);
   end;
 end;
 
 procedure TTextStimulus.Start;
 begin
-  if FHasPrompt then begin
-    if IsSample then
-      FPrompt.Play;
-  end;
   FText.Show;
+  if FHasPrompt then begin
+    if IsSample then begin
+      FPrompt.Play;
+    end;
+  end;
 end;
 
 procedure TTextStimulus.Stop;

@@ -20,14 +20,21 @@ uses
   , sdl.app.choiceable.rectangule
   , sdl.app.dragdropable.contract
   , sdl.app.events.abstract
+  , sdl.app.stimulus.contract
+  , sdl.app.stimulus.types
+  , sdl.app.grids.types
+  , SDL2
   ;
 
 type
 
   { TDragDropablePicture }
 
-  TDragDropablePicture = class(TChoiceablePicture, IDragDropable)
+  TDragDropablePicture = class(TChoiceablePicture, IDragDropable, IStimulus)
   private
+    FBorder : TBorder;
+    FIsSample: Boolean;
+    FPosition : integer;
     FDraggable: Boolean;
     FIsDragging : Boolean;
     FOnOtherDragDrop: TDragDropEvent;
@@ -38,6 +45,7 @@ type
     procedure SetOnOtherDragDrop(AValue: TDragDropEvent);
     procedure SetOnRightDragDrop(AValue: TDragDropEvent);
     procedure SetOnWrongDragDrop(AValue: TDragDropEvent);
+    procedure BorderCollision;
   protected
     procedure DragDrop(Sender, Source: TObject; X, Y: Integer);
     procedure MouseMove(Sender: TObject; Shift: TCustomShiftState; X, Y: Integer); override;
@@ -49,15 +57,29 @@ type
   public
     constructor Create; override;
     destructor Destroy; override;
+    procedure Load(AParameters : TStringList;
+      AParent : TObject; ARect: TSDL_Rect);
+    procedure Start;
+    procedure Stop;
+    procedure DoResponse(AHuman : Boolean);
+    function GetID: TStimulusID;
+    function ToData : string;
+    function ToJSON : string;
     property OnRightDragDrop : TDragDropEvent read FOnRightDragDrop write SetOnRightDragDrop;
     property OnWrongDragDrop : TDragDropEvent read FOnWrongDragDrop write SetOnWrongDragDrop;
     property OnOtherDragDrop : TDragDropEvent read FOnOtherDragDrop write SetOnOtherDragDrop;
     property Draggable : Boolean read FDraggable write SetDraggable;
+    property Position : integer read FPosition write FPosition;
+    property IsSample : Boolean read FIsSample write FIsSample;
   end;
 
 implementation
 
-//uses SDL2, math.bresenhamline.classes;
+uses
+  session.pool,
+  session.loggers.writerow.timestamp,
+  sdl.app.grids.methods,
+  sdl.helpers;
 
 var SomeInstanceIsDragging : Boolean;
 
@@ -87,6 +109,26 @@ begin
   FOnWrongDragDrop:=AValue;
 end;
 
+procedure TDragDropablePicture.BorderCollision;
+
+begin
+  if IntersectsWith(Border.Top) then begin
+    Top := Border.Top.Bottom + 1;
+  end;
+
+  if IntersectsWith(Border.Bottom) then begin
+    Top := Border.Bottom.Top - Height - 1;
+  end;
+
+  if IntersectsWith(Border.Left) then begin
+    Left := Border.Left.Right + 1;
+  end;
+
+  if IntersectsWith(Border.Right) then begin
+    Left := Border.Right.Left - Width - 1;
+  end;
+end;
+
 procedure TDragDropablePicture.DragDrop(Sender, Source: TObject; X, Y: Integer);
 begin
 
@@ -111,11 +153,12 @@ end;
 procedure TDragDropablePicture.MouseMove(Sender: TObject;
   Shift: TCustomShiftState; X, Y: Integer);
 begin
-  if Draggable then begin
+  if FDraggable then begin
     if FIsDragging and SomeInstanceIsDragging then begin
       Left := X - FOffSet.X;
       Top  := Y - FOffSet.Y;
-      //BorderColision;
+      BorderCollision;
+      Timestamp(ClassName+'.Move'+'.'+FCustomName, ToJSON);
     end;
   end;
   inherited MouseMove(Self, Shift, X, Y);
@@ -178,13 +221,58 @@ end;
 constructor TDragDropablePicture.Create;
 begin
   inherited Create;
-
+  FBorder := Border;
 end;
 
 destructor TDragDropablePicture.Destroy;
 begin
 
   inherited Destroy;
+end;
+
+procedure TDragDropablePicture.Load(AParameters: TStringList; AParent: TObject;
+  ARect: TSDL_Rect);
+begin
+
+end;
+
+procedure TDragDropablePicture.Start;
+begin
+  Show;
+end;
+
+procedure TDragDropablePicture.Stop;
+begin
+  Hide;
+end;
+
+procedure TDragDropablePicture.DoResponse(AHuman: Boolean);
+begin
+
+end;
+
+function TDragDropablePicture.GetID: TStimulusID;
+begin
+  Result.IsSample := FIsSample;
+  Result.SubjcID := Pool.Counters.Subject;
+  Result.SessiID := Pool.Session.ID;
+  Result.BlockID := Pool.Session.Block.UID;
+  Result.TrialID := Pool.Session.Trial.UID;
+  //Result.StimuID := FIndex;
+  //Result.RespoID := FResponseID;
+  Result.Name := FCustomName;
+end;
+
+function TDragDropablePicture.ToData: string;
+begin
+  Result := FCustomName+'-'+FPosition.ToString;
+end;
+
+function TDragDropablePicture.ToJSON: string;
+begin
+  Result := '{'+String.Join(',', [
+    'name:'          + FCustomName,
+    'rect:'          + BoundsRect.ToJSON])+'}';
 end;
 
 

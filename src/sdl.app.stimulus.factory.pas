@@ -51,6 +51,7 @@ uses sdl.app.stimulus.picture
    , sdl.app.stimulus.text
    , sdl.app.stimulus.audio
    , sdl.app.stimulus.speech
+   , sdl.app.graphics.picture.dragdrop
    ;
 
 { TStimulusFactory }

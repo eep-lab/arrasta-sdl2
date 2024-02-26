@@ -19,7 +19,10 @@ type
 
   IPaintable = interface
     ['{600FC349-A1FA-44CA-986B-878F34F0533F}']
+    //function Invalidated : Boolean;
+    //procedure Invalidate;
     procedure Paint;
+    //procedure Validate;
   end;
 
 implementation

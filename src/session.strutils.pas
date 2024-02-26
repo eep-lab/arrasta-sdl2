@@ -18,6 +18,7 @@ uses
   function ImageFolder : string;
   function MeaningfulImageFolder : string;
   function DesignFolder : string;
+  function TestModeFolder : string;
 
   function AsPath(A, B : string) : string; overload;
   function AsPath(A : string) : string; overload;
@@ -83,6 +84,11 @@ function DesignFolder: string;
 begin
   Result := ConcatPaths([
     Pool.DesignRootBasePath, Pool.DesignBasePath]);
+end;
+
+function TestModeFolder: string;
+begin
+  Result := ConcatPaths([Pool.BaseDataPath, Pool.BaseFileName]);
 end;
 
 function AsPath(A, B: string): string;

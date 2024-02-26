@@ -46,6 +46,7 @@ type
     function LoadFromFile(AFilename : string) : ISound;
     function SoundFromName(AName : string) : ISound;
     procedure AllocateChannels;
+    procedure Clean;
     property Volume : int32 read GetSetVolume write FVolume;
     property Playing : Boolean read GetPlaying;
     property RecorderDevice : TRecorderDevice read FRecorderDevice;
@@ -170,9 +171,22 @@ end;
 
 procedure TSDLAudio.AllocateChannels;
 begin
-  if AllocatedChannels < FChannels.Count then begin
+  if (AllocatedChannels < FChannels.Count) or
+     (AllocatedChannels > FChannels.Count) then begin
     Mix_AllocateChannels(FChannels.Count);
   end;
+end;
+
+procedure TSDLAudio.Clean;
+var
+  LSound : TChunk;
+begin
+  Mix_ChannelFinished(nil);
+  for LSound in FChannels do begin
+    LSound.Stop;
+  end;
+  AllocateChannels;
+  Mix_ChannelFinished(@ChannelFinishedCallback);
 end;
 
 end.

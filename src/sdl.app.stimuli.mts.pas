@@ -64,7 +64,7 @@ type
       procedure ConsequenceStart(Sender: TObject);
       procedure StimulusMouseEnter(Sender: TObject);
       procedure StimulusMouseExit(Sender: TObject);
-      procedure StimulusMouseDown(Sender: TObject; Shift: TCustomShiftState; X, Y: Integer);
+      //procedure StimulusMouseDown(Sender: TObject; Shift: TCustomShiftState; X, Y: Integer);
       procedure StimulusMouseUp(Sender: TObject; Shift: TCustomShiftState; X, Y: Integer);
       procedure ButtonClick(Sender: TObject);
       procedure NoResponse(Sender: TObject);
@@ -72,11 +72,10 @@ type
       procedure SampleResponse(Sender: TObject);
     protected
       function CustomName : string; override;
+      function MyResult : TTrialResult; override;
     public
       constructor Create; override;
       destructor Destroy; override;
-      function MyResult : TTrialResult; override;
-      function AsIStimuli : IStimuli;
       function AsINavigable : INavigable; override;
       procedure DoExpectedResponse; override;
       procedure Load(AParameters : TStringList;
@@ -89,6 +88,7 @@ implementation
 
 uses
   StrUtils
+  , sdl.app.renderer.validation
   , sdl.app.controls.custom
   , sdl.app.graphics.picture
   , sdl.app.output
@@ -99,6 +99,7 @@ uses
   , sdl.app.stimulus.audio
   , sdl.app.stimulus.speech
   , sdl.app.selectable.contract
+  , sdl.app.testmode
   , session.loggers.writerow
   , session.loggers.writerow.timestamp
   , session.constants.trials
@@ -119,6 +120,9 @@ procedure TMTSStimuli.UpdateState(AState: TState);
 begin
   FState := AState;
   UpdateNavigator;
+
+  // informs TTrial Owner
+  GPaintingInvalidated := True;
 end;
 
 procedure TMTSStimuli.SetNavigator(ANavigator: ITableNavigator);
@@ -260,7 +264,13 @@ begin
   //IStimulus(Sender as TStimulus).Stop;
 end;
 
-procedure TMTSStimuli.StimulusMouseDown(Sender: TObject;
+//procedure TMTSStimuli.StimulusMouseDown(Sender: TObject;
+//  Shift: TCustomShiftState; X, Y: Integer);
+//begin
+//
+//end;
+
+procedure TMTSStimuli.StimulusMouseUp(Sender: TObject;
   Shift: TCustomShiftState; X, Y: Integer);
 var
   LStimulus: TStimulus;
@@ -271,12 +281,6 @@ begin
       FButton.Hide;
     end;
   end;
-end;
-
-procedure TMTSStimuli.StimulusMouseUp(Sender: TObject;
-  Shift: TCustomShiftState; X, Y: Integer);
-begin
-
 end;
 
 procedure TMTSStimuli.ButtonClick(Sender: TObject);
@@ -307,6 +311,14 @@ begin
       end;
     end;
 
+    ModalityB: begin
+      if FMTSModality.Comparisons = ModalityB then begin
+        for LIStimulus in FSamples do begin
+          LIStimulus.Stop;
+        end;
+      end;
+    end;
+
     otherwise begin
       { do nothing }
     end;
@@ -327,12 +339,7 @@ begin
       end;
 
       ModalityD: begin { TSpeechStimulus }
-        FButton.Sibling := LStimulus.Rectangule;
-        FButton.CentralizeAtRightWith(LStimulus.Rectangule.BoundsRect, 2);
-        FButton.Sender := Sender;
-        FButton.Show;
-        UpdateState(startButtons);
-        Exit;
+
       end;
 
       otherwise begin
@@ -350,18 +357,28 @@ end;
 
 procedure TMTSStimuli.SampleResponse(Sender: TObject);
 var
-  LStimulus: IStimulus;
+  LStimulus: TStimulus;
 begin
   //if FIsDMTS then
   //for LStimulus in FSamples do begin
   //  LStimulus.Stop;
   //end;
 
-  for LStimulus in FComparisons do begin
-    LStimulus.Start;
+  case FMTSModality.Comparisons of
+    ModalityD: begin { Speech }
+      SDLAudio.RecorderDevice.Recorder.Stop;
+      //TStimulus(Sender).Stop;
+    end;
+
+    otherwise begin
+      for LStimulus in FComparisons do begin
+        LStimulus.Start;
+      end;
+
+      UpdateState(startComparisons);
+      Timestamp('Comparisons.Start', FSelectables.ToJSON);
+    end;
   end;
-  UpdateState(startComparisons);
-  Timestamp('Comparisons.Start'+#9+FSelectables.ToJSON);
 end;
 
 function TMTSStimuli.CustomName: string;
@@ -406,11 +423,6 @@ begin
   inherited Destroy;
 end;
 
-function TMTSStimuli.AsIStimuli: IStimuli;
-begin
-  Result := Self as IStimuli;
-end;
-
 function TMTSStimuli.AsINavigable: INavigable;
 begin
   Result := Self as INavigable;
@@ -418,34 +430,51 @@ end;
 
 procedure TMTSStimuli.DoExpectedResponse;
 begin
-  // for real time simulations
-  //case High(FComparisons) of
-  //  0 : FComparisons[0].DoResponse(False);
-  //  else begin
-  //    if Random < (0.9/1.0) then begin
-  //      FComparisons[0].DoResponse(False);
-  //    end else begin
-  //      FComparisons[RandomRange(1, Length(FComparisons))].DoResponse(False);
-  //    end;
-  //  end;
-  //end;
-  //if Assigned(OnFinalize) then
-  //  OnFinalize(Self);
-
-  // for short time simulations
-  case FComparisons.Count-1 of
-    -MaxInt..-1: { do nothing };
-    0 : Pool.Counters.Hit;
-    else begin
-      if Random < (0.9/1.0) then begin
-        Pool.Counters.Hit;
-      end else begin
-        Pool.Counters.Miss;
+  if TestMode then begin
+    case FComparisons.Count-1 of
+      -MaxInt..-1: { do nothing };
+      0 : Pool.Counters.Hit;
+      else begin
+        if Random < (0.9/1.0) then begin
+          Pool.Counters.Hit;
+        end else begin
+          Pool.Counters.Miss;
+        end;
       end;
     end;
+
+    if Assigned(OnFinalize) then
+      OnFinalize(Self);
+  end else begin
+    case FState of
+      startNone: ;
+      startSamples: begin
+        FSamples[0].Selectables[0].Select;
+        FSamples[0].Selectables[0].Confirm;
+      end;
+      startComparisons: begin
+        FComparisons[0].Selectables[0].Select;
+        FComparisons[0].Selectables[0].Confirm;
+      end;
+      startButtons: begin
+        FButton.AsISelectable.Select;
+        FButton.AsISelectable.Confirm;
+      end;
+    end;
+
+    //case High(FComparisons) of
+    //  0 : FComparisons[0].DoResponse(False);
+    //  else begin
+    //    if Random < (0.9/1.0) then begin
+    //      FComparisons[0].DoResponse(False);
+    //    end else begin
+    //      FComparisons[RandomRange(1, Length(FComparisons))].DoResponse(False);
+    //    end;
+    //  end;
+    //end;
+    //if Assigned(OnFinalize) then
+    //  OnFinalize(Self);
   end;
-  if Assigned(OnFinalize) then
-    OnFinalize(Self);
 end;
 
 procedure TMTSStimuli.Load(AParameters: TStringList; AParent: TObject);
@@ -464,23 +493,25 @@ var
     LItem : TStimulus;
     i : integer;
     LCallbacks : TCallbacks;
+    LFixedComparison: Boolean;
   begin
     LCallbacks.OnMouseExit := @StimulusMouseExit;
     LCallbacks.OnMouseEnter := @StimulusMouseEnter;
-    LCallbacks.OnMouseDown := @StimulusMouseDown;
+    //LCallbacks.OnMouseDown := @StimulusMouseDown;
     LCallbacks.OnMouseUp := @StimulusMouseUp;
     LCallbacks.OnResponse  := @ComparisonResponse;
     LCallbacks.OnNoResponse := @NoResponse;
 
-    Grid.FixedSample:=True;
-
-    if AComparisons = 1 then begin
-      Grid.FixedComparison:=True;
+    if (FMTSModality.Samples = ModalityC) and
+       (FMTSModality.Comparisons = ModalityD) then begin
+      LFixedComparison := True;
     end else begin
-      Grid.FixedComparison:=False;
+      LFixedComparison := False;
     end;
 
-    Grid.UpdatePositions(ASamples, AComparisons, AGridOrientation);
+    Grid.UpdatePositions(Grid.Seed,
+      ASamples, AComparisons, AGridOrientation, True, LFixedComparison);
+
     with Grid.RandomPositions, MTSKeys do begin
       for i := Low(Comparisons) to High(Comparisons) do begin
         LItem := TStimulusFactory.New(Self, ComparLetter, LCallbacks);
@@ -508,6 +539,12 @@ var
         Samples[i].Item := LItem as TObject;
         FSamples.Add(LItem);
       end;
+
+      if (FMTSModality.Samples = ModalityC) and
+         (FMTSModality.Comparisons = ModalityD) then begin
+        FSamples[0].Sibling := FComparisons[0];
+      end;
+
       AppendToTrialHeader(Pool.Session.Trial.Events.Header);
       AppendToTrialHeader(Grid.Header);
       AppendToTrialHeader(Header);
@@ -517,6 +554,7 @@ var
 begin
   if not Assigned(AParent) then
     raise Exception.Create('You must assign a parent.');
+
   FSoundCorrect := SDLAudio.SoundFromName('acerto');
   FSoundWrong   := SDLAudio.SoundFromName('erro');
   FSoundCorrect.SetOnStart(@ConsequenceStart);
@@ -555,27 +593,45 @@ begin
         LButton := 'ConfirmButton';
       end;
 
+      ModalityB: begin
+        case FMTSModality.Samples of
+          ModalityC: begin
+            AParameters.Values[HasTextPromptKey] := 'F';
+          end;
+
+          otherwise begin
+            { do nothing }
+          end;
+        end;
+      end;
+
       ModalityD : begin
         LButton := 'FinalizeButton';
         LComparisons := 1;
       end;
 
-      else { do nothing }
+      otherwise begin
+        { do nothing }
+      end;
     end;
   end;
+
+  NewGridItems(LSamples, LComparisons, goCustom);
 
   FButton.LoadFromFile(AsAsset(LButton));
   FButton.Parent := TSDLControl(AParent);
   FButton.OnClick:=@ButtonClick;
   FButton.CustomName := LButton;
-
-  NewGridItems(LSamples, LComparisons, goCustom);
+  FButton.BoundsRect := Grid.RandomPositions.Samples[0].Rect;
+  FButton.ShrinkHeight;
 end;
 
 procedure TMTSStimuli.Start;
 var
   LStimulus : TStimulus;
 begin
+  SDLAudio.Clean;
+
   for LStimulus in FSamples do
     LStimulus.Start;
   UpdateState(startSamples);

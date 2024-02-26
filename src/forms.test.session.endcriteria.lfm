@@ -1,0 +1,127 @@
+object FormEndCriteriaTest: TFormEndCriteriaTest
+  Left = 113
+  Height = 569
+  Top = 121
+  Width = 1116
+  Caption = 'FormEndCriteriaTest'
+  ClientHeight = 569
+  ClientWidth = 1116
+  LCLVersion = '3.99.0.0'
+  OnCreate = FormCreate
+  object ButtonSetup: TButton
+    Left = 768
+    Height = 25
+    Top = 328
+    Width = 75
+    Caption = 'Setup'
+    TabOrder = 0
+    OnClick = ButtonSetupClick
+  end
+  object ButtonTearDown: TButton
+    Left = 848
+    Height = 25
+    Top = 328
+    Width = 75
+    Caption = 'TearDown'
+    TabOrder = 1
+    OnClick = ButtonTearDownClick
+  end
+  object ButtonHit: TButton
+    Left = 768
+    Height = 25
+    Top = 392
+    Width = 75
+    Caption = 'Hit'
+    TabOrder = 2
+    OnClick = ButtonHitClick
+  end
+  object ButtonMiss: TButton
+    Left = 848
+    Height = 25
+    Top = 392
+    Width = 75
+    Caption = 'Miss'
+    TabOrder = 3
+    OnClick = ButtonMissClick
+  end
+  object MemoCurrentBlock: TMemo
+    Left = 0
+    Height = 265
+    Top = 304
+    Width = 240
+    Align = alLeft
+    ReadOnly = True
+    ScrollBars = ssAutoVertical
+    TabOrder = 4
+  end
+  object MemoCurrentTrial: TMemo
+    Left = 240
+    Height = 265
+    Top = 304
+    Width = 240
+    Align = alLeft
+    ReadOnly = True
+    ScrollBars = ssAutoVertical
+    TabOrder = 5
+  end
+  object StringGrid1: TStringGrid
+    Left = 0
+    Height = 304
+    Top = 0
+    Width = 1116
+    Align = alTop
+    ColCount = 9
+    FixedCols = 0
+    RowCount = 1
+    TabOrder = 6
+    ColWidths = (
+      97
+      101
+      124
+      103
+      132
+      120
+      147
+      110
+      114
+    )
+  end
+  object FloatSpinEditHitPorcentage: TFloatSpinEdit
+    Left = 848
+    Height = 23
+    Top = 456
+    Width = 75
+    Increment = 0.01
+    MaxValue = 1
+    TabOrder = 7
+    Value = 0.8
+  end
+  object ButtonRandom: TButton
+    Left = 768
+    Height = 25
+    Top = 456
+    Width = 75
+    Caption = 'Random'
+    TabOrder = 8
+    OnClick = ButtonRandomClick
+  end
+  object ButtonBreakRandom: TButton
+    Left = 768
+    Height = 25
+    Top = 488
+    Width = 75
+    Caption = 'Break'
+    TabOrder = 9
+    OnClick = ButtonBreakRandomClick
+  end
+  object MemoInfo: TMemo
+    Left = 480
+    Height = 265
+    Top = 304
+    Width = 224
+    Align = alLeft
+    ReadOnly = True
+    ScrollBars = ssAutoVertical
+    TabOrder = 10
+  end
+end
