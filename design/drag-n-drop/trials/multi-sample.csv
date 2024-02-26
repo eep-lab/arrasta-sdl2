@@ -1,3 +1,3 @@
-ID,Trials,Relation,Samples,Comparisons,DragableAnimation,GridSize,Orientation,Distance
-1,2,B-C,3,3,OnResponse,4,TopToBottom,
-2,2,A-B,5,5,OnResponse,5,TopToBottom,
+ID,Trials,Relation,Samples,Comparisons,DragableAnimation,GridSize,Orientation,AutoAnimateOnStart
+1,2,B-C,3,3,OnResponse,4,None,F
+2,2,A-B,5,5,OnResponse,5,None,F
