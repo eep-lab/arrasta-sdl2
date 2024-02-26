@@ -88,6 +88,8 @@ type
     function GetGazeInside : Boolean; virtual;
     function GetMouseInside : Boolean; virtual;
     function PointInside(SDLPoint : TSDL_Point) : Boolean;
+    function IsGazeInside(SDLPoint : TSDL_Point;
+      AInflateFactor: UInt32 = 0) : Boolean;
     function GetBoundsRect : TSDL_Rect; virtual;
     procedure SetBoundsRect(AValue : TSDL_Rect); virtual;
     procedure SetMouseInside(AValue : Boolean);
@@ -108,6 +110,7 @@ type
   public
     constructor Create; virtual;
     destructor Destroy; override;
+    function InflateBoundsRect(AFactor: UInt32) : TSDL_Rect;
     function AsIClickable : IClickable;
     function AsIPaintable : IPaintable;
     function AsIMoveable : IMoveable;
@@ -313,6 +316,19 @@ begin
   Result := SDL_PointInRect(@SDLPoint, @SDLRect);
 end;
 
+function TSDLControl.IsGazeInside(SDLPoint: TSDL_Point;
+  AInflateFactor: UInt32): Boolean;
+var
+  SDLRect  : TSDL_Rect;
+begin
+  if AInflateFactor > 0 then begin
+    SDLRect := InflateBoundsRect(AInflateFactor);
+  end else begin
+    SDLRect := GetBoundsRect;
+  end;
+  Result := SDL_PointInRect(@SDLPoint, @SDLRect);
+end;
+
 procedure TSDLControl.SDLMouseMotion(const event: TSDL_MouseMotionEvent);
 begin
   MouseMove(Self, GetShiftState, event.x, event.y);
@@ -366,6 +382,14 @@ destructor TSDLControl.Destroy;
 begin
   FChildren.Free;
   inherited Destroy;
+end;
+
+function TSDLControl.InflateBoundsRect(AFactor: UInt32): TSDL_Rect;
+begin
+  Result.x := FRect.x - AFactor;
+  Result.y := FRect.y - AFactor;
+  Result.w := FRect.w + (2 * AFactor);
+  Result.h := FRect.h + (2 * AFactor);
 end;
 
 function TSDLControl.AsIClickable: IClickable;

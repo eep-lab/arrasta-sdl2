@@ -48,13 +48,13 @@ uses
 procedure TSDLSystemKeyboard.ToggleActiveTextInput;
   procedure Activate;
   begin
-    FormSpeechValidationQueue.Visible := True;
+    FormSpeechValidationQueue.Show;
     RaiseWindow;
   end;
 
   procedure Deactivate;
   begin
-    FormSpeechValidationQueue.Visible := False;
+    FormSpeechValidationQueue.Hide;
   end;
 
 begin

@@ -36,7 +36,7 @@ type
     function AsIPaintable : IPaintable;
     function GetIStimuli : IStimuli;
     function MyResult : TTrialResult;
-    function Header : string;
+    //function Header : string;
     function ToData : string;
     procedure DoExpectedResponse;
     procedure EndTrial;

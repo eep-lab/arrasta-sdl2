@@ -53,6 +53,7 @@ type
     destructor Destroy; override;
     function IntersectsWith(ARect: TSDL_Rect) : Boolean; overload;
     function IntersectsWith(ARect: TRectangule) : Boolean; overload;
+    function GetOriginalBounds : TSDL_Rect;
     procedure Centralize;
     procedure CentralizeAtTopWith(ARect: TSDL_Rect);
     procedure MoveToBottomRightScreen;
@@ -228,6 +229,11 @@ end;
 function TRectangule.IntersectsWith(ARect: TRectangule): Boolean;
 begin
   Result := IntersectsWith(ARect.BoundsRect);
+end;
+
+function TRectangule.GetOriginalBounds: TSDL_Rect;
+begin
+  Result := FOriginalBounds;
 end;
 
 procedure TRectangule.CentralizeWith(ARect: TSDL_Rect);

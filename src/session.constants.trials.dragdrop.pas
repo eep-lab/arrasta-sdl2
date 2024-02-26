@@ -1,11 +1,14 @@
-unit session.constants.dragdrop;
+unit session.constants.trials.dragdrop;
 
 {$mode ObjFPC}{$H+}
 
 interface
 
+uses session.constants.trials;
+
 type
   TDragDropKeys = record
+    AutoAnimateOnStartKey : string;
     DragDropOrientationKey : string;
     UseHelpProgressionKey : string;
     DistanceKey : string;
@@ -13,11 +16,14 @@ type
     DragMoveFactorKey : string;
     DragableAnimationKey : string;
     GridSizeKey : string;
-    StimuliFolderKey: string;
+    NameKey : string;
+    ReferenceNameKey : string;
+    StimuliFolderKey : string;
   end;
 
 const
   DragDropKeys : TDragDropKeys = (
+    AutoAnimateOnStartKey : 'AutoAnimateOnStart';
     DragDropOrientationKey : 'Orientation';
     UseHelpProgressionKey : 'UseHelpProgression';
     DistanceKey : 'Distance';
@@ -25,6 +31,8 @@ const
     DragMoveFactorKey : 'DragMoveFactor';
     DragableAnimationKey : 'DragableAnimation';
     GridSizeKey : 'GridSize';
+    NameKey : HeaderName;
+    ReferenceNameKey : HeaderReferenceName;
     StimuliFolderKey : 'StimuliFolder');
 
 implementation

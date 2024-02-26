@@ -27,7 +27,7 @@ type
       //FComparGridList : TGridList;
       FSeed : integer;
       FCellsCount: integer;
-      FCellsSize: Float;
+      FCellsSizeInCentimenter: Float;
       FComparisonsCount: integer;
       FGrid : TMatrix;
       FGridStyle : TGridStyle;
@@ -63,7 +63,7 @@ type
       procedure RandomizePositions;
       property GridStyle : TGridStyle read FGridStyle write SetGridStyle;
       property CellsCount : integer read FCellsCount write SetCellsCount;
-      property CellsSize : Float read FCellsSize write SetCellsSize;
+      property CellsSize : Float read FCellsSizeInCentimenter write SetCellsSize;
       property FixedSample : Boolean read FFixedSample write SetFixedSample;
       property FixedComparison : Boolean read FFixedComparison write SetFixedComparison;
       property RandomPositions : TRandomPositions read FRandomPositions;
@@ -89,9 +89,9 @@ begin
   if FGridStyle = AGridStyle then Exit;
   FGridStyle := AGridStyle;
   case AGridStyle of
-    gtCircle : FGrid := GetCircularCentralGrid(FSeed, FCellsSize);
-    gtSquare : FGrid := GetCentralGrid(FSeed, FCellsSize, DispersionStyle);
-    gtDistributed: FGrid := GetCentralGrid(FSeed, FCellsSize, DispersionStyle);
+    gtCircle : FGrid := GetCircularCentralGrid(FSeed, FCellsSizeInCentimenter);
+    gtSquare : FGrid := GetCentralGrid(FSeed, FCellsSizeInCentimenter, DispersionStyle);
+    gtDistributed: FGrid := GetCentralGrid(FSeed, FCellsSizeInCentimenter, DispersionStyle);
   end;
 end;
 
@@ -496,8 +496,8 @@ end;
 
 procedure TGrid.SetCellsSize(AValue: Float);
 begin
-  if FCellsSize=AValue then Exit;
-  FCellsSize:=AValue;
+  if FCellsSizeInCentimenter=AValue then Exit;
+  FCellsSizeInCentimenter:=AValue;
 end;
 
 procedure TGrid.SetFixedComparison(AValue: Boolean);
@@ -546,12 +546,12 @@ begin
   FSamplesCount := -1;
   FComparisonsCount := -1;
   FCellsCount:=ASeed*ASeed;
-  FCellsSize := 6;
+  FCellsSizeInCentimenter := GlobalTrialParameters.CellsSizeInCentimenter;
   FFixedSample := True;
   FFixedComparison:=False;
   FGridStyle := gtDistributed;
   FGridOrientation:= goTopToBottom;
-  FGrid := GetCentralGrid(FSeed, FCellsSize, DispersionStyle);
+  FGrid := GetCentralGrid(FSeed, FCellsSizeInCentimenter, DispersionStyle);
 end;
 
 destructor TGrid.Destroy;
@@ -580,20 +580,10 @@ begin
     FComparisonsCount := AComparisons;
     FGridOrientation := AGridOrientation;
 
-
     if FSeed <> AGridSize then begin
       FSeed := AGridSize;
-      case FSeed of
-        2: FCellsSize := 10;
-        3: FCellsSize := 6;
-        4: FCellsSize := 6;
-        5: FCellsSize := 5;
-        6: FCellsSize := 5;
-        otherwise
-          FCellsSize := 3;
-      end;
       FCellsCount:=FSeed*FSeed;
-      FGrid := GetCentralGrid(FSeed, FCellsSize, DispersionStyle);
+      FGrid := GetCentralGrid(FSeed, FCellsSizeInCentimenter, DispersionStyle);
     end;
     CreatePositions;
   end;

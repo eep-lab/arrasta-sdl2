@@ -128,6 +128,7 @@ uses
 procedure TFormBackground.ButtonRunSessionClick(Sender: TObject);
 begin
   if not Validated then Exit;
+  FormMisc.Initialize;
   AssignGlobalVariables;
   ToogleControlPanelEnabled;
 
@@ -255,6 +256,7 @@ begin
     EyeTracker.StopRecording;
     FinalizeEyeTracker;
   end;
+  FormMisc.Finalize;
   SDLSession.Free;
   SDLApp.Free;
   FreeConfigurationFile;
@@ -357,6 +359,12 @@ begin
   TestMode := FormMisc.CheckBoxTestMode.Checked;
 
   GlobalTrialParameters.Cursor := 1;
+
+  with GlobalTrialParameters, FormMisc.FloatSpinEditScreenWidth do
+    ScreenInCentimeters := Value;
+
+  with GlobalTrialParameters, FormMisc.FloatSpinEditCellsSize do
+    CellsSizeInCentimenter := Value;
 
   with GlobalTrialParameters, FormMisc.CheckBoxHideMouse do
     HideMouse := Checked;

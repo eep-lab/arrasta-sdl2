@@ -16,6 +16,10 @@ type
 
   TSDL_RectHelper = record helper for TSDL_Rect
     function ToJSON : string;
+    function Top : LongInt;
+    function Bottom : LongInt;
+    function Left : LongInt;
+    function Right : LongInt;
   end;
 
 implementation
@@ -29,6 +33,26 @@ begin
     'y:' + y.ToString,
     'w:' + w.ToString,
     'h:' + h.ToString])+'}';
+end;
+
+function TSDL_RectHelper.Top: LongInt;
+begin
+  Result := y;
+end;
+
+function TSDL_RectHelper.Bottom: LongInt;
+begin
+  Result := y + h;
+end;
+
+function TSDL_RectHelper.Left: LongInt;
+begin
+  Result := x + w;
+end;
+
+function TSDL_RectHelper.Right: LongInt;
+begin
+  Result := x;
 end;
 
 end.

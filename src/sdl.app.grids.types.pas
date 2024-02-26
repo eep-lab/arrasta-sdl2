@@ -37,6 +37,13 @@ type
      ComparisonsRows : TLatinSquare;
    end;
 
+   TBorder = record
+     Top : TSDL_Rect;
+     Bottom : TSDL_Rect;
+     Left : TSDL_Rect;
+     Right: TSDL_Rect;
+   end;
+
 implementation
 
 end.

@@ -15,6 +15,7 @@ type
   TCSVMultiSample = class(TCSVTrialsMTS)
     private // registered parameters
       FDragDropOrientation: string;
+      FAutoAnimateOnstart: Boolean;
       FUseHelpProgression: Boolean;
       FDistance: Integer;
       FDragMode: string;
@@ -27,7 +28,6 @@ type
       procedure AfterLoadingParameters(Sender: TObject); override;
     public
       constructor Create(ASource: string); override;
-      procedure AssignParameters(AParameters : TStringList); override;
       property Values[const AKey: string]: string
         read GetValue write SetValue;
   end;
@@ -37,7 +37,7 @@ implementation
 uses
   sdl.app.trials.dragdrop,
   session.constants.trials,
-  session.constants.dragdrop,
+  session.constants.trials.dragdrop,
   session.pool;
 
 { TCSVMultiSample }
@@ -55,8 +55,7 @@ begin
     FStimuliFolder + '-' +
     'S' + Samples.ToString + '-' +
     'C' + Comparisons.ToString + '-' +
-    'G' + FGridSize.ToString + '-' +
-    'F' + FDragMoveFactor.ToString;
+    'G' + FGridSize.ToString;
 
   FRefName :=
     Relation + '-' +
@@ -70,6 +69,7 @@ begin
   inherited Create(ASource);
   FKind := TDragDrop.ClassName;
   FDragDropOrientation := '';
+  FAutoAnimateOnstart := False;
   FUseHelpProgression := False;
   FDistance := 0;
   FDragMode := '';
@@ -77,8 +77,12 @@ begin
   FDragableAnimation := '';
   FGridSize := 0;
   FStimuliFolder := '';
+  FName        := '';
+  FRefName     := '';
 
-  with DragDropKeys do begin
+  with TrialKeys, DragDropKeys do begin
+    RegisterParameter(AutoAnimateOnStartKey,
+      @FAutoAnimateOnstart, FAutoAnimateOnstart);
     RegisterParameter(DragDropOrientationKey,
       @FDragDropOrientation, FDragDropOrientation);
     RegisterParameter(UseHelpProgressionKey,
@@ -93,15 +97,13 @@ begin
       @FDragableAnimation, FDragableAnimation);
     RegisterParameter(GridSizeKey,
       @FGridSize, FGridSize);
+    RegisterParameter(NameKey,
+      @FName, FName);
+    RegisterParameter(ReferenceNameKey,
+      @FRefName, FRefName);
     RegisterParameter(StimuliFolderKey,
       @FStimuliFolder, FStimuliFolder);
   end;
-end;
-
-procedure TCSVMultiSample.AssignParameters(AParameters: TStringList);
-begin
-  inherited AssignParameters(AParameters);
-
 end;
 
 end.

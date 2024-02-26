@@ -57,6 +57,7 @@ implementation
 
 uses
   forms.main,
+  session.constants.trials,
   session.configurationfile,
   session.fileutils,
   session.pool,
@@ -220,7 +221,7 @@ begin
       (Pool.Session.Block.ID + 1).ToString,
       (Pool.Session.Block.Trial.ID + 1).ToString,
       ConfigurationFile.CurrentBlock.Name,
-      ConfigurationFile.CurrentTrial.Parameters.Values['Name'],
+      ConfigurationFile.CurrentTrial.Parameters.Values[TrialKeys.NameKey],
       LLastResponse]);
   end;
 

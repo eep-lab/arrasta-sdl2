@@ -356,7 +356,7 @@ begin
 
   // create sdl windows
   FSDLWindow := SDL_CreateWindow(FTitle, LMonitor.x, LMonitor.y,
-    LMonitor.w-250, LMonitor.h, 0 {or SDL_WINDOW_OPENGL});
+    LMonitor.w, LMonitor.h, 0 {or SDL_WINDOW_OPENGL});
 
   // todo: create sdl opengl context
   // https://stackoverflow.com/questions/41091875/is-sdl-renderer-useless-if-i-use-opengl-for-drawing

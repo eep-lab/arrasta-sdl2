@@ -5,7 +5,7 @@ unit session.parameters.global;
 interface
 
 uses
-  SysUtils, sdl.app.grids.types;
+  SysUtils, Math, sdl.app.grids.types;
 
 type
 
@@ -29,6 +29,8 @@ type
     DefaultAudioLoops : SmallInt;
     MarkerSize : SmallInt;
     HideMouse : Boolean;
+    ScreenInCentimeters : Float;
+    CellsSizeInCentimenter : Float;
   end;
 
 var
@@ -56,6 +58,8 @@ initialization
     AudioLoopInterval := 0;
     DefaultAudioLoops := 1;
     MarkerSize := 100;
+    ScreenInCentimeters := 39.624;
+    CellsSizeInCentimenter := 6.0;
   end;
 end.
 

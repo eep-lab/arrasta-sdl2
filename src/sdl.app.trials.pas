@@ -77,7 +77,7 @@ type
       function GetTrialConfiguration: TTrialConfiguration;
       function GetIStimuli : IStimuli; virtual; abstract;
       function MyResult : TTrialResult; virtual;
-      function Header : string; virtual; abstract;
+      //function Header : string; virtual; abstract;
       function ToData : string; virtual;
     public
       constructor Create; override;
@@ -306,7 +306,11 @@ begin
     if Count > 0 then begin
       FIStimuli.Stop;
       FIStimuli := Extract(Last);
-      Show;
+      if Sender = Self then begin
+        { do nothing }
+      end else begin
+        Show;
+      end;
     end;
   end;
 end;
@@ -339,7 +343,6 @@ begin
     LIStimuli.Load(FConfiguration.Parameters, Self);
     FIStimuliList.Add(LIStimuli);
   end;
-
   EndStarterCallBack(Self);
 end;
 
@@ -356,7 +359,7 @@ begin
         Gaze := NormToScreen(AGazes[i], FRect);
 
         IChild := ILookable(TSDLControl(Child));
-        if IChild.PointInside(Gaze) then begin
+        if IChild.IsGazeInside(Gaze, 50) then begin
           if not IChild.GazeInside then begin
             IChild.GazeInside:=True;
             IChild.GazeEnter(Self);

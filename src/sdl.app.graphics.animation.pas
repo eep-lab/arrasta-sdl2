@@ -122,10 +122,8 @@ begin
       end;
     end;
     CentralizeWith(FSibling.BoundsRect);
+    Square(FRect);
   end;
-  // SDL_SetRenderDrawColor(PSDLRenderer, 255, 0, 0 , 0);
-  // SDL_RenderDrawRect(PSDLRenderer, @FRect);
-  Square(FRect);
 end;
 
 procedure TAnimation.Animate(ASibling : TRectangule);

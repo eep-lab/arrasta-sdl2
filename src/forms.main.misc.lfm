@@ -4,19 +4,19 @@ object FormMisc: TFormMisc
   Top = 45
   Width = 449
   HorzScrollBar.Page = 370
-  VertScrollBar.Page = 629
+  VertScrollBar.Page = 431
   AutoScroll = True
   Caption = 'Configurações da sessão'
   ClientHeight = 629
-  ClientWidth = 432
-  SessionProperties = 'CheckBoxShowMarkers.Checked;CheckBoxShowModalFormForSpeechResponses.Checked;CheckBoxTestMode.Checked;ComboBoxAudioFolder.ItemIndex;ComboBoxAudioPromptForText.ItemIndex;ComboBoxController.ItemIndex;ComboBoxEyeTracker.ItemIndex;ComboBoxFixedSamplePosition.ItemIndex;ComboBoxFontName.ItemIndex;ComboBoxMonitor.ItemIndex;ComboBoxShouldRestartAt.ItemIndex;PageControl.TabIndex;SpinEditAudioLoopInterval.Value;SpinEditDefaultAudioLoops.Value;SpinEditFontSize.Value;SpinEditInterTrialInterval.Value;SpinEditLimitedHold.Value;SpinEditRecordingSeconds.Value;SpinEditTimeOut.Value;CheckBoxHideMouse.Checked'
+  ClientWidth = 449
+  SessionProperties = 'CheckBoxHideMouse.Checked;CheckBoxShowMarkers.Checked;CheckBoxShowModalFormForSpeechResponses.Checked;CheckBoxTestMode.Checked;ComboBoxAudioFolder.ItemIndex;ComboBoxAudioPromptForText.ItemIndex;ComboBoxController.ItemIndex;ComboBoxEyeTracker.ItemIndex;ComboBoxFixedSamplePosition.ItemIndex;ComboBoxFontName.ItemIndex;ComboBoxMonitor.ItemIndex;ComboBoxShouldRestartAt.ItemIndex;FloatSpinEditScreenWidth.Value;PageControl.TabIndex;RadioGroupDispenser.ItemIndex;SpinEditAudioLoopInterval.Value;SpinEditDefaultAudioLoops.Value;SpinEditFontSize.Value;SpinEditInterTrialInterval.Value;SpinEditLimitedHold.Value;SpinEditRecordingSeconds.Value;SpinEditTimeOut.Value;FloatSpinEditCellsSize.Value'
   LCLVersion = '3.99.0.0'
   OnCreate = FormCreate
   object PageControl: TPageControl
     Left = 0
-    Height = 653
+    Height = 629
     Top = 0
-    Width = 432
+    Width = 449
     ActivePage = TabSheetGeneral
     Align = alClient
     TabIndex = 0
@@ -30,20 +30,20 @@ object FormMisc: TFormMisc
       ChildSizing.EnlargeHorizontal = crsHomogenousChildResize
       ChildSizing.Layout = cclLeftToRightThenTopToBottom
       ChildSizing.ControlsPerLine = 2
-      ClientHeight = 625
-      ClientWidth = 424
+      ClientHeight = 601
+      ClientWidth = 441
       object LabelLimitedHold: TLabel
         Left = 20
         Height = 23
         Top = 20
-        Width = 243
+        Width = 252
         Caption = 'Tempo da tentativa (minutos)'
       end
       object SpinEditLimitedHold: TSpinEdit
-        Left = 273
+        Left = 282
         Height = 23
         Top = 20
-        Width = 131
+        Width = 139
         MaxValue = 5
         TabOrder = 0
       end
@@ -51,14 +51,14 @@ object FormMisc: TFormMisc
         Left = 20
         Height = 23
         Top = 53
-        Width = 243
+        Width = 252
         Caption = 'Intervalo entre tentativas (milisegundos)'
       end
       object SpinEditInterTrialInterval: TSpinEdit
-        Left = 273
+        Left = 282
         Height = 23
         Top = 53
-        Width = 131
+        Width = 139
         Increment = 500
         MaxValue = 60000
         TabOrder = 1
@@ -68,118 +68,31 @@ object FormMisc: TFormMisc
         Left = 20
         Height = 23
         Top = 86
-        Width = 243
+        Width = 252
         Caption = 'Time-out (milisegundos)'
       end
       object SpinEditTimeOut: TSpinEdit
-        Left = 273
+        Left = 282
         Height = 23
         Top = 86
-        Width = 131
+        Width = 139
         Increment = 500
         MaxValue = 120000
         TabOrder = 2
         Value = 3000
       end
-      object LabelAudioLoopInterval: TLabel
-        Left = 20
-        Height = 30
-        Top = 119
-        Width = 243
-        Caption = 'Intervalo do som em tentativas'#13#10'A-B, A-C, A-D (milisegundos)'
-      end
-      object SpinEditAudioLoopInterval: TSpinEdit
-        Left = 273
-        Height = 22
-        Top = 119
-        Width = 131
-        Constraints.MaxHeight = 22
-        Increment = 500
-        MaxValue = 60000
-        MinValue = 2000
-        TabOrder = 13
-        Value = 15000
-      end
-      object LabelDefaultAudioLoops: TLabel
-        Left = 20
-        Height = 30
-        Top = 159
-        Width = 243
-        Caption = 'Número de repetições padrão'#13#10'em tentativas A-B, A-C, A-D'
-      end
-      object SpinEditDefaultAudioLoops: TSpinEdit
-        Left = 273
-        Height = 22
-        Top = 159
-        Width = 131
-        Constraints.MaxHeight = 22
-        MaxValue = 32767
-        MinValue = -1
-        TabOrder = 14
-        Value = -1
-      end
-      object LabelFont: TLabel
-        Left = 20
-        Height = 23
-        Top = 199
-        Width = 243
-        Caption = 'Fonte das palavras escritas'
-      end
-      object ComboBoxFontName: TComboBox
-        Left = 273
-        Height = 23
-        Top = 199
-        Width = 131
-        ItemHeight = 15
-        ReadOnly = True
-        TabOrder = 3
-        Text = 'Nome da fonte'
-      end
-      object LabelFontsize: TLabel
-        Left = 20
-        Height = 23
-        Top = 232
-        Width = 243
-        Caption = 'Tamanho da fonte das palavras escritas'
-      end
-      object SpinEditFontSize: TSpinEdit
-        Left = 273
-        Height = 23
-        Top = 232
-        Width = 131
-        MaxValue = 2000
-        TabOrder = 4
-        Value = 150
-      end
-      object LabelAudioFolder: TLabel
-        Left = 20
-        Height = 23
-        Top = 265
-        Width = 243
-        Caption = 'Pasta com os sons das palavras'
-      end
-      object ComboBoxAudioFolder: TComboBox
-        Left = 273
-        Height = 23
-        Top = 265
-        Width = 131
-        ItemHeight = 15
-        ReadOnly = True
-        TabOrder = 5
-        Text = 'Nome da pasta'
-      end
       object LabelShoudRestartAtBlockStart: TLabel
         Left = 20
         Height = 30
-        Top = 298
-        Width = 243
+        Top = 119
+        Width = 252
         Caption = 'Ao retomar uma sessão interrompida,'#13#10'retomar a sessão:'
       end
       object ComboBoxShouldRestartAt: TComboBox
-        Left = 273
+        Left = 282
         Height = 23
-        Top = 305
-        Width = 131
+        Top = 119
+        Width = 139
         ItemHeight = 15
         ItemIndex = 0
         Items.Strings = (
@@ -188,56 +101,285 @@ object FormMisc: TFormMisc
           ''
         )
         ReadOnly = True
-        TabOrder = 12
+        TabOrder = 5
         Text = 'do início do bloco'
+      end
+      object LabelMonitor: TLabel
+        Left = 20
+        Height = 30
+        Top = 159
+        Width = 252
+        Caption = 'Monitor usado para'#13#10'apresentar a sessão'
+      end
+      object ComboBoxMonitor: TComboBox
+        Left = 282
+        Height = 23
+        Top = 159
+        Width = 139
+        ItemHeight = 15
+        ReadOnly = True
+        TabOrder = 3
+        Text = 'Monitor'
+      end
+      object LabelTestMode: TLabel
+        Left = 20
+        Height = 17
+        Top = 199
+        Width = 252
+        Caption = 'Modo de teste'
+      end
+      object CheckBoxTestMode: TCheckBox
+        Left = 282
+        Height = 17
+        Top = 199
+        Width = 139
+        TabOrder = 4
+      end
+      object LabelHideMouse: TLabel
+        Left = 20
+        Height = 17
+        Top = 226
+        Width = 252
+        Caption = 'Ocultar cursor do mouse'
+      end
+      object CheckBoxHideMouse: TCheckBox
+        Left = 282
+        Height = 17
+        Top = 226
+        Width = 139
+        TabOrder = 6
+      end
+      object LabelScreenWidth: TLabel
+        Left = 20
+        Height = 30
+        Top = 253
+        Width = 252
+        Caption = 'Comprimento da tela'#13#10'do monitor (centímetros)'
+      end
+      object FloatSpinEditScreenWidth: TFloatSpinEdit
+        Left = 282
+        Height = 22
+        Top = 253
+        Width = 139
+        Constraints.MaxHeight = 22
+        DecimalPlaces = 3
+        TabOrder = 7
+        Value = 39.624
+      end
+      object LabelCellsSize: TLabel
+        Left = 20
+        Height = 30
+        Top = 293
+        Width = 252
+        Caption = 'Comprimento dos'#13#10'estímulos (centímetros)'
+      end
+      object FloatSpinEditCellsSize: TFloatSpinEdit
+        Left = 282
+        Height = 22
+        Top = 293
+        Width = 139
+        Constraints.MaxHeight = 22
+        DecimalPlaces = 3
+        TabOrder = 10
+        Value = 6
+      end
+      object RadioGroupDispenser: TRadioGroup
+        Left = 20
+        Height = 50
+        Top = 333
+        Width = 252
+        AutoFill = True
+        Caption = 'Dispensador de pelotas'
+        ChildSizing.LeftRightSpacing = 6
+        ChildSizing.EnlargeHorizontal = crsHomogenousChildResize
+        ChildSizing.EnlargeVertical = crsHomogenousChildResize
+        ChildSizing.ShrinkHorizontal = crsScaleChilds
+        ChildSizing.ShrinkVertical = crsScaleChilds
+        ChildSizing.Layout = cclLeftToRightThenTopToBottom
+        ChildSizing.ControlsPerLine = 5
+        ClientHeight = 30
+        ClientWidth = 248
+        Columns = 5
+        Constraints.MinHeight = 50
+        ItemIndex = 0
+        Items.Strings = (
+          'Nenhum'
+          '1'
+          '2'
+          '3'
+          '4'
+        )
+        TabOrder = 8
+      end
+      object ButtonTestDispenser: TButton
+        Left = 282
+        Height = 50
+        Top = 333
+        Width = 139
+        Caption = 'Testar'
+        TabOrder = 9
+        OnClick = ButtonTestDispenserClick
+      end
+    end
+    object TabSheetPseudowords: TTabSheet
+      Caption = 'Palavras'
+      ChildSizing.LeftRightSpacing = 20
+      ChildSizing.TopBottomSpacing = 20
+      ChildSizing.HorizontalSpacing = 10
+      ChildSizing.VerticalSpacing = 10
+      ChildSizing.EnlargeHorizontal = crsHomogenousChildResize
+      ChildSizing.Layout = cclLeftToRightThenTopToBottom
+      ChildSizing.ControlsPerLine = 2
+      ClientHeight = 601
+      ClientWidth = 441
+      object LabelAudioLoopInterval: TLabel
+        Left = 20
+        Height = 30
+        Top = 20
+        Width = 248
+        Caption = 'Intervalo do som em tentativas'#13#10'A-B, A-C, A-D (milisegundos)'
+      end
+      object SpinEditAudioLoopInterval: TSpinEdit
+        Left = 278
+        Height = 22
+        Top = 20
+        Width = 143
+        Constraints.MaxHeight = 22
+        Increment = 500
+        MaxValue = 60000
+        MinValue = 2000
+        TabOrder = 0
+        Value = 15000
+      end
+      object LabelDefaultAudioLoops: TLabel
+        Left = 20
+        Height = 30
+        Top = 60
+        Width = 248
+        Caption = 'Número de repetições padrão'#13#10'em tentativas A-B, A-C, A-D'
+      end
+      object SpinEditDefaultAudioLoops: TSpinEdit
+        Left = 278
+        Height = 22
+        Top = 60
+        Width = 143
+        Constraints.MaxHeight = 22
+        MaxValue = 32767
+        MinValue = -1
+        TabOrder = 1
+        Value = -1
+      end
+      object LabelFont: TLabel
+        Left = 20
+        Height = 23
+        Top = 100
+        Width = 248
+        Caption = 'Fonte das palavras escritas'
+      end
+      object ComboBoxFontName: TComboBox
+        Left = 278
+        Height = 23
+        Top = 100
+        Width = 143
+        ItemHeight = 15
+        ReadOnly = True
+        TabOrder = 2
+        Text = 'Nome da fonte'
+      end
+      object LabelFontsize: TLabel
+        Left = 20
+        Height = 23
+        Top = 133
+        Width = 248
+        Caption = 'Tamanho da fonte das palavras escritas'
+      end
+      object SpinEditFontSize: TSpinEdit
+        Left = 278
+        Height = 23
+        Top = 133
+        Width = 143
+        MaxValue = 2000
+        TabOrder = 3
+        Value = 150
+      end
+      object LabelAudioFolder: TLabel
+        Left = 20
+        Height = 23
+        Top = 166
+        Width = 248
+        Caption = 'Pasta com os sons das palavras'
+      end
+      object ComboBoxAudioFolder: TComboBox
+        Left = 278
+        Height = 23
+        Top = 166
+        Width = 143
+        ItemHeight = 15
+        ReadOnly = True
+        TabOrder = 4
+        Text = 'Nome da pasta'
       end
       object LabelAudioPromptForText: TLabel
         Left = 20
         Height = 45
-        Top = 338
-        Width = 243
+        Top = 199
+        Width = 248
         Caption = 'Arquivo de aúdio usado'#13#10'como prompt do modelo'#13#10'em tentativas de leitura (C-D) '
       end
       object ComboBoxAudioPromptForText: TComboBox
-        Left = 273
+        Left = 278
         Height = 23
-        Top = 360
-        Width = 131
+        Top = 199
+        Width = 143
         ItemHeight = 15
         ReadOnly = True
-        TabOrder = 6
+        TabOrder = 5
         Text = 'Nome do arquivo'
       end
       object LabelRecordingSeconds: TLabel
         Left = 20
         Height = 45
-        Top = 393
-        Width = 243
+        Top = 254
+        Width = 248
         Caption = 'Tempo de gravação das'#13#10'respostas de leitura'#13#10'em tentativas de leitura (C-D)'
       end
       object SpinEditRecordingSeconds: TSpinEdit
-        Left = 273
+        Left = 278
         Height = 22
-        Top = 393
-        Width = 131
+        Top = 254
+        Width = 143
         Constraints.MaxHeight = 22
         MaxValue = 60
         MinValue = 1
-        TabOrder = 7
+        TabOrder = 6
         Value = 3
+      end
+      object LabelShowModal: TLabel
+        Left = 20
+        Height = 30
+        Top = 309
+        Width = 248
+        Caption = 'Registrar respostas de leitura'#13#10'manualmente em monitor primário'
+      end
+      object CheckBoxShowModalFormForSpeechResponses: TCheckBox
+        Left = 278
+        Height = 30
+        Top = 309
+        Width = 143
+        TabOrder = 7
       end
       object LabelFixedSamplePosition: TLabel
         Left = 20
         Height = 23
-        Top = 448
-        Width = 243
+        Top = 349
+        Width = 248
         Caption = 'Posição fixa do modelo'
       end
       object ComboBoxFixedSamplePosition: TComboBox
-        Left = 273
+        Left = 278
         Height = 23
-        Top = 448
-        Width = 131
+        Top = 349
+        Width = 143
         ItemHeight = 15
         ItemIndex = 1
         Items.Strings = (
@@ -247,65 +389,6 @@ object FormMisc: TFormMisc
         ReadOnly = True
         TabOrder = 8
         Text = 'No centro'
-      end
-      object LabelMonitor: TLabel
-        Left = 20
-        Height = 30
-        Top = 481
-        Width = 243
-        Caption = 'Monitor usado para'#13#10'apresentar a sessão'
-      end
-      object ComboBoxMonitor: TComboBox
-        Left = 273
-        Height = 23
-        Top = 481
-        Width = 131
-        ItemHeight = 15
-        ReadOnly = True
-        TabOrder = 10
-        Text = 'Monitor'
-      end
-      object LabelShowModal: TLabel
-        Left = 20
-        Height = 30
-        Top = 521
-        Width = 243
-        Caption = 'Registrar respostas de leitura'#13#10'manualmente em monitor primário'
-      end
-      object CheckBoxShowModalFormForSpeechResponses: TCheckBox
-        Left = 273
-        Height = 30
-        Top = 521
-        Width = 131
-        TabOrder = 9
-      end
-      object LabelTestMode: TLabel
-        Left = 20
-        Height = 17
-        Top = 561
-        Width = 243
-        Caption = 'Modo de teste'
-      end
-      object CheckBoxTestMode: TCheckBox
-        Left = 273
-        Height = 17
-        Top = 561
-        Width = 131
-        TabOrder = 11
-      end
-      object LabelHideMouse: TLabel
-        Left = 20
-        Height = 17
-        Top = 588
-        Width = 243
-        Caption = 'Ocultar cursor do mouse'
-      end
-      object CheckBoxHideMouse: TCheckBox
-        Left = 273
-        Height = 17
-        Top = 588
-        Width = 131
-        TabOrder = 15
       end
     end
     object TabSheetEyeTracking: TTabSheet
@@ -317,34 +400,34 @@ object FormMisc: TFormMisc
       ChildSizing.EnlargeHorizontal = crsHomogenousChildResize
       ChildSizing.Layout = cclLeftToRightThenTopToBottom
       ChildSizing.ControlsPerLine = 2
-      ClientHeight = 625
-      ClientWidth = 424
+      ClientHeight = 601
+      ClientWidth = 441
       object Label1: TLabel
         Left = 20
         Height = 17
         Top = 20
-        Width = 210
+        Width = 218
         Caption = 'Mostrar AprilTags'
       end
       object CheckBoxShowMarkers: TCheckBox
-        Left = 240
+        Left = 248
         Height = 17
         Top = 20
-        Width = 164
+        Width = 173
         TabOrder = 0
       end
       object LabelAprilTagsSize: TLabel
         Left = 20
         Height = 23
         Top = 47
-        Width = 210
+        Width = 218
         Caption = 'Tamanho das AprilTags (px)'
       end
       object SpinEditAprilTagsSize: TSpinEdit
-        Left = 240
+        Left = 248
         Height = 23
         Top = 47
-        Width = 164
+        Width = 173
         MaxValue = 3000
         MinValue = 50
         TabOrder = 2
@@ -354,14 +437,14 @@ object FormMisc: TFormMisc
         Left = 20
         Height = 23
         Top = 80
-        Width = 210
+        Width = 218
         Caption = 'Rastreador ocular'
       end
       object ComboBoxEyeTracker: TComboBox
-        Left = 240
+        Left = 248
         Height = 23
         Top = 80
-        Width = 164
+        Width = 173
         ItemHeight = 15
         ItemIndex = 0
         Items.Strings = (
@@ -383,20 +466,20 @@ object FormMisc: TFormMisc
       ChildSizing.EnlargeHorizontal = crsHomogenousChildResize
       ChildSizing.Layout = cclLeftToRightThenTopToBottom
       ChildSizing.ControlsPerLine = 2
-      ClientHeight = 625
-      ClientWidth = 424
+      ClientHeight = 601
+      ClientWidth = 441
       object LabelController: TLabel
         Left = 20
         Height = 23
         Top = 20
-        Width = 160
+        Width = 169
         Caption = 'Controle'
       end
       object ComboBoxController: TComboBox
-        Left = 190
+        Left = 199
         Height = 23
         Top = 20
-        Width = 214
+        Width = 222
         ItemHeight = 15
         ItemIndex = 0
         Items.Strings = (

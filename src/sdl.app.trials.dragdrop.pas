@@ -50,7 +50,7 @@ type
 implementation
 
 uses
-  session.constants.dragdrop
+  session.constants.trials.dragdrop
   , sdl.app.moveable.contract
   , sdl.app.controls.custom
   ;

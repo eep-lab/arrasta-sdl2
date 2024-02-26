@@ -61,6 +61,7 @@ implementation
 
 uses
   session.pool
+  , session.constants.trials
   , session.counters.all
   , session.loggers.writerow
   ;
@@ -84,7 +85,7 @@ end;
 procedure TEndCriteria.InvalidateTrial(ATrialData : TTrialConfiguration);
 begin
   FCurrentTrial := ATrialData;
-  TrialName := FCurrentTrial.Parameters.Values['Name'];
+  TrialName := FCurrentTrial.Parameters.Values[TrialKeys.NameKey];
 end;
 
 function TEndCriteria.OfSession: Boolean;
