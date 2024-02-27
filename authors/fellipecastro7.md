@@ -1,7 +1,7 @@
-I hereby agree to the terms of the Stimulus Control GNU General Public Licence v3.
+Por meio deste, concordo com os termos da Licença Pública Geral GNU de Controle de Estímulos v3.
 
 2024-02-27
 
 Fellipe Machado Castro
 
-I wrote a substatial part of the code.
+Contribuí significativamente para o desenvolvimento do projeto, tanto na escrita de código quanto no planejamento e implementação de novas funcionalidades. Além disso, assumi a responsabilidade pela documentação de uma parte do projeto, incluindo instruções detalhadas sobre como utilizar o software.
