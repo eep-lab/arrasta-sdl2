@@ -73,6 +73,8 @@ type
     protected
       function CustomName : string; override;
       function MyResult : TTrialResult; override;
+      function ToData : string; override;
+      function Header : string; override;
     public
       constructor Create; override;
       destructor Destroy; override;
@@ -114,6 +116,17 @@ uses
 function TMTSStimuli.MyResult: TTrialResult;
 begin
   Result := FResult;
+end;
+
+function TMTSStimuli.ToData: string;
+begin
+  Result := inherited ToData + #9 + FHasConsequence.ToString;
+end;
+
+function TMTSStimuli.Header: string;
+begin
+  Result := inherited Header;
+  Result := Result + #9 + 'HasDifferentialReinforcement'
 end;
 
 procedure TMTSStimuli.UpdateState(AState: TState);
