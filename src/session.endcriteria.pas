@@ -27,6 +27,7 @@ type
   private
     //Pool.Block.ID : integer;
     //Pool.Trial.ID : integer;
+    FOnBlockCriterionAchieved : Boolean;
     FCurrentBlock : TBlockConfiguration;
     FCurrentTrial : TTrialConfiguration;
     FOnHitCriteriaAtSessionEnd: TNotifyEvent;
@@ -34,13 +35,18 @@ type
     function NextTrial : SmallInt;
     function NextBlock : SmallInt;
     function HitPorcentageInBlock : Float;
+    function MissPorcentageInBlock : Float;
     function IsEndBlock(ATrialID : Word) : Boolean;
     function IsEndSession(ABlockID : Word) : Boolean;
     procedure SetOnHitCriteriaAtSessionEnd(AValue: TNotifyEvent);
     procedure SetOnNotHitCriteriaAtSessionEnd(AValue: TNotifyEvent);
-    function ShouldEndSession(var ABlockID : Word) : Boolean;
     function ShouldEndBlock(var ATrialID : Word) : Boolean;
     function HitPercentageCriterionAchieved : Boolean;
+    function MissPercentageCriterionAchieved : Boolean;
+    function MissCountCriterionAchieved : Boolean;
+    function HitCountCriterionAchieved : Boolean;
+    function ConsecutiveHitsCriterionAchieved : Boolean;
+    function ConsecutiveMissesCriterionAchieved : Boolean;
   public
     constructor Create;
     procedure InvalidateBlock;
@@ -153,134 +159,206 @@ end;
 
 function TEndCriteria.NextBlock: SmallInt;
 var
-  LRepeatStyle: TRepeatStyle;
-  LRepeatValue: Integer;
-  i : integer;
+  LOnBlockCriterionAchieved : Boolean;
 
-  function NextBlockOnHitCriteria : SmallInt;
+  function NextBlockOnCriterionAchieved : SmallInt;
   begin
-    if FCurrentBlock.NextBlockOnHitCriterion > -1 then begin
-      Result := FCurrentBlock.NextBlockOnHitCriterion;
-    end;
-
-    if FCurrentBlock.EndSessionOnHitCriterion then begin
+    if FCurrentBlock.EndSessionOnCriterion then begin
       Result := ConfigurationFile.TotalBlocks;
+    end else begin
+      if FCurrentBlock.NextBlockOnCriterion > -1 then begin
+        Result := FCurrentBlock.NextBlockOnCriterion;
+      end else begin
+        Result := Pool.Block.ID+1;
+      end;
     end;
   end;
 
-  procedure SetNextBlock(AValue : SmallInt);
+  function NextBlockAfterRepetitionDone(AValue : SmallInt): SmallInt;
+  var
+    LRepeatValue1: Integer;
+    LRepeatValue2: Integer;
+
+    procedure ForceEndSessionIfRequired;
+    begin
+      if FCurrentBlock.EndSessionOnNotCriterionAfterBlockRepetitions then begin
+        Result := ConfigurationFile.TotalBlocks;
+      end;
+    end;
+
+    procedure GoToNextBlock;
+    begin
+      Result := Pool.Block.ID+1;
+    end;
+
+    procedure GoToBlockIfValid;
+    begin
+      if AValue > -1 then begin
+        Result := AValue;
+      end;
+    end;
+
+    procedure RepeatBlock;
+    begin
+      Result := Pool.Block.ID;
+    end;
+
   begin
-    // decide where to go based on repeat style
-    case LRepeatStyle of
+    GoToNextBlock;
+    case FCurrentBlock.RepeatStyle of
+      None : begin
+        GoToBlockIfValid;
+        ForceEndSessionIfRequired;
+      end;
 
-        // if none, just go to the block, may generate infinite loops
-        repsNone : begin
-          Result := AValue;
-        end;
-
-        // if global, go to a different block
-        repsGlobal: begin
-          if LRepeatValue > 0 then begin
-            if Pool.Session.Tree.Block[Pool.Block.ID].Count < LRepeatValue then begin
-              Result := AValue;
-            end;
+      // repeat, then goto end session or go to NextBlockOnNotCriterion
+      Consecutive: begin
+        LRepeatValue1 := FCurrentBlock.MaxBlockRepetitionConsecutives -1;
+        if LRepeatValue1 > 0 then begin
+          LRepeatValue2 := Pool.Session.Block.Consecutives;
+          if Pool.Session.Block.Consecutives < LRepeatValue1 then begin
+            RepeatBlock;
+          end else begin
+            GoToBlockIfValid;
           end;
-        end;
-
-        // if consecutive, "go to" same block
-        repsConsecutive: begin
-          if Pool.Session.Block.Consecutives < LRepeatValue then begin
-            Result := Pool.Block.ID;
-          end;
+        end else begin
+          ForceEndSessionIfRequired;
         end;
       end;
-    //ShouldEndSession(Result);
+
+      // if below global repeat value
+      // then go to the specified block
+      // else end session if required
+      Global: begin
+        LRepeatValue1 := FCurrentBlock.MaxBlockRepetitionInSession -1;
+        if LRepeatValue1 > 0 then begin
+          if Pool.Session.Tree.Block[Pool.Block.ID].Count < LRepeatValue1 then begin
+            GoToBlockIfValid;
+          end else begin
+            ForceEndSessionIfRequired;
+          end;
+        end else begin
+          ForceEndSessionIfRequired;
+        end;
+      end;
+
+      ConsecutiveAndGlobal: begin
+        LRepeatValue1 := FCurrentBlock.MaxBlockRepetitionConsecutives -1;
+        LRepeatValue2 := FCurrentBlock.MaxBlockRepetitionInSession -1;
+        if (LRepeatValue1 > 0) and (LRepeatValue2 > 0) then begin
+          if Pool.Session.Block.Consecutives < LRepeatValue1 then begin
+            RepeatBlock;
+          end else begin
+            if Pool.Session.Tree.Block[Pool.Block.ID].Count < LRepeatValue2 then begin
+              GoToBlockIfValid;
+            end else begin
+              ForceEndSessionIfRequired
+            end;
+          end;
+        end else begin
+          ForceEndSessionIfRequired;
+        end;
+      end;
+    end;
   end;
 
-  procedure NextBlockOnNotCriteria;
+  function NextBlockOnCriterionNotAchieved : SmallInt;
   begin
     if FCurrentBlock.NextBlockOnNotCriterion > -1 then begin
-      SetNextBlock(FCurrentBlock.NextBlockOnNotCriterion);
+      Result := NextBlockAfterRepetitionDone(
+        FCurrentBlock.NextBlockOnNotCriterion);
+    end else begin
+      Result := Pool.Block.ID+1;
     end;
   end;
 
 begin
-  LRepeatStyle := repsNone;
-  if FCurrentBlock.MaxBlockRepetition > 0 then begin
-    LRepeatValue := FCurrentBlock.MaxBlockRepetition -1;
-    LRepeatStyle := repsConsecutive;
-  end;
-
-  if FCurrentBlock.MaxBlockRepetitionInSession > 0 then begin
-    LRepeatValue := FCurrentBlock.MaxBlockRepetitionInSession -1;
-    LRepeatStyle := repsGlobal;
-  end;
-
   // go to next block by default
   Result := Pool.Block.ID+1;
 
-  // todo: refactoring, use case statements of TCustomNextBlockType
-  if (FCurrentBlock.BackUpBlock > -1) then begin
-    if (FCurrentBlock.BackUpBlockErrors > 0) then begin
-      i := Pool.Block.Events.Misses.Count;
-      if i >= FCurrentBlock.BackUpBlockErrors then begin
-        SetNextBlock(FCurrentBlock.BackUpBlock);
-        Exit;
+  if FCurrentBlock.EndCriterionValue > 0 then begin
+    case FCurrentBlock.EndCriterionEvaluationTime of
+      OnTrialEnd : begin
+        if FOnBlockCriterionAchieved then begin
+          Result := NextBlockOnCriterionAchieved;
+          if IsEndSession(Result) then begin
+            OnHitCriteriaAtSessionEnd(Self);
+          end;
+        end else begin
+          Result := NextBlockOnCriterionNotAchieved;
+          if IsEndSession(Result) then begin
+            OnNotHitCriteriaAtSessionEnd(Self);
+          end;
+        end;
+      end;
+
+      OnBlockEnd : begin
+        case FCurrentBlock.EndCriterionStyle of
+          HitCount:
+            LOnBlockCriterionAchieved := HitCountCriterionAchieved;
+
+          MissCount:
+            LOnBlockCriterionAchieved := not MissCountCriterionAchieved;
+
+          ConsecutiveHits:
+            LOnBlockCriterionAchieved := ConsecutiveHitsCriterionAchieved;
+
+          ConsecutiveMisses:
+            LOnBlockCriterionAchieved := not ConsecutiveMissesCriterionAchieved;
+
+          HitPorcentage:
+            LOnBlockCriterionAchieved := HitPercentageCriterionAchieved;
+
+          MissPorcentage:
+            LOnBlockCriterionAchieved := not MissPercentageCriterionAchieved;
+        end;
+
+        if LOnBlockCriterionAchieved then begin
+          Result := NextBlockOnCriterionAchieved;
+          if IsEndSession(Result) then begin
+            OnHitCriteriaAtSessionEnd(Self);
+          end;
+        end else begin
+          Result := NextBlockOnCriterionNotAchieved;
+          if IsEndSession(Result) then begin
+            OnNotHitCriteriaAtSessionEnd(Self);
+          end;
+        end;
       end;
     end;
   end;
-
-  if FCurrentBlock.CrtHitPorcentage > 0 then begin
-    if HitPercentageCriterionAchieved then begin
-      Result := NextBlockOnHitCriteria;
-      if IsEndSession(Result) then begin
-        OnHitCriteriaAtSessionEnd(Self);
-      end;
-    end else begin
-      NextBlockOnNotCriteria;
-      if IsEndSession(Result) then begin
-        OnNotHitCriteriaAtSessionEnd(Self);
-      end;
-    end;
-    Exit;
-  end;
-
-  if FCurrentBlock.CrtConsecutiveHit > 1 then begin
-    Pool.Block.Events.Hits.FlushMaxConsecutives;
-    i := Pool.Block.Events.Hits.MaxConsecutives;
-    if i >= FCurrentBlock.CrtConsecutiveHit then begin
-      //Result := NextBlockOnHitCriteria;
-    end else begin
-      NextBlockOnNotCriteria;
-    end;
-  end;
-end;
-
-function TEndCriteria.ShouldEndSession(var ABlockID: Word): Boolean;
-
-  procedure ForceEndSession;
-  begin
-    ABlockID := ConfigurationFile.TotalBlocks;
-  end;
-
-  procedure EvaluateCriteriaToForceEndSession;
-  begin
-    if FCurrentBlock.MaxBlockRepetitionInSession > 0 then begin
-      if Pool.Session.Tree.Block[Pool.Block.ID].Count >=
-         FCurrentBlock.MaxBlockRepetitionInSession then begin
-         ForceEndSession;
-      end;
-    end;
-  end;
-
-begin
-  EvaluateCriteriaToForceEndSession;
-  Result := IsEndSession(ABlockID);
 end;
 
 function TEndCriteria.HitPercentageCriterionAchieved: Boolean;
 begin
-  Result := HitPorcentageInBlock >= FCurrentBlock.CrtHitPorcentage;
+  Result := HitPorcentageInBlock >= FCurrentBlock.EndCriterionValue;
+end;
+
+function TEndCriteria.MissPercentageCriterionAchieved: Boolean;
+begin
+  Result := MissPorcentageInBlock >= FCurrentBlock.EndCriterionValue;
+end;
+
+function TEndCriteria.MissCountCriterionAchieved: Boolean;
+begin
+  Result := Pool.Block.Events.Misses.Count >= FCurrentBlock.EndCriterionValue;
+end;
+
+function TEndCriteria.HitCountCriterionAchieved: Boolean;
+begin
+  Result := Pool.Block.Events.Hits.Count >= FCurrentBlock.EndCriterionValue;
+end;
+
+function TEndCriteria.ConsecutiveHitsCriterionAchieved: Boolean;
+begin
+  Pool.Block.Events.Hits.FlushMaxConsecutives;
+  Result := Pool.Block.Events.Hits.MaxConsecutives >= FCurrentBlock.EndCriterionValue;
+end;
+
+function TEndCriteria.ConsecutiveMissesCriterionAchieved: Boolean;
+begin
+  Pool.Block.Events.Misses.FlushMaxConsecutives;
+  Result := Pool.Block.Events.Misses.MaxConsecutives >= FCurrentBlock.EndCriterionValue;
 end;
 
 function TEndCriteria.HitPorcentageInBlock: Float;
@@ -289,6 +367,14 @@ var
 begin
   LHits := Pool.Block.Events.Hits.Count;
   Result := (LHits * 100)/FCurrentBlock.TotalTrials;
+end;
+
+function TEndCriteria.MissPorcentageInBlock: Float;
+var
+  LMisses : integer;
+begin
+  LMisses := Pool.Block.Events.Misses.Count;
+  Result := (LMisses * 100)/FCurrentBlock.TotalTrials;
 end;
 
 function TEndCriteria.IsEndBlock(ATrialID : Word): Boolean;
@@ -322,13 +408,43 @@ function TEndCriteria.ShouldEndBlock(var ATrialID: Word): Boolean;
 
   procedure EvaluateCriteriaToForceEndBlock;
   var
-    i : integer;
+    LOnTrialCriterionAchieved: Boolean = False;
   begin
-    if FCurrentBlock.CrtConsecutiveHit > 1 then begin
-      Pool.Block.Events.Hits.FlushMaxConsecutives;
-      i := Pool.Block.Events.Hits.MaxConsecutives;
-      if i >= FCurrentBlock.CrtConsecutiveHit then begin
+    if (FCurrentBlock.EndCriterionValue > 0) and
+       (FCurrentBlock.EndCriterionEvaluationTime = OnTrialEnd) then begin
+
+      case FCurrentBlock.EndCriterionStyle of
+        HitCount:
+          LOnTrialCriterionAchieved := HitCountCriterionAchieved;
+
+        MissCount:
+          LOnTrialCriterionAchieved := MissCountCriterionAchieved;
+
+        ConsecutiveHits:
+          LOnTrialCriterionAchieved := ConsecutiveHitsCriterionAchieved;
+
+        ConsecutiveMisses:
+          LOnTrialCriterionAchieved := ConsecutiveMissesCriterionAchieved;
+
+        HitPorcentage:
+          LOnTrialCriterionAchieved := HitPercentageCriterionAchieved;
+
+        MissPorcentage:
+          LOnTrialCriterionAchieved := MissPercentageCriterionAchieved;
+      end;
+
+      if LOnTrialCriterionAchieved then begin
         ForceEndBlock;
+      end;
+
+      case FCurrentBlock.EndCriterionStyle of
+        HitCount, ConsecutiveHits, HitPorcentage: begin
+          FOnBlockCriterionAchieved := LOnTrialCriterionAchieved;
+        end;
+
+        MissCount, ConsecutiveMisses, MissPorcentage: begin
+          FOnBlockCriterionAchieved := not LOnTrialCriterionAchieved;
+        end;
       end;
     end;
   end;

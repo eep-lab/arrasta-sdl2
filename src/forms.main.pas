@@ -33,7 +33,7 @@ type
     ComboBoxParticipant: TComboBox;
     IniPropStorage1: TIniPropStorage;
     LabelSessionEndCriteria: TLabel;
-    LabelContact: TLabel;
+    LabelLastSessionName: TLabel;
     ListBoxCondition: TListBox;
     MenuItemShowWordsPerCycle: TMenuItem;
     MenuItemOutputWordsPerCyle: TMenuItem;
@@ -47,6 +47,8 @@ type
     PopupMenuParticipants: TPopupMenu;
     PopupMenuMisc: TPopupMenu;
     ProgressBar: TProgressBar;
+    Splitter1: TSplitter;
+    Splitter2: TSplitter;
     procedure ButtonOpenSpeechValidationClick(Sender: TObject);
     procedure ButtonTestConditionClick(Sender: TObject);
     procedure ButtonLoadConfigurationFileClick(Sender: TObject);
@@ -56,6 +58,7 @@ type
     procedure ButtonRunSessionClick(Sender: TObject);
     procedure BeginSession(Sender: TObject);
     procedure ComboBoxDesignFolderEditingDone(Sender: TObject);
+    procedure ComboBoxParticipantEditingDone(Sender: TObject);
     procedure EndSession(Sender : TObject);
     procedure CloseSDLApp(Sender : TObject);
     procedure FormCreate(Sender: TObject);
@@ -245,6 +248,14 @@ begin
   GetDesignFilesFor(ListBoxCondition.Items);
 end;
 
+procedure TFormBackground.ComboBoxParticipantEditingDone(Sender: TObject);
+begin
+  with ListBoxCondition do begin
+    //Items[ItemIndex] := LastItemFromInfo;
+    LabelLastSessionName.Caption := Items[ItemIndex];
+  end;
+end;
+
 procedure TFormBackground.EndSession(Sender: TObject);
 begin
 
@@ -337,21 +348,27 @@ begin
 end;
 
 procedure TFormBackground.HitCriteriaAtSessionEnd(Sender: TObject);
+const
+  LResult = 'Critério atingido';
 begin
-  LabelSessionEndCriteria.Color := clGreen;
+  SetSessionResult(LResult);
   with ListBoxCondition do begin
-    LabelSessionEndCriteria.Caption :=
-      'Critério Atingido:' + Items[ItemIndex];
+    LabelLastSessionName.Caption := Items[ItemIndex];
   end;
+  LabelSessionEndCriteria.Color := clGreen;
+  LabelSessionEndCriteria.Caption := LResult;
 end;
 
 procedure TFormBackground.NotHitCriteriaAtSessionEnd(Sender: TObject);
+const
+  LResult = 'Critério não atingido';
 begin
-  LabelSessionEndCriteria.Color := clRed;
+  SetSessionResult(LResult);
   with ListBoxCondition do begin
-    LabelSessionEndCriteria.Caption :=
-      'Critério não atingido:' + Items[ItemIndex];
+    LabelLastSessionName.Caption := Items[ItemIndex];
   end;
+  LabelSessionEndCriteria.Color := clRed;
+  LabelSessionEndCriteria.Caption := LResult;
 end;
 
 procedure TFormBackground.AssignGlobalVariables;

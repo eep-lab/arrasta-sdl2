@@ -26,7 +26,7 @@ const
     ComparisonKey    : HeaderCompasison;
     RelationKey      : HeaderRelation;
     SubsetKey        : 'Subset';
-    HasPromptKey     : 'HasPrompt';
+    HasPromptKey     : HeaderHasPrompt;
     TotalLoopsKey    : 'TotalLoops';
   );
 

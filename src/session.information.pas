@@ -13,6 +13,7 @@ type
     Basename : string;
     ParticipantName : string;
     SessionName : string;
+    SessionResult : string;
     Grid : TMatrix;
     Monitor : TSDL_Rect;
     SessionStart : TDateTime;
@@ -21,7 +22,7 @@ type
   end;
 
   function LoadInformationFromFile(const AFileName: string): TInformation;
-
+  procedure SetSessionResult(AResult : string);
 
 implementation
 
@@ -48,7 +49,8 @@ begin
 
     with Result, LInfoFile do begin
       ParticipantName := Trim(Values[HSUBJECT_NAME]);
-      SessionName :=     Trim(Values[HSESSION_NAME]);
+      SessionName     := Trim(Values[HSESSION_NAME]);
+      SessionResult   := Trim(Values[HSESSION_RESULT]);
       //Grid :=            Trim(MatrixFromJSON(LInfoFile.Values[HGRID]));
       //Monitor :=         Trim(MonitorFromJSON(Values[HMONITOR]));
       //SessionStart :=    Trim(StrToDateTime(Values[HBEGIN_TIME]));
@@ -58,6 +60,11 @@ begin
   finally
     LInfoFile.Free;
   end;
+end;
+
+procedure SetSessionResult(AResult: string);
+begin
+  SessionResult := AResult;
 end;
 
 
