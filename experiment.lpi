@@ -125,9 +125,6 @@
             </Verbosity>
             <WriteFPCLogo Value="False"/>
             <CustomOptions Value="-dSDL2"/>
-            <OtherDefines Count="1">
-              <Define0 Value="SDL2"/>
-            </OtherDefines>
           </Other>
         </CompilerOptions>
       </Item>
@@ -1048,6 +1045,16 @@
       </Unit>
       <Unit>
         <Filename Value="src\sdl.app.stimulus.dragdrop.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="src\forms.question.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="FormQuestion"/>
+        <ResourceBaseClass Value="Form"/>
+      </Unit>
+      <Unit>
+        <Filename Value="src\dialogs.question.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit>
     </Units>

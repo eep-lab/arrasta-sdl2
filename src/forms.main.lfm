@@ -8,7 +8,7 @@ object FormBackground: TFormBackground
   ClientWidth = 385
   DefaultMonitor = dmPrimary
   PopupMenu = PopupMenuMisc
-  SessionProperties = 'ComboBoxCondition.ItemIndex;ComboBoxDesignFolder.ItemIndex;ComboBoxParticipant.ItemIndex;ComboBoxParticipant.Items;ComboBoxParticipant.Text;Height;LabelSessionEndCriteria.Caption;LabelSessionEndCriteria.Color;Left;OpenDialog1.InitialDir;Top;Width'
+  SessionProperties = 'ComboBoxCondition.ItemIndex;ComboBoxDesignFolder.ItemIndex;ComboBoxParticipant.ItemIndex;ComboBoxParticipant.Items;ComboBoxParticipant.Text;Height;LabelSessionEndCriteria.Caption;LabelSessionEndCriteria.Color;Left;OpenDialog1.InitialDir;Top;Width;LabelLastSessionName.Caption;LabelLastSessionName.Color'
   LCLVersion = '3.99.0.0'
   OnCreate = FormCreate
   object Panel1: TPanel
@@ -155,21 +155,23 @@ object FormBackground: TFormBackground
       ParentColor = False
     end
     object Splitter1: TSplitter
-      Cursor = crVSplit
+      Cursor = crDefault
       Left = 1
       Height = 6
       Top = 622
       Width = 361
       Align = alBottom
+      Beveled = True
       ResizeAnchor = akBottom
     end
     object Splitter2: TSplitter
-      Cursor = crVSplit
+      Cursor = crDefault
       Left = 1
       Height = 6
       Top = 648
       Width = 361
       Align = alBottom
+      Beveled = True
       ResizeAnchor = akBottom
     end
   end

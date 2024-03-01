@@ -249,10 +249,23 @@ begin
 end;
 
 procedure TFormBackground.ComboBoxParticipantEditingDone(Sender: TObject);
+var
+  LInformation : TInformation;
 begin
-  with ListBoxCondition do begin
-    //Items[ItemIndex] := LastItemFromInfo;
-    LabelLastSessionName.Caption := Items[ItemIndex];
+  SetupFolders;
+  if LastValidBaseFilenameFileExists then begin
+    LInformation := LoadInformationFromFile(GetLastValidInformationFile);
+  end else begin
+    ShowMessage('Guessing last valid information file');
+    LInformation := LoadInformationFromFile(GuessLastValidInformationFile);
+  end;
+
+  if LInformation.Basename.IsEmpty then begin
+    LabelLastSessionName.Caption := '?';
+    LabelSessionEndCriteria.Caption := '?';
+  end else begin
+    LabelLastSessionName.Caption := LInformation.SessionName;
+    LabelSessionEndCriteria.Caption := LInformation.SessionResult;
   end;
 end;
 

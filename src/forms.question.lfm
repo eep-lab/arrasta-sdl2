@@ -1,0 +1,38 @@
+object FormQuestion: TFormQuestion
+  Left = 583
+  Height = 80
+  Top = 285
+  Width = 320
+  BorderStyle = bsNone
+  Caption = 'FormQuestion'
+  ClientHeight = 80
+  ClientWidth = 320
+  DefaultMonitor = dmPrimary
+  Position = poDesktopCenter
+  ShowInTaskBar = stNever
+  LCLVersion = '3.99.0.0'
+  object ButtonCancel: TButton
+    Left = 0
+    Height = 80
+    Top = 0
+    Width = 120
+    Align = alLeft
+    Cancel = True
+    Caption = 'Cancelar'
+    ModalResult = 2
+    TabOrder = 1
+    OnKeyDown = ButtonCancelKeyDown
+  end
+  object ButtonInterrupt: TButton
+    Left = 200
+    Height = 80
+    Top = 0
+    Width = 120
+    Align = alRight
+    Caption = 'Continuar Depois'
+    Default = True
+    ModalResult = 12
+    TabOrder = 0
+    OnKeyDown = ButtonInterruptKeyDown
+  end
+end
