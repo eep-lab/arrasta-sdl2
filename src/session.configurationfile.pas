@@ -178,7 +178,18 @@ end;
 
 function TConfigurationFile.GetBlock(BlockIndex: integer): TBlockConfiguration;
 var
+  Ltest1 : string;
+  Ltest2 : string;
   LBlockSection : string;
+
+  LRepeatStyle : TBlockRepeatStyle =
+    TBlockRepeatStyle.None;
+
+  LEndCriterionStyle : TBlockEndCriterionStyle =
+    TBlockEndCriterionStyle.HitPorcentage;
+
+  LBlockEndCriterionEvaluationTime : TBlockEndCriterionEvaluationTime =
+    TBlockEndCriterionEvaluationTime.OnBlockEnd;
 begin
   LBlockSection := BlockSection(BlockIndex);
   with Result, ParserBlockKeys do begin
@@ -186,57 +197,63 @@ begin
     TotalTrials:= Self.Trials[BlockIndex];
     Name:= ReadString(LBlockSection, NameKey, '');
 
-    BackUpBlock := ReadInteger(
-      LBlockSection, BackUpBlockKey, 0);
+    EndSessionOnCriterion := ReadBool(
+      LBlockSection, EndSessionOnCriterionKey, False);
 
-    BackUpBlockErrors := ReadInteger(
-      LBlockSection, BackUpBlockErrorsKey, 0);
+    EndSessionOnNotCriterionAfterBlockRepetitions := ReadBool(
+      LBlockSection, EndSessionOnNotCriterionAfterBlockRepetitionsKey, False);
 
-    MaxBlockRepetition := ReadInteger(
-      LBlockSection, MaxBlockRepetitionKey, 0);
+    RepeatStyle := ReadString(
+      LBlockSection, RepeatStyleKey,
+      LRepeatStyle.ToString).ToRepeatStyle;
+
+    EndCriterionStyle := ReadString(
+      LBlockSection, EndCriterionStyleKey,
+      LEndCriterionStyle.ToString).ToEndCriterionStyle;
+
+    EndCriterionEvaluationTime := ReadString(
+      LBlockSection, EndCriterionEvaluationTimeKey,
+      LBlockEndCriterionEvaluationTime.ToString).ToEndCriterionEvaluationTime;
+
+    MaxBlockRepetitionConsecutives := ReadInteger(
+      LBlockSection, MaxBlockRepetitionConsecutivesKey, 0);
 
     MaxBlockRepetitionInSession := ReadInteger(
       LBlockSection, MaxBlockRepetitionInSessionKey, 0);
 
-    EndSessionOnHitCriterion := ReadBool(
-      LBlockSection, EndSessionOnHitCriterionKey, False);
-
-    NextBlockOnHitCriterion := ReadInteger(
-      LBlockSection, NextBlockOnHitCriterionKey, -1);
+    NextBlockOnCriterion := ReadInteger(
+      LBlockSection, NextBlockOnCriterionKey, -1);
 
     NextBlockOnNotCriterion := ReadInteger(
       LBlockSection, NextBlockOnNotCriterionKey, -1);
 
-    CrtHitPorcentage := ReadInteger(
-      LBlockSection, CrtHitPorcentageKey, 0);
-
-    CrtConsecutiveHit := ReadInteger(
-      LBlockSection, CrtConsecutiveHitKey, 0);
+    EndCriterionValue := ReadInteger(
+      LBlockSection, EndCriterionValueKey, 0);
 
     Reinforcement := ReadInteger(
       LBlockSection, ReinforcementKey, 100);
 
     // old, not active
-    ITI:= ReadInteger(LBlockSection, _ITI, 0);
-    BkGnd:= ReadInteger(LBlockSection, _BkGnd, 0);
-    DefNextBlock:=
-      ReadString(LBlockSection, _DefNextBlock, '');
-    MaxCorrection:=
-      ReadInteger(LBlockSection, _MaxCorrection, 0);
-    Counter:=
-      ReadString(LBlockSection, _Counter, 'NONE');
-    AutoEndSession :=
-      ReadBool(LBlockSection, _AutoEndSession, False);
-    CrtConsecutiveMiss :=
-      ReadInteger(LBlockSection, _CrtConsecutiveMiss, 0);
-    CrtConsecutiveHitPerType :=
-      ReadInteger(LBlockSection, _CrtConsecutiveHitPerType, 0);
-    CrtHitValue :=
-      ReadInteger(LBlockSection, _CrtHitValue, 0);
-    CrtMaxTrials:=
-      ReadInteger(LBlockSection, _CrtMaxTrials, 0);
-    CrtCsqHit :=
-      ReadInteger(LBlockSection, _CsqCriterion, 0);
+    //ITI:= ReadInteger(LBlockSection, _ITI, 0);
+    //BkGnd:= ReadInteger(LBlockSection, _BkGnd, 0);
+    //DefNextBlock:=
+    //  ReadString(LBlockSection, _DefNextBlock, '');
+    //MaxCorrection:=
+    //  ReadInteger(LBlockSection, _MaxCorrection, 0);
+    //Counter:=
+    //  ReadString(LBlockSection, _Counter, 'NONE');
+    //AutoEndSession :=
+    //  ReadBool(LBlockSection, _AutoEndSession, False);
+    //CrtConsecutiveMiss :=
+    //  ReadInteger(LBlockSection, _CrtConsecutiveMiss, 0);
+    //CrtConsecutiveHitPerType :=
+    //  ReadInteger(LBlockSection, _CrtConsecutiveHitPerType, 0);
+    //CrtHitValue :=
+    //  ReadInteger(LBlockSection, _CrtHitValue, 0);
+    //CrtMaxTrials:=
+    //  ReadInteger(LBlockSection, _CrtMaxTrials, 0);
+    //CrtCsqHit :=
+    //  ReadInteger(LBlockSection, _CsqCriterion, 0);
   end;
 end;
 

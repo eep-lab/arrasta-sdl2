@@ -31,6 +31,7 @@ const
   HeaderCompasisons = 'Comparisons';
   HeaderCompasison = 'C';
   HeaderRelation = 'Relation';
+  HeaderHasPrompt = 'HasPrompt';
 
   MTSKeys : TMTSKeys = (
     RelationKey    : HeaderRelation;
@@ -38,7 +39,7 @@ const
     SampleKey      : HeaderSample;
     ComparisonsKey : HeaderCompasisons;
     ComparisonKey  : HeaderCompasison;
-    HasPromptKey   : 'HasPrompt';
+    HasPromptKey   : HeaderHasPrompt;
     HasTextPromptKey  : 'HasTextPrompt';
     PromptKey      : 'Prompt';
     FontNameKey    : 'FontName');

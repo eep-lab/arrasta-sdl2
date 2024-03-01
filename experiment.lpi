@@ -1060,7 +1060,7 @@
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir)"/>
-      <OtherUnitFiles Value="src;src\schedules"/>
+      <OtherUnitFiles Value="src;src\schedules;dependencies\EyeLink-for-Pascal\classes;dependencies\EyeLink-for-Pascal\bindings;dependencies\EyeLink-for-Pascal\utils;dependencies\synaser;dependencies\fpc-zmq;dependencies\mspeech;dependencies\SDL2-for-Pascal\units;dependencies\msgpack-delphi;dependencies\pupil-fpc"/>
       <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <Parsing>

@@ -60,10 +60,12 @@ uses
 procedure TTextStimulus.PromptStopped(Sender: TObject);
 begin
   (Sender as ISound).SetOnStop(nil);
-  FText.Animate;
 
   // starts CD recording
-  Sibling.Start;
+  if Assigned(Sibling) then begin
+    FText.Animate;
+    Sibling.Start;
+  end;
 end;
 
 function TTextStimulus.GetStimulusName: string;

@@ -50,6 +50,7 @@ uses Classes, SysUtils
   , sdl.app.grids
   , session.loggers
   , session.loggers.writerow
+  , session.loggers.writerow.information
   , session.pool
   , session.configurationfile
   , session.parameters.global
@@ -119,11 +120,11 @@ var
   LStartAt : TStartAt;
   LFilename : string;
 begin
-  TLogger.SetFooter;
   if Pool.EndCriteria.OfSession then begin
     LFilename := Pool.BaseDataPath + Pool.BaseFilename + GExt;
     Session.SaveToFile(LFilename);
   end else begin
+    SessionResult := 'Interrompida';
     if GlobalTrialParameters.ShouldRestartAtBlockStart then begin
       LStartAt.Trial := 0;
     end else begin
@@ -134,6 +135,7 @@ begin
     LFilename := Pool.BaseDataPath + Pool.BaseFilename + GInterrupted + GExt;
     Session.SaveToFile(LFilename)
   end;
+  TLogger.SetFooter;
   Session.Free;
   Grid.Free;
 end;

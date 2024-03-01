@@ -9,15 +9,24 @@
 }
 unit session.configuration;
 
-{$mode objfpc}{$H+}
-{$modeswitch AdvancedRecords}
+{$Mode objfpc}{$H+}
+{$ModeSwitch AdvancedRecords}
+{$ModeSwitch TypeHelpers}
 
 interface
 
 uses Classes, SysUtils;
 
 type
-  TRepeatStyle = (repsNone, repsGlobal, repsConsecutive);
+
+  TBlockRepeatStyle = (None, Consecutive, Global, ConsecutiveAndGlobal);
+  TBlockRepeatStyleRange = TBlockRepeatStyle.None..TBlockRepeatStyle.ConsecutiveAndGlobal;
+
+  TBlockEndCriterionStyle = (HitCount, MissCount, ConsecutiveHits, ConsecutiveMisses, HitPorcentage, MissPorcentage);
+  TBlockEndCriterionStyleRange = TBlockEndCriterionStyle.HitCount..TBlockEndCriterionStyle.MissPorcentage;
+
+  TBlockEndCriterionEvaluationTime = (OnTrialEnd, OnBlockEnd);
+  TBlockEndCriterionEvaluationTimeRange = TBlockEndCriterionEvaluationTime.OnTrialEnd..TBlockEndCriterionEvaluationTime.OnBlockEnd;
 
   { TTrialConfiguration }
 
@@ -38,35 +47,66 @@ type
     ID : integer;
     Name: string;
     TotalTrials: integer;
-    BackUpBlock	: integer;
-    BackUpBlockErrors	: integer;
-    MaxBlockRepetition : integer;
+    EndSessionOnCriterion	: Boolean;
+    EndSessionOnNotCriterionAfterBlockRepetitions : Boolean;
+
+    RepeatStyle : TBlockRepeatStyle;
+    EndCriterionStyle : TBlockEndCriterionStyle;
+    EndCriterionEvaluationTime : TBlockEndCriterionEvaluationTime;
+
+    MaxBlockRepetitionConsecutives : integer;
     MaxBlockRepetitionInSession	: integer;
-    EndSessionOnHitCriterion	: Boolean;
-    NextBlockOnHitCriterion : integer;
+
+    NextBlockOnCriterion : integer;
     NextBlockOnNotCriterion : integer;
-    CrtHitPorcentage : integer;
+    EndCriterionValue : integer;
     Reinforcement : integer;
 
-    Counter : string;
-    AutoEndSession : Boolean;
-    MaxCorrection: integer;
-    BkGnd: integer;
-    ITI: integer;
-    DefNextBlock: string;
-    CrtConsecutive: integer;
-    CrtHitValue: integer;
-    CrtConsecutiveHit: integer;
-    CrtConsecutiveHitPerType : integer;
-    CrtConsecutiveMiss : integer;
-    CrtMaxTrials : integer;
-    CrtCsqHit : integer;
+    //Counter : string;
+    //AutoEndSession : Boolean;
+    //MaxCorrection: integer;
+    //BkGnd: integer;
+    //ITI: integer;
+    //DefNextBlock: string;
+    //CrtConsecutive: integer;
+    //CrtHitValue: integer;
+    //CrtConsecutiveHit: integer;
+    //CrtConsecutiveHitPerType : integer;
+    //CrtConsecutiveMiss : integer;
+    //CrtMaxTrials : integer;
+    //CrtCsqHit : integer;
     Trials: TTrials;
     class operator = (A, B: TBlockConfiguration): Boolean;
     function ToData : string;
   end;
 
   TBlocks = array of TBlockConfiguration;
+
+  { TBlockRepeatStyleHelper }
+
+  TBlockRepeatStyleHelper = type helper for TBlockRepeatStyle
+    function ToString: string;
+  end;
+
+  { TBlockEndCriterionStyleHelper }
+
+  TBlockEndCriterionStyleHelper = type helper for TBlockEndCriterionStyle
+    function ToString: string;
+  end;
+
+  { TBlockEndCriterionEvaluationTimeHelper }
+
+  TBlockEndCriterionEvaluationTimeHelper = type helper for TBlockEndCriterionEvaluationTime
+    function ToString: string;
+  end;
+
+  { TBlockStringHelper }
+
+  TBlockStringHelper = type helper(TStringHelper) for string
+    function ToRepeatStyle : TBlockRepeatStyle;
+    function ToEndCriterionStyle : TBlockEndCriterionStyle;
+    function ToEndCriterionEvaluationTime : TBlockEndCriterionEvaluationTime;
+  end;
 
 implementation
 
@@ -105,14 +145,24 @@ begin
     AsNameValue('ID', ID.ToString),
     AsNameValue('Name', Name),
     AsNameValue('TotalTrials', TotalTrials.ToString),
-    AsNameValue('BackUpBlock', BackUpBlock.ToString),
-    AsNameValue('BackUpBlockErrors', BackUpBlockErrors.ToString),
-    AsNameValue('MaxBlockRepetition', MaxBlockRepetition.ToString),
-    AsNameValue('MaxBlockRepetitionInSession', MaxBlockRepetitionInSession.ToString),
-    AsNameValue('EndSessionOnHitCriterion', EndSessionOnHitCriterion.ToString),
-    AsNameValue('NextBlockOnHitCriterion', NextBlockOnHitCriterion.ToString),
+    AsNameValue('EndSessionOnCriterion', BoolToStr(EndSessionOnCriterion, True)),
+    AsNameValue('EndSessionOnNotCriterionAfterBlockRepetitions',
+      BoolToStr(EndSessionOnNotCriterionAfterBlockRepetitions, True)),
+
+    AsNameValue('RepeatStyle', RepeatStyle.ToString),
+    AsNameValue('EndCriterionStyle', EndCriterionStyle.ToString),
+    AsNameValue('EndCriterionEvaluationTime',
+      EndCriterionEvaluationTime.ToString),
+
+    AsNameValue('MaxBlockRepetitionConsecutives',
+      MaxBlockRepetitionConsecutives.ToString),
+
+    AsNameValue('MaxBlockRepetitionInSession',
+      MaxBlockRepetitionInSession.ToString),
+
+    AsNameValue('NextBlockOnCriterion', NextBlockOnCriterion.ToString),
     AsNameValue('NextBlockOnNotCriterion', NextBlockOnNotCriterion.ToString),
-    AsNameValue('CrtHitPorcentage', CrtHitPorcentage.ToString),
+    AsNameValue('EndCriterionValue', EndCriterionValue.ToString),
     AsNameValue('Reinforcement', Reinforcement.ToString),
 
     //AsNameValue('Counter', Counter),
@@ -129,6 +179,68 @@ begin
     //AsNameValue(CrtMaxTrials : integer;
     //AsNameValue(CrtCsqHit : integer;
     AsNameValue('TrialsLength', Length(Trials).ToString)]);
+end;
+
+{ TBlockRepeatStyleHelper }
+
+function TBlockRepeatStyleHelper.ToString: string;
+begin
+  WriteStr(Result, Self);
+end;
+
+{ TBlockEndCriterionStyleHelper }
+
+function TBlockEndCriterionStyleHelper.ToString: string;
+begin
+  WriteStr(Result, Self);
+end;
+
+{ TBlockEndCriterionEvaluationTimeHelper }
+
+function TBlockEndCriterionEvaluationTimeHelper.ToString: string;
+begin
+  WriteStr(Result, Self);
+end;
+
+{ TBlockStringHelper }
+
+function TBlockStringHelper.ToRepeatStyle: TBlockRepeatStyle;
+var
+  LValue : string = '';
+begin
+  for Result in TBlockRepeatStyleRange do begin
+    WriteStr(LValue, Result);
+    if LValue=Self then begin
+      Exit;
+    end;
+  end;
+  raise Exception.CreateFmt('TBlockRepeatStyle %s not found', [Self]);
+end;
+
+function TBlockStringHelper.ToEndCriterionStyle: TBlockEndCriterionStyle;
+var
+  LValue : string = '';
+begin
+  for Result in TBlockEndCriterionStyleRange do begin
+    WriteStr(LValue, Result);
+    if LValue=Self then begin
+      Exit;
+    end;
+  end;
+  raise Exception.CreateFmt('TBlockEndCriterionStyle %s not found', [Self]);
+end;
+
+function TBlockStringHelper.ToEndCriterionEvaluationTime: TBlockEndCriterionEvaluationTime;
+var
+  LValue : string = '';
+begin
+  for Result in TBlockEndCriterionEvaluationTimeRange do begin
+    WriteStr(LValue, Result);
+    if LValue=Self then begin
+      Exit;
+    end;
+  end;
+  raise Exception.CreateFmt('TBlockEndCriterionEvaluationTimeRange %s not found', [Self]);
 end;
 
 end.

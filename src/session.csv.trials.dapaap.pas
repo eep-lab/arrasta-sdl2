@@ -19,7 +19,6 @@ type
       FSample      : string;
       FComparison1 : string;
       FComparison2 : string;
-      FHasPrompt   : Boolean;
       FTotalLoops  : integer;
     protected
       procedure AfterLoadingParameters(Sender: TObject); override;
@@ -61,12 +60,9 @@ begin
   FComparison1 := '';
   FComparison2 := '';
   FSubset      := '';
-  FHasPrompt   := False;
   FTotalLoops  := 0;
 
   with ParserTrialsDAPAAP do begin
-    RegisterParameter(HasPromptKey,
-      @FHasPrompt, FHasPrompt);
     RegisterParameter(SubsetKey,
       @FSubset, FSubset);
     RegisterParameter(SampleKey+'1',

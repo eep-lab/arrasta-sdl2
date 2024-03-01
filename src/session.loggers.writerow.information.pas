@@ -16,6 +16,7 @@ const
 
 var
   SaveData : TDataProcedure;
+  SessionResult : string;
 
 resourcestring
   HSUBJECT_NAME      = 'Nome_do_sujeito';
@@ -23,6 +24,7 @@ resourcestring
   HFIRST_TIMESTAMP   = 'Primeira_timestamp';
   HBEGIN_TIME        = 'Inicio';
   HEND_TIME          = 'Termino';
+  HSESSION_RESULT    = 'Resultado';
   HGRID              = 'Grade_de_estimulos';
   HMONITOR           = 'Monitor';
   HSESSION_CANCELED  = '----------Sessao Cancelada----------';
@@ -65,8 +67,8 @@ begin
   LStopTime := Time;
   SaveData(
     Line([HEND_TIME, GSeparator, DateTimeToStr(Date), TimeToStr(LStopTime)]) +
-    Line([HDURATION, GSeparator, TimeToStr(Time - StartTime)])
-  );
+    Line([HDURATION, GSeparator, TimeToStr(Time - StartTime)]) +
+    Line([HSESSION_RESULT, GSeparator, SessionResult]));
 end;
 
 function MockHeader: string;
