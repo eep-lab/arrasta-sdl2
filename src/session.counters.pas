@@ -52,9 +52,11 @@ uses Classes, SysUtils
   , session.loggers.writerow
   , session.loggers.writerow.information
   , session.pool
+  , session.fileutils
   , session.configurationfile
   , session.parameters.global
   , sdl.app.trials.factory
+  , dialogs.question
   ;
 
 const
@@ -120,11 +122,21 @@ var
   LStartAt : TStartAt;
   LFilename : string;
 begin
+  LFilename := Pool.BaseDataPath + Pool.BaseFilename;
   if Pool.EndCriteria.OfSession then begin
-    LFilename := Pool.BaseDataPath + Pool.BaseFilename + GExt;
-    Session.SaveToFile(LFilename);
+    if SessionResult.IsEmpty then begin
+      SessionResult := 'Concluida';
+    end;
+    Session.SaveToFile(LFilename+ GExt);
+    OverrideLastValidBaseFilenameFile(LFilename);
   end else begin
-    SessionResult := 'Interrompida';
+    if IsSessionCanceled then begin
+      SessionResult := 'Cancelada';
+    end else begin
+      SessionResult := 'Interrompida';
+      OverrideLastValidBaseFilenameFile(LFilename);
+    end;
+
     if GlobalTrialParameters.ShouldRestartAtBlockStart then begin
       LStartAt.Trial := 0;
     end else begin
@@ -132,8 +144,7 @@ begin
     end;
     LStartAt.Block := Block.ID;  // use block as checkpoint
     ConfigurationFile.StartAt := LStartAt;
-    LFilename := Pool.BaseDataPath + Pool.BaseFilename + GInterrupted + GExt;
-    Session.SaveToFile(LFilename)
+    Session.SaveToFile(LFilename + GInterrupted + GExt)
   end;
   TLogger.SetFooter;
   Session.Free;

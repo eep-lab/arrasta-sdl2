@@ -16,8 +16,6 @@ interface
 uses
   Classes, SysUtils;
 
-
-
 procedure FindFilesFor(out AStimuliArray: TStringArray;
   AFolder : string;
   AExtensions : string = '*.bmp;*.jpg');
@@ -35,6 +33,11 @@ procedure GetFontFilesFor(AStrings : TStrings);
 procedure FreeConfigurationFile;
 procedure LoadMessageFromFile(var AMessage : string; AFilename : string);
 
+procedure OverrideLastValidBaseFilenameFile(AFilename : string);
+
+function LastValidBaseFilenameFileExists : Boolean;
+function GetLastValidInformationFile : string;
+function GuessLastValidInformationFile : string;
 function FilenameNoOverride(AFilename: string; out AFileIndex: integer): string;
 function NewConfigurationFile : string;
 function LoadConfigurationFile(AFilename : string) : string;
@@ -47,12 +50,88 @@ uses
   , session.pool
   , session.strutils
   , session.constants
+  , session.information
   , session.configurationfile
   ;
 
-function FilenameNoOverride(AFilename: string; out AFileIndex: integer): string;
 const
-  L0 = #48;
+  GLastValidBaseFilename = 'LastValidBaseFilename';
+
+procedure OverrideLastValidBaseFilenameFile(AFilename : string);
+var
+  LStringList : TStringList;
+  LFilename : string;
+begin
+  LFilename := Pool.BaseDataPath+GLastValidBaseFilename;
+
+  LStringList := TStringList.Create;
+  try
+    LStringList.Append(AFilename);
+    LStringList.SaveToFile(LFilename);
+  finally
+    LStringList.Free;
+  end;
+end;
+
+function LastValidBaseFilenameFileExists: Boolean;
+var
+  LFilename : string;
+begin
+  LFilename := Pool.BaseDataPath+GLastValidBaseFilename;
+  Result := FileExists(LFilename);
+end;
+
+function GetLastValidInformationFile: string;
+const
+  LExt = '.info';
+var
+  LStringList : TStringList;
+  LFilename : string;
+begin
+  LFilename := Pool.BaseDataPath+GLastValidBaseFilename;
+  LStringList := TStringList.Create;
+  try
+    LStringList.LoadFromFile(LFilename);
+    Result := LStringList[0]+LExt;
+  finally
+    LStringList.Free;
+  end;
+end;
+
+function GuessLastValidInformationFile: string;
+const
+  LFilter = '*.info';
+var
+  LFilenames : TStringArray;
+  i : integer;
+  LInformation : TInformation;
+begin
+  Result := '';
+  FindFilesFor(LFilenames, Pool.BaseDataPath, LFilter);
+  if Length(LFilenames) > 0 then begin
+    for i := High(LFilenames) downto Low(LFilenames) do begin
+      LInformation := LoadInformationFromFile(LFilenames[i]);
+      with LInformation do begin
+        if SessionName.IsEmpty or
+           ParticipantName.IsEmpty then begin
+          Continue;
+        end;
+
+        if SessionResult.IsEmpty then begin
+          { do nothing }
+        end else begin
+          if CompareText(SessionResult, 'Cancelada') = 0 then begin
+            Continue;
+          end;
+        end;
+
+        Result := LFilenames[i];
+      end;
+    end;
+  end;
+end;
+
+function FilenameNoOverride(AFilename: string; out AFileIndex: integer): string;
 var
   i : Integer;
   LFilePath, LExtension: string;
@@ -70,9 +149,7 @@ begin
   i := 0;
   while FileExistsUTF8(LFilename) do begin
     Inc(i);
-    LFilename := LFilePath +
-         StringOfChar(L0, 3 - Length(IntToStr(i))) + IntToStr(i) +
-         LExtension;
+    LFilename := LFilePath + Format('%.3d', [i]) + LExtension;
   end;
   AFileIndex := i;
   Result := LFilename;

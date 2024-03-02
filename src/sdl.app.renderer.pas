@@ -35,7 +35,7 @@ uses
   sdl.app.video.methods,
   sdl.app.trials.factory,
   sdl.app.graphics.debug,
-  //sdl.app.markers,
+  sdl.app.markers,
   sdl.colors;
 
 
@@ -61,6 +61,10 @@ begin
     SDL_SetRenderDrawColor(PSDLRenderer,
       clBackgroud.r, clBackgroud.g, clBackgroud.b, clBackgroud.a);
     SDL_RenderClear(PSDLRenderer);
+
+    if Assigned(Markers) then begin
+      Markers.Paint;
+    end;
 
     TTrialFactory.CurrentTrial.AsIPaintable.Paint;
 
