@@ -33,8 +33,6 @@ type
 
   TState = (startNone, startSamples, startComparisons, startButtons);
 
-  TModality = (ModalityNone, ModalityA, ModalityB, ModalityC, ModalityD);
-
   TMTSModality = record
     Samples     : TModality;
     Comparisons : TModality;
@@ -120,7 +118,7 @@ end;
 
 function TMTSStimuli.ToData: string;
 begin
-  Result := inherited ToData + #9 + FHasConsequence.ToString;
+  Result := inherited ToData + #9 + BoolToStr(FHasConsequence, 'True', 'False');
 end;
 
 function TMTSStimuli.Header: string;
@@ -527,7 +525,7 @@ var
 
     with Grid.RandomPositions, MTSKeys do begin
       for i := Low(Comparisons) to High(Comparisons) do begin
-        LItem := TStimulusFactory.New(Self, ComparLetter, LCallbacks);
+        LItem := TStimulusFactory.New(Self, FMTSModality.Comparisons, LCallbacks);
         LItem.IsSample := False;
         LItem.Index := i;
         LItem.Position := Comparisons[i].Position;
@@ -541,14 +539,14 @@ var
 
       LCallbacks.OnResponse := @SampleResponse;
       for i := Low(Samples) to High(Samples) do begin
-        LItem := TStimulusFactory.New(Self, SampleLetter, LCallbacks);
+        LItem := TStimulusFactory.New(Self, FMTSModality.Samples, LCallbacks);
         LItem.IsSample := True;
         LItem.Index := i;
         LItem.Position := Samples[i].Position;
 
         LItem.Name := SamplesKey+(i+1).ToString;
         LItem.Load(AParameters, AParent, Samples[i].Rect);
-
+        LItem.Sibling := nil;
         Samples[i].Item := LItem as TObject;
         FSamples.Add(LItem);
       end;

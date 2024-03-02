@@ -50,13 +50,13 @@ type
     {$IFNDEF NO_LCL}
     private
       FOnKeyDown: TOnKeyDownEvent;
-      function GetShowMarkers: Boolean;
+      FShowMarkers: Boolean;
       procedure SetOnKeyDown(AValue: TOnKeyDownEvent);
       procedure SetShowMarkers(AValue: Boolean);
     public
       procedure SetupAudio;
       procedure SetupText;
-      property ShowMarkers : Boolean read GetShowMarkers write SetShowMarkers;
+      property ShowMarkers : Boolean read FShowMarkers write SetShowMarkers;
     {$ENDIF}
     public
       class procedure LoadMonitors(var AMonitors: TMonitors);
@@ -116,28 +116,17 @@ end;
 {$IFNDEF NO_LCL}
 procedure TSDLApplication.SetShowMarkers(AValue: Boolean);
 begin
-  if ShowMarkers = AValue then Exit;
-  if AValue then begin
-    Markers := TMarkers.Create;
-    Markers.LoadFromFile;
-  end else begin
-    FreeAndNil(Markers);
-  end;
+  if FShowMarkers = AValue then Exit;
+  FShowMarkers := AValue;
 end;
 {$ENDIF}
 
 {$IFNDEF NO_LCL}
-function TSDLApplication.GetShowMarkers: Boolean;
-begin
-  Result := Assigned(Markers);
-end;
-
 procedure TSDLApplication.SetOnKeyDown(AValue: TOnKeyDownEvent);
 begin
   if FOnKeyDown = AValue then Exit;
   FOnKeyDown := AValue;
 end;
-
 {$ENDIF}
 
 procedure TSDLApplication.SetCurrentMonitor(i: cint);
@@ -221,11 +210,7 @@ end;
 
 destructor TSDLApplication.Destroy;
 begin
-  {$IFNDEF NO_LCL}
-  if Assigned(Markers) then begin
-    Markers.Free;
-  end;
-  {$ENDIF}
+
   inherited Destroy;
 end;
 
@@ -241,6 +226,11 @@ begin
   //end;
 
   FRunning:=True;
+  if FShowMarkers then begin
+    Markers := TMarkers.Create;
+    Markers.LoadFromFile;
+  end;
+
   try
     while FRunning do begin
       SDLEvents.HandlePending;
@@ -248,6 +238,11 @@ begin
       RenderOptimized;
     end;
   finally
+
+    if FShowMarkers then begin
+      Markers.Free;
+      Markers := nil;
+    end;
 
     //case LRenderMode of
     //  rendNormal: { do nothing };

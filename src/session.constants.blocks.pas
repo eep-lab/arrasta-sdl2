@@ -19,15 +19,16 @@ type
   TParserBlockKeys = record
     IDKey : string;
     NameKey : string;
-    BackUpBlockKey : string;
-    BackUpBlockErrorsKey: string;
-    MaxBlockRepetitionKey : string;
+    EndSessionOnCriterionKey	: string;
+    EndSessionOnNotCriterionAfterBlockRepetitionsKey : string;
+    RepeatStyleKey : string;
+    EndCriterionStyleKey : string;
+    EndCriterionEvaluationTimeKey : string;
+    MaxBlockRepetitionConsecutivesKey : string;
     MaxBlockRepetitionInSessionKey	: string;
-    EndSessionOnHitCriterionKey	: string;
-    NextBlockOnHitCriterionKey : string;
+    NextBlockOnCriterionKey : string;
     NextBlockOnNotCriterionKey : string;
-    CrtHitPorcentageKey : string;
-    CrtConsecutiveHitKey :string;
+    EndCriterionValueKey : string;
     ReinforcementKey : string;
   end;
 
@@ -35,15 +36,16 @@ const
   ParserBlockKeys : TParserBlockKeys = (
     IDKey : 'ID';
     NameKey : 'Name';
-    BackUpBlockKey : 'BackUpBlock';
-    BackUpBlockErrorsKey: 'BackUpBlockErrors';
-    MaxBlockRepetitionKey : 'MaxBlockRepetition';
+    EndSessionOnCriterionKey	: 'EndSessionOnCriterion';
+    EndSessionOnNotCriterionAfterBlockRepetitionsKey : 'EndSessionOnNotCriterionAfterBlockRepetitions';
+    RepeatStyleKey : 'RepeatStyle';
+    EndCriterionStyleKey : 'EndCriterionStyle';
+    EndCriterionEvaluationTimeKey : 'EndCriterionEvaluationTime';
+    MaxBlockRepetitionConsecutivesKey : 'MaxBlockRepetitionConsecutives';
     MaxBlockRepetitionInSessionKey	: 'MaxBlockRepetitionInSession';
-    EndSessionOnHitCriterionKey	: 'EndSessionOnHitCriterion';
-    NextBlockOnHitCriterionKey : 'NextBlockOnHitCriterion';
+    NextBlockOnCriterionKey : 'NextBlockOnCriterion';
     NextBlockOnNotCriterionKey : 'NextBlockOnNotCriterion';
-    CrtHitPorcentageKey : 'HitCriterion';
-    CrtConsecutiveHitKey : 'ConsecutiveHitCriterion';
+    EndCriterionValueKey : 'EndCriterionValue';
     ReinforcementKey: 'Reinforcement');
 
 implementation

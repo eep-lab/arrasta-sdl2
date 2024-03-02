@@ -13,18 +13,19 @@ type
 
   TCSVBlock = class(TCSVRows)
     private
-      FMyName                      : string;
-      FBlockID                     : Integer; // base 0
-      FBackUpBlock                 : Integer; // base 0
-      FNextBlockOnHitCriterion     : Integer; // base 0
-      FNextBlockOnNotCriterion     : Integer;
-      FBackUpBlockErrors           : Integer;
-      FMaxBlockRepetition          : Integer;
-      FMaxBlockRepetitionInSession : Integer;
-      FConsecutiveHitCriterion     : Integer;
-      FHitCriterion                : Integer; // percentage
-      FReinforcement               : Integer; // percentage
-      FEndOnHitCriterion           : Boolean;
+      FMyName : string;
+      FBlockID : Integer;
+      FEndSessionOnCriterion : Boolean;
+      FEndSessionOnNotCriterionAfterBlockRepetitions : Boolean;
+      FRepeatStyle : string;
+      FEndCriterionStyle : string;
+      FEndCriterionEvaluationTime : string;
+      FMaxBlockRepetitionConsecutives : integer;
+      FMaxBlockRepetitionInSession	: integer;
+      FNextBlockOnCriterion : integer;
+      FNextBlockOnNotCriterion : integer;
+      FEndCriterionValue : integer;
+      FReinforcement : integer;
     protected
       procedure AfterLoadingParameters(Sender: TObject);
     public
@@ -33,32 +34,45 @@ type
       property MyName : string read FMyName write FMyName;
       property ID : integer read FBlockID write FBlockID;
 
-      property BackUpBlock : Integer
-        read FBackUpBlock write FBackUpBlock;
+      property NextBlockOnCriterion : Integer
+        read FNextBlockOnCriterion
+        write FNextBlockOnCriterion;
 
-      property NextBlockOnHitCriterion : Integer
-        read FNextBlockOnHitCriterion write FNextBlockOnHitCriterion;
-
-      property BackUpBlockErrors : Integer
-        read FBackUpBlockErrors write FBackUpBlockErrors;
-
-      property MaxBlockRepetition : Integer
-        read FMaxBlockRepetition write FMaxBlockRepetition;
+      property MaxBlockRepetitionConsecutives : Integer
+        read FMaxBlockRepetitionConsecutives
+        write FMaxBlockRepetitionConsecutives;
 
       property MaxBlockRepetitionInSession : Integer
-        read FMaxBlockRepetitionInSession write FMaxBlockRepetitionInSession;
+        read FMaxBlockRepetitionInSession
+        write FMaxBlockRepetitionInSession;
 
-      property ConsecutiveHitCriterion : Integer
-        read FConsecutiveHitCriterion write FConsecutiveHitCriterion;
-
-      property HitCriterion : Integer
-        read FHitCriterion write FHitCriterion;
+      property EndCriterionValue : Integer
+        read FEndCriterionValue
+        write FEndCriterionValue;
 
       property Reinforcement : Integer
-        read FReinforcement write FReinforcement;
+        read FReinforcement
+        write FReinforcement;
 
-      property EndOnHitCriterion : Boolean
-        read FEndOnHitCriterion write FEndOnHitCriterion;
+      property EndSessionOnCriterion : Boolean
+        read FEndSessionOnCriterion
+        write FEndSessionOnCriterion;
+
+      property EndSessionOnNotCriterionAfterBlockRepetitions : Boolean
+        read FEndSessionOnNotCriterionAfterBlockRepetitions
+        write FEndSessionOnNotCriterionAfterBlockRepetitions;
+
+      property RepeatStyle : string
+        read FRepeatStyle
+        write FRepeatStyle;
+
+      property EndCriterionStyle : string
+        read FEndCriterionStyle
+        write FEndCriterionStyle;
+
+      property EndCriterionEvaluationTime : string
+        read FEndCriterionEvaluationTime
+        write FEndCriterionEvaluationTime;
 
       property Values[const AKey: string]: string
         read GetValue write SetValue;
@@ -66,7 +80,7 @@ type
 
 implementation
 
-uses session.constants.blocks;
+uses session.constants.blocks, session.configuration;
 
 { TCSVBlock }
 
@@ -74,8 +88,7 @@ procedure TCSVBlock.AfterLoadingParameters(Sender: TObject);
 begin
   // base 0
   FBlockID -= 1;
-  FBackUpBlock -= 1;
-  FNextBlockOnHitCriterion -= 1;
+  FNextBlockOnCriterion -= 1;
   FNextBlockOnNotCriterion -= 1;
 
   if FMyName.IsEmpty then begin
@@ -89,51 +102,97 @@ begin
 end;
 
 constructor TCSVBlock.Create;
+var
+  LRepeatStyle : TBlockRepeatStyle =
+    TBlockRepeatStyle.None;
+
+  LEndCriterionStyle : TBlockEndCriterionStyle =
+    TBlockEndCriterionStyle.HitPorcentage;
+
+  LBlockEndCriterionEvaluationTime : TBlockEndCriterionEvaluationTime =
+    TBlockEndCriterionEvaluationTime.OnBlockEnd;
 begin
   inherited Create;
   OnAfterLoadingParameters := @AfterLoadingParameters;
   FMyName := '';
   FBlockID := 0;
-  FBackUpBlock := 0;
-  FBackUpBlockErrors := 0;
-
-  FNextBlockOnHitCriterion := 0;
-  FNextBlockOnNotCriterion := 0;
-
-  FMaxBlockRepetition := 0;
-  FMaxBlockRepetitionInSession := 0;
-
-  FHitCriterion := 0;
-  FConsecutiveHitCriterion := 0;
-
+  FEndSessionOnCriterion := False;
+  FEndSessionOnNotCriterionAfterBlockRepetitions := False;
+  FRepeatStyle := LRepeatStyle.ToString;
+  FEndCriterionStyle := LEndCriterionStyle.ToString;
+  FEndCriterionEvaluationTime := LBlockEndCriterionEvaluationTime.ToString;
+  FMaxBlockRepetitionConsecutives := 0;
+  FMaxBlockRepetitionInSession	:= 0;
+  FNextBlockOnCriterion := -1;
+  FNextBlockOnNotCriterion := -1;
+  FEndCriterionValue := 0;
   FReinforcement := 0;
-  FEndOnHitCriterion := False;
 
   with ParserBlockKeys do begin
-    RegisterParameter(IDKey,
-      @FBlockID, FBlockID);
-    RegisterParameter(NameKey,
-      @FMyName, FMyName);
-    RegisterParameter(BackUpBlockKey,
-      @FBackUpBlock, FBackUpBlock);
-    RegisterParameter(NextBlockOnHitCriterionKey,
-      @FNextBlockOnHitCriterion, FNextBlockOnHitCriterion);
-    RegisterParameter(NextBlockOnNotCriterionKey,
-      @FNextBlockOnNotCriterion, FNextBlockOnNotCriterion);
-    RegisterParameter(BackUpBlockErrorsKey,
-      @FBackUpBlockErrors, FBackUpBlockErrors);
-    RegisterParameter(MaxBlockRepetitionKey,
-      @FMaxBlockRepetition, FMaxBlockRepetition);
-    RegisterParameter(MaxBlockRepetitionInSessionKey,
-      @FMaxBlockRepetitionInSession, FMaxBlockRepetitionInSession);
-    RegisterParameter(CrtHitPorcentageKey,
-      @FHitCriterion, FHitCriterion);
-    RegisterParameter(ReinforcementKey,
-      @FReinforcement, FReinforcement);
-    RegisterParameter(EndSessionOnHitCriterionKey,
-      @FEndOnHitCriterion, FEndOnHitCriterion);
-    RegisterParameter(CrtConsecutiveHitKey,
-      @FConsecutiveHitCriterion, FConsecutiveHitCriterion);
+    RegisterParameter(
+      IDKey,
+      @FBlockID,
+      FBlockID);
+
+    RegisterParameter(
+      NameKey,
+      @FMyName,
+      FMyName);
+
+    RegisterParameter(
+      EndSessionOnCriterionKey,
+      @FEndSessionOnCriterion,
+      FEndSessionOnCriterion);
+
+    RegisterParameter(
+      EndSessionOnNotCriterionAfterBlockRepetitionsKey,
+      @FEndSessionOnNotCriterionAfterBlockRepetitions,
+      FEndSessionOnNotCriterionAfterBlockRepetitions);
+
+    RegisterParameter(
+      RepeatStyleKey,
+      @FRepeatStyle,
+      FRepeatStyle);
+
+    RegisterParameter(
+      EndCriterionStyleKey,
+      @FEndCriterionStyle,
+      FEndCriterionStyle);
+
+    RegisterParameter(
+      EndCriterionEvaluationTimeKey,
+      @FEndCriterionEvaluationTime,
+      FEndCriterionEvaluationTime);
+
+    RegisterParameter(
+      MaxBlockRepetitionConsecutivesKey,
+      @FMaxBlockRepetitionConsecutives,
+      FMaxBlockRepetitionConsecutives);
+
+    RegisterParameter(
+      MaxBlockRepetitionInSessionKey,
+      @FMaxBlockRepetitionInSession,
+      FMaxBlockRepetitionInSession);
+
+    RegisterParameter(
+      NextBlockOnCriterionKey,
+      @FNextBlockOnCriterion,
+      FNextBlockOnCriterion);
+
+    RegisterParameter(
+      NextBlockOnNotCriterionKey,
+      @FNextBlockOnNotCriterion,
+      FNextBlockOnNotCriterion);
+
+    RegisterParameter(
+      EndCriterionValueKey,
+      @FEndCriterionValue,
+      FEndCriterionValue);
+
+    RegisterParameter(
+      ReinforcementKey,
+      @FReinforcement,
+      FReinforcement);
   end;
 end;
 

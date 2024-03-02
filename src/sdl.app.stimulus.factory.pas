@@ -25,7 +25,7 @@ type
 
   TStimulusClass = class of TStimulus;
 
-  TStimulusRegistry = specialize TDictionary<string, TStimulusClass>;
+  TStimulusRegistry = specialize TDictionary<TModality, TStimulusClass>;
 
   TStimulusList = specialize TList<TStimulus>;
 
@@ -40,8 +40,8 @@ type
     public
       class procedure Clear;
       class procedure RegisterStimulusClass(
-        AStimulusKind: string; AStimulusClass: TStimulusClass); static;
-      class function New(AOwner: TObject; AStimulusKind: string;
+        AStimulusKind: TModality; AStimulusClass: TStimulusClass); static;
+      class function New(AOwner: TObject; AStimulusKind: TModality;
         ACallbacks : TCallbacks) : TStimulus; static;
   end;
 
@@ -79,13 +79,13 @@ begin
   StimulusList.Clear;
 end;
 
-class procedure TStimulusFactory.RegisterStimulusClass(AStimulusKind: string;
+class procedure TStimulusFactory.RegisterStimulusClass(AStimulusKind: TModality;
   AStimulusClass: TStimulusClass);
 begin
   Registry.Add(AStimulusKind, AStimulusClass);
 end;
 
-class function TStimulusFactory.New(AOwner: TObject; AStimulusKind: string;
+class function TStimulusFactory.New(AOwner: TObject; AStimulusKind: TModality;
   ACallbacks: TCallbacks): TStimulus;
 var
   StimulusClass : TStimulusClass;
@@ -96,6 +96,7 @@ begin
   StimulusList.Add(StimulusClass.Create);
   Result := StimulusList.Last;
   Result.Stimuli := AOwner;
+  Result.Modality := AStimulusKind;
   Result.OnResponse:=ACallbacks.OnResponse;
   Result.OnMouseDown:=ACallbacks.OnMouseDown;
   Result.OnMouseEnter:=ACallbacks.OnMouseEnter;
@@ -107,9 +108,9 @@ end;
 
 
 initialization
-  TStimulusFactory.RegisterStimulusClass('A', TAudioStimulus);
-  TStimulusFactory.RegisterStimulusClass('B', TPictureStimulus);
-  TStimulusFactory.RegisterStimulusClass('C', TTextStimulus);
-  TStimulusFactory.RegisterStimulusClass('D', TSpeechStimulus);
+  TStimulusFactory.RegisterStimulusClass(ModalityA, TAudioStimulus);
+  TStimulusFactory.RegisterStimulusClass(ModalityB, TPictureStimulus);
+  TStimulusFactory.RegisterStimulusClass(ModalityC, TTextStimulus);
+  TStimulusFactory.RegisterStimulusClass(ModalityD, TSpeechStimulus);
 
 end.

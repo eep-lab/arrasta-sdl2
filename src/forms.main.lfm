@@ -8,7 +8,7 @@ object FormBackground: TFormBackground
   ClientWidth = 385
   DefaultMonitor = dmPrimary
   PopupMenu = PopupMenuMisc
-  SessionProperties = 'ComboBoxCondition.ItemIndex;ComboBoxDesignFolder.ItemIndex;ComboBoxParticipant.ItemIndex;ComboBoxParticipant.Items;ComboBoxParticipant.Text;Height;LabelSessionEndCriteria.Caption;LabelSessionEndCriteria.Color;Left;OpenDialog1.InitialDir;Top;Width'
+  SessionProperties = 'ComboBoxCondition.ItemIndex;ComboBoxDesignFolder.ItemIndex;ComboBoxParticipant.ItemIndex;ComboBoxParticipant.Items;ComboBoxParticipant.Text;Height;LabelSessionEndCriteria.Caption;LabelSessionEndCriteria.Color;Left;OpenDialog1.InitialDir;Top;Width;LabelLastSessionName.Caption;LabelLastSessionName.Color'
   LCLVersion = '3.99.0.0'
   OnCreate = FormCreate
   object Panel1: TPanel
@@ -17,10 +17,10 @@ object FormBackground: TFormBackground
     AnchorSideTop.Control = Owner
     AnchorSideTop.Side = asrCenter
     Left = 11
-    Height = 601
-    Top = 58
+    Height = 675
+    Top = 21
     Width = 363
-    ClientHeight = 601
+    ClientHeight = 675
     ClientWidth = 363
     ParentShowHint = False
     ShowHint = True
@@ -45,6 +45,7 @@ object FormBackground: TFormBackground
       ReadOnly = True
       TabOrder = 1
       Text = 'Participante'
+      OnEditingDone = ComboBoxParticipantEditingDone
     end
     object ButtonLoadConfigurationFile: TButton
       Left = 16
@@ -118,7 +119,7 @@ object FormBackground: TFormBackground
     object LabelSessionEndCriteria: TLabel
       Left = 1
       Height = 20
-      Top = 580
+      Top = 654
       Width = 361
       Align = alBottom
       Caption = 'Resultado da última sessão'
@@ -143,13 +144,36 @@ object FormBackground: TFormBackground
       TabOrder = 10
       OnClick = ButtonOpenSpeechValidationClick
     end
-  end
-  object LabelContact: TLabel
-    Left = 16
-    Height = 45
-    Top = 8
-    Width = 170
-    Caption = 'Carlos Rafael Fernandes Picanço'#13#10'cpicanco42@gmail.com'#13#10'+55 (91) 9-9968-7692'
+    object LabelLastSessionName: TLabel
+      Left = 1
+      Height = 20
+      Top = 628
+      Width = 361
+      Align = alBottom
+      Caption = 'Resultado da última sessão'
+      Constraints.MinHeight = 20
+      ParentColor = False
+    end
+    object Splitter1: TSplitter
+      Cursor = crVSplit
+      Left = 1
+      Height = 6
+      Top = 622
+      Width = 361
+      Align = alBottom
+      Beveled = True
+      ResizeAnchor = akBottom
+    end
+    object Splitter2: TSplitter
+      Cursor = crVSplit
+      Left = 1
+      Height = 6
+      Top = 648
+      Width = 361
+      Align = alBottom
+      Beveled = True
+      ResizeAnchor = akBottom
+    end
   end
   object OpenDialog1: TOpenDialog
     DefaultExt = '.ini'

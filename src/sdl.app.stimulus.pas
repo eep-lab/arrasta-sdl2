@@ -26,11 +26,14 @@ uses
 
 type
 
+  TModality = (ModalityNone, ModalityA, ModalityB, ModalityC, ModalityD);
+
   { TStimulus }
 
   TStimulus = class(TInterfacedObject, IStimulus)
     private
       FAnimated: Boolean;
+      FModality: TModality;
       FName: string;
       FOnNoResponse: TNotifyEvent;
       FPosition: Integer;
@@ -91,6 +94,7 @@ type
       property Selectables : TSelectables read FSelectables;
       property Index : Integer read FIndex write FIndex;
       property Name : string read FName write FName;
+      property Modality : TModality read FModality write FModality;
       property Position : Integer read FPosition write FPosition;
       property Rectangule  : TRectangule read GetRect write SetRect;
       property ResponseID : integer read FResponseID;

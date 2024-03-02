@@ -46,11 +46,13 @@ uses
 
 class procedure TBaseExperimentWriter.PopulateBooleanStrings;
 begin
-  SetLength(TrueBoolStrs, 1);
+  SetLength(TrueBoolStrs, 2);
   TrueBoolStrs[0] := 'T';
+  TrueBoolStrs[1] := 'True';
 
-  SetLength(FalseBoolStrs, 1);
+  SetLength(FalseBoolStrs, 2);
   FalseBoolStrs[0] := 'F';
+  FalseBoolStrs[1] := 'False';
 end;
 
 constructor TBaseExperimentWriter.Create(

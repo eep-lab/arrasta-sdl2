@@ -13,6 +13,9 @@ type
   { TFormMisc }
 
   TFormMisc = class(TForm)
+    ButtonCreateRelease: TButton;
+    ButtonRestoreConfigurationsBackup: TButton;
+    ButtonDoConfigurationsBackup: TButton;
     ButtonTestDispenser: TButton;
     CheckBoxHideMouse: TCheckBox;
     CheckBoxShowMarkers: TCheckBox;
@@ -61,10 +64,14 @@ type
     SpinEditLimitedHold: TSpinEdit;
     SpinEditRecordingSeconds: TSpinEdit;
     SpinEditTimeOut: TSpinEdit;
+    TabSheetOther: TTabSheet;
     TabSheetPseudowords: TTabSheet;
     TabSheetControllers: TTabSheet;
     TabSheetGeneral: TTabSheet;
     TabSheetEyeTracking: TTabSheet;
+    procedure ButtonCreateReleaseClick(Sender: TObject);
+    procedure ButtonDoConfigurationsBackupClick(Sender: TObject);
+    procedure ButtonRestoreConfigurationsBackupClick(Sender: TObject);
     procedure ButtonTestDispenserClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
   private
@@ -79,7 +86,7 @@ var
 
 implementation
 
-uses sdl.app, session.fileutils, Devices.RS232i;
+uses sdl.app, session.fileutils, Devices.RS232i, ui.backup, release;
 
 {$R *.lfm}
 
@@ -150,6 +157,21 @@ begin
     3 : RS232.Dispenser(disp4);
   end;
   RS232.Free;
+end;
+
+procedure TFormMisc.ButtonDoConfigurationsBackupClick(Sender: TObject);
+begin
+  DoConfigurationsBackup;
+end;
+
+procedure TFormMisc.ButtonCreateReleaseClick(Sender: TObject);
+begin
+  CreateReleaseFolder;
+end;
+
+procedure TFormMisc.ButtonRestoreConfigurationsBackupClick(Sender: TObject);
+begin
+  RestoreConfigurationsBackup;
 end;
 
 { TFormMisc }

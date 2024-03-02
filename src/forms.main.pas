@@ -33,7 +33,7 @@ type
     ComboBoxParticipant: TComboBox;
     IniPropStorage1: TIniPropStorage;
     LabelSessionEndCriteria: TLabel;
-    LabelContact: TLabel;
+    LabelLastSessionName: TLabel;
     ListBoxCondition: TListBox;
     MenuItemShowWordsPerCycle: TMenuItem;
     MenuItemOutputWordsPerCyle: TMenuItem;
@@ -47,6 +47,8 @@ type
     PopupMenuParticipants: TPopupMenu;
     PopupMenuMisc: TPopupMenu;
     ProgressBar: TProgressBar;
+    Splitter1: TSplitter;
+    Splitter2: TSplitter;
     procedure ButtonOpenSpeechValidationClick(Sender: TObject);
     procedure ButtonTestConditionClick(Sender: TObject);
     procedure ButtonLoadConfigurationFileClick(Sender: TObject);
@@ -56,6 +58,7 @@ type
     procedure ButtonRunSessionClick(Sender: TObject);
     procedure BeginSession(Sender: TObject);
     procedure ComboBoxDesignFolderEditingDone(Sender: TObject);
+    procedure ComboBoxParticipantEditingDone(Sender: TObject);
     procedure EndSession(Sender : TObject);
     procedure CloseSDLApp(Sender : TObject);
     procedure FormCreate(Sender: TObject);
@@ -114,6 +117,7 @@ uses
   , sdl.app.grids.types
   , sdl.app.testmode
   , eye.tracker
+  , ui.backup
   , picanco.experiments.images
   , picanco.experiments.output
   ;
@@ -128,6 +132,7 @@ uses
 procedure TFormBackground.ButtonRunSessionClick(Sender: TObject);
 begin
   if not Validated then Exit;
+
   FormMisc.Initialize;
   AssignGlobalVariables;
   ToogleControlPanelEnabled;
@@ -238,11 +243,36 @@ end;
 
 procedure TFormBackground.ComboBoxDesignFolderEditingDone(Sender: TObject);
 begin
-  with Pool, ComboBoxDesignFolder do begin
-    DesignBasePath := Items[ItemIndex];
+  if ComboBoxDesignFolder.Items.Count > 0 then begin
+    with Pool, ComboBoxDesignFolder do begin
+      DesignBasePath := Items[ItemIndex];
+    end;
+    ListBoxCondition.Clear;
+    GetDesignFilesFor(ListBoxCondition.Items);
   end;
-  ListBoxCondition.Clear;
-  GetDesignFilesFor(ListBoxCondition.Items);
+end;
+
+procedure TFormBackground.ComboBoxParticipantEditingDone(Sender: TObject);
+var
+  LInformation : TInformation;
+begin
+  if ComboBoxParticipant.Items.Count > 0 then begin
+    SetupFolders;
+    if LastValidBaseFilenameFileExists then begin
+      LInformation := LoadInformationFromFile(GetLastValidInformationFile);
+    end else begin
+      ShowMessage('Guessing last valid information file');
+      LInformation := LoadInformationFromFile(GuessLastValidInformationFile);
+    end;
+
+    if LInformation.Basename.IsEmpty then begin
+      LabelLastSessionName.Caption := '?';
+      LabelSessionEndCriteria.Caption := '?';
+    end else begin
+      LabelLastSessionName.Caption := LInformation.SessionName;
+      LabelSessionEndCriteria.Caption := LInformation.SessionResult;
+    end;
+  end;
 end;
 
 procedure TFormBackground.EndSession(Sender: TObject);
@@ -278,10 +308,15 @@ end;
 
 procedure TFormBackground.IniPropStorage1StoredValues0Restore(
   Sender: TStoredValue; var Value: TStoredType);
+var
+  LValue : integer;
 begin
   GetDesignFoldersFor(ComboBoxDesignFolder.Items);
   with Pool, ComboBoxDesignFolder do begin
-    DesignBasePath := Items[Value.ToInteger];
+    LValue := Value.ToInteger;
+    if (LValue < Items.Count) and (LValue <> -1) then begin
+      DesignBasePath := Items[LValue];
+    end;
   end;
 end;
 
@@ -293,9 +328,14 @@ end;
 
 procedure TFormBackground.IniPropStorage1StoredValues1Restore(
   Sender: TStoredValue; var Value: TStoredType);
+var
+  LValue : integer;
 begin
   GetDesignFilesFor(ListBoxCondition.Items);
-  ListBoxCondition.ItemIndex := Value.ToInteger;
+  LValue := Value.ToInteger;
+  if LValue < ListBoxCondition.Count then begin
+    ListBoxCondition.ItemIndex := LValue;
+  end;
 end;
 
 procedure TFormBackground.IniPropStorage1StoredValues1Save(
@@ -337,21 +377,27 @@ begin
 end;
 
 procedure TFormBackground.HitCriteriaAtSessionEnd(Sender: TObject);
+const
+  LResult = 'Critério atingido';
 begin
-  LabelSessionEndCriteria.Color := clGreen;
+  SetSessionResult(LResult);
   with ListBoxCondition do begin
-    LabelSessionEndCriteria.Caption :=
-      'Critério Atingido:' + Items[ItemIndex];
+    LabelLastSessionName.Caption := Items[ItemIndex];
   end;
+  LabelSessionEndCriteria.Color := clGreen;
+  LabelSessionEndCriteria.Caption := LResult;
 end;
 
 procedure TFormBackground.NotHitCriteriaAtSessionEnd(Sender: TObject);
+const
+  LResult = 'Critério não atingido';
 begin
-  LabelSessionEndCriteria.Color := clRed;
+  SetSessionResult(LResult);
   with ListBoxCondition do begin
-    LabelSessionEndCriteria.Caption :=
-      'Critério não atingido:' + Items[ItemIndex];
+    LabelLastSessionName.Caption := Items[ItemIndex];
   end;
+  LabelSessionEndCriteria.Color := clRed;
+  LabelSessionEndCriteria.Caption := LResult;
 end;
 
 procedure TFormBackground.AssignGlobalVariables;
@@ -412,7 +458,7 @@ begin
   with GlobalTrialParameters, FormMisc.ComboBoxFixedSamplePosition do begin
     GridOrientation := goCustom;
     case ItemIndex of
-      1: begin // centralize sample, use 4 corners for comparisions
+      1: begin // centralize sample, use 4 corners for comparisons
         FixedSamplePosition := 4;
         FixedComparisonPosition := 4;
         SetLength(ComparisonPositions, 4);
@@ -446,10 +492,12 @@ end;
 
 function TFormBackground.ParticipantFolderName: string;
 begin
-  Pool.Counters.Subject := ComboBoxParticipant.ItemIndex;
-  Result := Pool.Counters.Subject.ToString +'-'+
-      ComboBoxParticipant.Items[Pool.Counters.Subject] +
-      DirectorySeparator;
+  if ComboBoxParticipant.Items.Count > 0 then begin
+    Pool.Counters.Subject := ComboBoxParticipant.ItemIndex;
+    Result := Pool.Counters.Subject.ToString +'-'+
+        ComboBoxParticipant.Items[Pool.Counters.Subject] +
+        DirectorySeparator;
+  end;
 end;
 
 function TFormBackground.SessionName: string;
@@ -520,14 +568,30 @@ function TFormBackground.Validated: Boolean;
 begin
   Result := False;
 
-  if FormMisc.ComboBoxMonitor.ItemIndex = -1 then begin
-    ShowMessage('Escolha um monitor.');
-    Exit;
+  with FormMisc.ComboBoxMonitor do begin
+    if ItemIndex = -1 then begin
+      if Items.Count > 0 then begin
+        ItemIndex := Items.Count-1;
+        ShowMessage('O último monitor foi selecionado: ' + Items[ItemIndex]);
+      end else begin
+        ShowMessage('Nenhum monitor foi reconhecido.');
+        Exit;
+      end;
+    end;
   end;
 
   if Pool.ConfigurationFilename.IsEmpty then begin
-    ShowMessage('Crie uma nova sessão ou carregue uma sessão interrompida.');
-    Exit;
+    with ListBoxCondition do begin
+      if ItemIndex > -1 then begin
+        ShowMessage(
+          'Uma nova sessão será criada:' + LineEnding + Items[ItemIndex]);
+        ButtonNewConfigurationFileClick(Self);
+      end else begin
+        ShowMessage(
+          'Crie uma nova sessão ou carregue uma sessão interrompida.');
+        Exit;
+      end;
+    end;
   end;
 
   if ComboBoxParticipant.Items.Count = 0 then begin
