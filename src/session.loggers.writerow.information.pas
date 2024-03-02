@@ -47,7 +47,7 @@ var
 
 function AsNameValue(AName, AValue: string):string;
 begin
-  Result := String.Join('=', [AName+GSeparator, AValue]);
+  Result := String.Join(GSeparator, [AName, AValue]);
 end;
 
 function Line(ALine : array of string) : string;

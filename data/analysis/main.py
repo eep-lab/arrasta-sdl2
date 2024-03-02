@@ -1,5 +1,5 @@
 from fileutils import cd, list_data_folders, list_files
-from converters import convert_data_file
+from converters import convert_data_file, convert_info_file
 
 cd('..')
 
@@ -15,8 +15,11 @@ def convert_data():
             cd(data_folder)
             for entry in list_files('.data'):
                 convert_data_file(entry)
-                return
+
+            for entry in list_files('.info'):
+                convert_info_file(entry)
             cd('..')
+        cd('..')
         cd('..')
 
 if __name__ == "__main__":

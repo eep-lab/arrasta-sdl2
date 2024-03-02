@@ -17,9 +17,9 @@ object FormMisc: TFormMisc
     Height = 629
     Top = 0
     Width = 449
-    ActivePage = TabSheetGeneral
+    ActivePage = TabSheetOther
     Align = alClient
-    TabIndex = 0
+    TabIndex = 4
     TabOrder = 0
     object TabSheetGeneral: TTabSheet
       Caption = 'Geral'
@@ -490,6 +490,45 @@ object FormMisc: TFormMisc
         )
         TabOrder = 0
         Text = 'Mouse'
+      end
+    end
+    object TabSheetOther: TTabSheet
+      Caption = 'Etc'
+      ChildSizing.LeftRightSpacing = 20
+      ChildSizing.TopBottomSpacing = 20
+      ChildSizing.HorizontalSpacing = 10
+      ChildSizing.VerticalSpacing = 10
+      ChildSizing.EnlargeHorizontal = crsHomogenousChildResize
+      ChildSizing.Layout = cclLeftToRightThenTopToBottom
+      ChildSizing.ControlsPerLine = 1
+      ClientHeight = 601
+      ClientWidth = 441
+      object ButtonDoConfigurationsBackup: TButton
+        Left = 20
+        Height = 25
+        Top = 20
+        Width = 401
+        Caption = 'Fazer backup das configurações'
+        TabOrder = 0
+        OnClick = ButtonDoConfigurationsBackupClick
+      end
+      object ButtonRestoreConfigurationsBackup: TButton
+        Left = 20
+        Height = 25
+        Top = 55
+        Width = 401
+        Caption = 'Restaurar backup das configurações'
+        TabOrder = 1
+        OnClick = ButtonRestoreConfigurationsBackupClick
+      end
+      object ButtonCreateRelease: TButton
+        Left = 20
+        Height = 25
+        Top = 90
+        Width = 401
+        Caption = 'Criar pasta com cópia para redistribuição'
+        TabOrder = 2
+        OnClick = ButtonCreateReleaseClick
       end
     end
   end

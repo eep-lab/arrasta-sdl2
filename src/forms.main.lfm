@@ -155,7 +155,7 @@ object FormBackground: TFormBackground
       ParentColor = False
     end
     object Splitter1: TSplitter
-      Cursor = crDefault
+      Cursor = crVSplit
       Left = 1
       Height = 6
       Top = 622
@@ -165,7 +165,7 @@ object FormBackground: TFormBackground
       ResizeAnchor = akBottom
     end
     object Splitter2: TSplitter
-      Cursor = crDefault
+      Cursor = crVSplit
       Left = 1
       Height = 6
       Top = 648

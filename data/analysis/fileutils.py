@@ -7,6 +7,9 @@ import pandas as pd
 
 from headers import data_header
 
+def file_exists(entry):
+    return os.path.exists(entry)
+
 def cd(directory):
     os.chdir(directory)
     print("Current Working Directory: ", os.getcwd())

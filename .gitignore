@@ -61,9 +61,7 @@ data/**/*.wav
 data/**/ID
 data/**/LastValidBaseFilename
 last_session.ini
-configurations.ini
 heaptrc.txt
-configurations_global.ini
 
 # manually created
 *.ods

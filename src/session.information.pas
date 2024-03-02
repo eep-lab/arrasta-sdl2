@@ -45,8 +45,8 @@ begin
 
     LInfoFile := TStringList.Create;
     try
-      LInfoFile.LoadFromFile(LFilename);
       LInfoFile.NameValueSeparator := GSeparator;
+      LInfoFile.LoadFromFile(LFilename);
       LFilename := LInfoFile.Text;
       with Result, LInfoFile do begin
         ParticipantName := Trim(Values[HSUBJECT_NAME]);
