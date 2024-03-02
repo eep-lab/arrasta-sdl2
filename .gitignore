@@ -62,6 +62,8 @@ data/**/ID
 data/**/LastValidBaseFilename
 last_session.ini
 heaptrc.txt
+*.bkp
+release/*
 
 # manually created
 *.ods
