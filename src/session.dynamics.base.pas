@@ -13,6 +13,9 @@ implementation
 
 uses
   SysUtils,
+  session.strutils,
+  session.pool,
+  session.constants.trials.dragdrop,
   session.constants.trials.pseudowords,
   session.constants.trials,
   picanco.experiments.words.types,
@@ -23,7 +26,7 @@ var
 
 procedure SetTrialDynamics(AParameters: TStringList);
 var
-  LRelation    : string;
+  LRelation    , LStimuliFolder: string;
   LTrialID     : integer;
   LCycle       : integer;
   LCondition   : integer;
@@ -69,6 +72,16 @@ begin
             Values[ComparisonKey+(i+1).ToString] := LTmpWord.Caption;
           end;
         end;
+      end;
+    end;
+
+    with ParserTrialsSourceKeys, DragDropKeys do begin
+      if Values[TrialIDSourceKey].Contains('multi-sample') then begin
+        LStimuliFolder := Values[StimuliFolderKey];
+        if LStimuliFolder.IsEmpty then begin
+          LStimuliFolder := 'alpha_numeric_convention'
+        end;
+        Pool.ImageBasePath := AsPath(LStimuliFolder);
       end;
     end;
   end;

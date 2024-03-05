@@ -13,12 +13,14 @@ procedure Finalize;
 const
   GExtention = '.info';
   GSeparator = ':';
+  INFO_VERSION = '1';
 
 var
   SaveData : TDataProcedure;
   SessionResult : string;
 
 resourcestring
+  HVERSION           = 'Version';
   HSUBJECT_NAME      = 'Nome_do_sujeito';
   HSESSION_NAME      = 'Nome_da_sessao';
   HFIRST_TIMESTAMP   = 'Primeira_timestamp';
@@ -45,14 +47,9 @@ uses
 var
   StartTime : TDateTime;
 
-function AsNameValue(AName, AValue: string):string;
+function Line(AName, AValue: string) : string;
 begin
-  Result := String.Join(GSeparator, [AName, AValue]);
-end;
-
-function Line(ALine : array of string) : string;
-begin
-  Result := String.Join(#9, ALine) + LineEnding;
+  Result := String.Join(GSeparator, [AName, AValue]) + LineEnding;
 end;
 
 procedure InitializeBaseHeader;
@@ -60,13 +57,13 @@ begin
   StartTime := Time;
 
   SaveData(
-    Line([AsNameValue(HSUBJECT_NAME, Pool.ParticipantName)]) +
-    Line([AsNameValue(HSESSION_NAME, Pool.SessionName)]) +
-    Line([AsNameValue(HGRID, Grid.ToJSON)]) +
-    Line([AsNameValue(HMONITOR, WindowSize.ToJSON)]) +
-    Line([AsNameValue(HBEGIN_DATE, DateTimeToStr(Date))]) +
-    Line([AsNameValue(HBEGIN_TIME, TimeToStr(StartTime))])
-  );
+    Line(HVERSION, INFO_VERSION) +
+    Line(HSUBJECT_NAME, Pool.ParticipantName) +
+    Line(HSESSION_NAME, Pool.SessionName) +
+    Line(HGRID, Grid.ToJSON) +
+    Line(HMONITOR, WindowSize.ToJSON) +
+    Line(HBEGIN_DATE, DateTimeToStr(Date)) +
+    Line(HBEGIN_TIME, TimeToStr(StartTime)));
 end;
 
 procedure Finalize;
@@ -75,19 +72,19 @@ var
 begin
   LStopTime := Time;
   SaveData(
-    Line([AsNameValue(HEND_DATE, DateTimeToStr(Date))]) +
-    Line([AsNameValue(HEND_TIME, TimeToStr(LStopTime))]) +
-    Line([AsNameValue(HDURATION, TimeToStr(LStopTime - StartTime))]) +
-    Line([AsNameValue(HSESSION_RESULT, SessionResult)]));
+    Line(HEND_DATE, DateTimeToStr(Date)) +
+    Line(HEND_TIME, TimeToStr(LStopTime)) +
+    Line(HDURATION, TimeToStr(LStopTime - StartTime)) +
+    Line(HSESSION_RESULT, SessionResult));
 end;
 
 function MockHeader: string;
 begin
   Result :=
-    Line([AsNameValue(HSUBJECT_NAME, 'Sujeito X')]) +
-    Line([AsNameValue(HSESSION_NAME, 'Sessão X')]) +
-    Line([AsNameValue(HBEGIN_DATE, DateTimeToStr(Date))]) +
-    Line([AsNameValue(HBEGIN_TIME, TimeToStr(Time))]);
+    Line(HSUBJECT_NAME, 'Sujeito X') +
+    Line(HSESSION_NAME, 'Sessão X') +
+    Line(HBEGIN_DATE, DateTimeToStr(Date)) +
+    Line(HBEGIN_TIME, TimeToStr(Time));
 end;
 
 end.

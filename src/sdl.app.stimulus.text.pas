@@ -35,6 +35,8 @@ type
       FText : TAnimatedText;
       FHasPrompt : Boolean;
       procedure PromptStopped(Sender: TObject);
+      procedure PromptStarted(Sender: TObject);
+      function GetStimulusNamePrefix : string;
     protected
       function GetStimulusName : string; override;
       procedure MouseUp(Sender: TObject; Shift: TCustomShiftState;
@@ -53,13 +55,16 @@ implementation
 uses
   sdl.app.output,
   sdl.app.controls.custom,
-  session.parameters.global;
+  session.parameters.global,
+  session.loggers.writerow.timestamp;
 
 { TTextStimuli }
 
 procedure TTextStimulus.PromptStopped(Sender: TObject);
 begin
   (Sender as ISound).SetOnStop(nil);
+
+  Timestamp(GetStimulusNamePrefix+'.Prompt.Stop', FCustomName);
 
   // starts CD recording
   if Assigned(Sibling) then begin
@@ -68,13 +73,23 @@ begin
   end;
 end;
 
-function TTextStimulus.GetStimulusName: string;
+procedure TTextStimulus.PromptStarted(Sender: TObject);
+begin
+  Timestamp(GetStimulusNamePrefix+'.Prompt.Start', FCustomName);
+end;
+
+function TTextStimulus.GetStimulusNamePrefix: string;
 begin
   if IsSample then begin
-    Result := 'Text.Sample' + #9 + FCustomName;
+    Result := 'Text.Sample';
   end else begin
-    Result := 'Text.Comparison' + #9 + FCustomName;
+    Result := 'Text.Comparison';
   end;
+end;
+
+function TTextStimulus.GetStimulusName: string;
+begin
+  Result := GetStimulusNamePrefix + #9 + FCustomName
 end;
 
 procedure TTextStimulus.MouseUp(Sender: TObject; Shift: TCustomShiftState;
@@ -122,6 +137,7 @@ begin
   if FHasPrompt and IsSample then begin
     FPrompt := GetAudioPromptForText(AParameters);
     FPrompt.SetOnStop(@PromptStopped);
+    FPrompt.SetOnStart(@PromptStarted);
   end;
 end;
 
