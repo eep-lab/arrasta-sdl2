@@ -67,3 +67,5 @@ release/*
 
 # manually created
 *.ods
+*.ods#
+*.~lock.*

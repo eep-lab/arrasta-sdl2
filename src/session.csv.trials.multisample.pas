@@ -45,10 +45,6 @@ uses
 procedure TCSVMultiSample.AfterLoadingParameters(Sender: TObject);
 begin
   inherited AfterLoadingParameters(Sender);
-  if not FStimuliFolder.IsEmpty then begin
-    Pool.ImageBasePath := FStimuliFolder;
-  end;
-
   FName :=
     TrialID.ToString + '-' +
     Relation + '-' +
