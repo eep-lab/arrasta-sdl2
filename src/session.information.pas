@@ -50,7 +50,11 @@ begin
       LInfoFile.LoadFromFile(LFilename);
       LFilename := LInfoFile.Text;
       with Result, LInfoFile do begin
-        Version         := Byte(Trim(Values[HVERSION]).ToInteger);
+        if Trim(Values[HVERSION]).IsEmpty then begin
+          Version := 0;
+        end else begin
+          Version := Byte(Trim(Values[HVERSION]).ToInteger);
+        end;
         ParticipantName := Trim(Values[HSUBJECT_NAME]);
         SessionName     := Trim(Values[HSESSION_NAME]);
         SessionResult   := Trim(Values[HSESSION_RESULT]);
