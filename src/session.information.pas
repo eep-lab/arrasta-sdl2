@@ -10,6 +10,7 @@ uses
 type
 
   TInformation = record
+    Version : UInt8;
     Basename : string;
     ParticipantName : string;
     SessionName : string;
@@ -49,6 +50,7 @@ begin
       LInfoFile.LoadFromFile(LFilename);
       LFilename := LInfoFile.Text;
       with Result, LInfoFile do begin
+        Version         := Byte(Trim(Values[HVERSION]).ToInteger);
         ParticipantName := Trim(Values[HSUBJECT_NAME]);
         SessionName     := Trim(Values[HSESSION_NAME]);
         SessionResult   := Trim(Values[HSESSION_RESULT]);
