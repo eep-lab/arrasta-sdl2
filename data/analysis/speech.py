@@ -90,7 +90,7 @@ def correlate_latency_levenshtein(do_global_analysis=False):
             plot_correlation(data.index, data['Levenshtein'], 'Index', 'Levenshtein', participant+'- Bena e Falo')
             plot_correlation(data.index, data['Latency'], 'Index', 'Latency', participant+' - Bena e Falo')
 
-def override_CD_probes_in_data_file(must_not_override=False):
+def override_CD_probes_in_data_file(must_not_override=True):
     cd('output')
     data = pd.read_csv('probes_CD.transcripted.data.processed', sep='\t')
     print('Doing something -----------------------------')
