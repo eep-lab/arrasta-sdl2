@@ -18,16 +18,15 @@ def get_real_filepath(entry):
     return os.path.join(os.getcwd(), entry)
 
 def load_file(entry):
+    if entry.endswith('.info.processed'):
+        return pd.read_csv(entry, sep='\t', encoding='utf-8', header=None, index_col=0, engine='python')
+
+    if entry.endswith('.probes.processed'):
+        return pd.read_csv(entry, sep='\t')
+
     return pd.read_csv(entry, sep='\t', header=0, engine='python')
 
-    # # get directory path where this script is located
-    # dir_path = os.path.dirname(os.path.realpath(__file__))
-    # # concatenate directory path with file name
-    # filepath = os.path.join(dir_path, filename)
-    # # return the file
-    # return pd.read_excel(filepath, engine='odf')
-
-def list_data_folders(exclude_list=[]):
+def list_data_folders(exclude_list=['0-Rafael', '3-Teste', '.vscode', 'output']):
     exclude_list += ['__pycache__', 'analysis']
     # Get all entries in the current directory
     all_entries = os.listdir('.')
@@ -86,11 +85,50 @@ def safety_copy(entry):
 
     return destination
 
-def replace_extension(filename, new_extension):
-    # Split the filename into root and extension
+def replace_extension(filename, new_extension, processed=False):
+    if processed:
+        filename = filename.replace('.processed', '')
     root, _ = os.path.splitext(filename)
     # Add the new extension
     return root + new_extension
 
-def as_timestamps(entry):
-    return replace_extension(entry, '.timestamps')
+def as_timestamps(entry, processed=False):
+    if processed:
+        return replace_extension(entry, '.timestamps.processed', processed=True)
+    else:
+        return replace_extension(entry, '.timestamps')
+
+def as_data(entry, processed=False):
+    if processed:
+        return replace_extension(entry, '.data.processed', processed=True)
+    else:
+        return replace_extension(entry, '.data')
+
+def walk_and_execute(entry, function, *args):
+    cd(entry)
+    cd('analysis')
+    safety_copy_folders = list_data_folders()
+    for data_folder in safety_copy_folders:
+        cd(data_folder)
+        function(*args)
+        cd('..')
+    cd('..')
+    cd('..')
+
+def delete_deprecated_files():
+    def delete_probes_files():
+        files = list_files('.probes.processed')
+        if len(files) == 0:
+            return
+        else:
+            for file in files:
+                os.remove(file)
+                print(f"File '{file}' deleted.")
+
+    cd('..')
+    participant_folders = list_data_folders()
+    for folder in participant_folders:
+        walk_and_execute(folder, delete_probes_files)
+
+if __name__ == "__main__":
+    delete_deprecated_files()
