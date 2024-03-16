@@ -12,6 +12,7 @@ def data_by_relation(pattern, container):
     for entry in list_files('.info.processed'):
         data_file = as_data(entry, processed=True)
         if not file_exists(data_file):
+            print(f'File {data_file} does not exist.')
             continue
 
         info = Information(entry)
@@ -20,7 +21,12 @@ def data_by_relation(pattern, container):
             data = data[data['Relation'].str.match(pattern)]
 
             if not data.empty:
+                print(f'File {entry} has valid result.')
                 container.append(data)
+            else:
+                print(f'File {entry} is empty.')
+        else:
+            print(f'File {entry} has no valid result.')
 
 def get_probes():
     cd('..')
@@ -29,8 +35,11 @@ def get_probes():
     for folder in participant_folders:
         walk_and_execute(folder, data_by_relation, 'C-D', container)
 
-    data = pd.concat(container)
-    data = data[data['HasDifferentialReinforcement'] == 'False']
+    return pd.concat(container)
+
+def save_probes():
+    data = get_probes()
+    data = data[data['HasDifferentialReinforcement'] == False]
     column = data['Name']
     data.drop(columns='Name', inplace=True)
     data['Name'] = column
@@ -74,7 +83,7 @@ def correlate_latency_levenshtein(do_global_analysis=False):
     if do_global_analysis:
         # filter data by word name
         data = all_data[all_data['Name'].str.match(r'(bena|falo)')]
-        data = data.sort_values(by=['Cycle.ID', 'Hour'])
+        data = data.sort_values(by=['Cycle.ID', 'Time'])
         plot_correlation(data['Levenshtein'], data['Latency'], 'Levenshtein', 'Latency', 'Bena e Falo')
         plot_correlation(data.index, data['Levenshtein'], 'Trial', 'Levenshtein', 'Bena e Falo')
         plot_correlation(data.index, data['Latency'], 'Trial', 'Latency', 'Bena e Falo')
@@ -83,7 +92,7 @@ def correlate_latency_levenshtein(do_global_analysis=False):
             # filter data by participant
             data = all_data[all_data['Participant'] == participant]
             # sort data by Cycle and Time
-            data = data.sort_values(by=['Cycle.ID', 'Hour'])
+            data = data.sort_values(by=['Cycle.ID', 'Time'])
             data = data[data['Name'].str.match(r'(bena|falo)')]
             # filter by word
             plot_correlation(data['Levenshtein'], data['Latency'], 'Levenshtein', 'Latency', participant+'- Bena e Falo')
@@ -93,7 +102,7 @@ def correlate_latency_levenshtein(do_global_analysis=False):
 def override_CD_probes_in_data_file(must_not_override=True):
     cd('output')
     data = pd.read_csv('probes_CD.transcripted.data.processed', sep='\t')
-    print('Doing something -----------------------------')
+    print('----------------------------- override data files and creating probes files')
     cd('..')
     cd('..')
     participant_folders = list_data_folders()
@@ -140,6 +149,7 @@ def override_CD_probes_in_data_file(must_not_override=True):
         cd('..')
 
 if __name__ == "__main__":
+    # save_probes()
     # calculate_similarity()
     # correlate_latency_levenshtein()
     override_CD_probes_in_data_file()

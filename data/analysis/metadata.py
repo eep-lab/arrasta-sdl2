@@ -1,5 +1,5 @@
 import yaml
-from fileutils import file_exists
+import os
 
 __default_entry__ = 'metadata.yaml'
 
@@ -16,7 +16,7 @@ class Metadata:
         return str(self.items)
 
     def load(self):
-        if file_exists(self.entry):
+        if os.path.exists(self.entry):
             with open(self.entry, 'r') as file:
                 self.items = yaml.safe_load(file)
         else:

@@ -5,7 +5,7 @@ import shutil
 
 import pandas as pd
 
-from headers import data_header
+from metadata import Metadata
 
 def file_exists(entry):
     return os.path.exists(entry)
@@ -26,14 +26,21 @@ def load_file(entry):
 
     return pd.read_csv(entry, sep='\t', header=0, engine='python')
 
-def list_data_folders(exclude_list=['0-Rafael', '3-Teste', '.vscode', 'output']):
-    exclude_list += ['__pycache__', 'analysis']
-    # Get all entries in the current directory
-    all_entries = os.listdir('.')
-    # Filter out files and excluded folders
-    return [entry for entry in all_entries \
-               if os.path.isdir(entry) \
-               and entry not in exclude_list]
+def list_data_folders(include_list=[], exclude_list=[]):
+    if len(include_list) == 0:
+        exclude_list += ['__pycache__', 'analysis', '.vscode', 'output', '0-Rafael', '3-Teste', '7-Teste2']
+        # Get all entries in the current directory
+        all_entries = os.listdir('.')
+        # Filter out files and excluded folders
+        return [entry for entry in all_entries \
+                if os.path.isdir(entry) \
+                and entry not in exclude_list]
+    else:
+        all_entries = os.listdir('.')
+        return [entry for entry in all_entries \
+                if os.path.isdir(entry) \
+                and entry in include_list]
+
 
 def list_files(extension=''):
     # Get all entries in the current directory
@@ -59,7 +66,7 @@ def get_creation_date(real_filepath, format='%Y-%m-%d'):
     Note: Windows only.
     """
     # Get the creation time of the file
-    creation_time = os.path.getctime(real_filepath)
+    creation_time = os.path.getmtime(real_filepath)
     # Convert the creation time to a datetime object
     date_time_obj = datetime.datetime.fromtimestamp(creation_time)
     # Format the date as YYYY-MM-DD
@@ -104,14 +111,38 @@ def as_data(entry, processed=False):
     else:
         return replace_extension(entry, '.data')
 
+def walk_and_execute_convertion(entry, function, *args):
+    cd(entry)
+    cd('analysis')
+
+    metadata = Metadata()
+    try:
+        folder_done = bool(metadata.items['done'])
+    except KeyError:
+        folder_done = False
+
+    if not folder_done:
+        safety_copy_folders = list_data_folders()
+        for data_folder in safety_copy_folders:
+            cd(data_folder)
+            function(*args)
+            cd('..')
+        metadata.items['done'] = str(True)
+        metadata.save()
+
+    cd('..')
+    cd('..')
+
 def walk_and_execute(entry, function, *args):
     cd(entry)
     cd('analysis')
+
     safety_copy_folders = list_data_folders()
     for data_folder in safety_copy_folders:
         cd(data_folder)
         function(*args)
         cd('..')
+
     cd('..')
     cd('..')
 

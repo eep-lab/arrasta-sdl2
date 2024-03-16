@@ -1,4 +1,4 @@
-from fileutils import cd, list_data_folders, list_files, walk_and_execute
+from fileutils import cd, list_data_folders, list_files, walk_and_execute_convertion
 from converters import convert_data_file, convert_info_file, add_info_to_data_files
 
 def convert():
@@ -18,7 +18,7 @@ def convert_all():
     cd('..')
     participant_folders = list_data_folders()
     for folder in participant_folders:
-        walk_and_execute(folder, convert)
+        walk_and_execute_convertion(folder, convert)
 
 if __name__ == "__main__":
     convert_all()

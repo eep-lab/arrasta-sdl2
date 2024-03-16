@@ -9,13 +9,54 @@ from barplots import bar_plot, bar_subplots
 import pandas as pd
 
 def calculate_measures_in_day_and_save_to_metadata():
-    participant = 'unknown'
-    total_pre_training_durantion_in_day = timedelta()
+    def collect_data():
+        time1 = timedelta()
+        time2 = timedelta()
+
+        container = []
+        levenstein = {
+            'CD_Training': [],
+            'CD_Probes_1': [],
+            'CD_Probes_2': []}
+
+        for entry in list_files('.info.processed'):
+            data_file = as_data(entry, processed=True)
+            probe_file = data_file.replace('.data', '.probes')
+            if not file_exists(data_file):
+                continue
+
+            info = Information(entry)
+
+            if info.has_valid_result():
+                container.append(load_file(data_file))
+                if 'Pre-treino' in info.session_name:
+                    time1 += info.duration.value
+                else:
+                    time2 += info.duration.value
+
+                if file_exists(probe_file):
+                    if 'Treino-AC-CD' in info.session_name:
+                        levenstein['CD_Training'].append(load_file(probe_file)['Levenshtein'])
+
+                    elif 'Sondas-CD-Palavras-12-ensino-8-generalizacao' in info.session_name:
+                        levenstein['CD_Probes_1'].append(load_file(probe_file)['Levenshtein'])
+
+                    elif 'Sondas-CD-Palavras-generalizacao-reservadas' in info.session_name:
+                        levenstein['CD_Probes_2'].append(load_file(probe_file)['Levenshtein'])
+
+        participant = info.participant_name.split('-')[0]
+        start_date = info.start_date.to_string()
+
+        # join all data files
+        return pd.concat(container), levenstein, (time1, time2), participant, start_date
+
+
+    data, levenstein, time, participant, date = collect_data()
+
+    total_pre_training_durantion_in_day, total_training_probes_duration_in_day = time
     total_pre_training_trials_in_day = 0
     total_pre_training_bb_trials_in_day = 0
     total_pre_training_cd_trials_in_day = 0
-
-    total_training_probes_duration_in_day = timedelta()
 
     total_training_trials_in_day = 0
     total_training_hits_in_day = 0
@@ -69,45 +110,6 @@ def calculate_measures_in_day_and_save_to_metadata():
     total_AC_probe_hits_in_day = 0
     total_AC_probe_misses_in_day = 0
 
-    container = []
-    levenstein = {
-        'CD_Training': [],
-        'CD_Probes_1': [],
-        'CD_Probes_2': []}
-
-    for entry in list_files('.info.processed'):
-        data_file = as_data(entry, processed=True)
-        probe_file = data_file.replace('.data', '.probes')
-        if not file_exists(data_file):
-            continue
-
-        info = Information(entry)
-
-        if info.has_valid_result():
-            container.append(load_file(data_file))
-            if 'Pre-treino' in info.session_name:
-                total_pre_training_durantion_in_day += info.duration.value
-            else:
-                total_training_probes_duration_in_day += info.duration.value
-
-            if file_exists(probe_file):
-                if 'Treino-AC-CD' in info.session_name:
-                    levenstein['CD_Training'].append(load_file(probe_file)['Levenshtein'])
-
-                elif 'Sondas-CD-Palavras-12-ensino-8-generalizacao' in info.session_name:
-                    levenstein['CD_Probes_1'].append(load_file(probe_file)['Levenshtein'])
-
-                elif 'Sondas-CD-Palavras-generalizacao-reservadas' in info.session_name:
-                    levenstein['CD_Probes_2'].append(load_file(probe_file)['Levenshtein'])
-
-    # get id from participant name
-    participant = info.participant_name.split('-')[0]
-    date = info.start_date.to_string()
-
-    # join all data files
-    data = pd.concat(container)
-    container = None
-
     try:
         levenstein['CD_Training'] = pd.concat(levenstein['CD_Training'])
     except ValueError:
@@ -129,7 +131,8 @@ def calculate_measures_in_day_and_save_to_metadata():
     pre_training_trials = data[data['Condition'] == 0]
     total_pre_training_trials_in_day = pre_training_trials.shape[0]
 
-    pre_training_bb_trials_in_day = pre_training_trials[pre_training_trials['Relation'] != 'B-B']
+    pre_training_bb_trials_in_day = pre_training_trials[pre_training_trials['Relation'] == 'B-B']
+    total_pre_training_bb_trials_in_day = pre_training_bb_trials_in_day.shape[0]
 
     pre_training_cd_trials = pre_training_trials[pre_training_trials['Relation'] == 'C-D']
     total_pre_training_cd_trials_in_day = pre_training_cd_trials.shape[0]

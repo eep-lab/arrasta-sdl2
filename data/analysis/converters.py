@@ -2,8 +2,10 @@ import csv
 
 import pandas as pd
 
-from headers import data_header, timestamps_header, session_name_dict
-from fileutils import as_timestamps, load_file, file_exists
+from headers import info_header, data_header, timestamps_header, session_name_dict
+from fileutils import as_timestamps, as_data, load_file, file_exists, cd
+
+from timeutils import sum
 
 def get_data_events(entry, row, offset=0):
     hashed_row = dict(zip(data_header, row))
@@ -136,112 +138,180 @@ def convert_data_file(entry):
 def get_data_file(entry):
     try:
         data = pd.read_csv(entry, sep='\t', encoding='utf-8')
-    except pd.errors.EmptyDataError:
-        print(f'Empty data file {entry}')
+    except (pd.errors.EmptyDataError, FileNotFoundError):
+        print(f'Invalid data file {entry}')
         return None
     return data
 
+def get_session_duration(entry):
+    """
+    Get the duration of a session in seconds.
+    Use when duration is missing in the .info file.
+    """
+    timestamps_file = as_timestamps(entry)
+    timestamps_df = pd.DataFrame()
+    timestamps_df[timestamps_header[0]] = pd.Series()
+    if file_exists(timestamps_file):
+        timestamps_df = load_file(timestamps_file)
+
+    data_file = as_data(entry, processed=True)
+    data_df = pd.DataFrame()
+    data_df[data_header[0]] = pd.Series()
+    if file_exists(data_file):
+        data_df = load_file(data_file)
+
+    # get Timestamps column from timestamps_df
+    timestamps = timestamps_df[timestamps_header[0]]
+    timestamps = timestamps.str.replace(',', '.').astype(float)
+
+    # get Timestamps column from data_df
+    data = data_df[data_header[0]]
+    data = data.str.replace(',', '.').astype(float)
+
+    # mix both columns
+    mixed = pd.concat([timestamps, data])
+    if mixed.empty:
+        return 0
+
+    # get the first and last timestamps
+    start = mixed.min()
+    end = mixed.max()
+
+    # return the duration rounded in seconds as integer
+    return end - start
+
+
+
 def convert_info_file(entry):
-    # check if .interrupted.bin file exists
-    bin_file = entry.replace('.info', '.interrupted.bin')
-    if file_exists(bin_file):
-        print(f'Bin file {bin_file} exists, session was interrupted.')
-        session_result = 'Interrompida'
-    else:
-        session_result = None
-
-    # Open .data.processed TSV with pandas
-    data_file = entry.replace('.info', '.data.processed')
-    data = get_data_file(data_file)
-    if data is None:
-        print(f'Because {data_file} file was empty, session was calceled.')
-        session_result = 'Cancelada'
-        session_key = None
-    else:
-        session_key = '-'.join([data[data_header[6]][0], str(data[data_header[8]][0])])
-
-    print(f'Session key: {session_key}')
-    # Open .info TSV file
+    version = 0
     with open(entry, 'r', encoding='utf-8') as file:
-        reader = csv.reader(file, delimiter='\t')
+        first_line = file.readline().strip()
+        if first_line == 'Version:1':
+            version = 1
 
-        # Processed lines will be stored in this list
-        processed_lines = []
-        for i, row in enumerate(reader):
-            # split row in case of '=' in the first column
-            if '=' in row[0]:
-                row = row[0].split('=')
+            # replace header in each line for header+tab
+            lines = [first_line] + file.readlines()
+            processed_lines = [line.strip().replace(header, header + '\t').split('\t') \
+                               for header, line in zip(info_header, lines)]
 
-            if (i == 0) or (i == 1) or (i == 2) or (i == 3) or \
-               (i == 6) or (i == 7) or (i == 8) or (i == 9):
-                if len(row) == 2:
-                    if row[0] == 'Resultado:':
-                        session_result = None
+    if version == 0:
+        # check if .interrupted.bin file exists
+        bin_file = entry.replace('.info', '.interrupted.bin')
+        if file_exists(bin_file):
+            print(f'Bin file {bin_file} exists, session was interrupted.')
+            session_result = 'Interrompida'
+        else:
+            session_result = None
 
-                elif len(row) == 3:
-                    if row[0] == 'Resultado':
-                        session_result = None
+        # Open .data.processed TSV with pandas
+        data_file = entry.replace('.info', '.data.processed')
+        data = get_data_file(data_file)
+        if data is None:
+            print(f'Because {data_file} file was empty, session was calceled.')
+            session_result = 'Cancelada'
+            session_key = None
+        else:
+            session_key = '-'.join([data[data_header[6]][0], str(data[data_header[8]][0])])
 
-                    row[0] = row[0]+row[1]
-                    row[1] = row[2]
-                    row = row[:2]
+        print(f'Session: {entry}, key: {session_key}')
 
-                if row[1] == 'Sessão':
-                    if session_key is not None:
-                        row[1] = session_name_dict[session_key]
-                        row = row[:2]
+        # Open .info TSV file
+        with open(entry, 'r', encoding='utf-8') as file:
+            reader = csv.reader(file, delimiter='\t')
 
-            elif i == 4:
-                if len(row) == 3:
-                    if row[0] == 'Inicio:':
-                        new_row = ['Data_Inicio:', row[1]]
-                        processed_lines.append(new_row)
+            # Processed lines will be stored in this list
+            processed_lines = []
+            for i, row in enumerate(reader):
+                # split row in case of '=' in the first column
+                if '=' in row[0]:
+                    row = row[0].split('=')
 
-                        row[0] = 'Hora_Inicio:'
+                if (i == 0) or (i == 1) or (i == 2) or (i == 3) or \
+                (i == 6) or (i == 7) or (i == 8) or (i == 9):
+                    if len(row) == 2:
+                        if row[0] == info_header[10]: # Resultado:
+                            session_result = None
+
+                    elif len(row) == 3:
+                        if row[0] == info_header[10]: # Resultado:
+                            session_result = None
+
+                        row[0] = row[0]+row[1]
                         row[1] = row[2]
                         row = row[:2]
 
-                elif len(row) == 4:
-                    if row[0] == 'Inicio':
-                        new_row = ['Data_Inicio:', row[2]]
-                        processed_lines.append(new_row)
+                    if row[1] == 'Sessão':
+                        if session_key is not None:
+                            row[1] = session_name_dict[session_key]
+                            row = row[:2]
 
-                        row[0] = 'Hora_Inicio:'
-                        row[1] = row[3]
-                        row = row[:2]
+                elif i == 4:
+                    if len(row) == 3:
+                        if row[0] == 'Inicio:':
+                            new_row = [info_header[5], row[1]] # Data_Inicio:
+                            processed_lines.append(new_row)
 
-            elif i == 5:
-                if len(row) == 3:
-                    if row[0] == 'Termino:':
-                        new_row = ['Data_Termino:', row[1]]
-                        processed_lines.append(new_row)
+                            row[0] = info_header[6] # Hora_Inicio:
+                            row[1] = row[2]
+                            row = row[:2]
 
-                        row[0] = 'Hora_Termino:'
-                        row[1] = row[2]
-                        row = row[:2]
+                    elif len(row) == 4:
+                        if row[0] == 'Inicio':
+                            new_row = [info_header[5], row[2]] # Data_Inicio:
+                            processed_lines.append(new_row)
 
-                elif len(row) == 4:
-                    if row[0] == 'Termino':
-                        new_row = ['Data_Termino:', row[2]]
-                        processed_lines.append(new_row)
+                            row[0] = info_header[6] # Hora_Inicio:
+                            row[1] = row[3]
+                            row = row[:2]
 
-                        row[0] = 'Hora_Termino:'
-                        row[1] = row[3]
-                        row = row[:2]
+                elif i == 5:
+                    if len(row) == 3:
+                        if row[0] == 'Termino:':
+                            new_row = [info_header[7], row[1]] # Data_Termino:
+                            processed_lines.append(new_row)
 
-            # Add the processed row to the list
-            processed_lines.append(row)
+                            row[0] = info_header[8] # Hora_Termino:
+                            row[1] = row[2]
+                            row = row[:2]
 
-        if session_result is not None:
-            processed_lines.append(['Resultado:', session_result])
+                    elif len(row) == 4:
+                        if row[0] == 'Termino':
+                            new_row = [info_header[7], row[2]]  # Data_Termino:
+                            processed_lines.append(new_row)
+
+                            row[0] = info_header[8] # Hora_Termino:
+                            row[1] = row[3]
+                            row = row[:2]
+
+                # Add the processed row to the list
+                processed_lines.append(row)
+
+            if session_result is not None:
+                processed_lines.append([info_header[10], session_result])
 
     if len(processed_lines) == 0:
-        processed_lines.append(['Resultado:', 'Cancelada'])
+        processed_lines.append([info_header[10], 'Cancelada'])
     elif len(processed_lines) > 0:
-        if 'Resultado' in processed_lines[-1][0]:
-            pass
-        else:
-            processed_lines.append(['Resultado:', 'Concluida'])
+        get_value = lambda processed_lines, header: [line[1] for line in processed_lines if line[0] == header][0]
+        for header in info_header:
+            if header not in [line[0] for line in processed_lines]:
+                if header == info_header[7]: # Data_Termino:
+                    processed_lines.append([header, get_value(processed_lines, info_header[5])])
+
+                elif header == info_header[8]: # Hora_Termino:
+                    # get start time
+                    start_time = get_value(processed_lines, info_header[6])
+
+                    # sum start time with session duration
+                    end_time = str(sum(int(get_session_duration(entry)), start_time))
+                    processed_lines.append([header, end_time])
+
+                elif header == info_header[9]: # Duration:
+                    duration = str(sum(int(get_session_duration(entry)), '00:00:00'))
+                    processed_lines.append([header, duration])
+
+                elif header == info_header[10]: # Resultado:
+                    processed_lines.append([header, 'Concluida'])
 
     save_processed_file(entry, processed_lines)
 
@@ -306,3 +376,10 @@ def add_info_to_data_files(entry):
             condition = 'NA'
 
         add_columns_to_data_file(entry, [name, condition, date, time])
+
+if __name__ == "__main__":
+    cd('..')
+    cd('0-Teste')
+    cd('analysis')
+    cd('2024-02-07')
+    print(sum(int(get_session_duration('012.info')), '08:52:21'))

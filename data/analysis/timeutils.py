@@ -32,6 +32,10 @@ def sum(secondsinput, timeinput):
     # Create a timedelta
     if isinstance(secondsinput, int):
         seconds = secondsinput
+
+    elif isinstance(secondsinput, float):
+        seconds = secondsinput
+
     elif isinstance(secondsinput, timedelta):
         seconds = secondsinput.seconds
     elif isinstance(secondsinput, str):
