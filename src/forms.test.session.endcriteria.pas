@@ -186,7 +186,7 @@ procedure TFormEndCriteriaTest.Setup;
 begin
   FEndOfSession := False;
   FMustBreakRandom := False;
-  FormBackground.ButtonNewConfigurationFileClick(Self);
+  FormBackground.CreateNewConfigurationFile;
   Pool.Counters.BeforeBeginSession;
   FEndCriteria := TEndCriteria.Create;
   FEndCriteria.OnHitCriteriaAtSessionEnd := @Pass;
