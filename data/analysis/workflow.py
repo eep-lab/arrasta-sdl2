@@ -3,6 +3,7 @@ from convertions import convert_all
 from speech import save_probes_by_participant, concatenate_probes
 from speech import calculate_similarity, override_CD_probes_in_data_file
 from main import create_metadata
+from anonimizator import deanonimize
 
 def prepare_for_transcription():
     """
@@ -10,14 +11,11 @@ def prepare_for_transcription():
     """
     make_safety_copy()
     exclude_list = [
-        '8-ROS',
-        '10-VAU',
-
-        '1-Sara',
-        '2-Fione',
-        '4-Livia',
-        '5-Juliana',
-        '6-Marcus',
+        deanonimize('1-SAR'),
+        deanonimize('2-FIO'),
+        deanonimize('4-LIV'),
+        deanonimize('5-JUL'),
+        deanonimize('6-MAR'),
         '9-CES',
         '12-MED',
         '13-AND',
@@ -47,6 +45,8 @@ def prepare_for_transcription():
         # '22-GLB',
         # '33-VCT',
         # '35-SMI',
+        # '8-ROS',
+        # '10-VAU',
     ]
 
     convert_all(exclude_list)
