@@ -3,8 +3,9 @@ import csv
 import pandas as pd
 
 from headers import info_header, data_header, timestamps_header, session_name_dict
-from fileutils import as_timestamps, as_data, load_file, file_exists, cd
+from fileutils import as_timestamps, as_data, as_info, load_file, file_exists, cd
 
+from anonimizator import anonimize
 from timeutils import sum
 
 def get_data_events(entry, row, offset=0):
@@ -72,7 +73,7 @@ def save_processed_file(entry, processed_lines):
     else:
         print(f'Processed lines contanainer of file {entry} is empty after processing')
 
-def convert_data_file(entry):
+def convert_data_file(entry, override=False):
 
     def get_valid_next(reader):
         next_row = next(reader, None)
@@ -82,6 +83,11 @@ def convert_data_file(entry):
             else:
                 break
         return next_row
+
+    if not override:
+        if file_exists(as_data(entry, processed=True)):
+            print(f'Processed data file {entry} already exists. Skipping...')
+            return
 
     with open(entry, 'r', encoding='utf-8') as file:
         reader = csv.reader(file, delimiter='\t')
@@ -107,9 +113,6 @@ def convert_data_file(entry):
             row.append('NA')
             row.append('NA')
 
-            if '033' in entry:
-                pass
-
             target_events = get_data_events(entry, row)
 
             if next_row is None:
@@ -121,6 +124,7 @@ def convert_data_file(entry):
             row[21] = get_comparison_latency(target_events, target_events_next_row)
 
             trial_ID, _, cycle_ID, name, relation, comparisons = row[7].replace(')', '').split(' ')
+
             row[7] = trial_ID
             row.insert(8, cycle_ID)
             row.insert(9, name)
@@ -128,6 +132,11 @@ def convert_data_file(entry):
             row.insert(11, comparisons.replace('C', ''))
 
             row = row[:26]
+
+            # todo: copy rows based on the number of comparisons
+            if relation == 'C-D':
+                row[23] = row[21]
+                row[21] = 'NA'
 
             # Add the processed row to the list
             processed_lines.append(row)
@@ -182,7 +191,12 @@ def get_session_duration(entry):
 
 
 
-def convert_info_file(entry):
+def convert_info_file(entry, override=False):
+    if not override:
+        if file_exists(as_info(entry, processed=True)):
+            print(f'Processed info file {entry} already exists. Skipping...')
+            return
+
     version = 0
     with open(entry, 'r', encoding='utf-8') as file:
         first_line = file.readline().strip()
@@ -226,16 +240,15 @@ def convert_info_file(entry):
                 if '=' in row[0]:
                     row = row[0].split('=')
 
+                if row[0] == info_header[10]: # Resultado:
+                    session_result = None
+
                 if (i == 0) or (i == 1) or (i == 2) or (i == 3) or \
-                (i == 6) or (i == 7) or (i == 8) or (i == 9):
+                   (i == 6) or (i == 7) or (i == 8) or (i == 9):
                     if len(row) == 2:
-                        if row[0] == info_header[10]: # Resultado:
-                            session_result = None
+                        pass
 
                     elif len(row) == 3:
-                        if row[0] == info_header[10]: # Resultado:
-                            session_result = None
-
                         row[0] = row[0]+row[1]
                         row[1] = row[2]
                         row = row[:2]
@@ -286,7 +299,7 @@ def convert_info_file(entry):
                 # Add the processed row to the list
                 processed_lines.append(row)
 
-            if session_result is not None:
+            if session_result != None:
                 processed_lines.append([info_header[10], session_result])
 
     if len(processed_lines) == 0:
@@ -315,7 +328,7 @@ def convert_info_file(entry):
 
     save_processed_file(entry, processed_lines)
 
-def add_info_to_data_files(entry):
+def add_info_to_data_files(entry, override=False):
     """
     Read .info.processed and add it to .data.processed files.
     """
@@ -327,7 +340,7 @@ def add_info_to_data_files(entry):
             return
 
         # include new columns into the dataframe
-        data['Participant'] = name
+        data['Participant'] = anonimize(name)
         data['Condition'] = condition
         data['Date'] = date
         data['Time'] = time
@@ -336,6 +349,11 @@ def add_info_to_data_files(entry):
         # save the new dataframe into a new file
         data.to_csv(entry, sep='\t' ,index=False)
         print(f'Participant, Condition, Date, Time, File, columns added to file {entry}.')
+
+    if not override:
+        if file_exists(as_data(entry, processed=True)):
+            print(f'Processed data file {entry} already exists. Skipping...')
+            return
 
     # read csv info file
     data_info = entry.replace('.data.processed', '.info.processed')
@@ -348,7 +366,7 @@ def add_info_to_data_files(entry):
         if '0-Pre-treino' in info.loc['Nome_da_sessao:'][1]:
             condition = '0'
 
-        elif '7-Sondas-CD-Palavras-12-ensino-8-generalizacao' in info.loc['Nome_da_sessao:'][1]:
+        elif '0-Sondas-CD-Palavras-12-ensino-8-generalizacao' in info.loc['Nome_da_sessao:'][1]:
             condition = '7'
 
         elif '1-Treino-AB' in info.loc['Nome_da_sessao:'][1]:
@@ -371,6 +389,9 @@ def add_info_to_data_files(entry):
 
         elif '6-Sondas-AC-Palavras-generalizacao-reservadas' in info.loc['Nome_da_sessao:'][1]:
             condition = '6'
+
+        elif '7-Sondas-CD-Palavras-12-ensino-8-generalizacao' in info.loc['Nome_da_sessao:'][1]:
+            condition = '7'
 
         else:
             condition = 'NA'

@@ -11,5 +11,7 @@ def make_safety_copy():
             safety_copy(entry)
         cd('..')
 
+    cd('analysis')
+
 if __name__ == "__main__":
     make_safety_copy()

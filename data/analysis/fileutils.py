@@ -5,10 +5,17 @@ import shutil
 
 import pandas as pd
 
-from metadata import Metadata
-
 def file_exists(entry):
     return os.path.exists(entry)
+
+def data_dir():
+    # check if current directory is data
+    if os.getcwd().endswith('data'):
+        return
+    else:
+        # recursively return until reach data directory
+        cd('..')
+        data_dir()
 
 def cd(directory):
     os.chdir(directory)
@@ -43,8 +50,9 @@ def list_data_folders(include_list=[], exclude_list=[]):
 
 
 def list_files(extension=''):
-    # Get all entries in the current directory
+    # Get all entries in the current directory except 'ID' and 'LastValidBaseFilename' files
     all_entries = os.listdir('.')
+    all_entries = [e for e in all_entries if e != 'ID' and e != 'LastValidBaseFilename']
     # Filter out folders and files with different extensions
     return [entry for entry in all_entries \
                if os.path.isfile(entry) \
@@ -111,27 +119,11 @@ def as_data(entry, processed=False):
     else:
         return replace_extension(entry, '.data')
 
-def walk_and_execute_convertion(entry, function, *args):
-    cd(entry)
-    cd('analysis')
-
-    metadata = Metadata()
-    try:
-        folder_done = bool(metadata.items['done'])
-    except KeyError:
-        folder_done = False
-
-    if not folder_done:
-        safety_copy_folders = list_data_folders()
-        for data_folder in safety_copy_folders:
-            cd(data_folder)
-            function(*args)
-            cd('..')
-        metadata.items['done'] = str(True)
-        metadata.save()
-
-    cd('..')
-    cd('..')
+def as_info(entry, processed=False):
+    if processed:
+        return replace_extension(entry, '.info.processed', processed=True)
+    else:
+        return replace_extension(entry, '.info')
 
 def walk_and_execute(entry, function, *args):
     cd(entry)

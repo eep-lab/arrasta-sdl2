@@ -4,11 +4,12 @@ from fileutils import walk_and_execute
 from classes import Information
 from metadata import Metadata
 from datetime import timedelta
-from barplots import bar_plot, bar_subplots
+from barplots import bar_plot, bar_subplots, box_plot, dispersion_plot_per_cycle, barplot_per_cycle
+from anonimizator import anonimize
 
 import pandas as pd
 
-def calculate_measures_in_day_and_save_to_metadata():
+def calculate_measures_in_day_and_save_to_metadata(folder, date):
     def collect_data():
         time1 = timedelta()
         time2 = timedelta()
@@ -19,7 +20,9 @@ def calculate_measures_in_day_and_save_to_metadata():
             'CD_Probes_1': [],
             'CD_Probes_2': []}
 
+        cycle_of_day = '0'
         for entry in list_files('.info.processed'):
+
             data_file = as_data(entry, processed=True)
             probe_file = data_file.replace('.data', '.probes')
             if not file_exists(data_file):
@@ -34,6 +37,10 @@ def calculate_measures_in_day_and_save_to_metadata():
                 else:
                     time2 += info.duration.value
 
+                if 'Treino-AB' in info.session_name: # Ciclo1-1-Treino-AB
+                    # get 'Ciclo{n}' part of the session name
+                    cycle_of_day = info.session_name.split('-')[0].replace('Ciclo', '')
+
                 if file_exists(probe_file):
                     if 'Treino-AC-CD' in info.session_name:
                         levenstein['CD_Training'].append(load_file(probe_file)['Levenshtein'])
@@ -44,14 +51,11 @@ def calculate_measures_in_day_and_save_to_metadata():
                     elif 'Sondas-CD-Palavras-generalizacao-reservadas' in info.session_name:
                         levenstein['CD_Probes_2'].append(load_file(probe_file)['Levenshtein'])
 
-        participant = info.participant_name.split('-')[0]
-        start_date = info.start_date.to_string()
-
         # join all data files
-        return pd.concat(container), levenstein, (time1, time2), participant, start_date
+        return pd.concat(container), levenstein, (time1, time2), cycle_of_day
 
-
-    data, levenstein, time, participant, date = collect_data()
+    participant = anonimize(folder, as_path=False).split('-')[1]
+    data, levenstein, time, cycle_of_day = collect_data()
 
     total_pre_training_durantion_in_day, total_training_probes_duration_in_day = time
     total_pre_training_trials_in_day = 0
@@ -266,6 +270,7 @@ def calculate_measures_in_day_and_save_to_metadata():
     metadata.items.clear()
     metadata.items['participant'] = participant
     metadata.items['date'] = date
+    metadata.items['cycle_of_day'] = cycle_of_day
 
     metadata.items['total_pre_training_durantion_in_day'] = str(total_pre_training_durantion_in_day)
     metadata.items['total_pre_training_trials_in_day'] = str(total_pre_training_trials_in_day)
@@ -333,15 +338,32 @@ def calculate_measures_in_day_and_save_to_metadata():
 def create_metadata():
     cd('..')
     participant_folders = list_data_folders()
-    for folder in participant_folders:
-        walk_and_execute(folder, calculate_measures_in_day_and_save_to_metadata)
+    for participant_folder in participant_folders:
+        cd(participant_folder)
+        cd('analysis')
+
+        safety_copy_folders_by_date = list_data_folders()
+        for date_folder in safety_copy_folders_by_date:
+            cd(date_folder)
+            calculate_measures_in_day_and_save_to_metadata(participant_folder, date_folder)
+            cd('..')
+
+        cd('..')
+        cd('..')
 
 def collect_metadata(container, plot_individual_days=False, use_levenstein=False):
     data = Metadata().items
+    try:
+        participant = data['participant']
+    except KeyError:
+        return
 
-    participant = data['participant']
     date = data['date']
+    cycle_of_day = data['cycle_of_day']
+
     total_training_probes_duration_in_day = data['total_training_probes_duration_in_day']
+    if total_training_probes_duration_in_day == '0':
+        return
 
     try:
         if use_levenstein:
@@ -349,7 +371,7 @@ def collect_metadata(container, plot_individual_days=False, use_levenstein=False
         else:
             cd_probes_1_hit_rate = int(data['total_CD_w1_probe_hits_in_day']) / int(data['total_CD_w1_probe_trials_in_day'])
     except ZeroDivisionError:
-        cd_probes_1_hit_rate = 0
+        cd_probes_1_hit_rate = None
 
     try:
         if use_levenstein:
@@ -357,52 +379,53 @@ def collect_metadata(container, plot_individual_days=False, use_levenstein=False
         else:
             cd_probes_2_hit_rate = int(data['total_CD_w2_probe_hits_in_day']) / int(data['total_CD_w2_probe_trials_in_day'])
     except ZeroDivisionError:
-        cd_probes_2_hit_rate = 0
+        cd_probes_2_hit_rate = None
 
     try:
         bc_probes_1_hit_rate = int(data['total_BC_w1_probe_hits_in_day']) / int(data['total_BC_w1_probe_trials_in_day'])
     except ZeroDivisionError:
-        bc_probes_1_hit_rate = 0
+        bc_probes_1_hit_rate = None
 
     try:
         cb_probes_1_hit_rate = int(data['total_CB_w1_probe_hits_in_day']) / int(data['total_CB_w1_probe_trials_in_day'])
     except ZeroDivisionError:
-        cb_probes_1_hit_rate = 0
+        cb_probes_1_hit_rate = None
 
     try:
         bc_probes_2_hit_rate = int(data['total_BC_w2_probe_hits_in_day']) / int(data['total_BC_w2_probe_trials_in_day'])
     except ZeroDivisionError:
-        bc_probes_2_hit_rate = 0
+        bc_probes_2_hit_rate = None
 
     try:
         cb_probes_2_hit_rate = int(data['total_CB_w2_probe_hits_in_day']) / int(data['total_CB_w2_probe_trials_in_day'])
     except ZeroDivisionError:
-        cb_probes_2_hit_rate = 0
+        cb_probes_2_hit_rate = None
 
     try:
         ac_probes_hit_rate = int(data['total_AC_probe_hits_in_day']) / int(data['total_AC_probe_trials_in_day'])
     except ZeroDivisionError:
-        ac_probes_hit_rate = 0
+        ac_probes_hit_rate = None
 
     try:
         ab_training_hit_rate = int(data['total_AB_training_hits_in_day']) / int(data['total_AB_training_trials_in_day'])
     except ZeroDivisionError:
-        ab_training_hit_rate = 0
+        ab_training_hit_rate = None
 
     try:
         ac_training_hit_rate = int(data['total_AC_training_hits_in_day']) / int(data['total_AC_training_trials_in_day'])
     except ZeroDivisionError:
-        ac_training_hit_rate = 0
+        ac_training_hit_rate = None
 
     try:
         cd_training_hit_rate = int(data['total_CD_training_hits_in_day']) / int(data['total_CD_training_trials_in_day'])
     except ZeroDivisionError:
-        cd_training_hit_rate = 0
+        cd_training_hit_rate = None
 
     identification = [
         ("Participant", participant),
         ("Date", date),
-        ("Total Duration in Day", total_training_probes_duration_in_day)
+        ("Total Duration in Day", total_training_probes_duration_in_day),
+        ("Cycle of Day", cycle_of_day)
     ]
 
     # set names and colors for each category
@@ -424,12 +447,38 @@ def collect_metadata(container, plot_individual_days=False, use_levenstein=False
 
     container.append({'categories':categories, 'identification':identification})
 
+def single_participant_plots():
+    # names = ['BC Probes 1', 'CB Probes 1', 'BC Probes 2', 'CB Probes 2']
+    # names = ['AB Training', 'AC Training', 'CD Training']
+    names = ['CD Probes 1', 'CD Probes 2']
+    # get the first two characters of each name and remove duplicates
+    codes = list(set([name[:2] for name in names]))
+    # sort the codes
+    codes.sort()
+    # join codes with _ and append to filename
+    codes = '_'.join(codes)
 
-if __name__ == "__main__":
-    # create_metadata()
     cd('..')
     participant_folders = list_data_folders()
     for folder in participant_folders:
         container = []
         walk_and_execute(folder, collect_metadata, container, False, True)
-        bar_subplots(container)
+        participant = anonimize(folder, as_path=False).split('-')[1]
+        # bar_subplots(container, True)
+        barplot_per_cycle(container=container, save=True, include_names=names, append_to_filename='_'+codes+'_'+participant+'_barplot')
+        # dispersion_plot_per_cycle(container, True, style='scatter', include_names=names, append_to_filename='_'+codes+'_'+participant)
+
+def all_participants_plots():
+    cd('..')
+    container = []
+    participant_folders = list_data_folders()
+    for folder in participant_folders:
+        walk_and_execute(folder, collect_metadata, container, False, True)
+    names = ['BC Probes 1', 'CB Probes 1', 'BC Probes 2', 'CB Probes 2']
+    box_plot(container, True, include_names=names)
+    # dispersion_plot_per_cycle(container, False, include_names=names)
+
+if __name__ == "__main__":
+    # create_metadata()
+    single_participant_plots()
+    # all_participants_plots()
