@@ -27,26 +27,28 @@ def prepare_for_transcription():
         '20-CAM',
         '21-GIO',
         '23-KTL',
+        '24-ADO',
         '27-DAL',
         '28-TIG',
-        '24-ADO',
-        # '29-SIN',
-        # '32-KIK',
-        # '34-GST',
+
+        '32-KIK',
+
+        '29-SIN',
+        '34-GST',
 
         '17-XIL',
         '25-NIC',
         '30-CRL',
 
         # desistências
-        # '11-DNA',
-        # '26-IGR',
-        # '31-JUA',
-        # '22-GLB',
-        # '33-VCT',
+        '8-ROS',
+        '10-VAU',
+        '11-DNA',
+        '26-IGR',
+        '31-JUA',
+        '22-GLB',
+        '33-VCT',
         # '35-SMI',
-        # '8-ROS',
-        # '10-VAU',
     ]
 
     convert_all(exclude_list)

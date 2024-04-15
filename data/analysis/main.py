@@ -479,6 +479,5 @@ def all_participants_plots():
     # dispersion_plot_per_cycle(container, False, include_names=names)
 
 if __name__ == "__main__":
-    # create_metadata()
     single_participant_plots()
     # all_participants_plots()

@@ -8,6 +8,8 @@ import pandas as pd
 import Levenshtein
 from unidecode import unidecode_expect_ascii
 from anonimizator import anonimize
+from words import pre_test_hardcorded_order
+from bs4 import BeautifulSoup
 
 def data_by_relation(pattern, container):
     for entry in list_files('.info.processed'):
@@ -106,15 +108,17 @@ def load_all_probes():
         try:
             filename = f'probes_CD_{participant}.data'
             data = pd.read_csv(filename, sep='\t')
+            print(f'File {filename} loaded.')
         except FileNotFoundError:
             print(f'File {filename} not found.')
             continue
         container.append(data)
     return pd.concat(container)
 
-def concatenate_probes():
+def concatenate_probes(filename='probes_CD.data'):
     data = load_all_probes()
-    data.to_csv('probes_CD.data', sep='\t', index=False)
+    data.to_csv(filename, sep='\t', index=False)
+    print(f'All probes concatenated to file: {filename}')
 
 def validated_speech(word):
     if not isinstance(word, str):
@@ -235,5 +239,133 @@ def override_CD_probes_in_data_file(must_not_override=True):
         cd('..')
         cd('..')
 
+def create_html_tables():
+    cd('output')
+    # Load the data
+    df = pd.read_csv('probes_CD.data.processed', sep='\t')
+    df = df[df['Condition'] == 7].copy()
+
+    # Function to compare two strings and make equal characters bold
+    def make_equal_chars_bold(str1, str2):
+        if isinstance(str1, str) and isinstance(str2, str):
+            if str2 == 'ns':
+                return '-'
+            else:
+                # check if str1 and str2 are the same length
+                if len(str1) != len(str2):
+                    # if not, return a string with the same length as str2 appending - to str1
+                    str1 = str1 + '-' * (len(str2) - len(str1))
+
+                # html bold tag
+                # return ''.join(f'<b>{c1}</b>' \
+                #     if c1 == c2 else c2 for c1, c2 in zip(str1, str2))
+
+                # html span tag with background color
+                return ''.join(f'<span style="background-color: #D3D3D3;">{c1}</span>' \
+                    if c1 == c2 else c2 for c1, c2 in zip(str1, str2))
+        else:
+            return '-'
+
+    # Create a dictionary to store the DataFrames for each participant
+    dfs = {}
+
+    # Iterate over the unique participants
+    for participant in df['Participant'].unique():
+        # Create a new DataFrame for this participant
+        df_participant = df[df['Participant'] == participant].copy()
+        df_participant.drop(columns='Participant', inplace=True)
+
+        # Create the 'HTML' column
+        df_participant['HTML'] = df_participant.apply(lambda row: make_equal_chars_bold(row['Name'], row['Speech-2']), axis=1)
+
+        # join date time columns
+        df_participant['Date'] = df_participant['Date'] + ' ' + df_participant['Time']
+
+        # find unique date/time
+        dates = df_participant['Date'].unique()
+
+        container = {}
+
+        # sort by date and predefined order
+        for date in dates:
+            df2 = pd.DataFrame()
+
+            df2['Word'] = df_participant[df_participant['Date'] == date]['Name']
+            df2[date] = df_participant[df_participant['Date'] == date]['HTML']
+
+            # make sure that the order is the same as the pre_test_hardcorded_order
+            df2['Word'] = pd.Categorical(df2['Word'], pre_test_hardcorded_order)
+            df2 = df2.sort_values('Word')
+            # drop all word columns, except the first one
+            if len(container) > 0:
+                df2.drop(columns='Word', inplace=True)
+            # reset index
+            df2.reset_index(drop=True, inplace=True)
+            container[date] = df2
+
+        # concatenate all dataframes
+        df_participant = pd.concat(container.values(), axis=1)
+
+        # Store the DataFrame in the dictionary
+        dfs[participant] = df_participant
+
+    # Convert DataFrames to an HTML table using tabulate and save it to a file
+    for participant, df_participant in dfs.items():
+        # Add the new column
+        df_participant.insert(0, 'Category', ['Teaching']*12 + ['Assessment']*4 + ['Generalization']*4)
+
+        # Convert the DataFrame to HTML
+        html = df_participant.to_html(escape=False, index=False)
+
+        # Parse the HTML
+        soup = BeautifulSoup(html, 'html.parser')
+
+        # Set the rowspan attribute and remove the spanned cells
+        for category in ['Teaching', 'Assessment', 'Generalization']:
+            cells = soup.select(f'td:contains("{category}")')
+            cells[0]['rowspan'] = len(cells)
+            for cell in cells[1:]:
+                cell.decompose()
+
+        # replace Assessment with "Assessment<br>Syllabic|Intrasyllabic"
+        cells = soup.select('td:contains("Assessment")')
+        br_tag = soup.new_tag('br')
+        cells[0].clear()
+        cells[0].append('Assessment')
+        cells[0].append(br_tag)
+        cells[0].append('Syllabic|Intrasyllabic')
+
+
+        # replace Generalization with "Assessment<br>Intrasyllabic|Syllabic"
+        cells = soup.select('td:contains("Generalization")')
+        br_tag = soup.new_tag('br')
+        cells[0].clear()
+        cells[0].append('Assessment')
+        cells[0].append(br_tag)
+        cells[0].append('Intrasyllabic|Syllabic')
+
+        # Select the cells in the first row from the third column onwards
+        cells = soup.select('tr:first-child th:nth-of-type(n+3)')
+
+        # Replace the white space with a <br> tag
+        for cell in cells:
+            parts = cell.string.split(' ', 1)
+            cell.clear()
+            cell.append(parts[0])
+            cell.append(soup.new_tag('br'))
+            cell.append(parts[1])
+
+        # Convert the modified HTML back to a string
+        html = str(soup)
+
+        # Write the HTML to a file
+        participant = participant.replace('\\', '').replace('-', '_')
+        with open(f'probes_CD_{participant}.html', 'w') as f:
+            f.write(html)
+        print(f'File probes_CD_{participant}.html created.')
+
+    cd('..')
+
 if __name__ == "__main__":
-    correlate_latency_levenshtein()
+    # correlate_latency_levenshtein()
+    create_html_tables()
