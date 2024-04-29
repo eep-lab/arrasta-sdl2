@@ -1,4 +1,4 @@
-from fileutils import as_data, file_exists
+from fileutils import as_data, file_exists, directory_exists
 from fileutils import cd, list_files, list_data_folders, load_file
 from fileutils import walk_and_execute
 from classes import Information
@@ -448,9 +448,11 @@ def collect_metadata(container, plot_individual_days=False, use_levenstein=False
     container.append({'categories':categories, 'identification':identification})
 
 def single_participant_plots():
-    # names = ['BC Probes 1', 'CB Probes 1', 'BC Probes 2', 'CB Probes 2']
-    # names = ['AB Training', 'AC Training', 'CD Training']
-    names = ['CD Probes 1', 'CD Probes 2']
+    names = ['AB Training', 'AC Training', 'CD Training']
+    names = names + ['BC Probes 1', 'CB Probes 1', 'BC Probes 2', 'CB Probes 2']
+    names = names + ['CD Probes 1', 'CD Probes 2']
+    names = names + ['AC Probes']
+
     # get the first two characters of each name and remove duplicates
     codes = list(set([name[:2] for name in names]))
     # sort the codes
@@ -465,8 +467,8 @@ def single_participant_plots():
         walk_and_execute(folder, collect_metadata, container, False, True)
         participant = anonimize(folder, as_path=False).split('-')[1]
         # bar_subplots(container, True)
-        barplot_per_cycle(container=container, save=True, include_names=names, append_to_filename='_'+codes+'_'+participant+'_barplot')
-        # dispersion_plot_per_cycle(container, True, style='scatter', include_names=names, append_to_filename='_'+codes+'_'+participant)
+        # barplot_per_cycle(container=container, save=True, include_names=names, append_to_filename='_'+codes+'_'+participant+'_barplot')
+        dispersion_plot_per_cycle(container, True, style='scatter', include_names=names, append_to_filename='_'+codes+'_'+participant)
 
 def all_participants_plots():
     cd('..')
@@ -478,6 +480,45 @@ def all_participants_plots():
     box_plot(container, True, include_names=names)
     # dispersion_plot_per_cycle(container, False, include_names=names)
 
+def fix_cycles():
+    cd('..')
+    participant_folders = list_data_folders()
+    for participant_folder in participant_folders:
+        cd(participant_folder)
+        # check if directory analysis exists
+        if directory_exists('analysis'):
+            cd('analysis')
+
+            safety_copy_folders_by_date = list_data_folders()
+            for date_folder in safety_copy_folders_by_date:
+                cd(date_folder)
+                cycle_of_day = None
+
+                for entry in list_files('.info.processed'):
+                    info = Information(entry)
+                    if 'KIK' in info.participant_name:
+                        pass
+
+                    if 'Treino-AB' in info.session_name:
+                        cycle_of_day = info.session_name.split('-')[0].replace('Ciclo', '')
+                        break
+
+                for entry in list_files('.info.processed'):
+                    info = Information(entry)
+                    if info.has_valid_result():
+                        data_file = as_data(entry, processed=True)
+                        data = pd.read_csv(data_file, sep='\t')
+                        if cycle_of_day is not None:
+                            data['Cycle.ID'] = str(int(cycle_of_day))
+                            data.to_csv(data_file, sep='\t', index=False)
+                            print(f"Cycle of day fixed in {data_file}.")
+                cd('..')
+            cd('..')
+        else:
+            print(f"Directory 'analysis' not found in {participant_folder}. Skipping...")
+        cd('..')
+
 if __name__ == "__main__":
-    single_participant_plots()
+    fix_cycles()
+    # single_participant_plots()
     # all_participants_plots()

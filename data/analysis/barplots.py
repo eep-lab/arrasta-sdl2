@@ -80,13 +80,10 @@ def bar_subplots(container, save=False):
     plt.xticks(rotation=45, ha='right')
     plt.tight_layout()
 
-    if save:
-        filename = id_data[0]+'.pdf'
-        plt.savefig(filename)
-    else:
-        plt.show()
+    filename = id_data[0]+'.pdf'
+    save_or_show(fig, save, filename)
 
-def box_plot(container, save=False, include_names=[]):
+def box_plot(container, save=False, include_names=[], cycles=['1']):
     """
     container = [{categories : [(name, hit_rate, color), ...], identification : [(name, data), ...]} ]
     """
@@ -96,8 +93,12 @@ def box_plot(container, save=False, include_names=[]):
     # group all hit_rates by name
     grouped_hit_rates = {}
     for data in container:
-        # we don't need identification for grouped data
-        # identification = data['identification']
+        # filter by identification
+        identification = data['identification']
+
+        if identification[3][1] not in cycles:
+            continue
+
         categories = data['categories']
         names, hit_rates, colors = zip(*categories)
         for name, hit_rate in zip(names, hit_rates):
@@ -133,11 +134,9 @@ def box_plot(container, save=False, include_names=[]):
     plt.xticks(rotation=45, ha='right')
     plt.tight_layout()
 
-    if save:
-        filename = 'Fig2_BC_CB.pdf'
-        plt.savefig(filename)
-    else:
-        plt.show()
+    appendice = 'cycles_'+'_'.join(cycles)
+    filename = f'Fig2_BC_CB_{appendice}.pdf'
+    save_or_show(fig, save, filename)
 
 def dispersion_plot_per_cycle(container, save=False, style='boxplot', include_names=[], append_to_filename=''):
     """
@@ -185,7 +184,7 @@ def dispersion_plot_per_cycle(container, save=False, style='boxplot', include_na
 
     # set height based on the number of rows
     height = 2 * rows
-    fig, axs = plt.subplots(rows, columns, figsize=(4.5, height), sharex=True, sharey=True)
+    fig, axs = plt.subplots(rows, columns, figsize=(6, height), sharex=True, sharey=True)
     axs = axs.flatten()
 
     n = number_of_plots
@@ -246,11 +245,8 @@ def dispersion_plot_per_cycle(container, save=False, style='boxplot', include_na
     axs[0].set_ylabel('Hit proportion')
     plt.tight_layout()
 
-    if save:
-        filename = 'Fig_per_cycle'+append_to_filename+'.pdf'
-        plt.savefig(filename)
-    else:
-        plt.show()
+    filename = 'Fig_per_cycle'+append_to_filename+'.pdf'
+    save_or_show(fig, save, filename)
 
 def barplot_per_cycle(container, save=False, include_names=[], append_to_filename=''):
     """
@@ -313,8 +309,12 @@ def barplot_per_cycle(container, save=False, include_names=[], append_to_filenam
 
     plt.tight_layout()
 
+    filename = 'Fig_per_cycle'+append_to_filename+'.pdf'
+    save_or_show(fig, save, filename)
+
+def save_or_show(fig, save, filename):
     if save:
-        filename = 'Fig_per_cycle'+append_to_filename+'.pdf'
         plt.savefig(filename)
     else:
         plt.show()
+    plt.close(fig)

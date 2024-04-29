@@ -17,6 +17,9 @@ def data_dir():
         cd('..')
         data_dir()
 
+def directory_exists(directory):
+    return os.path.isdir(directory)
+
 def cd(directory):
     os.chdir(directory)
     print("Current Working Directory: ", os.getcwd())
@@ -25,13 +28,22 @@ def get_real_filepath(entry):
     return os.path.join(os.getcwd(), entry)
 
 def load_file(entry):
+    df = None
     if entry.endswith('.info.processed'):
-        return pd.read_csv(entry, sep='\t', encoding='utf-8', header=None, index_col=0, engine='python')
+        df = pd.read_csv(entry, sep='\t', encoding='utf-8', header=None, index_col=0, engine='python')
 
-    if entry.endswith('.probes.processed'):
-        return pd.read_csv(entry, sep='\t')
+    elif entry.endswith('.probes.processed'):
+        df = pd.read_csv(entry, sep='\t')
 
-    return pd.read_csv(entry, sep='\t', header=0, engine='python')
+    elif entry.endswith('.data.processed'):
+        df = pd.read_csv(entry, sep='\t', header=0, engine='python')
+        if 'Cycle.ID' in df.columns:
+            df['Cycle.ID'] = pd.to_numeric(df['Cycle.ID'], errors='coerce').fillna(0).astype(int)
+
+    else:
+        df = pd.read_csv(entry, sep='\t', header=0, engine='python')
+
+    return df
 
 def list_data_folders(include_list=[], exclude_list=[]):
     if len(include_list) == 0:
@@ -127,7 +139,11 @@ def as_info(entry, processed=False):
 
 def walk_and_execute(entry, function, *args):
     cd(entry)
-    cd('analysis')
+    try:
+        cd('analysis')
+    except FileNotFoundError:
+        cd('..')
+        return
 
     safety_copy_folders = list_data_folders()
     for data_folder in safety_copy_folders:
