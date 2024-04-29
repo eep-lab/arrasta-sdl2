@@ -5,7 +5,9 @@ from classes import Information
 from metadata import Metadata
 from datetime import timedelta
 from barplots import bar_plot, bar_subplots, box_plot, dispersion_plot_per_cycle, barplot_per_cycle
-from anonimizator import anonimize
+from barplots import barplot_per_participant
+from lineplots import line_plot_per_cycle
+from anonimizator import anonimize, deanonimize
 
 import pandas as pd
 
@@ -18,11 +20,12 @@ def calculate_measures_in_day_and_save_to_metadata(folder, date):
         levenstein = {
             'CD_Training': [],
             'CD_Probes_1': [],
-            'CD_Probes_2': []}
+            'CD_Probes_2': [],
+            'CD_Probes_3': []}
 
         cycle_of_day = '0'
+        probe_file_count = 0
         for entry in list_files('.info.processed'):
-
             data_file = as_data(entry, processed=True)
             probe_file = data_file.replace('.data', '.probes')
             if not file_exists(data_file):
@@ -46,16 +49,27 @@ def calculate_measures_in_day_and_save_to_metadata(folder, date):
                         levenstein['CD_Training'].append(load_file(probe_file)['Levenshtein'])
 
                     elif 'Sondas-CD-Palavras-12-ensino-8-generalizacao' in info.session_name:
-                        levenstein['CD_Probes_1'].append(load_file(probe_file)['Levenshtein'])
+                        probe_file_count += 1
+                        if probe_file_count == 1:
+                            levenstein['CD_Probes_1'].append(load_file(probe_file)['Levenshtein'])
+                        elif probe_file_count == 2:
+                            levenstein['CD_Probes_3'].append(load_file(probe_file)['Levenshtein'])
+                        else:
+                            raise ValueError(f'Unexpected probe count {probe_file_count} in file:'+probe_file)
 
                     elif 'Sondas-CD-Palavras-generalizacao-reservadas' in info.session_name:
                         levenstein['CD_Probes_2'].append(load_file(probe_file)['Levenshtein'])
 
-        # join all data files
-        return pd.concat(container), levenstein, (time1, time2), cycle_of_day
+        if len(container) == 0:
+            return None, None, None, None
+        else:
+            return pd.concat(container), levenstein, (time1, time2), cycle_of_day
 
     participant = anonimize(folder, as_path=False).split('-')[1]
+    participant_code = anonimize(folder)
     data, levenstein, time, cycle_of_day = collect_data()
+    if data is None:
+        return
 
     total_pre_training_durantion_in_day, total_training_probes_duration_in_day = time
     total_pre_training_trials_in_day = 0
@@ -131,6 +145,12 @@ def calculate_measures_in_day_and_save_to_metadata(folder, date):
     except ValueError:
         levenstein['CD_Probes_2'] = pd.DataFrame()
         levenstein['CD_Probes_2']['Levenshtein'] = [0]
+
+    try:
+        levenstein['CD_Probes_3'] = pd.concat(levenstein['CD_Probes_3'])
+    except ValueError:
+        levenstein['CD_Probes_3'] = pd.DataFrame()
+        levenstein['CD_Probes_3']['Levenshtein'] = [0]
 
     pre_training_trials = data[data['Condition'] == 0]
     total_pre_training_trials_in_day = pre_training_trials.shape[0]
@@ -246,16 +266,87 @@ def calculate_measures_in_day_and_save_to_metadata(folder, date):
 
     mean_CD_w2_leveshtein = levenstein['CD_Probes_2'].values.mean()
 
-    CD_w1_probes = data[(data['Relation'] == 'C-D') & (data['Condition'] == 7)]
-    total_CD_w1_probe_trials_in_day = CD_w1_probes.shape[0]
+    CD_probes = data[(data['Relation'] == 'C-D') & (data['Condition'] == 7)]
 
-    CD_w1_hits = CD_w1_probes[CD_w1_probes['Result'] == 'Hit']
-    total_CD_w1_probe_hits_in_day = CD_w1_hits.shape[0]
+    # get unique times
+    times = CD_probes['Time'].unique()
+    # get the first time for CD_w1_probes
+    if len(times) == 0:
+        total_CD_w1_probe_trials_in_day = 0
+        total_CD_w1_probe_hits_in_day = None
+        total_CD_w1_probe_misses_in_day = None
+        mean_CD_w1_leveshtein = None
 
-    CD_w1_misses = CD_w1_probes[CD_w1_probes['Result'] == 'Miss']
-    total_CD_w1_probe_misses_in_day = CD_w1_misses.shape[0]
+        total_CD_w3_probe_trials_in_day = 0
+        total_CD_w3_probe_hits_in_day = None
+        total_CD_w3_probe_misses_in_day = None
+        mean_CD_w3_leveshtein = None
 
-    mean_CD_w1_leveshtein = levenstein['CD_Probes_1'].values.mean()
+    elif len(times) == 1:
+        time = times[0]
+        CD_w1_probes = CD_probes[CD_probes['Time'] == time]
+        total_CD_w1_probe_trials_in_day = CD_w1_probes.shape[0]
+
+        CD_w1_hits = CD_w1_probes[CD_w1_probes['Result'] == 'Hit']
+        total_CD_w1_probe_hits_in_day = CD_w1_hits.shape[0]
+
+        CD_w1_misses = CD_w1_probes[CD_w1_probes['Result'] == 'Miss']
+        total_CD_w1_probe_misses_in_day = CD_w1_misses.shape[0]
+
+        mean_CD_w1_leveshtein = levenstein['CD_Probes_1'].values.mean()
+
+        total_CD_w3_probe_trials_in_day = 0
+        total_CD_w3_probe_hits_in_day = None
+        total_CD_w3_probe_misses_in_day = None
+        mean_CD_w3_leveshtein = None
+
+        # override values for participant 12-MED on 2024-04-06
+        if folder == '12-MED':
+            if date == '2024-04-06':
+                total_CD_w1_probe_trials_in_day = 0
+                total_CD_w1_probe_hits_in_day = None
+                total_CD_w1_probe_misses_in_day = None
+                mean_CD_w1_leveshtein = None
+
+                CD_w3_probes = CD_probes[CD_probes['Time'] == time]
+                total_CD_w3_probe_trials_in_day = CD_w3_probes.shape[0]
+
+                CD_w3_hits = CD_w3_probes[CD_w3_probes['Result'] == 'Hit']
+                total_CD_w3_probe_hits_in_day = CD_w3_hits.shape[0]
+
+                CD_w3_misses = CD_w3_probes[CD_w3_probes['Result'] == 'Miss']
+                total_CD_w3_probe_misses_in_day = CD_w3_misses.shape[0]
+
+                mean_CD_w3_leveshtein = levenstein['CD_Probes_3'].values.mean()
+
+    elif len(times) == 2:
+        time = times[0]
+        CD_w1_probes = CD_probes[CD_probes['Time'] == time]
+
+        total_CD_w1_probe_trials_in_day = CD_w1_probes.shape[0]
+
+        CD_w1_hits = CD_w1_probes[CD_w1_probes['Result'] == 'Hit']
+        total_CD_w1_probe_hits_in_day = CD_w1_hits.shape[0]
+
+        CD_w1_misses = CD_w1_probes[CD_w1_probes['Result'] == 'Miss']
+        total_CD_w1_probe_misses_in_day = CD_w1_misses.shape[0]
+
+        mean_CD_w1_leveshtein = levenstein['CD_Probes_1'].values.mean()
+
+        time = times[1]
+        CD_w3_probes = CD_probes[CD_probes['Time'] == time]
+
+        total_CD_w3_probe_trials_in_day = CD_w3_probes.shape[0]
+
+        CD_w3_hits = CD_w3_probes[CD_w3_probes['Result'] == 'Hit']
+        total_CD_w3_probe_hits_in_day = CD_w3_hits.shape[0]
+
+        CD_w3_misses = CD_w3_probes[CD_w3_probes['Result'] == 'Miss']
+        total_CD_w3_probe_misses_in_day = CD_w3_misses.shape[0]
+
+        mean_CD_w3_leveshtein = levenstein['CD_Probes_3'].values.mean()
+    else:
+        raise ValueError("Unexpected number of times for CD probes.")
 
     AC_probes = data[(data['Relation'] == 'A-C') & (data['Condition'] == 6)]
     total_AC_probe_trials_in_day = AC_probes.shape[0]
@@ -269,6 +360,7 @@ def calculate_measures_in_day_and_save_to_metadata(folder, date):
     metadata = Metadata()
     metadata.items.clear()
     metadata.items['participant'] = participant
+    metadata.items['participant_code'] = participant_code
     metadata.items['date'] = date
     metadata.items['cycle_of_day'] = cycle_of_day
 
@@ -329,6 +421,11 @@ def calculate_measures_in_day_and_save_to_metadata(folder, date):
     metadata.items['total_CD_w2_probe_misses_in_day'] = str(total_CD_w2_probe_misses_in_day)
     metadata.items['mean_CD_w2_leveshtein'] = str(mean_CD_w2_leveshtein)
 
+    metadata.items['total_CD_w3_probe_trials_in_day'] = str(total_CD_w3_probe_trials_in_day)
+    metadata.items['total_CD_w3_probe_hits_in_day'] = str(total_CD_w3_probe_hits_in_day)
+    metadata.items['total_CD_w3_probe_misses_in_day'] = str(total_CD_w3_probe_misses_in_day)
+    metadata.items['mean_CD_w3_leveshtein'] = str(mean_CD_w3_leveshtein)
+
     metadata.items['total_AC_probe_trials_in_day'] = str(total_AC_probe_trials_in_day)
     metadata.items['total_AC_probe_hits_in_day'] = str(total_AC_probe_hits_in_day)
     metadata.items['total_AC_probe_misses_in_day'] = str(total_AC_probe_misses_in_day)
@@ -370,8 +467,9 @@ def collect_metadata(container, plot_individual_days=False, use_levenstein=False
             cd_probes_1_hit_rate = float(data['mean_CD_w1_leveshtein'])
         else:
             cd_probes_1_hit_rate = int(data['total_CD_w1_probe_hits_in_day']) / int(data['total_CD_w1_probe_trials_in_day'])
-    except ZeroDivisionError:
+    except (ZeroDivisionError, ValueError) as e:
         cd_probes_1_hit_rate = None
+        print(f"Caught an error: {e}")
 
     try:
         if use_levenstein:
@@ -380,6 +478,15 @@ def collect_metadata(container, plot_individual_days=False, use_levenstein=False
             cd_probes_2_hit_rate = int(data['total_CD_w2_probe_hits_in_day']) / int(data['total_CD_w2_probe_trials_in_day'])
     except ZeroDivisionError:
         cd_probes_2_hit_rate = None
+
+    try:
+        if use_levenstein:
+            cd_probes_3_hit_rate = float(data['mean_CD_w3_leveshtein'])
+        else:
+            cd_probes_3_hit_rate = int(data['total_CD_w3_probe_hits_in_day']) / int(data['total_CD_w3_probe_trials_in_day'])
+    except (ZeroDivisionError, ValueError) as e:
+        cd_probes_3_hit_rate = None
+        print(f"Caught an error: {e}")
 
     try:
         bc_probes_1_hit_rate = int(data['total_BC_w1_probe_hits_in_day']) / int(data['total_BC_w1_probe_trials_in_day'])
@@ -439,7 +546,8 @@ def collect_metadata(container, plot_individual_days=False, use_levenstein=False
         ("BC Probes 2", bc_probes_2_hit_rate, 'yellow'),
         ("CB Probes 2", cb_probes_2_hit_rate, 'yellow'),
         ("CD Probes 2", cd_probes_2_hit_rate, 'red'),
-        ("AC Probes", ac_probes_hit_rate, 'purple')
+        ("AC Probes", ac_probes_hit_rate, 'purple'),
+        ("CD Probes 3", cd_probes_3_hit_rate, 'red')
     ]
 
     if plot_individual_days:
@@ -468,17 +576,46 @@ def single_participant_plots():
         participant = anonimize(folder, as_path=False).split('-')[1]
         # bar_subplots(container, True)
         # barplot_per_cycle(container=container, save=True, include_names=names, append_to_filename='_'+codes+'_'+participant+'_barplot')
-        dispersion_plot_per_cycle(container, True, style='scatter', include_names=names, append_to_filename='_'+codes+'_'+participant)
+        # dispersion_plot_per_cycle(container, True, style='scatter', include_names=names, append_to_filename='_'+codes+'_'+participant)
 
-def all_participants_plots():
+def group_plot(include_list=[], append_to_filename=''):
+    # you asked for ...
+    print("You asked a group analysis for participants:", include_list)
+
     cd('..')
     container = []
-    participant_folders = list_data_folders()
+    participant_folders = list_data_folders(include_list=include_list)
     for folder in participant_folders:
-        walk_and_execute(folder, collect_metadata, container, False, True)
-    names = ['BC Probes 1', 'CB Probes 1', 'BC Probes 2', 'CB Probes 2']
-    box_plot(container, True, include_names=names)
+        walk_and_execute(folder, collect_metadata, container, False, False)
+
+    # i delivered ... collect all participants included in the container
+    participants = list(set([data['identification'][0][1] for data in container]))
+    print("Doing for participants:", participants)
+
+    # names = ['BC Probes 1', 'CB Probes 1', 'BC Probes 2', 'CB Probes 2']
+    # box_plot(container, True, include_names=names)
     # dispersion_plot_per_cycle(container, False, include_names=names)
+
+    names = ['BC Probes 2', 'CB Probes 2', 'AC Probes', 'CD Probes 2']
+    line_plot_per_cycle(container, True, include_names=names, append_to_filename='_hit_rate'+append_to_filename)
+
+def group_barplot(include_list=[]):
+    # you asked for ...
+    print("You asked a group analysis for participants:", include_list)
+
+    cd('..')
+    container = []
+    participant_folders = list_data_folders(include_list=include_list)
+    for folder in participant_folders:
+        walk_and_execute(folder, collect_metadata, container, False, False)
+
+    # I delivered ... collect all participants included in the container
+    participants = list(set([data['identification'][0][1] for data in container]))
+    print("Doing for participants:", participants)
+
+    names = ['CD Probes 3']
+    barplot_per_participant(container, save=True, include_names=names, append_to_filename='_group_barplot')
+
 
 def fix_cycles():
     cd('..')
@@ -519,6 +656,53 @@ def fix_cycles():
         cd('..')
 
 if __name__ == "__main__":
-    fix_cycles()
+    # fix_cycles()
     # single_participant_plots()
-    # all_participants_plots()
+    participants_list = [
+        # deanonimize('1-SAR'),
+        # deanonimize('2-FIO'),
+        # deanonimize('4-LIV'),
+        # deanonimize('5-JUL'),
+        # deanonimize('6-MAR'),
+        '9-CES',
+        # Engenharia Mecatrônica
+        '12-MED',
+
+        # Química
+        '13-AND',
+
+        # Física
+        '18-FEL',
+        '24-ADO',
+        '34-GST',
+        # '47-JMP',
+
+        # Ciências da computação, Sistemas da informação
+        '14-MSC',
+        '19-SAN',
+        '20-CAM',
+        '21-GIO',
+        '23-KTL',
+        '36-JLA',
+        '37-LRS',
+        '40-ACM',
+        '44-LUC',
+        '45-CMR',
+
+        # Matemática/Estatística
+        '15-VER',
+        '27-DAL',
+        '28-TIG',
+        '32-KIK',
+        '38-ORT',
+        '43-ARJ',
+
+        # Administração pública
+        '29-SIN',
+
+        # Letras/Linguística
+        '39-LPI',
+    ]
+    # for participant in participants_list:
+    group_plot(participants_list)
+    # group_barplot(participants_list)

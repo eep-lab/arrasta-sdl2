@@ -37,6 +37,7 @@ type
     BaseDataPath : string;
     BaseFileName : string;
     BasePath : string;
+    ConfigurationsRootBasePath: string;
     ConfigurationFilename : string;
     DataResponsesBasePath: string;
     DataRootBasePath : string;
@@ -70,6 +71,10 @@ initialization
     // data
     DataRootBasePath   := ConcatPaths([BasePath, AsPath('data')]);
     ForceDirectories(DataRootBasePath);
+
+    // config
+    ConfigurationsRootBasePath := ConcatPaths([BasePath, AsPath('config')]);
+    ForceDirectories(ConfigurationsRootBasePath);
 
     // data/{Participant}
     BaseDataPath := '';

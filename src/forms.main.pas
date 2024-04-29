@@ -248,9 +248,29 @@ procedure TFormBackground.ComboBoxParticipantEditingDone(Sender: TObject);
 var
   LInformation : TInformation;
   LCondition : integer;
+  LConfiguration : string;
 begin
   if ComboBoxParticipant.Items.Count > 0 then begin
     SetupFolders;
+    //IniPropStorage1.Save;
+    //FormMisc.IniPropStorage1.Save;
+    //
+    //LConfiguration := ConcatPaths([
+    //  Pool.ConfigurationsRootBasePath,
+    //  ParticipantFolderName, 'configurations.ini']);
+    //IniPropStorage1.IniFileName := LConfiguration;
+    //if FileExists(LConfiguration) then begin
+    //  IniPropStorage1.Restore;
+    //end;
+    //
+    //LConfiguration := ConcatPaths([
+    //  Pool.ConfigurationsRootBasePath,
+    //  ParticipantFolderName, 'configurations_global.ini']);
+    //FormMisc.IniPropStorage1.IniFileName := LConfiguration;
+    //if FileExists(LConfiguration) then begin
+    //  FormMisc.IniPropStorage1.Restore;
+    //end;
+
     if LastValidBaseFilenameFileExists then begin
       LInformation := LoadInformationFromFile(GetLastValidInformationFile);
     end else begin

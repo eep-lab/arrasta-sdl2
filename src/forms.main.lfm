@@ -8,7 +8,7 @@ object FormBackground: TFormBackground
   ClientWidth = 385
   DefaultMonitor = dmPrimary
   PopupMenu = PopupMenuMisc
-  SessionProperties = 'ComboBoxCondition.ItemIndex;ComboBoxDesignFolder.ItemIndex;ComboBoxParticipant.ItemIndex;ComboBoxParticipant.Items;ComboBoxParticipant.Text;Height;LabelSessionEndCriteria.Caption;LabelSessionEndCriteria.Color;Left;OpenDialog1.InitialDir;Top;Width;LabelLastSessionName.Caption;LabelLastSessionName.Color'
+  SessionProperties = 'ComboBoxCondition.ItemIndex;ComboBoxDesignFolder.ItemIndex;ComboBoxParticipant.ItemIndex;ComboBoxParticipant.Items;ComboBoxParticipant.Text;Height;LabelLastSessionName.Caption;LabelLastSessionName.Color;LabelSessionEndCriteria.Caption;LabelSessionEndCriteria.Color;Left;OpenDialog1.InitialDir;Top;Width;IniPropStorage1.IniFileName'
   LCLVersion = '3.99.0.0'
   OnCreate = FormCreate
   object Panel1: TPanel
