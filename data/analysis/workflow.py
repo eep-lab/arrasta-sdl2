@@ -9,14 +9,14 @@ def prepare_for_transcription():
     """
     One must manually add transcripts to probes_CD_{participant}.data files
     """
-    # make_safety_copy()
+    make_safety_copy()
     exclude_list = [
         deanonimize('1-SAR'),
         deanonimize('2-FIO'),
-        # deanonimize('4-LIV'),
-        # deanonimize('5-JUL'),
-        # deanonimize('6-MAR'),
-        # '9-CES',
+        deanonimize('4-LIV'),
+        deanonimize('5-JUL'),
+        deanonimize('6-MAR'),
+        '9-CES',
         # '12-MED',
         # '13-AND',
         # '14-MSC',
@@ -40,23 +40,23 @@ def prepare_for_transcription():
         # '35-SMI',
 
         # desistências
-        # '8-ROS',
-        # '10-VAU',
-        # '11-DNA',
-        # '26-IGR',
-        # '31-JUA',
-        # '22-GLB',
-        # '33-VCT',
+        '8-ROS',
+        '10-VAU',
+        '11-DNA',
+        '26-IGR',
+        '31-JUA',
+        '22-GLB',
+        '33-VCT',
     ]
 
-    # convert_all(exclude_list=exclude_list)
+    convert_all(exclude_list=exclude_list)
     fix_cycles()
     save_probes_by_participant(False)
 
 if __name__ == "__main__":
-    prepare_for_transcription()
+    # prepare_for_transcription()
     # do manual transcription
     # concatenate_probes()
     # calculate_similarity()
-    # override_CD_probes_in_data_file()
-    # create_metadata()
+    # override_CD_probes_in_data_file(False)
+    create_metadata()

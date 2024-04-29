@@ -318,3 +318,6 @@ def save_or_show(fig, save, filename):
     else:
         plt.show()
     plt.close(fig)
+
+def barplot_per_participant(container, saver=False, include_names=[], append_to_filename=''):
+    pass

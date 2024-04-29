@@ -13,6 +13,8 @@ from bs4 import BeautifulSoup
 import copy
 import sass
 
+target_speech = 'Speech-3'
+
 def data_by_relation(pattern, container):
     for entry in list_files('.info.processed'):
         data_file = as_data(entry, processed=True)
@@ -32,6 +34,49 @@ def data_by_relation(pattern, container):
                 print(f'File {entry} is empty.')
         else:
             print(f'File {entry} has no valid result.')
+
+def load_probes_file(filename):
+    dtype_dict = {
+        'Report.Timestamp': str,
+        'Session.Trial.UID': int,
+        'Session.Block.UID': int,
+        'Session.Block.Trial.UID': int,
+        'Session.Block.ID': int,
+        'Session.Block.Trial.ID': int,
+        'Session.Block.Name': str,
+        'Trial.ID': int,
+        'Cycle.ID': int,
+        'Relation': str,
+        'Comparisons': int,
+        'Result': str,
+        'CounterHit': int,
+        'CounterHit.MaxConsecutives': int,
+        'CounterMiss': int,
+        'CounterMiss.MaxConsecutives': int,
+        'CounterNone': int,
+        'CounterNone.MaxConsecutives': int,
+        'Sample-Position.1': str,
+        'Comparison-Position.1': str,
+        'Comparison-Position.2': str,
+        'Comparison-Position.3': str,
+        'Response': str,
+        'HasDifferentialReinforcement': bool,
+        'Latency': str,
+        'Participant': str,
+        'Condition': int,
+        'Date': str,
+        'Time': str,
+        'File': str,
+        'Name': str,
+        'ID': int,
+        'Speech': str,
+        'Speech-2': str,
+        'Speech-3': str
+    }
+    return pd.read_csv(filename, sep='\t', header=0, engine='python', dtype=dtype_dict)
+
+def save_probes_file(filename, data):
+    data.to_csv(filename, sep='\t', index=False)
 
 def get_data_folders(anonimized=False):
     def folder_sorter(x):
@@ -82,7 +127,7 @@ def save_probes_by_participant(should_fix_cycles):
         # check if file exists
         if file_exists(filename):
             # load file
-            existing_data = pd.read_csv(filename, sep='\t')
+            existing_data = load_probes_file(filename)
             # if same lenght, do nothing, there is no data to append
             if existing_data.shape[0] == filtered_data.shape[0]:
                 print(f'File {filename} already exists and has the same length. Skipping...')
@@ -99,7 +144,7 @@ def save_probes_by_participant(should_fix_cycles):
             filtered_data.drop_duplicates(subset=['ID'], keep='first', inplace=True)
         else:
             print(f'File {filename} does not exist. Creating...')
-        # add 'Speech', 'Speech-2' if not exists
+        # add 'Speech', target_speech if not exists
         if 'Speech' not in filtered_data.columns:
             filtered_data['Speech'] = ''
         if 'Speech-2' not in filtered_data.columns:
@@ -119,7 +164,7 @@ def load_all_probes():
         participant = participant.replace('\\', '').replace('-', '_')
         try:
             filename = f'probes_CD_{participant}.data'
-            data = pd.read_csv(filename, sep='\t')
+            data = load_probes_file(filename)
             print(f'File {filename} loaded.')
         except FileNotFoundError:
             print(f'File {filename} not found.')
@@ -129,7 +174,7 @@ def load_all_probes():
 
 def concatenate_probes(filename='probes_CD.data'):
     data = load_all_probes()
-    data.to_csv(filename, sep='\t', index=False)
+    save_probes_file(filename, data)
     print(f'All probes concatenated to file: {filename}')
 
 def validated_speech(word):
@@ -138,10 +183,10 @@ def validated_speech(word):
     return unidecode_expect_ascii(word.strip().lower().replace(' ', ''))
 
 def similarity(row):
-    return Levenshtein.ratio(row['Name'], validated_speech(row['Speech-2']))
+    return Levenshtein.ratio(row['Name'], validated_speech(row[target_speech]))
 
 def result(row):
-    if row['Name'] == validated_speech(row['Speech-2']):
+    if row['Name'] == validated_speech(row[target_speech]):
         return 'Hit'
     return 'Miss'
 
@@ -149,7 +194,8 @@ def calculate_similarity():
     cd('..')
     cd('analysis')
     cd('output')
-    data = pd.read_csv('probes_CD.data', sep='\t')
+    filename = 'probes_CD.data'
+    data = load_probes_file(filename)
     data['Levenshtein'] = data.apply(lambda row: similarity(row), axis=1)
     data['Result'] = data.apply(lambda row: result(row), axis=1)
     data['Latency'] = data.apply(lambda row: row['Latency'].replace(',', '.'), axis=1)
@@ -164,7 +210,8 @@ def correlate_latency_levenshtein(do_global_analysis=False):
     print(participants)
     cd('analysis')
     cd('output')
-    all_data = pd.read_csv('probes_CD.data.processed', sep='\t')
+    filename = 'probes_CD.data.processed'
+    all_data = load_probes_file(filename)
 
     if do_global_analysis:
         # filter data by word name
@@ -203,7 +250,8 @@ def correlate_latency_levenshtein(do_global_analysis=False):
 
 def override_CD_probes_in_data_file(must_not_override=True):
     cd('output')
-    data = pd.read_csv('probes_CD.data.processed', sep='\t')
+    filename = 'probes_CD.data.processed'
+    data = load_probes_file(filename)
     print('----------------------------- override data files and creating probes files')
     cd('..')
     cd('..')
@@ -244,7 +292,7 @@ def override_CD_probes_in_data_file(must_not_override=True):
                         raise Exception('Count is different')
                     else:
                         data_to_override['Result'] = filtered_data['Result'].values
-                        data_to_override['Response'] = filtered_data['Speech-2'].values
+                        data_to_override['Response'] = filtered_data['Speech-3'].values
                         data_to_override.to_csv(data_file, sep='\t', index=False)
                         filtered_data['Levenshtein'].to_csv(data_file.replace('.data', '.probes'), sep='\t', index=False)
             cd('..')
@@ -273,8 +321,9 @@ def make_equal_chars_bold(str1, str2):
 
 def create_html_tables():
     cd('output')
+    filename = 'probes_CD.data.processed'
     # Load the data
-    df = pd.read_csv('probes_CD.data.processed', sep='\t')
+    df = load_probes_file(filename)
     # Create a dictionary to store the DataFrames for each participant
     dfs = {}
     # Iterate over the unique participants
@@ -284,12 +333,12 @@ def create_html_tables():
 
         df_participant.drop(columns='Participant', inplace=True)
         # Create the 'HTML' column
-        df_participant['HTML'] = df_participant.apply(lambda row: make_equal_chars_bold(row['Name'], row['Speech-2']), axis=1)
+        df_participant['HTML'] = df_participant.apply(lambda row: make_equal_chars_bold(row['Name'], row[target_speech]), axis=1)
 
         condition7 = df_participant[df_participant['Condition'] == 7].copy()
         condition5 = df_participant[df_participant['Condition'] == 5].copy()
         # get bena and falo data
-        bena_falo_tbody = get_bena_falo_tbody(condition5)
+        bena_falo_tbody = get_bena_falo_tbody(participant, condition5)
         df_participant = condition7
         # join date time columns
         df_participant['Date'] = df_participant['Date'] + ' ' + df_participant['Time']
@@ -298,6 +347,9 @@ def create_html_tables():
         dates = df_participant['Date'].unique()
 
         # create a dictionary to store Cycle.ID of each Date
+        if '12-MED' in participant:
+            df_participant['Cycle.ID'] = df_participant['Cycle.ID'].replace(0, 6)
+
         cycle_per_date = {}
         for date in dates:
             cycle_per_date[date] = df_participant[df_participant['Date'] == date]['Cycle.ID'].values[0]
@@ -404,6 +456,7 @@ def create_html_tables():
 
                 # content columns start at index 3
                 td_start = 3
+                header = list()
                 for td, th in zip(td_tags[td_start:], th_tags[3:]):
                     if th.string in cycle_per_date:
                         class1 = 'training-col'
@@ -419,7 +472,10 @@ def create_html_tables():
                         if cycle_count_per_date[cycle] == 1:
                             class2 = f'cycle{cycle} first-occurrence'
                         else:
-                            class2 = f'cycle{cycle}'
+                            if cycle == 6:
+                                class2 = f'cycle{cycle} last-occurrence'
+                            else:
+                                class2 = f'cycle{cycle}'
 
                         td['class'] = ' '.join([class1, class2])
 
@@ -520,7 +576,7 @@ def create_html_tables():
         print(f'File probes_CD_{participant}.html created.')
     cd('..')
 
-def get_bena_falo_tbody(df_participant):
+def get_bena_falo_tbody(participant, df_participant):
     # find unique date/time
     dates = df_participant['Date'].unique()
 
@@ -536,6 +592,10 @@ def get_bena_falo_tbody(df_participant):
     container = {}
     for date in dates:
         df2 = pd.DataFrame()
+        if '5-JUL' in participant:
+            # get the first 4 rows of each date
+            df2 = df_constant[df_constant['Date'] == date].head(4)
+
         df2['Word'] = df_constant[df_constant['Date'] == date]['Name']
         # use category_per_word to get word categories
         df2['Category'] = df2['Word'].map(category_per_word)
