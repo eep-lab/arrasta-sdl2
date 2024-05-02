@@ -5,10 +5,20 @@ import shutil
 
 import pandas as pd
 
-from headers import data_header
-
 def file_exists(entry):
     return os.path.exists(entry)
+
+def data_dir():
+    # check if current directory is data
+    if os.getcwd().endswith('data'):
+        return
+    else:
+        # recursively return until reach data directory
+        cd('..')
+        data_dir()
+
+def directory_exists(directory):
+    return os.path.isdir(directory)
 
 def cd(directory):
     os.chdir(directory)
@@ -18,27 +28,43 @@ def get_real_filepath(entry):
     return os.path.join(os.getcwd(), entry)
 
 def load_file(entry):
-    return pd.read_csv(entry, sep='\t', header=0, engine='python')
+    df = None
+    if entry.endswith('.info.processed'):
+        df = pd.read_csv(entry, sep='\t', encoding='utf-8', header=None, index_col=0, engine='python')
 
-    # # get directory path where this script is located
-    # dir_path = os.path.dirname(os.path.realpath(__file__))
-    # # concatenate directory path with file name
-    # filepath = os.path.join(dir_path, filename)
-    # # return the file
-    # return pd.read_excel(filepath, engine='odf')
+    elif entry.endswith('.probes.processed'):
+        df = pd.read_csv(entry, sep='\t')
 
-def list_data_folders(exclude_list=[]):
-    exclude_list += ['__pycache__', 'analysis']
-    # Get all entries in the current directory
-    all_entries = os.listdir('.')
-    # Filter out files and excluded folders
-    return [entry for entry in all_entries \
-               if os.path.isdir(entry) \
-               and entry not in exclude_list]
+    elif entry.endswith('.data.processed'):
+        df = pd.read_csv(entry, sep='\t', header=0, engine='python')
+        if 'Cycle.ID' in df.columns:
+            df['Cycle.ID'] = pd.to_numeric(df['Cycle.ID'], errors='coerce').fillna(0).astype(int)
+
+    else:
+        df = pd.read_csv(entry, sep='\t', header=0, engine='python')
+
+    return df
+
+def list_data_folders(include_list=[], exclude_list=[]):
+    if len(include_list) == 0:
+        exclude_list += ['__pycache__', 'analysis', '.vscode', 'output', '0-Rafael', '3-Teste', '7-Teste2']
+        # Get all entries in the current directory
+        all_entries = os.listdir('.')
+        # Filter out files and excluded folders
+        return [entry for entry in all_entries \
+                if os.path.isdir(entry) \
+                and entry not in exclude_list]
+    else:
+        all_entries = os.listdir('.')
+        return [entry for entry in all_entries \
+                if os.path.isdir(entry) \
+                and entry in include_list]
+
 
 def list_files(extension=''):
-    # Get all entries in the current directory
+    # Get all entries in the current directory except 'ID' and 'LastValidBaseFilename' files
     all_entries = os.listdir('.')
+    all_entries = [e for e in all_entries if e != 'ID' and e != 'LastValidBaseFilename']
     # Filter out folders and files with different extensions
     return [entry for entry in all_entries \
                if os.path.isfile(entry) \
@@ -60,7 +86,7 @@ def get_creation_date(real_filepath, format='%Y-%m-%d'):
     Note: Windows only.
     """
     # Get the creation time of the file
-    creation_time = os.path.getctime(real_filepath)
+    creation_time = os.path.getmtime(real_filepath)
     # Convert the creation time to a datetime object
     date_time_obj = datetime.datetime.fromtimestamp(creation_time)
     # Format the date as YYYY-MM-DD
@@ -86,11 +112,62 @@ def safety_copy(entry):
 
     return destination
 
-def replace_extension(filename, new_extension):
-    # Split the filename into root and extension
+def replace_extension(filename, new_extension, processed=False):
+    if processed:
+        filename = filename.replace('.processed', '')
     root, _ = os.path.splitext(filename)
     # Add the new extension
     return root + new_extension
 
-def as_timestamps(entry):
-    return replace_extension(entry, '.timestamps')
+def as_timestamps(entry, processed=False):
+    if processed:
+        return replace_extension(entry, '.timestamps.processed', processed=True)
+    else:
+        return replace_extension(entry, '.timestamps')
+
+def as_data(entry, processed=False):
+    if processed:
+        return replace_extension(entry, '.data.processed', processed=True)
+    else:
+        return replace_extension(entry, '.data')
+
+def as_info(entry, processed=False):
+    if processed:
+        return replace_extension(entry, '.info.processed', processed=True)
+    else:
+        return replace_extension(entry, '.info')
+
+def walk_and_execute(entry, function, *args):
+    cd(entry)
+    try:
+        cd('analysis')
+    except FileNotFoundError:
+        cd('..')
+        return
+
+    safety_copy_folders = list_data_folders()
+    for data_folder in safety_copy_folders:
+        cd(data_folder)
+        function(*args)
+        cd('..')
+
+    cd('..')
+    cd('..')
+
+def delete_deprecated_files():
+    def delete_probes_files():
+        files = list_files('.probes.processed')
+        if len(files) == 0:
+            return
+        else:
+            for file in files:
+                os.remove(file)
+                print(f"File '{file}' deleted.")
+
+    cd('..')
+    participant_folders = list_data_folders()
+    for folder in participant_folders:
+        walk_and_execute(folder, delete_probes_files)
+
+if __name__ == "__main__":
+    delete_deprecated_files()

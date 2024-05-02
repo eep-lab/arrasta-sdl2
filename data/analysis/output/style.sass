@@ -1,0 +1,85 @@
+$padding-bottom: 16px
+$column: 2
+$border-width: 2px
+
+table
+  border-collapse: collapse
+
+th, td
+  border: none
+  padding: 4px
+  padding-top: 0
+  padding-bottom: 0
+  text-align: center
+
+thead
+  tr:first-child
+    th
+      border-top: $border-width solid black
+  th[rowspan]
+    border-top: $border-width solid black
+  tr:last-child
+    th
+      border-bottom: $border-width solid black
+  th[rowspan]
+    border-bottom: $border-width solid black
+
+// rotate text inside tbody td cells with rowspan attribute
+// tbody td[rowspan]
+//   padding: 0
+//   writing-mode: vertical-lr
+//   -ms-writing-mode: tb-rl
+//   transform: rotate(180deg)
+//   padding: 0
+
+tr.even-row.training-row td, tr.even-row.assessment1-row td, tr.even-row.assessment3-row td
+  vertical-align: middle
+  padding-bottom: $padding-bottom
+
+tr td.labels-end-col
+    border-right: $border-width solid black
+
+$row: 4
+
+tbody tr.assessment3-row:nth-child(#{$row}) td.training-col.cycle1
+  border-bottom: 1px dashed black
+
+@mixin drawDashedLineOnTable($row-start, $row-end, $column-start, $column-end)
+  $row : $row-start
+  @for $column from $column-start through $column-end
+    @if $column < $column-end
+      tbody tr.training-row:nth-child(#{$row}) td.training-col.cycle#{$column}.first-occurrence
+        border-left: 1px dashed black
+      $row : $row + 1
+
+      tbody tr.training-row:nth-child(#{$row}) td.training-col.cycle#{$column}.first-occurrence
+        border-left: 1px dashed black
+
+      tbody tr.training-row:nth-child(#{$row}) td.training-col.cycle#{$column}
+        border-bottom: 1px dashed black
+    @else
+      tbody tr.training-row:nth-child(#{$row}) td.training-col.cycle#{$column}.first-occurrence
+        border-left: 1px dashed black
+      $row : $row + 1
+
+      tbody tr.training-row:nth-child(#{$row}) td.training-col.cycle#{$column}.first-occurrence
+        border-left: 1px dashed black
+
+      tbody tr.training-row:nth-child(#{$row}) td.training-col.cycle#{$column}.first-occurrence
+        border-bottom: 1px dashed black
+      $row : $row + 1
+
+      tbody tr.training-row:nth-child(#{$row}) td.training-col.cycle#{$column}.last-occurrence
+        border-left: 1px dashed black
+      $row : $row + 1
+
+      tbody tr.training-row:nth-child(#{$row}) td.training-col.cycle#{$column}.last-occurrence
+        border-left: 1px dashed black
+
+      tbody tr.training-row:nth-child(#{$row}) td.training-col.cycle#{$column}.last-occurrence
+        border-bottom: 1px dashed black
+
+    $row : $row + 1
+    $column : $column + 1
+
+@include drawDashedLineOnTable(5, 16, 2, 6)

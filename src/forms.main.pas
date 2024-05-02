@@ -22,13 +22,13 @@ type
   { TFormBackground }
 
   TFormBackground = class(TForm)
+    ButtonRunNextSession: TButton;
     ButtonOpenSpeechValidation: TButton;
     ButtonTestCondition: TButton;
     ButtonMisc: TButton;
     ButtonNewParticipant: TButton;
-    ButtonLoadConfigurationFile: TButton;
-    ButtonNewConfigurationFile: TButton;
-    ButtonRunSession: TButton;
+    ButtonRunInterruptedSession: TButton;
+    ButtonRunNewSession: TButton;
     ComboBoxDesignFolder: TComboBox;
     ComboBoxParticipant: TComboBox;
     IniPropStorage1: TIniPropStorage;
@@ -50,12 +50,12 @@ type
     Splitter1: TSplitter;
     Splitter2: TSplitter;
     procedure ButtonOpenSpeechValidationClick(Sender: TObject);
+    procedure ButtonRunNextSessionClick(Sender: TObject);
     procedure ButtonTestConditionClick(Sender: TObject);
-    procedure ButtonLoadConfigurationFileClick(Sender: TObject);
+    procedure ButtonRunInterruptedSessionClick(Sender: TObject);
     procedure ButtonMiscClick(Sender: TObject);
-    procedure ButtonNewConfigurationFileClick(Sender: TObject);
+    procedure ButtonRunNewSessionClick(Sender: TObject);
     procedure ButtonNewParticipantClick(Sender: TObject);
-    procedure ButtonRunSessionClick(Sender: TObject);
     procedure BeginSession(Sender: TObject);
     procedure ComboBoxDesignFolderEditingDone(Sender: TObject);
     procedure ComboBoxParticipantEditingDone(Sender: TObject);
@@ -81,14 +81,15 @@ type
     FSessionName : string;
     procedure HitCriteriaAtSessionEnd(Sender : TObject);
     procedure NotHitCriteriaAtSessionEnd(Sender : TObject);
-    procedure AssignGlobalVariables;
+    function AssignGlobalVariables : Boolean;
     procedure ToogleControlPanelEnabled(AException: TComponent = nil);
     function ParticipantFolderName : string;
     function SessionName : string;
     function SetupFolders : Boolean;
     function Validated : Boolean;
+    procedure RunSession;
   public
-
+    procedure CreateNewConfigurationFile;
   end;
 
 var
@@ -129,65 +130,15 @@ uses
 
 { TFormBackground }
 
-procedure TFormBackground.ButtonRunSessionClick(Sender: TObject);
+procedure TFormBackground.ButtonRunNewSessionClick(Sender: TObject);
 begin
+  FormMisc.Initialize;
+  if not AssignGlobalVariables then Exit;
   if not Validated then Exit;
 
-  FormMisc.Initialize;
-  AssignGlobalVariables;
   ToogleControlPanelEnabled;
-
-  SDLApp := TSDLApplication.Create(@Pool.AppName[1]);
-  SDLApp.SetupVideo(FormMisc.ComboBoxMonitor.ItemIndex);
-  //SDLApp.PrintRendererSetup;
-  SDLApp.SetupAudio;
-  SDLApp.SetupText;
-  SDLApp.OnClose := @CloseSDLApp;
-  SDLApp.ShowMarkers := FormMisc.CheckBoxShowMarkers.Checked;
-
-  Controllers := TControllerManager.Create;
-  Controllers.CreateController(FormMisc.ComboBoxController.ItemIndex);
-
-  Pool.App := SDLApp;
-
-  InitializeEyeTracker(FormMisc.ComboBoxEyeTracker.ItemIndex);
-
-  Pool.SessionName := SessionName;
-  Pool.ParticipantName := ParticipantFolderName;
-
-  SDLSession := TSession.Create(Self);
-  SDLSession.OnBeforeStart := @BeginSession;
-  SDLSession.OnEndSession  := @EndSession;
-  SDLSession.OnHitCriteriaAtSessionEnd := @HitCriteriaAtSessionEnd;
-  SDLSession.OnNotHitCriteriaAtSessionEnd := @NotHitCriteriaAtSessionEnd;
-  SDLSession.Play;
-
-  SDLApp.Run;
-end;
-
-procedure TFormBackground.ButtonNewConfigurationFileClick(Sender: TObject);
-var
-  LFilename : string;
-begin
-  AssignGlobalVariables;
-  if ListBoxCondition.Items.Count = 0 then begin
-    ShowMessage('A pasta de parâmetros (design) está vazia.');
-    Exit;
-  end;
-
-  if ListBoxCondition.ItemIndex = -1 then begin
-    ShowMessage('Escolha um parâmetro.');
-    Exit;
-  end else begin
-    with ListBoxCondition do begin
-      LFilename := Items[ItemIndex];
-    end;
-  end;
-
-  ToogleControlPanelEnabled(ProgressBar);
-  Pool.ConfigurationFilename := MakeConfigurationFile(LFilename);
-  ProgressBar.Visible := True;
-  ToogleControlPanelEnabled(ProgressBar);
+  CreateNewConfigurationFile;
+  RunSession;
 end;
 
 procedure TFormBackground.ButtonNewParticipantClick(Sender: TObject);
@@ -205,7 +156,7 @@ begin
   end;
 end;
 
-procedure TFormBackground.ButtonLoadConfigurationFileClick(Sender: TObject);
+procedure TFormBackground.ButtonRunInterruptedSessionClick(Sender: TObject);
 begin
   SetupFolders; // todo: pass filename id of loaded file into session.counters.loadfromfile
   OpenDialog1.InitialDir := Pool.BaseDataPath;
@@ -216,6 +167,8 @@ begin
     ProgressBar.Max := 1;
     ProgressBar.StepIt;
     ProgressBar.Visible := True;
+
+    RunSession;
   end;
 end;
 
@@ -227,6 +180,45 @@ end;
 procedure TFormBackground.ButtonOpenSpeechValidationClick(Sender: TObject);
 begin
   FormSpeechValidationQueue.Show;
+end;
+
+procedure TFormBackground.ButtonRunNextSessionClick(Sender: TObject);
+var
+  LInformation : TInformation;
+  LCondition : integer;
+
+  procedure ShowErrorMessage;
+  begin
+    ShowMessage('Não foi possível executar a sessão seguinte');
+  end;
+
+begin
+  with ListBoxCondition do begin
+    if ComboBoxParticipant.Items.Count > 0 then begin
+      SetupFolders;
+      if LastValidBaseFilenameFileExists then begin
+        LInformation := LoadInformationFromFile(GetLastValidInformationFile);
+      end else begin
+        //ShowMessage('Guessing last valid information file');
+        LInformation := LoadInformationFromFile(GuessLastValidInformationFile);
+      end;
+
+      LCondition := ListBoxCondition.Items.IndexOf(LInformation.SessionName);
+      if LCondition > -1 then begin
+        ItemIndex := LCondition;
+        if ItemIndex < Items.Count -1 then begin
+          ItemIndex := ItemIndex + 1;
+          ButtonRunNewSessionClick(Sender);
+        end else begin
+          ShowErrorMessage;
+        end;
+      end else begin
+        ShowErrorMessage;
+      end;
+    end else begin
+      ShowErrorMessage;
+    end;
+  end;
 end;
 
 procedure TFormBackground.ButtonMiscClick(Sender: TObject);
@@ -255,13 +247,34 @@ end;
 procedure TFormBackground.ComboBoxParticipantEditingDone(Sender: TObject);
 var
   LInformation : TInformation;
+  LCondition : integer;
+  LConfiguration : string;
 begin
   if ComboBoxParticipant.Items.Count > 0 then begin
     SetupFolders;
+    //IniPropStorage1.Save;
+    //FormMisc.IniPropStorage1.Save;
+    //
+    //LConfiguration := ConcatPaths([
+    //  Pool.ConfigurationsRootBasePath,
+    //  ParticipantFolderName, 'configurations.ini']);
+    //IniPropStorage1.IniFileName := LConfiguration;
+    //if FileExists(LConfiguration) then begin
+    //  IniPropStorage1.Restore;
+    //end;
+    //
+    //LConfiguration := ConcatPaths([
+    //  Pool.ConfigurationsRootBasePath,
+    //  ParticipantFolderName, 'configurations_global.ini']);
+    //FormMisc.IniPropStorage1.IniFileName := LConfiguration;
+    //if FileExists(LConfiguration) then begin
+    //  FormMisc.IniPropStorage1.Restore;
+    //end;
+
     if LastValidBaseFilenameFileExists then begin
       LInformation := LoadInformationFromFile(GetLastValidInformationFile);
     end else begin
-      ShowMessage('Guessing last valid information file');
+      //ShowMessage('Guessing last valid information file');
       LInformation := LoadInformationFromFile(GuessLastValidInformationFile);
     end;
 
@@ -271,6 +284,10 @@ begin
     end else begin
       LabelLastSessionName.Caption := LInformation.SessionName;
       LabelSessionEndCriteria.Caption := LInformation.SessionResult;
+      LCondition := ListBoxCondition.Items.IndexOf(LInformation.SessionName);
+      if LCondition > -1 then begin
+        ListBoxCondition.ItemIndex := LCondition;
+      end;
     end;
   end;
 end;
@@ -281,7 +298,12 @@ begin
 end;
 
 procedure TFormBackground.CloseSDLApp(Sender: TObject);
+var
+  LPoint : TPoint;
 begin
+  LPoint := Point(ButtonRunNextSession.Left, ButtonRunNextSession.Top);
+  Mouse.CursorPos.SetLocation(ClientToScreen(LPoint));
+
   if Assigned(EyeTracker) then begin
     EyeTracker.StopRecording;
     FinalizeEyeTracker;
@@ -294,6 +316,7 @@ begin
   ToogleControlPanelEnabled;
   ProgressBar.Visible := False;
   FSessionName := '';
+  ButtonRunNextSession.SetFocus;
 end;
 
 procedure TFormBackground.FormCreate(Sender: TObject);
@@ -400,8 +423,9 @@ begin
   LabelSessionEndCriteria.Caption := LResult;
 end;
 
-procedure TFormBackground.AssignGlobalVariables;
+function TFormBackground.AssignGlobalVariables: Boolean;
 begin
+  Result := False;
   TestMode := FormMisc.CheckBoxTestMode.Checked;
 
   GlobalTrialParameters.Cursor := 1;
@@ -425,11 +449,24 @@ begin
   with GlobalTrialParameters, FormMisc.ComboBoxShouldRestartAt do
     ShouldRestartAtBlockStart := ItemIndex = 0;
 
-  with GlobalTrialParameters, FormMisc.ComboBoxAudioPromptForText do
-    AudioPromptForText := Items[ItemIndex];
 
-  with GlobalTrialParameters, FormMisc.ComboBoxFontName do
-    FontName := Items[ItemIndex];
+  with GlobalTrialParameters, FormMisc.ComboBoxAudioPromptForText do begin
+    if ItemIndex > -1 then begin
+      AudioPromptForText := Items[ItemIndex];
+    end else begin
+      ShowMessage('Escolha um prompt de texto nas configurações.');
+      Exit;
+    end;
+  end;
+
+  with GlobalTrialParameters, FormMisc.ComboBoxFontName do begin
+    if ItemIndex > -1 then begin
+      FontName := Items[ItemIndex];
+    end else begin
+      ShowMessage('Escolha uma fonte para o texto nas configurações.');
+      Exit;
+    end;
+  end;
 
   with GlobalTrialParameters, FormMisc.SpinEditFontSize do
     FontSize := Value;
@@ -452,8 +489,14 @@ begin
   with GlobalTrialParameters, FormMisc.SpinEditTimeOut do
     TimeOutInterval := Value;
 
-  with GlobalTrialParameters, FormMisc.ComboBoxAudioFolder do
-    Pool.AudioBasePath := Items[ItemIndex];
+  with GlobalTrialParameters, FormMisc.ComboBoxAudioFolder do begin
+    if ItemIndex > -1 then begin
+      Pool.AudioBasePath := Items[ItemIndex];
+    end else begin
+      ShowMessage('Escolha uma pasta de audio nas configurações.');
+      Exit;
+    end;
+  end;
 
   with GlobalTrialParameters, FormMisc.ComboBoxFixedSamplePosition do begin
     GridOrientation := goCustom;
@@ -476,6 +519,7 @@ begin
       end;
     end;
   end;
+  Result := True;
 end;
 
 procedure TFormBackground.ToogleControlPanelEnabled(AException: TComponent);
@@ -585,10 +629,7 @@ begin
       if ItemIndex > -1 then begin
         ShowMessage(
           'Uma nova sessão será criada:' + LineEnding + Items[ItemIndex]);
-        ButtonNewConfigurationFileClick(Self);
       end else begin
-        ShowMessage(
-          'Crie uma nova sessão ou carregue uma sessão interrompida.');
         Exit;
       end;
     end;
@@ -615,6 +656,60 @@ begin
   end;
 
   Result := True;
+end;
+
+procedure TFormBackground.RunSession;
+begin
+  SDLApp := TSDLApplication.Create(@Pool.AppName[1]);
+  SDLApp.SetupVideo(FormMisc.ComboBoxMonitor.ItemIndex);
+  //SDLApp.PrintRendererSetup;
+  SDLApp.SetupAudio;
+  SDLApp.SetupText;
+  SDLApp.OnClose := @CloseSDLApp;
+  SDLApp.ShowMarkers := FormMisc.CheckBoxShowMarkers.Checked;
+
+  Controllers := TControllerManager.Create;
+  Controllers.CreateController(FormMisc.ComboBoxController.ItemIndex);
+
+  Pool.App := SDLApp;
+
+  InitializeEyeTracker(FormMisc.ComboBoxEyeTracker.ItemIndex);
+
+  Pool.SessionName := SessionName;
+  Pool.ParticipantName := ParticipantFolderName;
+
+  SDLSession := TSession.Create(Self);
+  SDLSession.OnBeforeStart := @BeginSession;
+  SDLSession.OnEndSession  := @EndSession;
+  SDLSession.OnHitCriteriaAtSessionEnd := @HitCriteriaAtSessionEnd;
+  SDLSession.OnNotHitCriteriaAtSessionEnd := @NotHitCriteriaAtSessionEnd;
+  SDLSession.Play;
+
+  SDLApp.Run;
+end;
+
+procedure TFormBackground.CreateNewConfigurationFile;
+var
+  LFilename: String;
+begin
+  if ListBoxCondition.Items.Count = 0 then begin
+    ShowMessage('A pasta de parâmetros (design) está vazia.');
+    Exit;
+  end;
+
+  if ListBoxCondition.ItemIndex = -1 then begin
+    ShowMessage('Escolha um arquivo com os parâmetro da sessão.');
+    Exit;
+  end else begin
+    with ListBoxCondition do begin
+      LFilename := Items[ItemIndex];
+    end;
+  end;
+
+  ToogleControlPanelEnabled(ProgressBar);
+  Pool.ConfigurationFilename := MakeConfigurationFile(LFilename);
+  ProgressBar.Visible := True;
+  ToogleControlPanelEnabled(ProgressBar);
 end;
 
 end.

@@ -1,32 +1,58 @@
 data_header = [
+    # 1
     'Report.Timestamp',
+    # 2
     'Session.Trial.UID',
+    # 3
     'Session.Block.UID',
+    # 4
     'Session.Block.Trial.UID',
+    # 5
     'Session.Block.ID',
+    # 6
     'Session.Block.Trial.ID',
+    # 7
     'Session.Block.Name',
 
+    # 8
     'Trial.ID',
+    # 9
     'Cycle.ID',
+    # 10
     'Name',
+    # 11
     'Relation',
+    # 12
     'Comparisons',
 
+    # 13
     'Result',
+    # 14
     'CounterHit',
+    # 15
     'CounterHit.MaxConsecutives',
+    # 16
     'CounterMiss',
+    # 17
     'CounterMiss.MaxConsecutives',
+    # 18
     'CounterNone',
+    # 19
     'CounterNone.MaxConsecutives',
+    # 20
     'Sample-Position.1',
+    # 21
     'Comparison-Position.1',
+    # 22
     'Comparison-Position.2',
+    # 23
     'Comparison-Position.3',
+    # 24
     'Response',
 
+    # 25
     'HasDifferentialReinforcement',
+    # 26
     'Latency']
 
 timestamps_header = [
@@ -91,3 +117,16 @@ session_name_dict = {
     'Probes-BC-CB-constant-words-6' : 'Ciclo6-4-Sondas-BC-CB-Palavras-reservadas.csv',
     'Probes-CD-generalization-and-constant-words-6' : 'Ciclo6-5-Sondas-CD-Palavras-generalizacao-reservadas.csv',
     'Probes-AC-generalization-and-constant-words-6' : 'Ciclo6-6-Sondas-AC-Palavras-generalizacao-reservadas.csv'}
+
+info_header = [
+    'Version:',
+    'Nome_do_sujeito:',
+    'Nome_da_sessao:',
+    'Grade_de_estimulos:',
+    'Monitor:',
+    'Data_Inicio:',
+    'Hora_Inicio:',
+    'Data_Termino:',
+    'Hora_Termino:',
+    'Duration:',
+    'Resultado:']
