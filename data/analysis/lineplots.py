@@ -74,10 +74,10 @@ def line_plot_per_cycle(container, save=False, include_names=[], append_to_filen
     fig, ax = plt.subplots(figsize=(4, 3))
     default_axis_config(ax, False)
     ax.set_xlim(0, max_cycle + 1)
-    ax.set_ylim(0, 1.2)
+    ax.set_ylim(0, 120)
     ax.set_xticks(range(1, max_cycle + 1))
     ax.set_xlabel('Cycle')
-    ax.set_ylabel('Average hit proportion')
+    ax.set_ylabel('Percent correct (Group main)')
 
     # plot one line per name for all cycles
     for name, hit_rates in average_hit_rates.items():
@@ -90,7 +90,7 @@ def line_plot_per_cycle(container, save=False, include_names=[], append_to_filen
         if name == 'CD Probes 2':
             label = 'Textual Beh'
             marker = 'o'
-            markerfacecolor = 'white'
+            markerfacecolor = 'gray'
         elif name == 'AC Probes':
             label = 'SW-PW MTS'
             marker = '^'
@@ -101,14 +101,25 @@ def line_plot_per_cycle(container, save=False, include_names=[], append_to_filen
             markerfacecolor = 'white'
         else:
             raise ValueError('Unknown name: {}'.format(name))
+
+        # Convert to percentage
+        hit_rates = [rate * 100 for rate in hit_rates]
+        upper_errors = [rate * 100 for rate in upper_errors]
+
+        # draw a dashed line at 0.5 and 1.0
+        ax.axhline(y=50, color='black', linewidth=0.8, linestyle='--')
+        ax.axhline(y=100, color='black', linewidth=0.8, linestyle='--')
+
         # Draw the error bars
         for i in range(len(x)):
             ax.vlines(x[i], hit_rates[i] - lower_errors[i], hit_rates[i] + upper_errors[i],
+                    linewidth=1.0,
                     color='black')
 
         # Draw the caps
         for i in range(len(x)):
             ax.hlines(hit_rates[i] + upper_errors[i], x[i] - 0.1, x[i] + 0.1,
+                      linewidth=1.0,
                       color='black')
 
         ax.plot(x, hit_rates,
@@ -116,15 +127,12 @@ def line_plot_per_cycle(container, save=False, include_names=[], append_to_filen
                     label=label,
                     color='black',
                     marker=marker,
+                    linewidth=1.0,
                     markerfacecolor=markerfacecolor, markeredgecolor='black')
 
 
-    # draw a dashed line at 0.5 and 1.0
-    ax.axhline(y=0.5, color='black', linestyle='--')
-    ax.axhline(y=1.0, color='black', linestyle='--')
-
     # y ticks at 0, 0.5 and 1.0 only
-    yticks = [0, 0.5, 1.0]
+    yticks = [0, 50, 100]
     ax.set_yticks(yticks)
     ax.set_yticklabels(['{:.1f}'.format(y) for y in yticks])
     # add legend at bottom right

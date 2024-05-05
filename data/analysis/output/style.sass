@@ -36,13 +36,18 @@ tr.even-row.training-row td, tr.even-row.assessment1-row td, tr.even-row.assessm
   vertical-align: middle
   padding-bottom: $padding-bottom
 
+
+// increase padding on the first tr.odd-row.assement1-row td
+tr.odd-row.assessment1-row.word-17 td
+  padding-top: $padding-bottom + 8px
+
 tr td.labels-end-col
     border-right: $border-width solid black
 
-$row: 4
+// $row: 2
 
-tbody tr.assessment3-row:nth-child(#{$row}) td.training-col.cycle1
-  border-bottom: 1px dashed black
+// tbody tr.training-row:nth-child(#{$row}) td.training-col.cycle1
+//   border-bottom: 1px dashed black
 
 @mixin drawDashedLineOnTable($row-start, $row-end, $column-start, $column-end)
   $row : $row-start
@@ -82,4 +87,4 @@ tbody tr.assessment3-row:nth-child(#{$row}) td.training-col.cycle1
     $row : $row + 1
     $column : $column + 1
 
-@include drawDashedLineOnTable(5, 16, 2, 6)
+@include drawDashedLineOnTable(1, 16, 2, 6)
