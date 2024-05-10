@@ -8,7 +8,7 @@ object FormBackground: TFormBackground
   ClientWidth = 385
   DefaultMonitor = dmPrimary
   PopupMenu = PopupMenuMisc
-  SessionProperties = 'ComboBoxCondition.ItemIndex;ComboBoxDesignFolder.ItemIndex;ComboBoxParticipant.ItemIndex;ComboBoxParticipant.Items;ComboBoxParticipant.Text;Height;LabelSessionEndCriteria.Caption;LabelSessionEndCriteria.Color;Left;OpenDialog1.InitialDir;Top;Width;LabelLastSessionName.Caption;LabelLastSessionName.Color'
+  SessionProperties = 'ComboBoxCondition.ItemIndex;ComboBoxDesignFolder.ItemIndex;ComboBoxParticipant.ItemIndex;ComboBoxParticipant.Items;ComboBoxParticipant.Text;Height;LabelLastSessionName.Caption;LabelLastSessionName.Color;LabelSessionEndCriteria.Caption;LabelSessionEndCriteria.Color;Left;OpenDialog1.InitialDir;Top;Width;IniPropStorage1.IniFileName'
   LCLVersion = '3.99.0.0'
   OnCreate = FormCreate
   object Panel1: TPanel
@@ -25,16 +25,6 @@ object FormBackground: TFormBackground
     ParentShowHint = False
     ShowHint = True
     TabOrder = 0
-    object ButtonRunSession: TButton
-      Left = 16
-      Height = 42
-      Hint = 'Para escolher um monitor:'#13#10#13#10'1 - Clique em "Configurações da sessão"'#13#10'2 - Em "Monitor usado para apresentar a sessão", selecione o monitor.'
-      Top = 488
-      Width = 328
-      Caption = 'Iniciar sessão / Continuar sessão interrompida'
-      TabOrder = 0
-      OnClick = ButtonRunSessionClick
-    end
     object ComboBoxParticipant: TComboBox
       Left = 16
       Height = 23
@@ -43,29 +33,29 @@ object FormBackground: TFormBackground
       Width = 152
       ItemHeight = 15
       ReadOnly = True
-      TabOrder = 1
+      TabOrder = 0
       Text = 'Participante'
       OnEditingDone = ComboBoxParticipantEditingDone
     end
-    object ButtonLoadConfigurationFile: TButton
+    object ButtonRunInterruptedSession: TButton
       Left = 16
       Height = 26
       Hint = 'Aqui você pode retomar uma sessão'#13#10'do início do bloco no qual ela foi'#13#10'interrompida.'#13#10#13#10'Caso seja necessário, você pode'#13#10'interromper uma sessão pressionando'#13#10'a tecla ESC.'
-      Top = 424
-      Width = 158
-      Caption = 'Carregar sessão interromp.'
-      TabOrder = 2
-      OnClick = ButtonLoadConfigurationFileClick
+      Top = 456
+      Width = 328
+      Caption = 'Reiniciar sessão interrompida'
+      TabOrder = 1
+      OnClick = ButtonRunInterruptedSessionClick
     end
-    object ButtonNewConfigurationFile: TButton
-      Left = 186
+    object ButtonRunNewSession: TButton
+      Left = 16
       Height = 26
       Hint = 'Para criar uma nova sessão, selecione'#13#10'o parâmetro e clique aqui.'
-      Top = 424
-      Width = 158
-      Caption = 'Criar nova sessão'
-      TabOrder = 3
-      OnClick = ButtonNewConfigurationFileClick
+      Top = 488
+      Width = 328
+      Caption = 'Iniciar nova sessão'
+      TabOrder = 2
+      OnClick = ButtonRunNewSessionClick
     end
     object ButtonNewParticipant: TButton
       Left = 186
@@ -75,26 +65,26 @@ object FormBackground: TFormBackground
       Width = 158
       Caption = 'Criar novo participante'
       PopupMenu = PopupMenuParticipants
-      TabOrder = 4
+      TabOrder = 3
       OnClick = ButtonNewParticipantClick
     end
     object ButtonMisc: TButton
       Left = 16
       Height = 26
       Hint = 'Este programa de computador salvará'#13#10'todas as configurações automaticamente'#13#10'ao ser fechado.'#13#10#13#10'Quando voltar, você encontrará tudo'#13#10'exatamente da forma como deixou'#13#10'ao sair.'
-      Top = 456
+      Top = 424
       Width = 328
       Caption = 'Configurações da sessão'
-      TabOrder = 5
+      TabOrder = 4
       OnClick = ButtonMiscClick
     end
     object ProgressBar: TProgressBar
       Left = 16
       Height = 20
-      Top = 536
+      Top = 568
       Width = 328
       Step = 1
-      TabOrder = 6
+      TabOrder = 5
       Visible = False
     end
     object ComboBoxDesignFolder: TComboBox
@@ -104,7 +94,7 @@ object FormBackground: TFormBackground
       Width = 152
       ItemHeight = 15
       ReadOnly = True
-      TabOrder = 7
+      TabOrder = 6
       Text = 'Nome da Pasta'
       OnEditingDone = ComboBoxDesignFolderEditingDone
     end
@@ -114,7 +104,7 @@ object FormBackground: TFormBackground
       Top = 80
       Width = 328
       ItemHeight = 0
-      TabOrder = 8
+      TabOrder = 7
     end
     object LabelSessionEndCriteria: TLabel
       Left = 1
@@ -132,7 +122,7 @@ object FormBackground: TFormBackground
       Top = 48
       Width = 78
       Caption = 'Testar fluxo'
-      TabOrder = 9
+      TabOrder = 8
       OnClick = ButtonTestConditionClick
     end
     object ButtonOpenSpeechValidation: TButton
@@ -141,7 +131,7 @@ object FormBackground: TFormBackground
       Top = 48
       Width = 75
       Caption = 'Eventos'
-      TabOrder = 10
+      TabOrder = 9
       OnClick = ButtonOpenSpeechValidationClick
     end
     object LabelLastSessionName: TLabel
@@ -174,12 +164,21 @@ object FormBackground: TFormBackground
       Beveled = True
       ResizeAnchor = akBottom
     end
+    object ButtonRunNextSession: TButton
+      Left = 16
+      Height = 26
+      Top = 520
+      Width = 328
+      Caption = 'Iniciar sessão seguinte'
+      TabOrder = 12
+      OnClick = ButtonRunNextSessionClick
+    end
   end
   object OpenDialog1: TOpenDialog
     DefaultExt = '.ini'
     Filter = 'Sessão|*.ini|*.INI'
-    Left = 192
-    Top = 448
+    Left = 104
+    Top = 392
   end
   object IniPropStorage1: TIniPropStorage
     StoredValues = <    

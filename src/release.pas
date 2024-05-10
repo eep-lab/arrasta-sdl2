@@ -27,9 +27,15 @@ var
     'eyelink_core64.dll',
     'libzmq.dll');
 
+  TargetReleaseFolders : array [0..1] of string = (
+    'design',
+    'media'
+  );
+
 procedure CreateReleaseFolder;
 var
   LFile : string;
+  LFolder : string;
   LSource : string;
   LDestin : string;
 begin
@@ -38,6 +44,12 @@ begin
     LSource := ConcatPaths([Root, LFile]);
     LDestin := ConcatPaths([ReleaseFolder, LFile]);
     CopyFile(LSource, LDestin);
+  end;
+
+  for LFolder in TargetReleaseFolders do begin
+    LSource := ConcatPaths([Root, LFolder]);
+    LDestin := ConcatPaths([ReleaseFolder, LFolder]);
+    CopyDirTree(LSource, LDestin, [cffOverwriteFile, cffCreateDestDirectory]);
   end;
 end;
 
