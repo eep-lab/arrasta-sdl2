@@ -70,8 +70,10 @@ begin
     begin
       Reg.OpenKeyReadOnly(LKey);
       if Reg.ValueExists('\Device\VCP0') then
+      //if Reg.ValueExists('\Device\Serial2') then
         begin
           LKey := Reg.ReadString('\Device\VCP0');
+          //LKey := Reg.ReadString('\Device\Serial2');
           Delete(LKey, 1, 3);
           case StrToIntDef(LKey, -1) of
             1..16: Result := StrToInt(LKey);
