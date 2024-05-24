@@ -1,7 +1,7 @@
 from fileutils import as_data, file_exists, data_dir
 from fileutils import cd, list_files, list_data_folders, load_file
 from fileutils import walk_and_execute
-from correlation import plot_correlation
+from correlation import plot_correlation, plot_correlation_2
 from classes import Information
 
 import pandas as pd
@@ -212,10 +212,10 @@ def correlate_latency_levenshtein(do_global_analysis=False):
     if do_global_analysis:
         # filter data by word name
         data = all_data[all_data['Name'].str.match(r'(bena|falo)')]
-        data = data.sort_values(by=['Date', 'Time'])
+        # data = data.sort_values(by=['Date', 'Time'])
         # plot_correlation(data['Levenshtein'], data['Latency'], 'Levenshtein', 'Latency', 'Bena e Falo')
-        plot_correlation(data.index, data['Levenshtein'], 'Trial', 'Levenshtein', 'Bena e Falo')
-        # plot_correlation(data.index, data['Latency'], 'Trial', 'Latency', 'Bena e Falo')
+        # plot_correlation(data.index, data['Levenshtein'], 'Trial', 'Levenshtein', 'Bena e Falo')
+        plot_correlation(data.index, data['Latency'], 'Trial', 'Latency', 'Bena e Falo')
     else:
         for participant in participants:
             # print participant name and message
@@ -228,21 +228,30 @@ def correlate_latency_levenshtein(do_global_analysis=False):
             # data = data.sort_values(by=['Date'])
 
             # 4 per cycle
-            # regular_expression = r'(bena|falo)'
-            # words = 'Bena e Falo'
+            regular_expression1 = r'(bena|falo)'
+            words1 = 'Bena/Falo'
 
             # 4 per cycle
-            regular_expression = r'(nibe|lofi|bofi|nale|leba|nofa|bona|lefi|fabe|nilo|febi|lano)'
-            words = 'Nibe e Lofi (etc)'
+            regular_expression2 = r'(nibe|lofi|bofi|nale|leba|nofa|bona|lefi|fabe|nilo|febi|lano)'
+            words2 = 'Nibe/Lofi (etc)'
 
             data = data[data['Condition'] == 5]
-            data = data[data['Name'].str.match(regular_expression)]
-            # filter by word
-            # plot_correlation(data['Levenshtein'], data['Latency'], 'Levenshtein index', 'Latency', name+'- Bena e Falo')
-            data.reset_index(inplace=True)
-            data.index = data.index + 1
+            data['Latency'] = data['Latency'].map(lambda x: x.replace(',', '.'))
+            data['Latency'] = data['Latency'].astype(float)
+
+            data1 = data[data['Name'].str.match(regular_expression1)]
+            data1.reset_index(inplace=True)
+            data1.index = data1.index + 1
+
+            data2 = data[data['Name'].str.match(regular_expression2)]
+            data2.reset_index(inplace=True)
+            data2.index = data2.index + 1
+            # print(data['Latency'])
             # plot_correlation(data.index, data['Levenshtein'], 'Trials', 'Levenshtein index', name+'- Bena e Falo')
-            plot_correlation(data.index, data['Latency'], 'Trials', 'Latency', name+' - '+ words, save=True)
+            # plot_correlation(data.index, data['Latency'], 'Trials', 'Latency', name+' - '+ words, save=True)
+            plot_correlation_2(data1.index, data1['Latency'], data2.index, data2['Latency'],
+                               'Trials', 'Latency',
+                               name=name, title1=words1, title2=words2, save=True)
 
 def override_CD_probes_in_data_file(must_not_override=True):
     cd('output')
