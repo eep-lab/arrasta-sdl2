@@ -153,6 +153,8 @@ begin
 
     if LNewParticipant.IsEmpty or (Length(LNewParticipant) < 3) then Exit;
     Items.Append(LNewParticipant);
+    ItemIndex := Items.Count-1;
+    MenuItemCopyPNGFilesClick(ButtonNewParticipant);
   end;
 end;
 
@@ -235,12 +237,15 @@ end;
 
 procedure TFormBackground.ComboBoxDesignFolderEditingDone(Sender: TObject);
 begin
-  if ComboBoxDesignFolder.Items.Count > 0 then begin
-    with Pool, ComboBoxDesignFolder do begin
-      DesignBasePath := Items[ItemIndex];
+  with ComboBoxDesignFolder do begin
+    if ItemIndex > 0 then begin
+      if ComboBoxDesignFolder.Items.Count > 0 then begin
+        ListBoxCondition.Clear;
+        Pool.DesignBasePath := Items[ItemIndex];
+        SaveProtocolIndex(ParticipantFolderName, ItemIndex);
+        GetDesignFilesFor(ListBoxCondition.Items);
+      end;
     end;
-    ListBoxCondition.Clear;
-    GetDesignFilesFor(ListBoxCondition.Items);
   end;
 end;
 
@@ -248,21 +253,21 @@ procedure TFormBackground.ComboBoxParticipantEditingDone(Sender: TObject);
 var
   LInformation : TInformation;
   LCondition : integer;
-  LConfiguration : string;
 begin
   if ComboBoxParticipant.Items.Count > 0 then begin
     SetupFolders;
-    //IniPropStorage1.Save;
-    //FormMisc.IniPropStorage1.Save;
-    //
+    ComboBoxDesignFolder.ItemIndex := LoadProtocolIndex(ParticipantFolderName);
+    ComboBoxDesignFolderEditingDone(ComboBoxParticipant);
+    //IniPropStorageProtocol.Save;
     //LConfiguration := ConcatPaths([
     //  Pool.ConfigurationsRootBasePath,
-    //  ParticipantFolderName, 'configurations.ini']);
-    //IniPropStorage1.IniFileName := LConfiguration;
+    //  ParticipantFolderName, 'protocol.ini']);
+    //IniPropStorageProtocol.IniFileName := LConfiguration;
     //if FileExists(LConfiguration) then begin
-    //  IniPropStorage1.Restore;
+    //  IniPropStorageProtocol.Restore;
     //end;
-    //
+
+    //FormMisc.IniPropStorage1.Save;
     //LConfiguration := ConcatPaths([
     //  Pool.ConfigurationsRootBasePath,
     //  ParticipantFolderName, 'configurations_global.ini']);
@@ -346,6 +351,7 @@ end;
 procedure TFormBackground.IniPropStorage1StoredValues0Save(
   Sender: TStoredValue; var Value: TStoredType);
 begin
+  SaveProtocolIndex(ParticipantFolderName, ComboBoxDesignFolder.ItemIndex);
   Value := ComboBoxDesignFolder.ItemIndex.ToString;
 end;
 

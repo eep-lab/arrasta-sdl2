@@ -8,7 +8,7 @@ object FormBackground: TFormBackground
   ClientWidth = 385
   DefaultMonitor = dmPrimary
   PopupMenu = PopupMenuMisc
-  SessionProperties = 'ComboBoxCondition.ItemIndex;ComboBoxDesignFolder.ItemIndex;ComboBoxParticipant.ItemIndex;ComboBoxParticipant.Items;ComboBoxParticipant.Text;Height;LabelLastSessionName.Caption;LabelLastSessionName.Color;LabelSessionEndCriteria.Caption;LabelSessionEndCriteria.Color;Left;OpenDialog1.InitialDir;Top;Width;IniPropStorage1.IniFileName'
+  SessionProperties = 'ComboBoxCondition.ItemIndex;ComboBoxParticipant.ItemIndex;ComboBoxParticipant.Items;ComboBoxParticipant.Text;Height;IniPropStorage1.IniFileName;IniPropStorageProtocol.IniFileName;LabelLastSessionName.Caption;LabelLastSessionName.Color;LabelSessionEndCriteria.Caption;LabelSessionEndCriteria.Color;Left;OpenDialog1.InitialDir;Top;Width;ComboBoxDesignFolder.ItemIndex'
   LCLVersion = '3.99.0.0'
   OnCreate = FormCreate
   object Panel1: TPanel
@@ -33,7 +33,7 @@ object FormBackground: TFormBackground
       Width = 152
       ItemHeight = 15
       ReadOnly = True
-      TabOrder = 0
+      TabOrder = 1
       Text = 'Participante'
       OnEditingDone = ComboBoxParticipantEditingDone
     end
@@ -44,7 +44,7 @@ object FormBackground: TFormBackground
       Top = 456
       Width = 328
       Caption = 'Reiniciar sessão interrompida'
-      TabOrder = 1
+      TabOrder = 2
       OnClick = ButtonRunInterruptedSessionClick
     end
     object ButtonRunNewSession: TButton
@@ -54,7 +54,7 @@ object FormBackground: TFormBackground
       Top = 488
       Width = 328
       Caption = 'Iniciar nova sessão'
-      TabOrder = 2
+      TabOrder = 3
       OnClick = ButtonRunNewSessionClick
     end
     object ButtonNewParticipant: TButton
@@ -65,7 +65,7 @@ object FormBackground: TFormBackground
       Width = 158
       Caption = 'Criar novo participante'
       PopupMenu = PopupMenuParticipants
-      TabOrder = 3
+      TabOrder = 4
       OnClick = ButtonNewParticipantClick
     end
     object ButtonMisc: TButton
@@ -75,7 +75,7 @@ object FormBackground: TFormBackground
       Top = 424
       Width = 328
       Caption = 'Configurações da sessão'
-      TabOrder = 4
+      TabOrder = 5
       OnClick = ButtonMiscClick
     end
     object ProgressBar: TProgressBar
@@ -84,7 +84,7 @@ object FormBackground: TFormBackground
       Top = 568
       Width = 328
       Step = 1
-      TabOrder = 5
+      TabOrder = 6
       Visible = False
     end
     object ComboBoxDesignFolder: TComboBox
@@ -94,7 +94,7 @@ object FormBackground: TFormBackground
       Width = 152
       ItemHeight = 15
       ReadOnly = True
-      TabOrder = 6
+      TabOrder = 7
       Text = 'Nome da Pasta'
       OnEditingDone = ComboBoxDesignFolderEditingDone
     end
@@ -104,7 +104,7 @@ object FormBackground: TFormBackground
       Top = 80
       Width = 328
       ItemHeight = 0
-      TabOrder = 7
+      TabOrder = 8
     end
     object LabelSessionEndCriteria: TLabel
       Left = 1
@@ -122,7 +122,7 @@ object FormBackground: TFormBackground
       Top = 48
       Width = 78
       Caption = 'Testar fluxo'
-      TabOrder = 8
+      TabOrder = 9
       OnClick = ButtonTestConditionClick
     end
     object ButtonOpenSpeechValidation: TButton
@@ -131,7 +131,7 @@ object FormBackground: TFormBackground
       Top = 48
       Width = 75
       Caption = 'Eventos'
-      TabOrder = 9
+      TabOrder = 10
       OnClick = ButtonOpenSpeechValidationClick
     end
     object LabelLastSessionName: TLabel
@@ -170,7 +170,7 @@ object FormBackground: TFormBackground
       Top = 520
       Width = 328
       Caption = 'Iniciar sessão seguinte'
-      TabOrder = 12
+      TabOrder = 0
       OnClick = ButtonRunNextSessionClick
     end
   end
