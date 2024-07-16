@@ -58,7 +58,7 @@ def create_html_tables():
         # find unique date/time
         dates = df_participant['Date'].unique()
         # get bena and falo data
-        bena_falo_tbody = get_bena_falo_tbody(participant, condition5, dates)
+        bena_falo_tbody, cycle_per_date5 = get_bena_falo_tbody(participant, condition5, dates)
         # create a dictionary to store Cycle.ID of each Date
         if '12-MED' in participant:
             df_participant['Cycle.ID'] = df_participant['Cycle.ID'].replace(0, 6)
@@ -96,10 +96,10 @@ def create_html_tables():
         df_participant = pd.concat(container.values(), axis=1)
 
         # Store the DataFrame in the dictionary
-        dfs[participant] = (df_participant, cycle_per_date, bena_falo_tbody)
+        dfs[participant] = (df_participant, cycle_per_date, bena_falo_tbody, cycle_per_date5)
 
     # Convert DataFrames to an HTML table using tabulate and save it to a file
-    for participant, (df_participant, cycle_per_date, body) in dfs.items():
+    for participant, (df_participant, cycle_per_date, body, cycle_per_date5) in dfs.items():
         # # Add the new column
         # df_participant.insert(0, 'Category', ['Teaching']*12 + ['Assessment']*4 + ['Assessment2']*4)
 
@@ -296,11 +296,15 @@ def create_html_tables():
         for cell in cells:
             cell.string = 'All'
 
-        # replace the last header cell contaning "Cycle 6" with "Final"
         cells = html_table.select('th:-soup-contains("Cycle 6")')
         if len(cells) > 1:
             if cells[-1].string == "Cycle 6":
                 cells[-1].string = 'Final'
+
+        # cells = html_table.select('th:-soup-contains("Cycle 1")')
+        # if len(cells) > 0:
+        #     if cells[0].string == "Cycle 1":
+        #         cells[0].string = 'Pre-test'
 
         # add a second empty thead after the first one
         first_thead = html_table.select('thead')[0]
@@ -365,6 +369,11 @@ def create_html_tables():
 def get_bena_falo_tbody(participant, df_participant, condition7_dates):
     # find unique dates in condition 5
     dates5 = df_participant['Date'].unique()
+
+    cycle_per_date = {}
+    for date in dates5:
+        cycle_per_date[date] = df_participant[df_participant['Date'] == date]['Cycle.ID'].values[0]
+
     # create a new dataframe with only bena and falo
     pattern = r'(bena|falo)'
     df_constant = df_participant[df_participant['Name'].str.match(pattern)].copy()
@@ -410,12 +419,23 @@ def get_bena_falo_tbody(participant, df_participant, condition7_dates):
 
     # concatenate all dataframes
     df_participant = pd.concat(container.values(), axis=1)
-
     # Convert the DataFrame to HTML
     html = df_participant.to_html(escape=False, index=False)
-    soup = BeautifulSoup(html, 'html.parser')
+    html_table = BeautifulSoup(html, 'html.parser')
+    # use soup to duplicate the first row
+    first_row = html_table.select('tr:first-child')[0]
+    # insert three rows after the first row
+    first_row.insert_after(copy.deepcopy(first_row))
+    # iterate over the cells of the second row
+    for cell in html_table.select('tr:nth-child(2) th'):
+        # use cycle_per_date to get the cycle of each date
+        if cell.string in cycle_per_date:
+            cycle = cycle_per_date[cell.string]
+            # insert the cycle number in the cell
+            cell.string = f'Cycle {cycle}'
+
     # get table tbody
-    return soup.find('tbody')
+    return html_table.find('tbody'), cycle_per_date
 
 def compile_sass():
     # compile sass to css

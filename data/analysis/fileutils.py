@@ -5,6 +5,8 @@ import shutil
 
 import pandas as pd
 
+from anonimizator import anonimize
+
 def file_exists(entry):
     return os.path.exists(entry)
 
@@ -60,6 +62,15 @@ def list_data_folders(include_list=[], exclude_list=[]):
                 if os.path.isdir(entry) \
                 and entry in include_list]
 
+def get_data_folders(anonimized=False):
+    def folder_sorter(x):
+        return int(x.split('-')[0])
+    data_dir()
+    participant_folders = list_data_folders()
+    if anonimized:
+        participant_folders = [anonimize(folder) for folder in participant_folders]
+    participant_folders.sort(key=folder_sorter)
+    return participant_folders
 
 def list_files(extension=''):
     # Get all entries in the current directory except 'ID' and 'LastValidBaseFilename' files

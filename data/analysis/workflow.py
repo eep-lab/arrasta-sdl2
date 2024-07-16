@@ -2,7 +2,7 @@ from safety_copy import make_safety_copy
 from convertions import convert_all
 from speech import save_probes_by_participant, concatenate_probes
 from speech import calculate_similarity, override_CD_probes_in_data_file
-from main import create_metadata, fix_cycles
+from metadata_calculator import create_metadata, fix_cycles
 from anonimizator import deanonimize
 
 def prepare_for_transcription():
@@ -59,4 +59,4 @@ if __name__ == "__main__":
     # concatenate_probes()
     # calculate_similarity()
     # override_CD_probes_in_data_file(False)
-    create_metadata()
+    # create_metadata()

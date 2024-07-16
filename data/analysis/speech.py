@@ -1,6 +1,6 @@
-from fileutils import as_data, file_exists, data_dir
+from fileutils import as_data, file_exists
 from fileutils import cd, list_files, list_data_folders, load_file
-from fileutils import walk_and_execute
+from fileutils import walk_and_execute, get_data_folders
 from correlation import plot_correlation, plot_correlation_2
 from classes import Information
 
@@ -73,16 +73,6 @@ def load_probes_file(filename):
 
 def save_probes_file(filename, data):
     data.to_csv(filename, sep='\t', index=False)
-
-def get_data_folders(anonimized=False):
-    def folder_sorter(x):
-        return int(x.split('-')[0])
-    data_dir()
-    participant_folders = list_data_folders()
-    if anonimized:
-        participant_folders = [anonimize(folder) for folder in participant_folders]
-    participant_folders.sort(key=folder_sorter)
-    return participant_folders
 
 def get_probes():
     participant_folders = get_data_folders()
@@ -197,7 +187,7 @@ def calculate_similarity():
     data['Latency'] = data.apply(lambda row: row['Latency'].replace(',', '.'), axis=1)
     data['Participant'] = data.apply(lambda row: row['Participant'].replace('\\', ''), axis=1)
     data.to_csv('probes_CD.data.processed', sep='\t' , index=False)
-    # print a message indicating that the process has finished
+    # print a message indicating that the process has finnished
     print('Levenshtein similarity calculated.')
 
 def correlate_latency_levenshtein(do_global_analysis=False):

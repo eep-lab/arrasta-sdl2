@@ -8,6 +8,8 @@ from barplots import bar_plot, bar_subplots, box_plot, dispersion_plot_per_cycle
 from barplots import barplot_per_participant
 from lineplots import line_plot_per_cycle
 from anonimizator import anonimize, deanonimize
+from constants import participants_natural
+from constants import participants_social
 
 import pandas as pd
 
@@ -448,7 +450,10 @@ def create_metadata():
         cd('..')
         cd('..')
 
-def collect_metadata(container, plot_individual_days=False, use_levenstein=False):
+def collect_metadata(container,
+                     plot_individual_days=False,
+                     use_levenstein=False,
+                     separate_denominators=False):
     data = Metadata().items
     try:
         participant = data['participant']
@@ -466,7 +471,10 @@ def collect_metadata(container, plot_individual_days=False, use_levenstein=False
         if use_levenstein:
             cd_probes_1_hit_rate = float(data['mean_CD_w1_leveshtein'])
         else:
-            cd_probes_1_hit_rate = int(data['total_CD_w1_probe_hits_in_day']) / int(data['total_CD_w1_probe_trials_in_day'])
+            if separate_denominators:
+                cd_probes_1_hit_rate = (int(data['total_CD_w1_probe_hits_in_day']), int(data['total_CD_w1_probe_trials_in_day']))
+            else:
+                cd_probes_1_hit_rate = int(data['total_CD_w1_probe_hits_in_day']) / int(data['total_CD_w1_probe_trials_in_day'])
     except (ZeroDivisionError, ValueError) as e:
         cd_probes_1_hit_rate = None
         print(f"Caught an error: {e}")
@@ -475,7 +483,10 @@ def collect_metadata(container, plot_individual_days=False, use_levenstein=False
         if use_levenstein:
             cd_probes_2_hit_rate = float(data['mean_CD_w2_leveshtein'])
         else:
-            cd_probes_2_hit_rate = int(data['total_CD_w2_probe_hits_in_day']) / int(data['total_CD_w2_probe_trials_in_day'])
+            if separate_denominators:
+                cd_probes_2_hit_rate = (int(data['total_CD_w2_probe_hits_in_day']), int(data['total_CD_w2_probe_trials_in_day']))
+            else:
+                cd_probes_2_hit_rate = int(data['total_CD_w2_probe_hits_in_day']) / int(data['total_CD_w2_probe_trials_in_day'])
     except ZeroDivisionError:
         cd_probes_2_hit_rate = None
 
@@ -483,48 +494,75 @@ def collect_metadata(container, plot_individual_days=False, use_levenstein=False
         if use_levenstein:
             cd_probes_3_hit_rate = float(data['mean_CD_w3_leveshtein'])
         else:
-            cd_probes_3_hit_rate = int(data['total_CD_w3_probe_hits_in_day']) / int(data['total_CD_w3_probe_trials_in_day'])
+            if separate_denominators:
+                cd_probes_3_hit_rate = (int(data['total_CD_w3_probe_hits_in_day']), int(data['total_CD_w3_probe_trials_in_day']))
+            else:
+                cd_probes_3_hit_rate = int(data['total_CD_w3_probe_hits_in_day']) / int(data['total_CD_w3_probe_trials_in_day'])
     except (ZeroDivisionError, ValueError) as e:
         cd_probes_3_hit_rate = None
         print(f"Caught an error: {e}")
 
     try:
-        bc_probes_1_hit_rate = int(data['total_BC_w1_probe_hits_in_day']) / int(data['total_BC_w1_probe_trials_in_day'])
+        if separate_denominators:
+            bc_probes_1_hit_rate = (int(data['total_BC_w1_probe_hits_in_day']), int(data['total_BC_w1_probe_trials_in_day']))
+        else:
+            bc_probes_1_hit_rate = int(data['total_BC_w1_probe_hits_in_day']) / int(data['total_BC_w1_probe_trials_in_day'])
     except ZeroDivisionError:
         bc_probes_1_hit_rate = None
 
     try:
-        cb_probes_1_hit_rate = int(data['total_CB_w1_probe_hits_in_day']) / int(data['total_CB_w1_probe_trials_in_day'])
+        if separate_denominators:
+            cb_probes_1_hit_rate = (int(data['total_CB_w1_probe_hits_in_day']), int(data['total_CB_w1_probe_trials_in_day']))
+        else:
+            cb_probes_1_hit_rate = int(data['total_CB_w1_probe_hits_in_day']) / int(data['total_CB_w1_probe_trials_in_day'])
     except ZeroDivisionError:
         cb_probes_1_hit_rate = None
 
     try:
-        bc_probes_2_hit_rate = int(data['total_BC_w2_probe_hits_in_day']) / int(data['total_BC_w2_probe_trials_in_day'])
+        if separate_denominators:
+            bc_probes_2_hit_rate = (int(data['total_BC_w2_probe_hits_in_day']), int(data['total_BC_w2_probe_trials_in_day']))
+        else:
+            bc_probes_2_hit_rate = int(data['total_BC_w2_probe_hits_in_day']) / int(data['total_BC_w2_probe_trials_in_day'])
     except ZeroDivisionError:
         bc_probes_2_hit_rate = None
 
     try:
-        cb_probes_2_hit_rate = int(data['total_CB_w2_probe_hits_in_day']) / int(data['total_CB_w2_probe_trials_in_day'])
+        if separate_denominators:
+            cb_probes_2_hit_rate = (int(data['total_CB_w2_probe_hits_in_day']), int(data['total_CB_w2_probe_trials_in_day']))
+        else:
+            cb_probes_2_hit_rate = int(data['total_CB_w2_probe_hits_in_day']) / int(data['total_CB_w2_probe_trials_in_day'])
     except ZeroDivisionError:
         cb_probes_2_hit_rate = None
 
     try:
-        ac_probes_hit_rate = int(data['total_AC_probe_hits_in_day']) / int(data['total_AC_probe_trials_in_day'])
+        if separate_denominators:
+            ac_probes_hit_rate = (int(data['total_AC_probe_hits_in_day']), int(data['total_AC_probe_trials_in_day']))
+        else:
+            ac_probes_hit_rate = int(data['total_AC_probe_hits_in_day']) / int(data['total_AC_probe_trials_in_day'])
     except ZeroDivisionError:
         ac_probes_hit_rate = None
 
     try:
-        ab_training_hit_rate = int(data['total_AB_training_hits_in_day']) / int(data['total_AB_training_trials_in_day'])
+        if separate_denominators:
+            ab_training_hit_rate = (int(data['total_AB_training_hits_in_day']), int(data['total_AB_training_trials_in_day']))
+        else:
+            ab_training_hit_rate = int(data['total_AB_training_hits_in_day']) / int(data['total_AB_training_trials_in_day'])
     except ZeroDivisionError:
         ab_training_hit_rate = None
 
     try:
-        ac_training_hit_rate = int(data['total_AC_training_hits_in_day']) / int(data['total_AC_training_trials_in_day'])
+        if separate_denominators:
+            ac_training_hit_rate = (int(data['total_AC_training_hits_in_day']), int(data['total_AC_training_trials_in_day']))
+        else:
+            ac_training_hit_rate = int(data['total_AC_training_hits_in_day']) / int(data['total_AC_training_trials_in_day'])
     except ZeroDivisionError:
         ac_training_hit_rate = None
 
     try:
-        cd_training_hit_rate = int(data['total_CD_training_hits_in_day']) / int(data['total_CD_training_trials_in_day'])
+        if separate_denominators:
+            cd_training_hit_rate = (int(data['total_CD_training_hits_in_day']), int(data['total_CD_training_trials_in_day']))
+        else:
+            cd_training_hit_rate = int(data['total_CD_training_hits_in_day']) / int(data['total_CD_training_trials_in_day'])
     except ZeroDivisionError:
         cd_training_hit_rate = None
 
@@ -555,6 +593,7 @@ def collect_metadata(container, plot_individual_days=False, use_levenstein=False
 
     container.append({'categories':categories, 'identification':identification})
 
+
 def single_participant_plots():
     names = ['AB Training', 'AC Training', 'CD Training']
     names = names + ['BC Probes 1', 'CB Probes 1', 'BC Probes 2', 'CB Probes 2']
@@ -578,7 +617,7 @@ def single_participant_plots():
         # barplot_per_cycle(container=container, save=True, include_names=names, append_to_filename='_'+codes+'_'+participant+'_barplot')
         # dispersion_plot_per_cycle(container, True, style='scatter', include_names=names, append_to_filename='_'+codes+'_'+participant)
 
-def group_plot(include_list=[], append_to_filename=''):
+def plot(include_list=[], append_to_filename='', group=False):
     # you asked for ...
     print("You asked a group analysis for participants:", include_list)
 
@@ -587,17 +626,23 @@ def group_plot(include_list=[], append_to_filename=''):
     participant_folders = list_data_folders(include_list=include_list)
     for folder in participant_folders:
         walk_and_execute(folder, collect_metadata, container, False, False)
-
     # i delivered ... collect all participants included in the container
     participants = list(set([data['identification'][0][1] for data in container]))
     print("Doing for participants:", participants)
+
+    cd('analysis')
+    cd('output')
 
     # names = ['BC Probes 1', 'CB Probes 1', 'BC Probes 2', 'CB Probes 2']
     # box_plot(container, True, include_names=names)
     # dispersion_plot_per_cycle(container, False, include_names=names)
 
     names = ['BC Probes 2', 'CB Probes 2', 'AC Probes', 'CD Probes 2']
-    line_plot_per_cycle(container, True, include_names=names, append_to_filename='_hit_rate'+append_to_filename)
+    line_plot_per_cycle(container, True,
+                        include_names=names,
+                        append_to_filename='_hit_rate'+append_to_filename,
+                        group=group)
+    cd('..')
 
 def group_barplot(include_list=[]):
     # you asked for ...
@@ -659,6 +704,7 @@ if __name__ == "__main__":
     # fix_cycles()
     # single_participant_plots()
 
+    from constants import participants_natural, participants_social
     # pilot study
     # participants_none = [
     # deanonimize('1-SAR'),
@@ -669,51 +715,14 @@ if __name__ == "__main__":
     # '9-CES',
     # ]
 
-    participants_natural = [
-        '12-MED', # Engenharia Mecatrônica
-        # '13-AND', # Química
-        # '18-FEL', # Física
-        '24-ADO', # Física
-        '34-GST', # Física
-        # '47-JMP', # Física
-        '14-MSC', # Ciências da computação/Sistemas da informação
-        # '19-SAN', # Ciências da computação/Sistemas da informação
-        '20-CAM', # Ciências da computação/Sistemas da informação
-        # '21-GIO', # Ciências da computação/Sistemas da informação
-        '23-KTL', # Ciências da computação/Sistemas da informação
-        '36-JLA', # Ciências da computação/Sistemas da informação
-        # '37-LRS', # Ciências da computação/Sistemas da informação
-        '40-ACM', # Ciências da computação/Sistemas da informação
-        # '44-LUC', # Ciências da computação/Sistemas da informação
-        '15-VER', # Matemática/Estatística
-        # '27-DAL', # Matemática/Estatística
-        '28-TIG', # Matemática/Estatística
-        # '32-KIK', # Matemática/Estatística
-        '38-ORT', # Matemática/Estatística
-        '43-ARJ', # Matemática/Estatística
-        # '46-CMR', # Matemática/Estatística
-    ]
+    plot(participants_natural, append_to_filename='_natural', group=True)
+    plot(participants_social, append_to_filename='_social', group=True)
+    plot(participants_natural + participants_social, append_to_filename='_all', group=True)
 
-    participants_social = [
-        '29-SIN', # Administração pública
-        '39-LPI', # Letras/Linguística
-        '49-JGA', # Letras/Linguística
-        '54-LNO', # Psicologia
-        '50-EDU', # Arquitetura/Urbanismo
-        '51-TLT', # Arquitetura/Urbanismo
-        '52-LZO', # Arquitetura/Urbanismo
-        '53-WEN', # Arquitetura/Urbanismo
-        '55-JFF', # Arquitetura/Urbanismo
-        '56-VIT', # Arquitetura/Urbanismo
-        '57-REN', # Arquitetura/Urbanismo
-        '58-AIS'  # Arquitetura/Urbanismo
-    ]
-    # group_plot(participants_natural, append_to_filename='_natural')
-    # group_plot(participants_social, append_to_filename='_social')
-    group_plot(participants_natural + participants_social, append_to_filename='_all_half')
+    participants = participants_natural
+    for participant in participants:
+        plot(participant, append_to_filename='_natural_' + participant.replace('-', '_'))
 
-    # participants = participants_natural + participants_social
-    # for participant in participants:
-    #     group_plot(participant, append_to_filename='_' + participant.replace('-', '_'))
-
-    # group_barplot(participants_list)
+    participants = participants_social
+    for participant in participants:
+        plot(participant, append_to_filename='_social_' + participant.replace('-', '_'))
