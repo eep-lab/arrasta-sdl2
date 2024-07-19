@@ -34,8 +34,8 @@ begin
 
   LExperimentWriter :=
     TBaseExperimentWriter.Create(ConfigurationFile, AFilename);
-  if Assigned(FormBackground) then begin
-    LExperimentWriter.ProgressBar := FormBackground.ProgressBar;
+  if Assigned(FormMain) then begin
+    LExperimentWriter.ProgressBar := FormMain.ProgressBar;
   end;
   try
     LExperimentWriter.Write;

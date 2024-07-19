@@ -109,8 +109,8 @@ begin
       LKeyboardState := SDL_GetKeyboardState(nil);
       if GetKeyState(SDL_SCANCODE_LCTRL, LKeyboardState) then begin
         if EyeTracker <> nil then begin
-          EyeTracker.SetOnCalibrationFailed(@CalibrationStopped);
-          EyeTracker.SetOnCalibrationSuccessful(@CalibrationStopped);
+          //EyeTracker.SetOnCalibrationFailed(@CalibrationStopped);
+          //EyeTracker.SetOnCalibrationSuccessful(@CalibrationStopped);
           EyeTracker.StartCalibration;
           Timestamp(EyeTracker.TrackerClassName+'.StartCalibration');
         end;

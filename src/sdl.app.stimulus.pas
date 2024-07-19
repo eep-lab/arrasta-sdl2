@@ -83,6 +83,7 @@ type
       procedure DoResponse(AHuman : Boolean); virtual;
       procedure Start; virtual; abstract;
       procedure Stop; virtual; abstract;
+      procedure Hide; virtual;
       property OnNoResponse : TNotifyEvent read FOnNoResponse write SetOnNoResponse;
       property OnMouseMove: TOnMouseEvent read FOnMouseMove write SetOnMouseMove;
       property OnMouseDown: TOnMouseEvent read FOnMouseDown write SetOnMouseDown;
@@ -226,6 +227,11 @@ begin
 
   if Assigned(OnResponse) then
     OnResponse(Self);
+end;
+
+procedure TStimulus.Hide;
+begin
+
 end;
 
 end.

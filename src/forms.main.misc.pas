@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, StdCtrls,
-  IniPropStorage, Spin, ComCtrls, ExtCtrls;
+  IniPropStorage, Spin, ComCtrls, ExtCtrls, Dialogs;
 
 type
 
@@ -17,10 +17,14 @@ type
     ButtonRestoreConfigurationsBackup: TButton;
     ButtonDoConfigurationsBackup: TButton;
     ButtonTestDispenser: TButton;
+    CheckBoxUseRemoteServer: TCheckBox;
+    CheckBoxUseGazeAsInput: TCheckBox;
     CheckBoxHideMouse: TCheckBox;
     CheckBoxShowMarkers: TCheckBox;
     CheckBoxShowModalFormForSpeechResponses: TCheckBox;
+    CheckBoxSimultaneousMTS: TCheckBox;
     CheckBoxTestMode: TCheckBox;
+    ColorDialog: TColorDialog;
     ComboBoxAudioFolder: TComboBox;
     ComboBoxAudioPromptForText: TComboBox;
     ComboBoxController: TComboBox;
@@ -33,6 +37,9 @@ type
     FloatSpinEditCellsSize: TFloatSpinEdit;
     IniPropStorage1: TIniPropStorage;
     Label1: TLabel;
+    LabelUseRemoteServer: TLabel;
+    LabelUseGazeAsInput: TLabel;
+    LabelFontColor: TLabel;
     LabelScreenWidth: TLabel;
     LabelAudioFolder: TLabel;
     LabelAudioLoopInterval: TLabel;
@@ -49,12 +56,14 @@ type
     LabelShoudRestartAtBlockStart: TLabel;
     LabelMonitor: TLabel;
     LabelShowModal: TLabel;
+    LabelSimultaneousMTS: TLabel;
     LabelTestMode: TLabel;
     LabelEyeTracker: TLabel;
     LabelInterTrialInterval: TLabel;
     LabelLimitedHold: TLabel;
     LabelTimeOut: TLabel;
     PageControl: TPageControl;
+    PanelFontColor: TPanel;
     RadioGroupDispenser: TRadioGroup;
     SpinEditAprilTagsSize: TSpinEdit;
     SpinEditAudioLoopInterval: TSpinEdit;
@@ -73,7 +82,10 @@ type
     procedure ButtonDoConfigurationsBackupClick(Sender: TObject);
     procedure ButtonRestoreConfigurationsBackupClick(Sender: TObject);
     procedure ButtonTestDispenserClick(Sender: TObject);
+    procedure CheckBoxSimultaneousMTSChange(Sender: TObject);
+    procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure FormCreate(Sender: TObject);
+    procedure PanelFontColorClick(Sender: TObject);
   private
 
   public
@@ -120,6 +132,23 @@ begin
   end;
 end;
 
+procedure TFormMisc.PanelFontColorClick(Sender: TObject);
+begin
+  ColorDialog.Title := 'Escolha a cor do fundo';
+  if ColorDialog.Execute then begin
+    with PanelFontColor do begin
+      Color := ColorDialog.Color;
+    end;
+  end;
+
+  ColorDialog.Title := 'Escolha a cor da fonte';
+  if ColorDialog.Execute then begin
+    with PanelFontColor do begin
+      Font.Color := ColorDialog.Color;
+    end;
+  end;
+end;
+
 procedure TFormMisc.Initialize;
 begin
   case RadioGroupDispenser.ItemIndex of
@@ -158,6 +187,22 @@ begin
     4 : RS232.Dispenser(disp4);
   end;
   RS232.Free;
+end;
+
+procedure TFormMisc.CheckBoxSimultaneousMTSChange(Sender: TObject);
+begin
+  with CheckBoxSimultaneousMTS do begin
+    if Checked then begin
+      Caption := 'Simultâneo';
+    end else begin
+      Caption := 'Com atraso 0';
+    end;
+  end;
+end;
+
+procedure TFormMisc.FormClose(Sender: TObject; var CloseAction: TCloseAction);
+begin
+  IniPropStorage1.Save;
 end;
 
 procedure TFormMisc.ButtonDoConfigurationsBackupClick(Sender: TObject);

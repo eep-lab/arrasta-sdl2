@@ -15,13 +15,14 @@
       <UseXPManifest Value="True"/>
       <XPManifest>
         <DpiAware Value="True"/>
+        <AnsiUTF8 Value="True"/>
       </XPManifest>
     </General>
     <VersionInfo>
       <UseVersionInfo Value="True"/>
       <AutoIncrementBuild Value="True"/>
       <MajorVersionNr Value="1"/>
-      <BuildNr Value="52"/>
+      <BuildNr Value="57"/>
       <Language Value="0416"/>
       <Attributes pvaPrivateBuild="True"/>
       <StringTable Comments="Uma máquina de ensinar para experimentos comportamentais livres" InternalName="Stimulus Control" LegalCopyright="Carlos Rafael Fernandes Picanço" ProductName="Stimulus Control"/>
@@ -1014,16 +1015,6 @@
         <IsPartOfProject Value="True"/>
       </Unit>
       <Unit>
-        <Filename Value="dependencies\pupil-fpc\pupil.types.pas"/>
-        <IsPartOfProject Value="True"/>
-        <UnitName Value="Pupil.Types"/>
-      </Unit>
-      <Unit>
-        <Filename Value="dependencies\pupil-fpc\pupil.queue.pas"/>
-        <IsPartOfProject Value="True"/>
-        <UnitName Value="Pupil.Queue"/>
-      </Unit>
-      <Unit>
         <Filename Value="src\picanco.experiments.output.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit>
@@ -1122,6 +1113,10 @@
       </Unit>
       <Unit>
         <Filename Value="src\eye.tracker.gazepoint.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="src\eye.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit>
     </Units>

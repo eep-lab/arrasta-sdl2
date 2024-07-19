@@ -1,11 +1,11 @@
-object FormBackground: TFormBackground
-  Left = 955
-  Height = 716
-  Top = 14
-  Width = 385
+object FormMain: TFormMain
+  Left = 768
+  Height = 697
+  Top = 33
+  Width = 377
   Caption = 'Stimulus Control'
-  ClientHeight = 716
-  ClientWidth = 385
+  ClientHeight = 697
+  ClientWidth = 377
   DefaultMonitor = dmPrimary
   PopupMenu = PopupMenuMisc
   SessionProperties = 'ComboBoxCondition.ItemIndex;ComboBoxParticipant.ItemIndex;ComboBoxParticipant.Items;ComboBoxParticipant.Text;Height;IniPropStorage1.IniFileName;IniPropStorageProtocol.IniFileName;LabelLastSessionName.Caption;LabelLastSessionName.Color;LabelSessionEndCriteria.Caption;LabelSessionEndCriteria.Color;Left;OpenDialog1.InitialDir;Top;Width;ComboBoxDesignFolder.ItemIndex'
@@ -16,9 +16,9 @@ object FormBackground: TFormBackground
     AnchorSideLeft.Side = asrCenter
     AnchorSideTop.Control = Owner
     AnchorSideTop.Side = asrCenter
-    Left = 11
+    Left = 7
     Height = 675
-    Top = 21
+    Top = 11
     Width = 363
     ClientHeight = 675
     ClientWidth = 363

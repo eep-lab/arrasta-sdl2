@@ -17,7 +17,7 @@ uses SDL2, Math;
 
 type
 
-  TEyeTrackerCode = (etNone, etEyeLink, etPupilLabs);
+  TEyeTrackerCode = (etNone, etGazepoint, etEyeLink, etPupilLabs);
 
   TNormalizedGaze = record
     X : Float;
@@ -38,7 +38,8 @@ implementation
 function NormToScreen(AGaze: TNormalizedGaze; AScreen: TSDL_Rect): TSDL_Point;
 begin
   Result.X := Round(AGaze.X * AScreen.w);
-  Result.Y := Round((1.0 - AGaze.Y) * AScreen.h);
+  Result.Y := Round(AGaze.Y * AScreen.h);
+  //Result.Y := Round((1.0 - AGaze.Y) * AScreen.h); For Pupil Labs
 end;
 
 

@@ -47,7 +47,7 @@ uses
   sdl2_image
   , LazFileUtils
   , sdl.app.video.methods
-  , sdl.app.output
+  //, sdl.app.output
   ;
 
 { TChoiceablePicture }

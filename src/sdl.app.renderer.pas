@@ -59,7 +59,7 @@ begin
     GPaintingInvalidated := False;
 
     SDL_SetRenderDrawColor(PSDLRenderer,
-      clBackgroud.r, clBackgroud.g, clBackgroud.b, clBackgroud.a);
+      clBackground.r, clBackground.g, clBackground.b, clBackground.a);
     SDL_RenderClear(PSDLRenderer);
 
     if Assigned(Markers) then begin

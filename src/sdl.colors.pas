@@ -4,7 +4,7 @@ unit sdl.colors;
 
 interface
 
-uses SDL2;
+uses SDL2, Graphics;
 
 const
   clWhite : TSDL_Color =
@@ -22,6 +22,9 @@ const
   clGray  : TSDL_Color =
     (r: 128; g: 128; b: 128; a: SDL_ALPHA_OPAQUE);
 
+  clDarkRed : TSDL_Color =
+    (r: 60; g: 0;   b: 0;   a: SDL_ALPHA_OPAQUE);
+
   clLightBlueShaded1 : TSDL_Color =
     (r: 134; g: 150; b: 254; a: 50);
 
@@ -34,13 +37,33 @@ const
   clLightGrayShaded1 : TSDL_Color =
     (r: 128; g: 128; b: 128; a: 100);
 
+function ColorToSDLColor(AColor: TColor): TSDL_Color;
+
 var
-  clBackgroud : TSDL_Color;
+  clBackground : TSDL_Color;
+  clTimeOut : TSDL_Color;
+  clFontColor : TSDL_Color;
+  clDefaultBackground : TSDL_Color;
 
 implementation
 
+function ColorToSDLColor(AColor: TColor): TSDL_Color;
+var
+  RGBColor: LongInt;
+begin
+  RGBColor := ColorToRGB(AColor);
+
+  Result.r := (RGBColor and $000000FF);          // Red component
+  Result.g := (RGBColor and $0000FF00) shr 8;    // Green component
+  Result.b := (RGBColor and $00FF0000) shr 16;   // Blue component
+  Result.a := SDL_ALPHA_OPAQUE;                  // Set alpha to opaque
+end;
+
 initialization
- clBackgroud := clWhite;
+  clDefaultBackground := clWhite;
+  clBackground := clWhite;
+  clTimeOut := clDarkRed;
+  clFontColor := clBlack;
 
 end.
 

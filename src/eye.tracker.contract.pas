@@ -24,15 +24,19 @@ type
 
   IEyeTracker = interface
     ['{510AF7AB-0F7F-416A-8B97-4CBE13950CB4}']
+    function UseGazeAsInput : Boolean;
     function GetGazeOnScreenEvent : TGazeOnScreenEvent;
     function CurrentGazes : TNormalizedGazes;
     function TrackerClassName : string;
+    function IsFake : Boolean;
     procedure SetGazeOnScreenEvent(AValue: TGazeOnScreenEvent);
     procedure SetOnCalibrationSuccessful(AValue: TNotifyEvent);
     procedure SetOnCalibrationFailed(AValue: TNotifyEvent);
+    procedure SetDataFilename(AFilename : string);
     procedure StartRecording;
     procedure StopRecording;
     procedure StartCalibration;
+    procedure StopCalibration;
     procedure CalibrationSuccessful;
   end;
 

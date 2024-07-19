@@ -39,6 +39,7 @@ type
         AParent : TObject; ARect: TSDL_Rect); override;
       procedure Start; override;
       procedure Stop; override;
+      procedure Hide; override;
   end;
 
 implementation
@@ -97,6 +98,12 @@ end;
 
 procedure TPictureStimulus.Stop;
 begin
+  FPicture.Hide;
+end;
+
+procedure TPictureStimulus.Hide;
+begin
+  inherited Hide;
   FPicture.Hide;
 end;
 

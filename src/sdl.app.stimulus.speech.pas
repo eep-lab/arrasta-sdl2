@@ -51,7 +51,7 @@ implementation
 
 uses Controls
    , session.pool
-   , sdl.app.output
+   //, sdl.app.output
    , session.constants.trials
    , session.strutils.mts
    , session.loggers.writerow.timestamp

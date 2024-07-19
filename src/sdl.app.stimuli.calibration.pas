@@ -53,6 +53,7 @@ uses
 
 procedure TCalibrationStimuli.CalibrationSuccessful(Sender: TObject);
 begin
+  EyeTracker.StopCalibration;
   Timestamp(EyeTracker.TrackerClassName+'.StopCalibration');
   RaiseWindow;
   OnFinalize(Self);
@@ -60,9 +61,10 @@ end;
 
 procedure TCalibrationStimuli.CalibrationFailed(Sender: TObject);
 begin
+  EyeTracker.StopCalibration;
   Timestamp(EyeTracker.TrackerClassName+'.StopCalibration');
   RaiseWindow;
-  FText.Load('A calibragem falhou.');
+  FText.Load('A calibragem falhou.'+#13#10+'Tente novamente.');
   FText.Centralize;
   FText.Show;
 end;
@@ -105,7 +107,11 @@ begin
   FText.OnMouseUp := @MouseUp;
 
   EyeTracker.SetOnCalibrationSuccessful(@CalibrationSuccessful);
-  EyeTracker.SetOnCalibrationFailed(@CalibrationFailed);
+  if EyeTracker.IsFake then begin
+    EyeTracker.SetOnCalibrationFailed(@CalibrationSuccessful);
+  end else begin
+    EyeTracker.SetOnCalibrationFailed(@CalibrationFailed);
+  end;
 end;
 
 procedure TCalibrationStimuli.Start;

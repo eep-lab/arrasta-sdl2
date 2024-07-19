@@ -87,11 +87,10 @@ var
 begin
   Result := '';
   LastColumn := High(Cols);
-  for i := 0 to LastColumn do
-    if i < LastColumn then
-      Result := Result + Cols[i]+LTAB
-    else
-      Result := Result + Cols[i]+ALineEnding;
+  for i := 0 to LastColumn-1 do begin
+    Result := Result + Cols[i]+LTAB
+  end;
+  Result := Result + Cols[LastColumn]+ALineEnding;
 end;
 
 class procedure TLogger.SetHeader;

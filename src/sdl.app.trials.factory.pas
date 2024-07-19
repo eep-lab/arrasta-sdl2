@@ -55,7 +55,7 @@ uses Classes
    , session.endcriteria
    , session.pool
    , sdl.app.controller.manager
-   , sdl.app.output
+   //, sdl.app.output
    , sdl.app.testmode
    , sdl.app.trials.mts
    , sdl.app.trials.dragdrop

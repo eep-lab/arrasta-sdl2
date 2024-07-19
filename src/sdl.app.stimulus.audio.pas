@@ -52,6 +52,7 @@ type
         AParent : TObject; ARect: TSDL_Rect); override;
     procedure Start; override;
     procedure Stop; override;
+    procedure Hide; override;
   end;
 
 implementation
@@ -239,6 +240,19 @@ begin
   if FLoops.TotalLoops > 1 then begin
     FLoops.Stop;
   end;
+  if FHasPrompt then begin
+    LRectangule := FText;
+  end else begin
+    LRectangule := FPicture;
+  end;
+  LRectangule.Hide;
+end;
+
+procedure TAudioStimulus.Hide;
+var
+  LRectangule: TRectangule;
+begin
+  inherited Hide;
   if FHasPrompt then begin
     LRectangule := FText;
   end else begin

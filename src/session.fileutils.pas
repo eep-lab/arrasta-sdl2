@@ -358,6 +358,7 @@ end;
 
 function NewConfigurationFile : string;
 begin
+  //RandSeed := Random;
   Result := Pool.BasePath + 'last_session.ini';
   if FileExists(Result) then
     DeleteFile(Result);

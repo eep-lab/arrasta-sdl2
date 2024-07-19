@@ -41,7 +41,10 @@ type
 
 implementation
 
-uses SysUtils, sdl.app.output;
+uses
+  SysUtils
+  //, sdl.app.output
+  ;
 
 { TRecorderDevice }
 

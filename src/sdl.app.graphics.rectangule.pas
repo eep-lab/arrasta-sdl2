@@ -59,6 +59,7 @@ type
     procedure MoveToBottomRightScreen;
     procedure CentralizeAtRightWith(ARect: TSDL_Rect; AFactor : Byte);
     procedure CentralizeWith(ARect: TSDL_Rect);
+    procedure Fit(ARect : TSDL_Rect);
     procedure DoRandomMouseUp;
     procedure Inflate(AValue : cint);
     procedure Hide; virtual;
@@ -240,6 +241,32 @@ procedure TRectangule.CentralizeWith(ARect: TSDL_Rect);
 begin
   Left := ARect.x + (ARect.w div 2) - (Width  div 2);
   Top  := ARect.y + (ARect.h div 2) - (Height div 2);
+end;
+
+procedure TRectangule.Fit(ARect: TSDL_Rect);
+const
+  Border = 20;
+var
+  ParentX, ParentY: Integer;
+begin
+  ParentX := 0;
+  ParentY := 0;
+
+  if Left < 0 then begin
+    Left := ParentX + Border;
+  end;
+
+  if (Left+Width) > (ParentX + Parent.BoundsRect.w) then begin
+    Left := ParentX + Parent.BoundsRect.w - Width - Border;
+  end;
+
+  if Top < ParentY then begin
+    Top := ParentY + Border;
+  end;
+
+  if (Top+Height) > (ParentY + Parent.BoundsRect.h) then begin
+    Top := ParentY + Parent.BoundsRect.h - Height - Border;
+  end;
 end;
 
 procedure TRectangule.CentralizeAtTopWith(ARect: TSDL_Rect);
