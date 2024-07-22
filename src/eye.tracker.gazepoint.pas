@@ -130,19 +130,12 @@ begin
 
   if GlobalTrialParameters.UseRemoteServer then begin
     OpenGazeControl.SetupForRemoteServer;
-    OpenGazeControl.IP := '169.254.150.247';
+    //OpenGazeControl.IP := '169.254.150.247';
   end;
 
   OpenGazeControl.Connect;
   if OpenGazeControl.Connected then begin
-    if IsFake then begin
-      { do nothing }
-    end else begin
-      if UseGazeAsInput then begin
-        OpenGazeControl.Recording.OnDataReceived := @ReceiveNormalizedGaze;
-      end;
-    end;
-
+    OpenGazeControl.Recording.OnDataReceived := @ReceiveNormalizedGaze;
     OpenGazeControl.Calibration.Choreography.SetScreen(
       BoundsRect.x, BoundsRect.y, BoundsRect.w, BoundsRect.h);
   end;

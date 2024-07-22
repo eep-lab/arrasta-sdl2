@@ -41,6 +41,7 @@ uses
   session.loggers.writerow.timestamp,
   sdl.app,
   sdl.app.trials.factory,
+  sdl.app.controller.manager,
   Forms.speechvalidation;
 
 { TSDLKeyboard }
@@ -109,11 +110,18 @@ begin
       LKeyboardState := SDL_GetKeyboardState(nil);
       if GetKeyState(SDL_SCANCODE_LCTRL, LKeyboardState) then begin
         if EyeTracker <> nil then begin
-          //EyeTracker.SetOnCalibrationFailed(@CalibrationStopped);
-          //EyeTracker.SetOnCalibrationSuccessful(@CalibrationStopped);
+          EyeTracker.SetOnCalibrationFailed(@CalibrationStopped);
+          EyeTracker.SetOnCalibrationSuccessful(@CalibrationStopped);
           EyeTracker.StartCalibration;
           Timestamp(EyeTracker.TrackerClassName+'.StartCalibration');
         end;
+      end;
+    end;
+
+    SDLK_p: begin
+      LKeyboardState := SDL_GetKeyboardState(nil);
+      if GetKeyState(SDL_SCANCODE_LCTRL, LKeyboardState) then begin
+        Controllers.Reboot;
       end;
     end;
 
@@ -149,7 +157,9 @@ end;
 
 procedure TSDLSystemKeyboard.CalibrationStopped(Sender: TObject);
 begin
+  EyeTracker.StopCalibration;
   Timestamp(EyeTracker.TrackerClassName+'.StopCalibration');
+  RaiseWindow;
 end;
 
 constructor TSDLSystemKeyboard.Create;

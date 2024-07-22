@@ -311,13 +311,15 @@ begin
   LPoint := Point(ButtonRunNextSession.Left, ButtonRunNextSession.Top);
   Mouse.CursorPos.SetLocation(ClientToScreen(LPoint));
 
+  FormMisc.Finalize;
+  SDLSession.Free;
+  SDLApp.Free;
+
   if Assigned(EyeTracker) then begin
     EyeTracker.StopRecording;
     FinalizeEyeTracker;
   end;
-  FormMisc.Finalize;
-  SDLSession.Free;
-  SDLApp.Free;
+
   FreeConfigurationFile;
   Controllers.Free;
   ToogleControlPanelEnabled;
