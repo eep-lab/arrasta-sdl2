@@ -17,6 +17,7 @@ type
     ButtonRestoreConfigurationsBackup: TButton;
     ButtonDoConfigurationsBackup: TButton;
     ButtonTestDispenser: TButton;
+    CheckBoxForceLastMonitor: TCheckBox;
     CheckBoxUseRemoteServer: TCheckBox;
     CheckBoxUseGazeAsInput: TCheckBox;
     CheckBoxHideMouse: TCheckBox;
@@ -37,6 +38,7 @@ type
     FloatSpinEditCellsSize: TFloatSpinEdit;
     IniPropStorage1: TIniPropStorage;
     Label1: TLabel;
+    LabelForceLastMonitor: TLabel;
     LabelUseRemoteServer: TLabel;
     LabelUseGazeAsInput: TLabel;
     LabelFontColor: TLabel;

@@ -640,13 +640,19 @@ begin
   Result := False;
 
   with FormMisc.ComboBoxMonitor do begin
-    if ItemIndex = -1 then begin
+    if FormMisc.CheckBoxForceLastMonitor.Checked then begin
       if Items.Count > 0 then begin
         ItemIndex := Items.Count-1;
-        ShowMessage('O último monitor foi selecionado: ' + Items[ItemIndex]);
-      end else begin
-        ShowMessage('Nenhum monitor foi reconhecido.');
-        Exit;
+      end;
+    end else begin
+      if ItemIndex = -1 then begin
+        if Items.Count > 0 then begin
+          ItemIndex := Items.Count-1;
+          ShowMessage('O último monitor foi selecionado: ' + Items[ItemIndex]);
+        end else begin
+          ShowMessage('Nenhum monitor foi reconhecido.');
+          Exit;
+        end;
       end;
     end;
   end;

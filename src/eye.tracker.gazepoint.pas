@@ -130,7 +130,7 @@ begin
 
   if GlobalTrialParameters.UseRemoteServer then begin
     OpenGazeControl.SetupForRemoteServer;
-    //OpenGazeControl.IP := '169.254.150.247';
+    OpenGazeControl.IP := '169.254.150.247';
   end;
 
   OpenGazeControl.Connect;

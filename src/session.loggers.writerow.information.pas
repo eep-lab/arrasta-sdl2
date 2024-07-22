@@ -13,7 +13,7 @@ procedure Finalize;
 const
   GExtention = '.info';
   GSeparator = ':';
-  INFO_VERSION = '1';
+  INFO_VERSION = '2';
 
 var
   SaveData : TDataProcedure;

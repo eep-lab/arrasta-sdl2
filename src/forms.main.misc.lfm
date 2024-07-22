@@ -9,7 +9,7 @@ object FormMisc: TFormMisc
   Caption = 'Configurações da sessão'
   ClientHeight = 629
   ClientWidth = 449
-  SessionProperties = 'CheckBoxHideMouse.Checked;CheckBoxShowMarkers.Checked;CheckBoxShowModalFormForSpeechResponses.Checked;CheckBoxSimultaneousMTS.Caption;CheckBoxSimultaneousMTS.Checked;CheckBoxTestMode.Checked;CheckBoxUseGazeAsInput.Checked;ComboBoxAudioFolder.ItemIndex;ComboBoxAudioPromptForText.ItemIndex;ComboBoxController.ItemIndex;ComboBoxEyeTracker.ItemIndex;ComboBoxFixedSamplePosition.ItemIndex;ComboBoxFontName.ItemIndex;ComboBoxMonitor.ItemIndex;ComboBoxShouldRestartAt.ItemIndex;FloatSpinEditCellsSize.Value;FloatSpinEditScreenWidth.Value;PageControl.TabIndex;PanelFontColor.Color;PanelFontColor.Font;RadioGroupDispenser.ItemIndex;SpinEditAudioLoopInterval.Value;SpinEditDefaultAudioLoops.Value;SpinEditFontSize.Value;SpinEditInterTrialInterval.Value;SpinEditLimitedHold.Value;SpinEditRecordingSeconds.Value;SpinEditTimeOut.Value;CheckBoxUseRemoteServer.Checked'
+  SessionProperties = 'CheckBoxHideMouse.Checked;CheckBoxShowMarkers.Checked;CheckBoxShowModalFormForSpeechResponses.Checked;CheckBoxSimultaneousMTS.Caption;CheckBoxSimultaneousMTS.Checked;CheckBoxTestMode.Checked;CheckBoxUseGazeAsInput.Checked;CheckBoxUseRemoteServer.Checked;ComboBoxAudioFolder.ItemIndex;ComboBoxAudioPromptForText.ItemIndex;ComboBoxController.ItemIndex;ComboBoxEyeTracker.ItemIndex;ComboBoxFixedSamplePosition.ItemIndex;ComboBoxFontName.ItemIndex;ComboBoxMonitor.ItemIndex;ComboBoxShouldRestartAt.ItemIndex;FloatSpinEditCellsSize.Value;FloatSpinEditScreenWidth.Value;PageControl.TabIndex;PanelFontColor.Color;PanelFontColor.Font;RadioGroupDispenser.ItemIndex;SpinEditAudioLoopInterval.Value;SpinEditDefaultAudioLoops.Value;SpinEditFontSize.Value;SpinEditInterTrialInterval.Value;SpinEditLimitedHold.Value;SpinEditRecordingSeconds.Value;SpinEditTimeOut.Value;CheckBoxForceLastMonitor.Checked'
   LCLVersion = '3.99.0.0'
   OnClose = FormClose
   OnCreate = FormCreate
@@ -18,9 +18,9 @@ object FormMisc: TFormMisc
     Height = 629
     Top = 0
     Width = 449
-    ActivePage = TabSheetEyeTracking
+    ActivePage = TabSheetGeneral
     Align = alClient
-    TabIndex = 2
+    TabIndex = 0
     TabOrder = 0
     object TabSheetGeneral: TTabSheet
       Caption = 'Geral'
@@ -222,6 +222,22 @@ object FormMisc: TFormMisc
         Caption = 'Testar'
         TabOrder = 9
         OnClick = ButtonTestDispenserClick
+      end
+      object LabelForceLastMonitor: TLabel
+        Left = 20
+        Height = 17
+        Top = 393
+        Width = 252
+        Caption = 'Forçar seleção do último monitor'
+      end
+      object CheckBoxForceLastMonitor: TCheckBox
+        Left = 282
+        Height = 17
+        Top = 393
+        Width = 139
+        Checked = True
+        State = cbChecked
+        TabOrder = 11
       end
     end
     object TabSheetPseudowords: TTabSheet
