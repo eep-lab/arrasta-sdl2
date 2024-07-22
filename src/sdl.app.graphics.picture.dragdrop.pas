@@ -184,19 +184,21 @@ begin
         end;
       end;
 
-      if LIntersected then begin
-        case i of
-          0 :
-            if Assigned(OnRightDragDrop) then
-              OnRightDragDrop(LIntersectedPicture, Self, X, Y);
+      if LIntersectedPicture.Visible then begin
+        if LIntersected then begin
+          case i of
+            0 :
+              if Assigned(OnRightDragDrop) then
+                OnRightDragDrop(LIntersectedPicture, Self, X, Y);
 
-          else
-            if Assigned(OnWrongDragDrop) then
-              OnWrongDragDrop(LIntersectedPicture, Self, X, Y);
-        end
-      end else begin
-        if Assigned(OnOtherDragDrop) then
-          OnOtherDragDrop(nil, Self, X, Y);
+            else
+              if Assigned(OnWrongDragDrop) then
+                OnWrongDragDrop(LIntersectedPicture, Self, X, Y);
+          end
+        end else begin
+          if Assigned(OnOtherDragDrop) then
+            OnOtherDragDrop(nil, Self, X, Y);
+        end;
       end;
     end;
   end;
