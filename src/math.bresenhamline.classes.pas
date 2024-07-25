@@ -14,7 +14,7 @@ unit math.bresenhamline.classes;
 interface
 
 uses
-  Classes, SysUtils, Math, Math.BresenhamLine;
+  Classes, SysUtils, Math, Math.BresenhamLine, SDL2;
 
 type
 
@@ -28,7 +28,8 @@ type
     constructor Create; overload;
     constructor Create(AOrigin, ADestin : TRect); overload;
     destructor Destroy; override;
-    procedure Update(AOrigin, ADestin : TRect);
+    procedure Update(AOrigin, ADestin : TRect); overload;
+    procedure Update(AOrigin, ADestin : TSDL_Rect); overload;
     function NextPoint : TPoint;
     function GetPoint(AValue : Float) : TPoint;
     property Points : TPoints read FBresenhamLine;
@@ -36,7 +37,6 @@ type
 
 
 var
-  DragDropLine : TBresenhamLine;
   ChannelDragMouseMoveFactor : integer;
 
 implementation
@@ -80,6 +80,21 @@ begin
     ADestin.Top);
 end;
 
+procedure TBresenhamLine.Update(AOrigin, ADestin: TSDL_Rect);
+var
+  LOrigin, LDestin: TRect;
+begin
+  with AOrigin do begin
+    LOrigin := Rect(x, y, x+w, y+h);
+  end;
+
+  with ADestin do begin
+    LDestin := Rect(x, y, x+w, y+h);
+  end;
+
+  Update(LOrigin, LDestin);
+end;
+
 function TBresenhamLine.NextPoint: TPoint;
 var
   LLength : integer;
@@ -99,9 +114,9 @@ var
   LLength: Float;
   LLineIndex : Float;
 begin
-  LLength := Length(FBresenhamLine);
+  LLength := High(FBresenhamLine);
   LLineIndex := AValue * LLength / 100;
-  Result := FBresenhamLine[round(LLineIndex)];
+  Result := FBresenhamLine[Round(LLineIndex)];
 end;
 
 end.

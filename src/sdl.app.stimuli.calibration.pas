@@ -17,6 +17,8 @@ uses
   Classes, SysUtils
   , sdl.app.graphics.text
   , sdl.app.stimuli
+  , sdl.app.navigable.contract
+  , sdl.app.navigator.contract
   , sdl.app.stimuli.contract
   , sdl.app.events.abstract;
 
@@ -24,9 +26,12 @@ type
 
   { TCalibrationStimuli }
 
-  TCalibrationStimuli = class sealed (TStimuli)
+  TCalibrationStimuli = class sealed (TStimuli, INavigable)
     private
+      FNavigator : ITableNavigator;
       FText : TText;
+      procedure SetNavigator(ANavigator: ITableNavigator);
+      procedure UpdateNavigator;
       procedure CalibrationSuccessful(Sender: TObject);
       procedure CalibrationFailed(Sender: TObject);
       procedure MouseUp(Sender: TObject; Shift: TCustomShiftState;
@@ -35,6 +40,7 @@ type
       constructor Create; override;
       destructor Destroy; override;
       function AsInterface : IStimuli;
+      function AsINavigable: INavigable; override;
       procedure DoExpectedResponse; override;
       procedure Load(AParameters : TStringList; AParent : TObject); override;
       procedure Start; override;
@@ -46,13 +52,27 @@ implementation
 uses
   sdl.app.video.methods,
   sdl.app.controls.custom,
+  //sdl.app.selectable.contract,
+  //sdl.app.selectable.list,
   session.loggers.writerow.timestamp,
   eye.tracker;
 
 { TCalibrationStimuli }
 
+procedure TCalibrationStimuli.SetNavigator(ANavigator: ITableNavigator);
+begin
+  FNavigator := ANavigator;
+end;
+
+procedure TCalibrationStimuli.UpdateNavigator;
+begin
+  FSelectables.Add(FText.AsISelectable);
+  FNavigator.UpdateNavigationControls(FSelectables);
+end;
+
 procedure TCalibrationStimuli.CalibrationSuccessful(Sender: TObject);
 begin
+  EyeTracker.StopCalibration;
   Timestamp(EyeTracker.TrackerClassName+'.StopCalibration');
   RaiseWindow;
   OnFinalize(Self);
@@ -60,9 +80,16 @@ end;
 
 procedure TCalibrationStimuli.CalibrationFailed(Sender: TObject);
 begin
+  EyeTracker.StopCalibration;
   Timestamp(EyeTracker.TrackerClassName+'.StopCalibration');
   RaiseWindow;
-  FText.Load('A calibragem falhou.');
+
+  if EyeTracker.IsFake then begin
+    // force success when there is no real eye tracker
+    EyeTracker.SetOnCalibrationFailed(@CalibrationSuccessful);
+  end;
+
+  FText.Load('A calibragem falhou. Tente novamente.');
   FText.Centralize;
   FText.Show;
 end;
@@ -82,6 +109,8 @@ end;
 
 destructor TCalibrationStimuli.Destroy;
 begin
+  EyeTracker.SetOnCalibrationSuccessful(nil);
+  EyeTracker.SetOnCalibrationFailed(nil);
   FText.Free;
   inherited Destroy;
 end;
@@ -89,6 +118,11 @@ end;
 function TCalibrationStimuli.AsInterface: IStimuli;
 begin
   Result := Self as IStimuli;
+end;
+
+function TCalibrationStimuli.AsINavigable: INavigable;
+begin
+  Result := Self as INavigable;
 end;
 
 procedure TCalibrationStimuli.DoExpectedResponse;

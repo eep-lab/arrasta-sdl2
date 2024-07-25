@@ -47,6 +47,7 @@ type
       procedure CreateController(AController : TControllerCode); overload;
       procedure CreateController(AController : integer); overload;
       procedure Disable;
+      procedure Reboot;
       property FirstController : IController read GetFirstController;
       property OnJoyDeviceAdded : TOnJoyDeviceAddedEvent
         read FOnJoyDeviceAdded write SetOnJoyDeviceAdded;
@@ -66,7 +67,7 @@ var
 
 implementation
 
-uses sdl.app.controller.factory;
+uses sdl.app.controller.factory, sdl.app.trials.factory;
 
 { TControllerManager }
 
@@ -148,6 +149,18 @@ procedure TControllerManager.Disable;
 begin
   FController.Free;
   FController := nil;
+end;
+
+procedure TControllerManager.Reboot;
+var
+  LControllerCode : TControllerCode;
+begin
+  if Assigned(FController) then begin
+    LControllerCode := FController.ControllerCode;
+    Disable;
+    CreateController(LControllerCode);
+    TTrialFactory.UpdateNavigator;
+  end;
 end;
 
 constructor TControllerManager.Create;

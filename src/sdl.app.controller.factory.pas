@@ -58,6 +58,7 @@ begin
       Result := TSDLPS4Controller.Create;
     end;
   end;
+  Result.ControllerCode := ACode;
 end;
 
 end.

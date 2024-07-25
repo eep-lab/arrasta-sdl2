@@ -140,10 +140,10 @@ begin
   //PSDLSurface := TTF_RenderUTF8_LCD(
   if Wrapped then begin
     PSDLSurface := TTF_RenderUTF8_Blended_Wrapped(
-      FFont, PAnsiChar(AString), clBlack, WrappedWidth);
+      FFont, PAnsiChar(AString), clFontColor, WrappedWidth);
   end else begin
     PSDLSurface := TTF_RenderUTF8_Blended(
-      FFont, PAnsiChar(AString), clBlack);
+      FFont, PAnsiChar(AString), clFontColor);
   end;
   FRect := PSDLSurface^.clip_rect;
   FSDLTexture := SDL_CreateTextureFromSurface(PSDLRenderer, PSDLSurface);

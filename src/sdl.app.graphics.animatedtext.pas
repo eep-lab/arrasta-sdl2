@@ -49,7 +49,7 @@ implementation
 uses
   sdl.colors,
   sdl.app.video.methods,
-  sdl.app.output,
+  //sdl.app.output,
   sdl.app.testmode;
 
 { TAnimatedText }

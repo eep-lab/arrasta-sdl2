@@ -53,13 +53,13 @@ type
       FConsequenceInterval : Cardinal;
       FHasInstructions : Boolean;
       FHasCalibration  : Boolean;
-      procedure UpdateNavigator;
       procedure SetNavigator(AValue: ITableNavigator);
       procedure SetParent(AValue: TSDLControl);
       procedure SetTestMode(AValue: Boolean);
       procedure EndStarterCallBack(Sender : TObject);
       procedure CreateStartersIfRequired;
       procedure GazeOnScreen(AGazes : TNormalizedGazes);
+      procedure Pass(AGazes : TNormalizedGazes);
     protected
       FHasConsequence : Boolean;
       FResult : TTrialResult;
@@ -79,6 +79,7 @@ type
       function MyResult : TTrialResult; virtual;
       //function Header : string; virtual; abstract;
       function ToData : string; virtual;
+      procedure UpdateNavigator;
     public
       constructor Create; override;
       destructor Destroy; override;
@@ -89,6 +90,7 @@ type
       procedure EndTrial; virtual;
       procedure Show; virtual;
       procedure Hide; virtual;
+      procedure UpdateController;
       procedure DoExpectedResponse;
       property Visible : Boolean read FVisible;
       property Data : TTrialConfiguration read GetTrialConfiguration write SetTrialConfiguration;
@@ -170,6 +172,7 @@ begin
     SDLEvents.OnMouseButtonUp := nil;
     SDLEvents.OnMouseMotion := nil;
     SDLEvents.OnUserEvent:=nil;
+    SDLEvents.OnGazeOnScreen :=@Pass;
   end;
   FConfiguration.Parameters := nil;
 
@@ -381,6 +384,11 @@ begin
   end;
 end;
 
+procedure TTrial.Pass(AGazes: TNormalizedGazes);
+begin
+  { do nothing }
+end;
+
 
 procedure TTrial.SetParent(AValue: TSDLControl);
 begin
@@ -395,6 +403,17 @@ begin
   LNaviable := FIStimuli.AsINavigable;
   if LNaviable <> nil then begin
     LNaviable.SetNavigator(Navigator);
+  end;
+end;
+
+procedure TTrial.UpdateController;
+var
+  LNaviable : INavigable;
+begin
+  LNaviable := FIStimuli.AsINavigable;
+  if LNaviable <> nil then begin
+    LNaviable.SetNavigator(Navigator);
+    LNaviable.UpdateNavigator;
   end;
 end;
 

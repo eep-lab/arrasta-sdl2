@@ -25,8 +25,6 @@ type
 
   TEndCriteria = class
   private
-    //Pool.Block.ID : integer;
-    //Pool.Trial.ID : integer;
     FOnBlockCriterionAchieved : Boolean;
     FCurrentBlock : TBlockConfiguration;
     FCurrentTrial : TTrialConfiguration;

@@ -7,6 +7,7 @@ interface
 uses Classes, SysUtils,
   sdl.app.controller.contract,
   sdl.app.navigator.contract,
+  sdl.app.controller.types,
   sdl.app.navigator;
 
 type
@@ -14,14 +15,17 @@ type
   { TController }
 
   TController = class(IController)
-    protected
-      FNavigator : TTableNavigator;
-      function Navigator : ITableNavigator;
-    public
-      constructor Create; virtual;
-      destructor Destroy; override;
-      procedure Hide; virtual;
-      procedure Show; virtual;
+  private
+    FControllerCode: TControllerCode;
+  protected
+    FNavigator : TTableNavigator;
+    function Navigator : ITableNavigator;
+  public
+    constructor Create; virtual;
+    destructor Destroy; override;
+    procedure Hide; virtual;
+    procedure Show; virtual;
+    property ControllerCode : TControllerCode read FControllerCode write FControllerCode;
   end;
 
 implementation

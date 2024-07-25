@@ -1,0 +1,25 @@
+object DataPersistence: TDataPersistence
+  OldCreateOrder = False
+  Height = 191
+  HorizontalOffset = 660
+  VerticalOffset = 151
+  Width = 260
+  object IniPropStorageProtocol: TIniPropStorage
+    StoredValues = <    
+      item
+        Name = 'DesignItemIndex'
+        Value = '0'
+        OnSave = IniPropStorageProtocolStoredValues0Save
+        OnRestore = IniPropStorageProtocolStoredValues0Restore
+      end    
+      item
+        Name = 'ConditionItemIndex'
+        Value = '0'
+        OnSave = IniPropStorageProtocolStoredValues1Save
+        OnRestore = IniPropStorageProtocolStoredValues1Restore
+      end>
+    IniFileName = 'protocol.ini'
+    Left = 56
+    Top = 32
+  end
+end

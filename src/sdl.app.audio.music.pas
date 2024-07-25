@@ -46,7 +46,7 @@ var
 
 implementation
 
-uses sdl.app.output;
+//uses sdl.app.output;
 
 { SSDMixer }
 

@@ -1,17 +1,13 @@
-from fileutils import as_data, file_exists, data_dir
+from fileutils import as_data, file_exists
 from fileutils import cd, list_files, list_data_folders, load_file
-from fileutils import walk_and_execute
-from correlation import plot_correlation
+from fileutils import walk_and_execute, get_data_folders
+from correlation import plot_correlation, plot_correlation_2
 from classes import Information
 
 import pandas as pd
 import Levenshtein
 from unidecode import unidecode_expect_ascii
 from anonimizator import anonimize
-from words import pre_test_hardcoded_order, cycle_per_word, category_per_word
-from bs4 import BeautifulSoup
-import copy
-import sass
 
 target_speech = 'Speech-3'
 
@@ -77,16 +73,6 @@ def load_probes_file(filename):
 
 def save_probes_file(filename, data):
     data.to_csv(filename, sep='\t', index=False)
-
-def get_data_folders(anonimized=False):
-    def folder_sorter(x):
-        return int(x.split('-')[0])
-    data_dir()
-    participant_folders = list_data_folders()
-    if anonimized:
-        participant_folders = [anonimize(folder) for folder in participant_folders]
-    participant_folders.sort(key=folder_sorter)
-    return participant_folders
 
 def get_probes():
     participant_folders = get_data_folders()
@@ -201,7 +187,7 @@ def calculate_similarity():
     data['Latency'] = data.apply(lambda row: row['Latency'].replace(',', '.'), axis=1)
     data['Participant'] = data.apply(lambda row: row['Participant'].replace('\\', ''), axis=1)
     data.to_csv('probes_CD.data.processed', sep='\t' , index=False)
-    # print a message indicating that the process has finished
+    # print a message indicating that the process has finnished
     print('Levenshtein similarity calculated.')
 
 def correlate_latency_levenshtein(do_global_analysis=False):
@@ -216,10 +202,10 @@ def correlate_latency_levenshtein(do_global_analysis=False):
     if do_global_analysis:
         # filter data by word name
         data = all_data[all_data['Name'].str.match(r'(bena|falo)')]
-        data = data.sort_values(by=['Date', 'Time'])
+        # data = data.sort_values(by=['Date', 'Time'])
         # plot_correlation(data['Levenshtein'], data['Latency'], 'Levenshtein', 'Latency', 'Bena e Falo')
-        plot_correlation(data.index, data['Levenshtein'], 'Trial', 'Levenshtein', 'Bena e Falo')
-        # plot_correlation(data.index, data['Latency'], 'Trial', 'Latency', 'Bena e Falo')
+        # plot_correlation(data.index, data['Levenshtein'], 'Trial', 'Levenshtein', 'Bena e Falo')
+        plot_correlation(data.index, data['Latency'], 'Trial', 'Latency', 'Bena e Falo')
     else:
         for participant in participants:
             # print participant name and message
@@ -232,21 +218,30 @@ def correlate_latency_levenshtein(do_global_analysis=False):
             # data = data.sort_values(by=['Date'])
 
             # 4 per cycle
-            # regular_expression = r'(bena|falo)'
-            # words = 'Bena e Falo'
+            regular_expression1 = r'(bena|falo)'
+            words1 = 'Bena/Falo'
 
             # 4 per cycle
-            regular_expression = r'(nibe|lofi|bofi|nale|leba|nofa|bona|lefi|fabe|nilo|febi|lano)'
-            words = 'Nibe e Lofi (etc)'
+            regular_expression2 = r'(nibe|lofi|bofi|nale|leba|nofa|bona|lefi|fabe|nilo|febi|lano)'
+            words2 = 'Nibe/Lofi (etc)'
 
             data = data[data['Condition'] == 5]
-            data = data[data['Name'].str.match(regular_expression)]
-            # filter by word
-            # plot_correlation(data['Levenshtein'], data['Latency'], 'Levenshtein index', 'Latency', name+'- Bena e Falo')
-            data.reset_index(inplace=True)
-            data.index = data.index + 1
+            data['Latency'] = data['Latency'].map(lambda x: x.replace(',', '.'))
+            data['Latency'] = data['Latency'].astype(float)
+
+            data1 = data[data['Name'].str.match(regular_expression1)]
+            data1.reset_index(inplace=True)
+            data1.index = data1.index + 1
+
+            data2 = data[data['Name'].str.match(regular_expression2)]
+            data2.reset_index(inplace=True)
+            data2.index = data2.index + 1
+            # print(data['Latency'])
             # plot_correlation(data.index, data['Levenshtein'], 'Trials', 'Levenshtein index', name+'- Bena e Falo')
-            plot_correlation(data.index, data['Latency'], 'Trials', 'Latency', name+' - '+ words, save=True)
+            # plot_correlation(data.index, data['Latency'], 'Trials', 'Latency', name+' - '+ words, save=True)
+            plot_correlation_2(data1.index, data1['Latency'], data2.index, data2['Latency'],
+                               'Trials', 'Latency',
+                               name=name, title1=words1, title2=words2, save=True)
 
 def override_CD_probes_in_data_file(must_not_override=True):
     cd('output')
@@ -298,340 +293,7 @@ def override_CD_probes_in_data_file(must_not_override=True):
             cd('..')
         cd('..')
         cd('..')
-# Function to compare two strings and make equal characters bold
-def make_equal_chars_bold(str1, str2):
-    if isinstance(str1, str) and isinstance(str2, str):
-        if str2 == 'ns':
-            return '-'
-        else:
-            # check if str1 and str2 are the same length
-            if len(str1) != len(str2):
-                # if not, return a string with the same length as str2 appending - to str1
-                str1 = str1 + '-' * (len(str2) - len(str1))
 
-            # html bold tag
-            # return ''.join(f'<b>{c1}</b>' \
-            #     if c1 == c2 else c2 for c1, c2 in zip(str1, str2))
-
-            # html span tag with background color
-            return ''.join(f'<span style="background-color: #D3D3D3;">{c1}</span>' \
-                if c1 == c2 else c2 for c1, c2 in zip(str1, str2))
-    else:
-        return '-'
-
-def create_html_tables():
-    cd('output')
-    filename = 'probes_CD.data.processed'
-    # Load the data
-    df = load_probes_file(filename)
-    # Create a dictionary to store the DataFrames for each participant
-    dfs = {}
-    # Iterate over the unique participants
-    for participant in df['Participant'].unique():
-        # Create a new DataFrame for this participant
-        df_participant = df[df['Participant'] == participant].copy()
-
-        df_participant.drop(columns='Participant', inplace=True)
-        # Create the 'HTML' column
-        df_participant['HTML'] = df_participant.apply(lambda row: make_equal_chars_bold(row['Name'], row[target_speech]), axis=1)
-
-        condition7 = df_participant[df_participant['Condition'] == 7].copy()
-        condition5 = df_participant[df_participant['Condition'] == 5].copy()
-        # get bena and falo data
-        bena_falo_tbody = get_bena_falo_tbody(participant, condition5)
-        df_participant = condition7
-        # join date time columns
-        df_participant['Date'] = df_participant['Date'] + ' ' + df_participant['Time']
-
-        # find unique date/time
-        dates = df_participant['Date'].unique()
-
-        # create a dictionary to store Cycle.ID of each Date
-        if '12-MED' in participant:
-            df_participant['Cycle.ID'] = df_participant['Cycle.ID'].replace(0, 6)
-
-        cycle_per_date = {}
-        for date in dates:
-            cycle_per_date[date] = df_participant[df_participant['Date'] == date]['Cycle.ID'].values[0]
-
-        container = {}
-        for date in dates:
-            df2 = pd.DataFrame()
-            df2['Word'] = df_participant[df_participant['Date'] == date]['Name']
-            # use category_per_word to get word categories
-            df2['Category'] = df2['Word'].map(category_per_word)
-            # category must be the first column
-            df2 = df2[['Category', 'Word']]
-            # use cycle_per_word to get the cycle of each word
-            df2['Cycles'] = df2['Word'].map(cycle_per_word)
-            df2['Cycles'] = pd.to_numeric(df2['Cycles'], errors='coerce').fillna(0).astype(int)
-            df2[date] = df_participant[df_participant['Date'] == date]['HTML']
-            # make sure that the order is the same as the pre_test_hardcoded_order
-            df2['Word'] = pd.Categorical(df2['Word'], pre_test_hardcoded_order)
-            df2 = df2.sort_values('Word')
-            # drop all word columns, except the first one
-            if len(container) > 0:
-                df2.drop(columns='Word', inplace=True)
-                df2.drop(columns='Cycles', inplace=True)
-                df2.drop(columns='Category', inplace=True)
-
-            # reset index
-            df2.reset_index(drop=True, inplace=True)
-            container[date] = df2
-
-        # concatenate all dataframes
-        df_participant = pd.concat(container.values(), axis=1)
-
-        # Store the DataFrame in the dictionary
-        dfs[participant] = (df_participant, cycle_per_date, bena_falo_tbody)
-
-    # Convert DataFrames to an HTML table using tabulate and save it to a file
-    for participant, (df_participant, cycle_per_date, body) in dfs.items():
-        # # Add the new column
-        # df_participant.insert(0, 'Category', ['Teaching']*12 + ['Assessment']*4 + ['Assessment2']*4)
-
-        # Convert the DataFrame to HTML
-        html = df_participant.to_html(escape=False, index=False)
-
-        html_table = BeautifulSoup(html, 'html.parser')
-        # use soup to duplicate the first row
-        first_row = html_table.select('tr:first-child')[0]
-        # insert two rows after the first row
-        first_row.insert_after(copy.deepcopy(first_row))
-        # iterate over the cells of the second row
-        for cell in html_table.select('tr:nth-child(2) th'):
-            # use cycle_per_date to get the cycle of each date
-            if cell.string in cycle_per_date:
-                cycle = cycle_per_date[cell.string]
-                # insert the cycle number in the cell
-                cell.string = f'Cycle {cycle}'
-
-        # Set the rowspan attribute and remove the spanned cells for header
-        for category in ['Category','Word', 'Cycles']:
-            cells = html_table.select(f'th:-soup-contains("{category}")')
-            cells[0]['rowspan'] = len(cells)
-            for cell in cells[1:]:
-                cell.decompose()
-
-        # Select the cells in the first row from the third column onwards
-        cells = html_table.select('tr:first-child th:nth-of-type(n+3)')
-
-        # Add classes to the table to identify rows with data from the same cycle
-        for thead in html_table.find_all('thead'):
-            tr_tags = thead.find_all('tr')
-            # get the first one
-            th_tags = tr_tags[0].find_all('th')
-
-        # create a new dictionary with counts of cycles
-        for tbody in html_table.find_all('tbody'):
-            # # bena and falo
-            tr_tags = body.find_all('tr')
-            for tr in reversed(tr_tags):
-                tbody.insert(0, tr)
-            # teaching and assessment
-            tr_tags = tbody.find_all('tr')
-            for tr in tr_tags:
-                cycle_count_per_date = {}
-                # if tr is odd and less then 12 add class "training-row"
-                if tr_tags.index(tr) % 2 != 0:
-                    tr['class'] = 'even-row'
-                else:
-                    tr['class'] = 'odd-row'
-
-                if tr_tags.index(tr) < 4:
-                    tr['class'] += f' assessment3-row word-{tr_tags.index(tr)+1}'
-                elif tr_tags.index(tr) >= 4 and tr_tags.index(tr) < 16:
-                    tr['class'] += f' training-row word-{tr_tags.index(tr)+1}'
-                elif tr_tags.index(tr) >= 16 and tr_tags.index(tr) < 20:
-                    tr['class'] += f' assessment1-row word-{tr_tags.index(tr)+1}'
-                else:
-                    tr['class'] += f' assessment2-row word-{tr_tags.index(tr)+1}'
-
-                td_tags = tr.find_all('td')
-
-                # add class "label-col-end" to td_tags[2]
-                td_tags[0]['class'] = 'category-col'
-                td_tags[1]['class'] = 'word-col'
-                td_tags[2]['class'] = 'labels-end-col'
-
-                # content columns start at index 3
-                td_start = 3
-                header = list()
-                for td, th in zip(td_tags[td_start:], th_tags[3:]):
-                    if th.string in cycle_per_date:
-                        class1 = 'training-col'
-                        cycle = cycle_per_date[th.string]
-
-                        # count the number of occurrences of each cycle
-                        if cycle in cycle_count_per_date:
-                            cycle_count_per_date[cycle] += 1
-                        else:
-                            cycle_count_per_date[cycle] = 1
-
-                        # if first occurrence of cycle, add "first-occurence" class
-                        if cycle_count_per_date[cycle] == 1:
-                            class2 = f'cycle{cycle} first-occurrence'
-                        else:
-                            if cycle == 6:
-                                class2 = f'cycle{cycle} last-occurrence'
-                            else:
-                                class2 = f'cycle{cycle}'
-
-                        td['class'] = ' '.join([class1, class2])
-
-        # Replace the white space with a <br> tag
-        for cell in cells:
-            parts = cell.string.split(' ', 1)
-            if len(parts) == 1:
-                continue
-            cell.clear()
-            cell.append(parts[0])
-            cell.append(html_table.new_tag('br'))
-            cell.append(parts[1])
-
-        # Set the rowspan attribute and remove the spanned cells
-        for category in ['Teaching', 'Assessment', 'Generalization']:
-            cells = html_table.select(f'td:-soup-contains("{category}")')
-            if cells:
-                cells[0]['rowspan'] = len(cells)
-                for cell in cells[1:]:
-                    cell.decompose()
-            else:
-                print(f'Category {category} not found in participant {participant}')
-
-        # replace Assessment with "Assessment<br>Syllabic|Intrasyllabic"
-        cells = html_table.select('td:-soup-contains("Assessment")')
-        br_tag = html_table.new_tag('br')
-        cells[0].clear()
-        cells[0].append('Assessment')
-        cells[0].append(br_tag)
-        cells[0].append('Syllabic|Intrasyllabic')
-
-        # replace Generalization with "Assessment<br>Intrasyllabic|Syllabic"
-        cells = html_table.select('td:-soup-contains("Generalization")')
-        if cells:
-            br_tag = html_table.new_tag('br')
-            cells[0].clear()
-            cells[0].append('Assessment')
-            cells[0].append(br_tag)
-            cells[0].append('Intrasyllabic|Syllabic')
-        else:
-            print(f'Category Generalization not found in participant {participant}')
-
-        for category in ['0', '1', '2', '3', '6', '7', 'Constant', 'falo', 'bena']:
-            if category == 'falo' or category == 'bena':
-                cells = html_table.select(f'td.word-col:-soup-contains("{category}")')
-            else:
-                cells = html_table.select(f'td:-soup-contains("{category}")')
-            if cells:
-                cells[0]['rowspan'] = len(cells)
-                for cell in cells[1:]:
-                    cell.decompose()
-            else:
-                print(f'Category {category} not found in participant {participant}')
-
-        for category in ['4', '5']:
-            cells = html_table.select(f'td:-soup-contains("{category}")')
-            if cells:
-                cells[0]['rowspan'] = 2
-                cells[2]['rowspan'] = 2
-                for cell in cells[1:2]:
-                    cell.decompose()
-                for cell in cells[3:]:
-                    cell.decompose()
-            else:
-                print(f'Category {category} not found in participant {participant}')
-
-        # replace 0 in Cycles with -
-        cells = html_table.select('td:-soup-contains("0")')
-        for cell in cells:
-            cell.string = 'None'
-
-        # replace 7 in Cycles with -
-        cells = html_table.select('td:-soup-contains("7")')
-        for cell in cells:
-            cell.string = 'All'
-
-        # Create a new BeautifulSoup object
-        soup = BeautifulSoup('', 'html.parser')
-        html_tag = soup.new_tag('html')
-        head_tag = soup.new_tag('head')
-        link_tag = soup.new_tag('link', rel='stylesheet', href='style.css')
-        body_tag = soup.new_tag('body')
-        body_tag.append(html_table)
-        head_tag.append(link_tag)
-        # Append the table to the body tag
-        html_tag.append(head_tag)
-        html_tag.append(body_tag)
-        soup.clear()
-        soup.append(html_tag)
-
-        # Convert the modified HTML back to a string
-        html = str(soup)
-
-        # Write the HTML to a file
-        participant = participant.replace('\\', '').replace('-', '_')
-        with open(f'probes_CD_{participant}.html', 'w') as f:
-            f.write(html)
-        print(f'File probes_CD_{participant}.html created.')
-    cd('..')
-
-def get_bena_falo_tbody(participant, df_participant):
-    # find unique date/time
-    dates = df_participant['Date'].unique()
-
-    # create a dictionary to store Cycle.ID of each Date
-    cycle_per_date = {}
-    for date in dates:
-        cycle_per_date[date] = df_participant[df_participant['Date'] == date]['Cycle.ID'].values[0]
-
-    # create a new dataframe with only bena and falo
-    pattern = r'(bena|falo)'
-    df_constant = df_participant[df_participant['Name'].str.match(pattern)].copy()
-    # df_other = df_participant[~df_participant['Name'].str.match(pattern)].copy()
-    container = {}
-    for date in dates:
-        df2 = pd.DataFrame()
-        if '5-JUL' in participant:
-            # get the first 4 rows of each date
-            df2 = df_constant[df_constant['Date'] == date].head(4)
-
-        df2['Word'] = df_constant[df_constant['Date'] == date]['Name']
-        # use category_per_word to get word categories
-        df2['Category'] = df2['Word'].map(category_per_word)
-        # category must be the first column
-        df2 = df2[['Category', 'Word']]
-        # use cycle_per_word to get the cycle of each word
-        df2['Cycles'] = df2['Word'].map(cycle_per_word)
-        df2['Cycles'] = pd.to_numeric(df2['Cycles'], errors='coerce').fillna(0).astype(int)
-        df2[date] = df_constant[df_constant['Date'] == date]['HTML']
-        # make sure that the order is the same as the pre_test_hardcoded_order
-        df2['Word'] = pd.Categorical(df2['Word'], pre_test_hardcoded_order)
-        df2 = df2.sort_values('Word')
-        # drop all word columns, except the first one
-        if len(container) > 0:
-            df2.drop(columns='Word', inplace=True)
-            df2.drop(columns='Cycles', inplace=True)
-            df2.drop(columns='Category', inplace=True)
-
-        # reset index
-        df2.reset_index(drop=True, inplace=True)
-        container[date] = df2
-
-    # concatenate all dataframes
-    df_participant = pd.concat(container.values(), axis=1)
-
-    # Convert the DataFrame to HTML
-    html = df_participant.to_html(escape=False, index=False)
-    soup = BeautifulSoup(html, 'html.parser')
-    # get table tbody
-    return soup.find('tbody')
-
-def compile_sass():
-    # compile sass to css
-    sass.compile(dirname=('.', '.'))
 
 if __name__ == "__main__":
-    compile_sass()
-    # correlate_latency_levenshtein()
-    create_html_tables()
+    correlate_latency_levenshtein()

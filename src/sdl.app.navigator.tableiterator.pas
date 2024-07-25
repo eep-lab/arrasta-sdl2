@@ -40,7 +40,10 @@ type
 
 implementation
 
-uses Generics.Tables.Types, sdl.app.output, integers.list;
+uses
+  Generics.Tables.Types
+  //, sdl.app.output
+  , integers.list;
 
 { TPossibleSelections }
 

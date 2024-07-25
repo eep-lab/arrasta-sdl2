@@ -59,7 +59,7 @@ uses
   , avutil, avcodec, avformat, swscale
   , timestamps.methods
   , sdl.app.video.methods
-  , sdl.app.output
+  //, sdl.app.output
   ;
 
 var

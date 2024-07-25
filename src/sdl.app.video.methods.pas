@@ -22,7 +22,7 @@ procedure InvalidateWindow;
 procedure RaiseWindow;
 function WindowDeviceContextHandle : THandle;
 function WindowHandle : THandle;
-function WindowSize : TSDL_Rect;
+function WindowBoundsRect : TSDL_Rect;
 
 var
   PSDLRenderer : PSDL_Renderer;
@@ -78,12 +78,11 @@ begin
   end;
 end;
 
-function WindowSize: TSDL_Rect;
+function WindowBoundsRect: TSDL_Rect;
 begin
   with Result do begin
-    Result.x := 0;
-    Result.y := 0;
-    SDL_GetWindowSize(PSDLWindow, @w, @h)
+    SDL_GetWindowPosition(PSDLWindow, @x, @y);
+    SDL_GetWindowSize(PSDLWindow, @w, @h);
   end;
 end;
 

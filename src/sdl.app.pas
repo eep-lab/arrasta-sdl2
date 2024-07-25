@@ -81,7 +81,7 @@ implementation
 
 uses sdl2_image
   //, GL, GLext
-  , sdl.app.output
+  //, sdl.app.output
   , sdl.app.video.methods
   , sdl.app.mouse
 {$IFDEF NO_LCL}
@@ -160,7 +160,7 @@ constructor TSDLApplication.Create(ATitle: PAnsiChar);
 var
   LError : string;
 begin
-  Print(Self.ClassName+'.'+{$I %CURRENTROUTINE%}+#32+ATitle);
+  //Print(Self.ClassName+'.'+{$I %CURRENTROUTINE%}+#32+ATitle);
   FTitle := ATitle;
   SDLEvents := TCustomEventHandler.Create;
 
@@ -169,14 +169,14 @@ begin
   // https://wiki.libsdl.org/SDL2/FAQUsingSDL
   if SDL_InitSubSystem(SDL_INIT_VIDEO) < 0 then begin
     LError := SDL_GetError;
-    Print(LError);
+    //Print(LError);
     raise Exception.Create(LError);
   end;
   LoadMonitors(FMonitors);
 
   if SDL_InitSubSystem(SDL_INIT_TIMER) < 0 then begin
     LError := SDL_GetError;
-    Print(LError);
+    //Print(LError);
     raise Exception.Create(LError);
   end;
 
@@ -185,21 +185,21 @@ begin
   {$IFNDEF NO_LCL}
   if SDL_InitSubSystem(SDL_INIT_AUDIO) < 0 then begin
     LError := SDL_GetError;
-    Print(LError);
+    //Print(LError);
     raise Exception.Create(LError);
   end;
   SDLAudio := TSDLAudio.Create;
 
   if SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER) < 0  then begin
     LError := SDL_GetError;
-    Print(LError);
+    //Print(LError);
     raise Exception.Create(LError);
   end;
 
   if SDL_Init(SDL_INIT_SENSOR) < 0 then
   begin
     LError := SDL_GetError;
-    Print(LError);
+    //Print(LError);
     raise Exception.Create(LError);
   end;
 
@@ -278,7 +278,7 @@ begin
     SDL_Quit;
   end;
 
-  Print('Good Bye');
+  //Print('Good Bye');
   if Assigned(OnClose) then
     OnClose(Self);
 end;
@@ -306,8 +306,8 @@ var
   end;
 begin
   SDL_GetRendererInfo(FSDLRenderer, @LSDLRendererInfo);
-  Print(StrPas(LSDLRendererInfo.name)+' renderer initialized with flags:');
-  Print(FlagsToNames(LSDLRendererInfo.flags)+LineEnding)
+  //Print(StrPas(LSDLRendererInfo.name)+' renderer initialized with flags:');
+  //Print(FlagsToNames(LSDLRendererInfo.flags)+LineEnding)
 end;
 
 class procedure TSDLApplication.GetAvailableMonitors(AStrings: TStrings);
@@ -318,7 +318,7 @@ var
 begin
   if SDL_InitSubSystem(SDL_INIT_VIDEO) < 0 then begin
     LError := SDL_GetError;
-    Print(LError);
+    //Print(LError);
     raise Exception.Create(LError);
   end;
   LoadMonitors(LMonitors);
@@ -392,7 +392,7 @@ end;
 procedure TSDLApplication.Terminate;
 begin
   FRunning := False;
-  Print('Good bye');
+  //Print('Good bye');
 end;
 
 {$IFNDEF NO_LCL}

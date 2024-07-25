@@ -1,16 +1,17 @@
 object FormMisc: TFormMisc
-  Left = 954
+  Left = 807
   Height = 629
-  Top = 131
+  Top = 57
   Width = 449
-  HorzScrollBar.Page = 370
-  VertScrollBar.Page = 431
+  HorzScrollBar.Page = 374
+  VertScrollBar.Page = 474
   AutoScroll = True
   Caption = 'Configurações da sessão'
   ClientHeight = 629
   ClientWidth = 449
-  SessionProperties = 'CheckBoxHideMouse.Checked;CheckBoxShowMarkers.Checked;CheckBoxShowModalFormForSpeechResponses.Checked;CheckBoxTestMode.Checked;ComboBoxAudioFolder.ItemIndex;ComboBoxAudioPromptForText.ItemIndex;ComboBoxController.ItemIndex;ComboBoxEyeTracker.ItemIndex;ComboBoxFixedSamplePosition.ItemIndex;ComboBoxFontName.ItemIndex;ComboBoxMonitor.ItemIndex;ComboBoxShouldRestartAt.ItemIndex;FloatSpinEditScreenWidth.Value;PageControl.TabIndex;RadioGroupDispenser.ItemIndex;SpinEditAudioLoopInterval.Value;SpinEditDefaultAudioLoops.Value;SpinEditFontSize.Value;SpinEditInterTrialInterval.Value;SpinEditLimitedHold.Value;SpinEditRecordingSeconds.Value;SpinEditTimeOut.Value;FloatSpinEditCellsSize.Value'
+  SessionProperties = 'CheckBoxHideMouse.Checked;CheckBoxShowMarkers.Checked;CheckBoxShowModalFormForSpeechResponses.Checked;CheckBoxSimultaneousMTS.Caption;CheckBoxSimultaneousMTS.Checked;CheckBoxTestMode.Checked;CheckBoxUseGazeAsInput.Checked;CheckBoxUseRemoteServer.Checked;ComboBoxAudioFolder.ItemIndex;ComboBoxAudioPromptForText.ItemIndex;ComboBoxController.ItemIndex;ComboBoxEyeTracker.ItemIndex;ComboBoxFixedSamplePosition.ItemIndex;ComboBoxFontName.ItemIndex;ComboBoxMonitor.ItemIndex;ComboBoxShouldRestartAt.ItemIndex;FloatSpinEditCellsSize.Value;FloatSpinEditScreenWidth.Value;PageControl.TabIndex;PanelFontColor.Color;PanelFontColor.Font;RadioGroupDispenser.ItemIndex;SpinEditAudioLoopInterval.Value;SpinEditDefaultAudioLoops.Value;SpinEditFontSize.Value;SpinEditInterTrialInterval.Value;SpinEditLimitedHold.Value;SpinEditRecordingSeconds.Value;SpinEditTimeOut.Value;CheckBoxForceLastMonitor.Checked'
   LCLVersion = '3.99.0.0'
+  OnClose = FormClose
   OnCreate = FormCreate
   object PageControl: TPageControl
     Left = 0
@@ -180,7 +181,7 @@ object FormMisc: TFormMisc
         Width = 139
         Constraints.MaxHeight = 22
         DecimalPlaces = 3
-        MaxValue = 8
+        MaxValue = 15
         MinValue = 1
         TabOrder = 10
         Value = 6
@@ -222,6 +223,22 @@ object FormMisc: TFormMisc
         TabOrder = 9
         OnClick = ButtonTestDispenserClick
       end
+      object LabelForceLastMonitor: TLabel
+        Left = 20
+        Height = 17
+        Top = 393
+        Width = 252
+        Caption = 'Forçar seleção do último monitor'
+      end
+      object CheckBoxForceLastMonitor: TCheckBox
+        Left = 282
+        Height = 17
+        Top = 393
+        Width = 139
+        Checked = True
+        State = cbChecked
+        TabOrder = 11
+      end
     end
     object TabSheetPseudowords: TTabSheet
       Caption = 'Palavras'
@@ -238,14 +255,14 @@ object FormMisc: TFormMisc
         Left = 20
         Height = 30
         Top = 20
-        Width = 248
+        Width = 254
         Caption = 'Intervalo do som em tentativas'#13#10'A-B, A-C, A-D (milisegundos)'
       end
       object SpinEditAudioLoopInterval: TSpinEdit
-        Left = 278
+        Left = 284
         Height = 22
         Top = 20
-        Width = 143
+        Width = 137
         Constraints.MaxHeight = 22
         Increment = 500
         MaxValue = 60000
@@ -257,14 +274,14 @@ object FormMisc: TFormMisc
         Left = 20
         Height = 30
         Top = 60
-        Width = 248
+        Width = 254
         Caption = 'Número de repetições padrão'#13#10'em tentativas A-B, A-C, A-D'
       end
       object SpinEditDefaultAudioLoops: TSpinEdit
-        Left = 278
+        Left = 284
         Height = 22
         Top = 60
-        Width = 143
+        Width = 137
         Constraints.MaxHeight = 22
         MaxValue = 32767
         MinValue = -1
@@ -275,14 +292,14 @@ object FormMisc: TFormMisc
         Left = 20
         Height = 23
         Top = 100
-        Width = 248
+        Width = 254
         Caption = 'Fonte das palavras escritas'
       end
       object ComboBoxFontName: TComboBox
-        Left = 278
+        Left = 284
         Height = 23
         Top = 100
-        Width = 143
+        Width = 137
         ItemHeight = 15
         ReadOnly = True
         TabOrder = 2
@@ -292,30 +309,46 @@ object FormMisc: TFormMisc
         Left = 20
         Height = 23
         Top = 133
-        Width = 248
+        Width = 254
         Caption = 'Tamanho da fonte das palavras escritas'
       end
       object SpinEditFontSize: TSpinEdit
-        Left = 278
+        Left = 284
         Height = 23
         Top = 133
-        Width = 143
+        Width = 137
         MaxValue = 2000
         TabOrder = 3
         Value = 150
       end
+      object LabelFontColor: TLabel
+        Left = 20
+        Height = 15
+        Top = 166
+        Width = 254
+        Caption = 'Cor das palavras escritas'
+      end
+      object PanelFontColor: TPanel
+        Left = 284
+        Height = 15
+        Top = 166
+        Width = 137
+        Caption = 'PALAVRA'
+        TabOrder = 10
+        OnClick = PanelFontColorClick
+      end
       object LabelAudioFolder: TLabel
         Left = 20
         Height = 23
-        Top = 166
-        Width = 248
+        Top = 191
+        Width = 254
         Caption = 'Pasta com os sons das palavras'
       end
       object ComboBoxAudioFolder: TComboBox
-        Left = 278
+        Left = 284
         Height = 23
-        Top = 166
-        Width = 143
+        Top = 191
+        Width = 137
         ItemHeight = 15
         ReadOnly = True
         TabOrder = 4
@@ -324,15 +357,15 @@ object FormMisc: TFormMisc
       object LabelAudioPromptForText: TLabel
         Left = 20
         Height = 45
-        Top = 199
-        Width = 248
+        Top = 224
+        Width = 254
         Caption = 'Arquivo de aúdio usado'#13#10'como prompt do modelo'#13#10'em tentativas de leitura (C-D) '
       end
       object ComboBoxAudioPromptForText: TComboBox
-        Left = 278
+        Left = 284
         Height = 23
-        Top = 199
-        Width = 143
+        Top = 246
+        Width = 137
         ItemHeight = 15
         ReadOnly = True
         TabOrder = 5
@@ -341,15 +374,15 @@ object FormMisc: TFormMisc
       object LabelRecordingSeconds: TLabel
         Left = 20
         Height = 45
-        Top = 254
-        Width = 248
+        Top = 279
+        Width = 254
         Caption = 'Tempo de gravação das'#13#10'respostas de leitura'#13#10'em tentativas de leitura (C-D)'
       end
       object SpinEditRecordingSeconds: TSpinEdit
-        Left = 278
+        Left = 284
         Height = 22
-        Top = 254
-        Width = 143
+        Top = 279
+        Width = 137
         Constraints.MaxHeight = 22
         MaxValue = 60
         MinValue = 1
@@ -359,29 +392,47 @@ object FormMisc: TFormMisc
       object LabelShowModal: TLabel
         Left = 20
         Height = 30
-        Top = 309
-        Width = 248
+        Top = 334
+        Width = 254
         Caption = 'Registrar respostas de leitura'#13#10'manualmente em monitor primário'
       end
       object CheckBoxShowModalFormForSpeechResponses: TCheckBox
-        Left = 278
+        Left = 284
         Height = 30
-        Top = 309
-        Width = 143
+        Top = 334
+        Width = 137
         TabOrder = 7
+      end
+      object LabelSimultaneousMTS: TLabel
+        Left = 20
+        Height = 19
+        Top = 374
+        Width = 254
+        Caption = 'Formato do emparelhamento ao modelo'
+      end
+      object CheckBoxSimultaneousMTS: TCheckBox
+        Left = 284
+        Height = 19
+        Top = 374
+        Width = 137
+        Caption = 'Simultâneo'
+        Checked = True
+        State = cbChecked
+        TabOrder = 9
+        OnChange = CheckBoxSimultaneousMTSChange
       end
       object LabelFixedSamplePosition: TLabel
         Left = 20
         Height = 23
-        Top = 349
-        Width = 248
+        Top = 403
+        Width = 254
         Caption = 'Posição fixa do modelo'
       end
       object ComboBoxFixedSamplePosition: TComboBox
-        Left = 278
+        Left = 284
         Height = 23
-        Top = 349
-        Width = 143
+        Top = 403
+        Width = 137
         ItemHeight = 15
         ItemIndex = 1
         Items.Strings = (
@@ -404,31 +455,59 @@ object FormMisc: TFormMisc
       ChildSizing.ControlsPerLine = 2
       ClientHeight = 601
       ClientWidth = 441
-      object Label1: TLabel
+      object LabelUseGazeAsInput: TLabel
         Left = 20
         Height = 17
         Top = 20
+        Width = 218
+        Caption = 'Usar fóvea para escolhas'
+      end
+      object CheckBoxUseGazeAsInput: TCheckBox
+        Left = 248
+        Height = 17
+        Top = 20
+        Width = 173
+        TabOrder = 3
+      end
+      object Label1: TLabel
+        Left = 20
+        Height = 17
+        Top = 47
         Width = 218
         Caption = 'Mostrar AprilTags'
       end
       object CheckBoxShowMarkers: TCheckBox
         Left = 248
         Height = 17
-        Top = 20
+        Top = 47
         Width = 173
         TabOrder = 0
+      end
+      object LabelUseRemoteServer: TLabel
+        Left = 20
+        Height = 17
+        Top = 74
+        Width = 218
+        Caption = 'Usar servidor remoto'
+      end
+      object CheckBoxUseRemoteServer: TCheckBox
+        Left = 248
+        Height = 17
+        Top = 74
+        Width = 173
+        TabOrder = 4
       end
       object LabelAprilTagsSize: TLabel
         Left = 20
         Height = 23
-        Top = 47
+        Top = 101
         Width = 218
         Caption = 'Tamanho das AprilTags (px)'
       end
       object SpinEditAprilTagsSize: TSpinEdit
         Left = 248
         Height = 23
-        Top = 47
+        Top = 101
         Width = 173
         MaxValue = 3000
         MinValue = 50
@@ -438,19 +517,20 @@ object FormMisc: TFormMisc
       object LabelEyeTracker: TLabel
         Left = 20
         Height = 23
-        Top = 80
+        Top = 134
         Width = 218
         Caption = 'Rastreador ocular'
       end
       object ComboBoxEyeTracker: TComboBox
         Left = 248
         Height = 23
-        Top = 80
+        Top = 134
         Width = 173
         ItemHeight = 15
         ItemIndex = 0
         Items.Strings = (
           'Nenhum'
+          'Gazepoint'
           'EyeLink'
           'Pupil'
         )
@@ -539,5 +619,33 @@ object FormMisc: TFormMisc
     IniFileName = 'configurations_global.ini'
     Left = 384
     Top = 560
+  end
+  object ColorDialog: TColorDialog
+    Title = 'Escolha uma cor'
+    Color = clBlack
+    CustomColors.Strings = (
+      'ColorA=000000'
+      'ColorB=000080'
+      'ColorC=008000'
+      'ColorD=008080'
+      'ColorE=800000'
+      'ColorF=800080'
+      'ColorG=808000'
+      'ColorH=808080'
+      'ColorI=C0C0C0'
+      'ColorJ=0000FF'
+      'ColorK=00FF00'
+      'ColorL=00FFFF'
+      'ColorM=FF0000'
+      'ColorN=FF00FF'
+      'ColorO=FFFF00'
+      'ColorP=FFFFFF'
+      'ColorQ=C0DCC0'
+      'ColorR=F0CAA6'
+      'ColorS=F0FBFF'
+      'ColorT=A4A0A0'
+    )
+    Left = 384
+    Top = 512
   end
 end

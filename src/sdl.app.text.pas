@@ -50,7 +50,7 @@ implementation
 uses
   FileUtil, LazFileUtils
   , sdl.app.video.methods
-  , sdl.app.output
+  //, sdl.app.output
   , session.pool
   , session.parameters.global;
 
@@ -62,7 +62,7 @@ begin
   if TTF_Init < -1 then begin
     raise Exception.Create('SDL2_TTF not initialized:'+ TTF_GetError^);
   end else begin
-    Print('SDL2_TTF initialized.');
+    //Print('SDL2_TTF initialized.');
   end;
 end;
 

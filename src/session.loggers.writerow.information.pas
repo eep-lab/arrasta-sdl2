@@ -13,7 +13,7 @@ procedure Finalize;
 const
   GExtention = '.info';
   GSeparator = ':';
-  INFO_VERSION = '1';
+  INFO_VERSION = '2';
 
 var
   SaveData : TDataProcedure;
@@ -61,7 +61,7 @@ begin
     Line(HSUBJECT_NAME, Pool.ParticipantName) +
     Line(HSESSION_NAME, Pool.SessionName) +
     Line(HGRID, Grid.ToJSON) +
-    Line(HMONITOR, WindowSize.ToJSON) +
+    Line(HMONITOR, WindowBoundsRect.ToJSON) +
     Line(HBEGIN_DATE, DateTimeToStr(Date)) +
     Line(HBEGIN_TIME, TimeToStr(StartTime)));
 end;

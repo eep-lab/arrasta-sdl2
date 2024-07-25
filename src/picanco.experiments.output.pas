@@ -21,7 +21,10 @@ var
 
 implementation
 
-uses forms.canvas.playground, sdl.app.output, session.strutils;
+uses
+  forms.canvas.playground
+  //, sdl.app.output
+  , session.strutils;
 
 const
   LSpace : integer = 10;
@@ -35,14 +38,14 @@ var
 begin
   for E1Cycle := Low(E1CyclesRange) to High(E1CyclesRange) do begin
     WriteStr(LCycle, E1Cycle);
-    Print(LCycle);
+    //Print(LCycle);
     LLine := '';
     for E1Code := Low(E1CyclesCodeRange) to High(E1CyclesCodeRange) do begin
       WriteStr(LCode, E1Code);
       LWord := E1WordPerCycleCode[E1Cycle, E1Code];
       LLine := LLine + String.Join('=', [LCode, LWord]) + ',';
     end;
-    Print(Copy(LLine, 0, (length(LLine)-1)));
+    //Print(Copy(LLine, 0, (length(LLine)-1)));
   end;
 end;
 

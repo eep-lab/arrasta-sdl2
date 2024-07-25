@@ -16,6 +16,7 @@ interface
 uses SDL2, eye.tracker.contract;
 
 procedure InitializeEyeTracker(AItemIndex : integer);
+procedure SetEyeTrackerDataFilename(AFilename : string);
 procedure FinalizeEyeTracker;
 
 var
@@ -28,6 +29,11 @@ uses eye.tracker.types, eye.tracker.factory;
 procedure InitializeEyeTracker(AItemIndex: integer);
 begin
   EyeTracker := TEyeTrackerFactory.New(TEyeTrackerCode(AItemIndex));
+end;
+
+procedure SetEyeTrackerDataFilename(AFilename: string);
+begin
+  EyeTracker.SetDataFilename(AFilename);
 end;
 
 procedure FinalizeEyeTracker;

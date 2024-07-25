@@ -48,12 +48,13 @@ type
         AParent : TObject; ARect: TSDL_Rect); override;
       procedure Start; override;
       procedure Stop; override;
+      procedure Hide; override;
   end;
 
 implementation
 
 uses
-  sdl.app.output,
+  //sdl.app.output,
   sdl.app.controls.custom,
   session.parameters.global,
   session.loggers.writerow.timestamp;
@@ -142,6 +143,7 @@ begin
   FText.CustomName := FCustomName;
   Selectables.Add(FText.AsISelectable);
   FText.Parent := TSDLControl(AParent);
+  FText.Fit(ARect);
   FText.OnMouseUp := @MouseUp;
 
   FHasPrompt := HasTextPrompt(AParameters);
@@ -165,6 +167,12 @@ end;
 
 procedure TTextStimulus.Stop;
 begin
+  FText.Hide;
+end;
+
+procedure TTextStimulus.Hide;
+begin
+  inherited Hide;
   FText.Hide;
 end;
 

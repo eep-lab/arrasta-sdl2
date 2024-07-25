@@ -5,7 +5,7 @@ unit session.parameters.global;
 interface
 
 uses
-  SysUtils, Math, sdl.app.grids.types;
+  SysUtils, Graphics, Math, sdl.app.grids.types;
 
 type
 
@@ -31,6 +31,9 @@ type
     HideMouse : Boolean;
     ScreenInCentimeters : Float;
     CellsSizeInCentimenter : Float;
+    UseGazeAsInput : Boolean;
+    UseRemoteServer : Boolean;
+    SimultaneousMTS : Boolean;
   end;
 
 var
@@ -60,6 +63,8 @@ initialization
     MarkerSize := 100;
     ScreenInCentimeters := 39.624;
     CellsSizeInCentimenter := 6.0;
+    UseGazeAsInput := False;
+    SimultaneousMTS := False;
   end;
 end.
 
