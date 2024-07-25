@@ -24,3 +24,7 @@ Padrão de rotina de trabalho:
 - git commit -m mensagem
 - git push origin nomedonovobraço
 - No github, fazer o pull request
+
+Padrão de atualização de dependências:
+Certificar que você está pasta principal do projeto (pasta que contém o arquivo .gitmodules)
+- git submodule update
