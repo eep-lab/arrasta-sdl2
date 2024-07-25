@@ -24,6 +24,8 @@ uses
   , sdl.app.stimulus.types
   , sdl.app.grids.types
   , SDL2
+  , Math
+  , math.bresenhamline.classes
   ;
 
 type
@@ -32,6 +34,7 @@ type
 
   TDragDropablePicture = class(TChoiceablePicture, IDragDropable, IStimulus)
   private
+    FBresenhamLine : TBresenhamLine;
     FBorder : TBorder;
     FIsSample: Boolean;
     FPosition : integer;
@@ -62,6 +65,8 @@ type
     procedure Start;
     procedure Stop;
     procedure DoResponse(AHuman : Boolean);
+    procedure UpdateDistance;
+    procedure MoveToPoint(APorcentage: Float);
     function GetID: TStimulusID;
     function ToData : string;
     function ToJSON : string;
@@ -224,11 +229,12 @@ constructor TDragDropablePicture.Create;
 begin
   inherited Create;
   FBorder := Border;
+  FBresenhamLine := TBresenhamLine.Create;
 end;
 
 destructor TDragDropablePicture.Destroy;
 begin
-
+  FBresenhamLine.Free;
   inherited Destroy;
 end;
 
@@ -251,6 +257,24 @@ end;
 procedure TDragDropablePicture.DoResponse(AHuman: Boolean);
 begin
 
+end;
+
+procedure TDragDropablePicture.UpdateDistance;
+var
+  LTarget : TDragDropablePicture;
+begin
+  LTarget := TargetChoice as TDragDropablePicture;
+  FBresenhamLine.Update(BoundsRect, LTarget.BoundsRect);
+end;
+
+procedure TDragDropablePicture.MoveToPoint(APorcentage: Float);
+var
+  Point : TPoint;
+begin
+  Point := FBresenhamLine.GetPoint(APorcentage);
+  Left := Point.X;
+  Top := Point.Y;
+  SetOriginalBounds;
 end;
 
 function TDragDropablePicture.GetID: TStimulusID;

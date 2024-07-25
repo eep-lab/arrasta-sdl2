@@ -246,11 +246,11 @@ begin
       LItem := Samples[i].Item as TDragDropablePicture;
       //LItem.Cursor := Cursor;
       LItem.LoadFromFile(AsImage(SampleLetter+(i+1).ToString));
-      //LItem.DragMouseMoveMode:=DragMouseMoveMode;
+      LItem.UpdateDistance;
       LItem.Parent := TSDLControl(AParent);
-      //with DragDropKeys do begin
-      //  LItem.MoveToPoint(AParameters.Values[Distance].ToInteger);
-      //end;
+      with DragDropKeys do begin
+        LItem.MoveToPoint(AParameters.Values[DistanceKey].ToInteger);
+      end;
     end;
   end;
 end;
@@ -571,7 +571,6 @@ begin
   inherited Create;
   FAutoAnimateOnStart := False;
   FWrongDragDrops := 0;
-  DragDropLine := TBresenhamLine.Create;
   FSamples := TDragDropablePictures.Create;
   FComparisons := TDragDropablePictures.Create;
   FAnimation := TAnimation.Create;
@@ -586,7 +585,6 @@ var
 begin
   FRenderer.Close;
   FRenderer.Terminate;
-  DragDropLine.Free;
   FAnimation.Free;
 
   for LAnimation in FDoneAnimations do begin

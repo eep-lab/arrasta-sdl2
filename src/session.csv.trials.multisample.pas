@@ -45,19 +45,23 @@ uses
 procedure TCSVMultiSample.AfterLoadingParameters(Sender: TObject);
 begin
   inherited AfterLoadingParameters(Sender);
-  FName :=
-    TrialID.ToString + '-' +
-    Relation + '-' +
-    FStimuliFolder + '-' +
-    'S' + Samples.ToString + '-' +
-    'C' + Comparisons.ToString + '-' +
-    'G' + FGridSize.ToString;
+  if FName.IsEmpty then begin
+    FName :=
+      TrialID.ToString + '-' +
+      Relation + '-' +
+      FStimuliFolder + '-' +
+      'S' + Samples.ToString + '-' +
+      'C' + Comparisons.ToString + '-' +
+      'G' + FGridSize.ToString;
+  end;
 
-  FRefName :=
-    Relation + '-' +
-    FStimuliFolder + '-' +
-    Samples.ToString + '-' +
-    Comparisons.ToString;
+  if FRefName.IsEmpty then begin
+    FRefName :=
+      Relation + '-' +
+      FStimuliFolder + '-' +
+      Samples.ToString + '-' +
+      Comparisons.ToString;
+  end;
 end;
 
 constructor TCSVMultiSample.Create(ASource: string);
