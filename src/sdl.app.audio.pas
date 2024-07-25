@@ -63,8 +63,8 @@ var
 implementation
 
 uses
-  sdl.app.output
-  , sdl.app.events.custom
+   sdl.app.events.custom
+  //, sdl.app.output
   , session.strutils
   , session.parameters.global;
 
@@ -124,9 +124,9 @@ begin
   SDLEvents.OnAudioChannelFinished := @SDLAudioChannelFinished;
   FChannels := TChunkList.Create;
   if Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 1048) < 0 then begin
-    Print('Audio not initialized:'+Mix_GetError^);
+    //Print('Audio not initialized:'+Mix_GetError^);
   end else begin
-    Print('Audio initialized.');
+    //Print('Audio initialized.');
   end;
   Mix_AllocateChannels(1);
   Mix_ChannelFinished(@ChannelFinishedCallback);

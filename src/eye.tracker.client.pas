@@ -21,11 +21,14 @@ type
 
   TEyeTrackerClient = class(TObject, IEyeTracker)
     protected
-      function TrackerClassName : string; virtual; abstract;
+      function UseGazeAsInput : Boolean;
       function GetGazeOnScreenEvent : TGazeOnScreenEvent; virtual; abstract;
+      function IsFake : Boolean; virtual; abstract;
+      function TrackerClassName : string; virtual; abstract;
       procedure SetGazeOnScreenEvent(AValue: TGazeOnScreenEvent); virtual; abstract;
       procedure SetOnCalibrationSuccessful(AValue: TNotifyEvent); virtual; abstract;
       procedure SetOnCalibrationFailed(AValue: TNotifyEvent); virtual; abstract;
+      procedure SetDataFilename(AFilename : string); virtual; abstract;
       procedure StartRecording; virtual; abstract;
       procedure StopRecording; virtual; abstract;
       procedure StartCalibration; virtual; abstract;
@@ -38,9 +41,14 @@ type
 
 implementation
 
-uses eye.tracker;
+uses eye.tracker, session.parameters.global;
 
 { TEyeTrackerClient }
+
+function TEyeTrackerClient.UseGazeAsInput: Boolean;
+begin
+  Result := GlobalTrialParameters.UseGazeAsInput;
+end;
 
 class function TEyeTrackerClient.Exists: Boolean;
 begin

@@ -59,7 +59,7 @@ implementation
 
 uses
   Math,
-  sdl.app.output,
+  //sdl.app.output,
   sdl.app.events.custom,
   sdl.app.video.methods,
   sdl.app.controller.types;
@@ -110,10 +110,10 @@ end;
 procedure TSDLPS4Controller.ControllerButtonDown(
   const event: TSDL_ControllerButtonEvent);
 begin
-  Print('');
-  Print('Button Event');
-  Print(event.button.ToString);
-  Print(IntToStr(event.which));
+  //Print('');
+  //Print('Button Event');
+  //Print(event.button.ToString);
+  //Print(IntToStr(event.which));
 end;
 
 procedure TSDLPS4Controller.ControllerButtonUp(
@@ -170,8 +170,8 @@ begin
     FGameController, touchpad, finger, @state, @x, @y, @pressure);
 
   // Print the finger information
-  Print(Format('Touchpad %d, Finger %d, State %d, X %f, Y %f, Pressure %f',
-    [touchpad, finger, state, x, y, pressure]));
+  //Print(Format('Touchpad %d, Finger %d, State %d, X %f, Y %f, Pressure %f',
+  //  [touchpad, finger, state, x, y, pressure]));
 end;
 
 procedure TSDLPS4Controller.ControllerSensorUpdate(const event: TSDL_ControllerSensorEvent);
@@ -181,24 +181,24 @@ begin
   LSensor := SDL_SensorFromInstanceID(event.which);
   if not Assigned(LSensor) then
   begin
-    Print('Couldn''t get sensor for sensor event');
+    //Print('Couldn''t get sensor for sensor event');
     Exit;
   end;
 
   case SDL_SensorGetType(LSensor) of
     SDL_SENSOR_ACCEL: begin
-      Print(Format('Accelerometer update: %.2f, %.2f, %.2f',
-        [event.data[0], event.data[1], event.data[2]]));
+      //Print(Format('Accelerometer update: %.2f, %.2f, %.2f',
+      //  [event.data[0], event.data[1], event.data[2]]));
     end;
 
     SDL_SENSOR_GYRO: begin
-      Print(Format('Gyro update: %.2f, %.2f, %.2f',
-        [event.data[0], event.data[1], event.data[2]]));
+      //Print(Format('Gyro update: %.2f, %.2f, %.2f',
+      //  [event.data[0], event.data[1], event.data[2]]));
     end
 
     otherwise begin
-      Print(Format('Sensor update for sensor type %1d',
-        [SDL_SensorGetType(LSensor)]));
+      //Print(Format('Sensor update for sensor type %1d',
+      //  [SDL_SensorGetType(LSensor)]));
     end;
   end;
 end;
@@ -245,7 +245,7 @@ var
 begin
   inherited Create;
   F2DAxis := TController2DAxis.Create;
-  LWindowRect := WindowSize;
+  LWindowRect := WindowBoundsRect;
   FWidth := LWindowRect.w;
   FHeight := LWindowRect.h;
 
@@ -257,27 +257,27 @@ begin
 
   SDL_JoystickUpdate;
   LGameControllers := SDL_NumJoysticks;
-  Print('NumJoysticks:'+LGameControllers.ToString);
+  //Print('NumJoysticks:'+LGameControllers.ToString);
   if LGameControllers > 0 then begin
     // 'PS4 Controller'
-    Print(SDL_GameControllerNameForIndex(0));
+    //Print(SDL_GameControllerNameForIndex(0));
     FGameController := SDL_GameControllerOpen(0);
     if FGameController <> nil then begin
       F2DAxis.GameController := FGameController;
       if SDL_GameControllerHasRumble(FGameController) = SDL_TRUE then begin
-        Print('Has Rumble');
+        //Print('Has Rumble');
       end;
 
       if SDL_GameControllerHasRumbleTriggers(FGameController) = SDL_TRUE then begin
-        Print('Has Rumble Triggers');
+        //Print('Has Rumble Triggers');
       end;
 
       if SDL_GameControllerHasSensor(FGameController, SDL_SENSOR_ACCEL) = SDL_TRUE then begin
-        Print('Has Accelerometer');
+        //Print('Has Accelerometer');
       end;
 
       if SDL_GameControllerHasSensor(FGameController, SDL_SENSOR_GYRO) = SDL_TRUE then begin
-        Print('Has Gyroscope');
+        //Print('Has Gyroscope');
       end;
 
     end else begin

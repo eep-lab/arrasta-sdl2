@@ -71,7 +71,7 @@ uses
   sdl2_image
   , sdl.colors
   , sdl.app.video.methods
-  , sdl.app.output
+  //, sdl.app.output
   , sdl.app.testmode
   , sdl.app.mouse
   ;

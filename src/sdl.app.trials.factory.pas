@@ -40,6 +40,7 @@ type
       class procedure RegisterTrialClass(
         ATrialKind: string; ATrialClass: TTrialClass); static;
       class procedure Play; static;
+      class procedure UpdateNavigator;
       class function CurrentTrial : ITrial;
       class function GetLastTrial : ITrial; static;
       class procedure FreeCurrentTrial;
@@ -55,7 +56,7 @@ uses Classes
    , session.endcriteria
    , session.pool
    , sdl.app.controller.manager
-   , sdl.app.output
+   //, sdl.app.output
    , sdl.app.testmode
    , sdl.app.trials.mts
    , sdl.app.trials.dragdrop
@@ -109,6 +110,12 @@ begin
   FCurrentTrial.Show;
 
   Controllers.FirstController.Show;
+end;
+
+class procedure TTrialFactory.UpdateNavigator;
+begin
+  FCurrentTrial.Navigator := Controllers.FirstController.Navigator;
+  FCurrentTrial.UpdateController;
 end;
 
 class function TTrialFactory.CurrentTrial: ITrial;

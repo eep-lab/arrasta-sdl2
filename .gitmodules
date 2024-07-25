@@ -19,3 +19,6 @@
 [submodule "dependencies/zeromq4-1"]
 	path = dependencies/zeromq4-1
 	url = https://github.com/zeromq/zeromq4-1.git
+[submodule "dependencies/fpc-opengaze"]
+	path = dependencies/fpc-opengaze
+	url = https://github.com/cpicanco/fpc-opengaze.git

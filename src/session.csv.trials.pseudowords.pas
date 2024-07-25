@@ -55,7 +55,12 @@ begin
     FWord.Caption + #32 +
     Relation + #32 +
     Comparisons.ToString + 'C';
-  FRefName := FCode+'-'+Relation;
+
+  if (TrialID = 109) or (TrialID = 110) then begin
+    FRefName := FCode+'-'+Relation+'-known';
+  end else begin
+    FRefName := FCode+'-'+Relation;
+  end;
 end;
 
 constructor TCSVPseudowordsTrials.Create(ASource: string);

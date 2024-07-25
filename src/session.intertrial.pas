@@ -149,7 +149,7 @@ procedure TInterTrialEvents.InterTrialConsequenceBegin;
 begin
   case FTrial.MyResult of
     Miss: begin
-      clBackgroud := clBlack;
+      clBackground := clTimeOut;
       GPaintingInvalidated := True;
     end
     else { do nothing }
@@ -158,7 +158,7 @@ end;
 
 procedure TInterTrialEvents.InterTrialConsequenceEnd(Sender: TObject);
 begin
-  clBackgroud := clWhite;
+  clBackground := clDefaultBackground;
   if HasInterTrialTime then begin
     InterTrialIntervalBegin;
   end;

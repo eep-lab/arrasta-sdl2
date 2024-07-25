@@ -19,9 +19,9 @@ uses
 
 type
 
-  { TFormBackground }
+  { TFormMain }
 
-  TFormBackground = class(TForm)
+  TFormMain = class(TForm)
     ButtonRunNextSession: TButton;
     ButtonOpenSpeechValidation: TButton;
     ButtonTestCondition: TButton;
@@ -93,7 +93,7 @@ type
   end;
 
 var
-  FormBackground: TFormBackground;
+  FormMain: TFormMain;
 
 implementation
 
@@ -121,6 +121,7 @@ uses
   , ui.backup
   , picanco.experiments.images
   , picanco.experiments.output
+  , sdl.colors
   ;
 
 { ToDo: show next designed session of selected participant.
@@ -128,9 +129,9 @@ uses
 
 { ToDo: point-and-click design tools }
 
-{ TFormBackground }
+{ TFormMain }
 
-procedure TFormBackground.ButtonRunNewSessionClick(Sender: TObject);
+procedure TFormMain.ButtonRunNewSessionClick(Sender: TObject);
 begin
   FormMisc.Initialize;
   if not AssignGlobalVariables then Exit;
@@ -141,7 +142,7 @@ begin
   RunSession;
 end;
 
-procedure TFormBackground.ButtonNewParticipantClick(Sender: TObject);
+procedure TFormMain.ButtonNewParticipantClick(Sender: TObject);
 var
   LNewParticipant : string;
 begin
@@ -153,10 +154,12 @@ begin
 
     if LNewParticipant.IsEmpty or (Length(LNewParticipant) < 3) then Exit;
     Items.Append(LNewParticipant);
+    ItemIndex := Items.Count-1;
+    MenuItemCopyPNGFilesClick(ButtonNewParticipant);
   end;
 end;
 
-procedure TFormBackground.ButtonRunInterruptedSessionClick(Sender: TObject);
+procedure TFormMain.ButtonRunInterruptedSessionClick(Sender: TObject);
 begin
   SetupFolders; // todo: pass filename id of loaded file into session.counters.loadfromfile
   OpenDialog1.InitialDir := Pool.BaseDataPath;
@@ -172,17 +175,17 @@ begin
   end;
 end;
 
-procedure TFormBackground.ButtonTestConditionClick(Sender: TObject);
+procedure TFormMain.ButtonTestConditionClick(Sender: TObject);
 begin
   FormEndCriteriaTest.Show;
 end;
 
-procedure TFormBackground.ButtonOpenSpeechValidationClick(Sender: TObject);
+procedure TFormMain.ButtonOpenSpeechValidationClick(Sender: TObject);
 begin
   FormSpeechValidationQueue.Show;
 end;
 
-procedure TFormBackground.ButtonRunNextSessionClick(Sender: TObject);
+procedure TFormMain.ButtonRunNextSessionClick(Sender: TObject);
 var
   LInformation : TInformation;
   LCondition : integer;
@@ -221,48 +224,52 @@ begin
   end;
 end;
 
-procedure TFormBackground.ButtonMiscClick(Sender: TObject);
+procedure TFormMain.ButtonMiscClick(Sender: TObject);
 begin
   FormMisc.ShowModal;
 end;
 
-procedure TFormBackground.BeginSession(Sender: TObject);
+procedure TFormMain.BeginSession(Sender: TObject);
 begin
   if Assigned(EyeTracker) then begin
+    EyeTracker.SetDataFilename(Pool.BaseDataPath + Pool.BaseFilename);
     EyeTracker.StartRecording;
   end;
 end;
 
-procedure TFormBackground.ComboBoxDesignFolderEditingDone(Sender: TObject);
+procedure TFormMain.ComboBoxDesignFolderEditingDone(Sender: TObject);
 begin
-  if ComboBoxDesignFolder.Items.Count > 0 then begin
-    with Pool, ComboBoxDesignFolder do begin
-      DesignBasePath := Items[ItemIndex];
+  with ComboBoxDesignFolder do begin
+    if ItemIndex > 0 then begin
+      if ComboBoxDesignFolder.Items.Count > 0 then begin
+        ListBoxCondition.Clear;
+        Pool.DesignBasePath := Items[ItemIndex];
+        SaveProtocolIndex(ParticipantFolderName, ItemIndex);
+        GetDesignFilesFor(ListBoxCondition.Items);
+      end;
     end;
-    ListBoxCondition.Clear;
-    GetDesignFilesFor(ListBoxCondition.Items);
   end;
 end;
 
-procedure TFormBackground.ComboBoxParticipantEditingDone(Sender: TObject);
+procedure TFormMain.ComboBoxParticipantEditingDone(Sender: TObject);
 var
   LInformation : TInformation;
   LCondition : integer;
-  LConfiguration : string;
 begin
   if ComboBoxParticipant.Items.Count > 0 then begin
     SetupFolders;
-    //IniPropStorage1.Save;
-    //FormMisc.IniPropStorage1.Save;
-    //
+    ComboBoxDesignFolder.ItemIndex := LoadProtocolIndex(ParticipantFolderName);
+    ComboBoxDesignFolderEditingDone(ComboBoxParticipant);
+    //IniPropStorageProtocol.Save;
     //LConfiguration := ConcatPaths([
     //  Pool.ConfigurationsRootBasePath,
-    //  ParticipantFolderName, 'configurations.ini']);
-    //IniPropStorage1.IniFileName := LConfiguration;
+    //  ParticipantFolderName, 'protocol.ini']);
+    //IniPropStorageProtocol.IniFileName := LConfiguration;
     //if FileExists(LConfiguration) then begin
-    //  IniPropStorage1.Restore;
+    //  IniPropStorageProtocol.Restore;
     //end;
-    //
+
+    //FormMisc.IniPropStorage1.Save;
     //LConfiguration := ConcatPaths([
     //  Pool.ConfigurationsRootBasePath,
     //  ParticipantFolderName, 'configurations_global.ini']);
@@ -292,25 +299,27 @@ begin
   end;
 end;
 
-procedure TFormBackground.EndSession(Sender: TObject);
+procedure TFormMain.EndSession(Sender: TObject);
 begin
 
 end;
 
-procedure TFormBackground.CloseSDLApp(Sender: TObject);
+procedure TFormMain.CloseSDLApp(Sender: TObject);
 var
   LPoint : TPoint;
 begin
   LPoint := Point(ButtonRunNextSession.Left, ButtonRunNextSession.Top);
   Mouse.CursorPos.SetLocation(ClientToScreen(LPoint));
 
+  FormMisc.Finalize;
+  SDLSession.Free;
+  SDLApp.Free;
+
   if Assigned(EyeTracker) then begin
     EyeTracker.StopRecording;
     FinalizeEyeTracker;
   end;
-  FormMisc.Finalize;
-  SDLSession.Free;
-  SDLApp.Free;
+
   FreeConfigurationFile;
   Controllers.Free;
   ToogleControlPanelEnabled;
@@ -319,17 +328,17 @@ begin
   ButtonRunNextSession.SetFocus;
 end;
 
-procedure TFormBackground.FormCreate(Sender: TObject);
+procedure TFormMain.FormCreate(Sender: TObject);
 begin
   FSessionName := '';
 end;
 
-procedure TFormBackground.IniPropStorage1RestoreProperties(Sender: TObject);
+procedure TFormMain.IniPropStorage1RestoreProperties(Sender: TObject);
 begin
   SetupFolders;
 end;
 
-procedure TFormBackground.IniPropStorage1StoredValues0Restore(
+procedure TFormMain.IniPropStorage1StoredValues0Restore(
   Sender: TStoredValue; var Value: TStoredType);
 var
   LValue : integer;
@@ -343,13 +352,14 @@ begin
   end;
 end;
 
-procedure TFormBackground.IniPropStorage1StoredValues0Save(
+procedure TFormMain.IniPropStorage1StoredValues0Save(
   Sender: TStoredValue; var Value: TStoredType);
 begin
+  SaveProtocolIndex(ParticipantFolderName, ComboBoxDesignFolder.ItemIndex);
   Value := ComboBoxDesignFolder.ItemIndex.ToString;
 end;
 
-procedure TFormBackground.IniPropStorage1StoredValues1Restore(
+procedure TFormMain.IniPropStorage1StoredValues1Restore(
   Sender: TStoredValue; var Value: TStoredType);
 var
   LValue : integer;
@@ -361,45 +371,45 @@ begin
   end;
 end;
 
-procedure TFormBackground.IniPropStorage1StoredValues1Save(
+procedure TFormMain.IniPropStorage1StoredValues1Save(
   Sender: TStoredValue; var Value: TStoredType);
 begin
   Value := ListBoxCondition.ItemIndex.ToString;
 end;
 
-procedure TFormBackground.MenuItemConvertDesignFileClick(Sender: TObject);
+procedure TFormMain.MenuItemConvertDesignFileClick(Sender: TObject);
 begin
   CovertToSingleFilename;
 end;
 
-procedure TFormBackground.MenuItemCopyPNGFilesClick(Sender: TObject);
+procedure TFormMain.MenuItemCopyPNGFilesClick(Sender: TObject);
 begin
   SetupFolders;
   E1CopyRandomImagesToParticipantFolder;
 end;
 
-procedure TFormBackground.MenuItemCyclesFromTemplateClick(Sender: TObject);
+procedure TFormMain.MenuItemCyclesFromTemplateClick(Sender: TObject);
 begin
   CyclesFromTemplate;
 end;
 
-procedure TFormBackground.MenuItemOutputWordsPerCyleClick(Sender: TObject);
+procedure TFormMain.MenuItemOutputWordsPerCyleClick(Sender: TObject);
 begin
   PrintWordsPerCycle;
 end;
 
-procedure TFormBackground.MenuItemRemoveParticipantClick(Sender: TObject);
+procedure TFormMain.MenuItemRemoveParticipantClick(Sender: TObject);
 begin
   with ComboBoxParticipant do
     Items.Delete(ItemIndex);
 end;
 
-procedure TFormBackground.MenuItemShowWordsPerCycleClick(Sender: TObject);
+procedure TFormMain.MenuItemShowWordsPerCycleClick(Sender: TObject);
 begin
   ShowWordsPerCycle;
 end;
 
-procedure TFormBackground.HitCriteriaAtSessionEnd(Sender: TObject);
+procedure TFormMain.HitCriteriaAtSessionEnd(Sender: TObject);
 const
   LResult = 'Critério atingido';
 begin
@@ -411,7 +421,7 @@ begin
   LabelSessionEndCriteria.Caption := LResult;
 end;
 
-procedure TFormBackground.NotHitCriteriaAtSessionEnd(Sender: TObject);
+procedure TFormMain.NotHitCriteriaAtSessionEnd(Sender: TObject);
 const
   LResult = 'Critério não atingido';
 begin
@@ -419,11 +429,11 @@ begin
   with ListBoxCondition do begin
     LabelLastSessionName.Caption := Items[ItemIndex];
   end;
-  LabelSessionEndCriteria.Color := clRed;
+  LabelSessionEndCriteria.Color := Graphics.clRed;
   LabelSessionEndCriteria.Caption := LResult;
 end;
 
-function TFormBackground.AssignGlobalVariables: Boolean;
+function TFormMain.AssignGlobalVariables: Boolean;
 begin
   Result := False;
   TestMode := FormMisc.CheckBoxTestMode.Checked;
@@ -449,7 +459,6 @@ begin
   with GlobalTrialParameters, FormMisc.ComboBoxShouldRestartAt do
     ShouldRestartAtBlockStart := ItemIndex = 0;
 
-
   with GlobalTrialParameters, FormMisc.ComboBoxAudioPromptForText do begin
     if ItemIndex > -1 then begin
       AudioPromptForText := Items[ItemIndex];
@@ -466,6 +475,24 @@ begin
       ShowMessage('Escolha uma fonte para o texto nas configurações.');
       Exit;
     end;
+  end;
+
+  with FormMisc.PanelFontColor do begin
+    sdl.colors.clDefaultBackground := ColorToSDLColor(Color);
+    sdl.colors.clBackground := ColorToSDLColor(Color);
+    sdl.colors.clFontColor := ColorToSDLColor(Font.Color);
+  end;
+
+  with GlobalTrialParameters, FormMisc.CheckBoxUseRemoteServer do begin
+    UseRemoteServer := Checked;
+  end;
+
+  with GlobalTrialParameters, FormMisc.CheckBoxUseGazeAsInput do begin
+    UseGazeAsInput := Checked;
+  end;
+
+  with GlobalTrialParameters, FormMisc.CheckBoxSimultaneousMTS do begin
+    SimultaneousMTS := Checked;
   end;
 
   with GlobalTrialParameters, FormMisc.SpinEditFontSize do
@@ -522,7 +549,7 @@ begin
   Result := True;
 end;
 
-procedure TFormBackground.ToogleControlPanelEnabled(AException: TComponent);
+procedure TFormMain.ToogleControlPanelEnabled(AException: TComponent);
 var
   i: Integer;
 begin
@@ -534,7 +561,7 @@ begin
   end;
 end;
 
-function TFormBackground.ParticipantFolderName: string;
+function TFormMain.ParticipantFolderName: string;
 begin
   if ComboBoxParticipant.Items.Count > 0 then begin
     Pool.Counters.Subject := ComboBoxParticipant.ItemIndex;
@@ -544,7 +571,7 @@ begin
   end;
 end;
 
-function TFormBackground.SessionName: string;
+function TFormMain.SessionName: string;
 begin
   if FSessionName.IsEmpty then begin
     with ListBoxCondition do begin
@@ -555,7 +582,7 @@ begin
   end;
 end;
 
-function TFormBackground.SetupFolders: Boolean;
+function TFormMain.SetupFolders: Boolean;
 begin
   Pool.ImageBasePath := ParticipantFolderName;
   Pool.BaseDataPath :=
@@ -569,7 +596,7 @@ begin
     ForceDirectories(Pool.DataResponsesBasePath);
 end;
 
-function TFormBackground.Validated: Boolean;
+function TFormMain.Validated: Boolean;
   function SetupParticipantID : Boolean;
   var
     LParticipantID: TStringList;
@@ -613,13 +640,19 @@ begin
   Result := False;
 
   with FormMisc.ComboBoxMonitor do begin
-    if ItemIndex = -1 then begin
+    if FormMisc.CheckBoxForceLastMonitor.Checked then begin
       if Items.Count > 0 then begin
         ItemIndex := Items.Count-1;
-        ShowMessage('O último monitor foi selecionado: ' + Items[ItemIndex]);
-      end else begin
-        ShowMessage('Nenhum monitor foi reconhecido.');
-        Exit;
+      end;
+    end else begin
+      if ItemIndex = -1 then begin
+        if Items.Count > 0 then begin
+          ItemIndex := Items.Count-1;
+          ShowMessage('O último monitor foi selecionado: ' + Items[ItemIndex]);
+        end else begin
+          ShowMessage('Nenhum monitor foi reconhecido.');
+          Exit;
+        end;
       end;
     end;
   end;
@@ -658,7 +691,7 @@ begin
   Result := True;
 end;
 
-procedure TFormBackground.RunSession;
+procedure TFormMain.RunSession;
 begin
   SDLApp := TSDLApplication.Create(@Pool.AppName[1]);
   SDLApp.SetupVideo(FormMisc.ComboBoxMonitor.ItemIndex);
@@ -688,7 +721,7 @@ begin
   SDLApp.Run;
 end;
 
-procedure TFormBackground.CreateNewConfigurationFile;
+procedure TFormMain.CreateNewConfigurationFile;
 var
   LFilename: String;
 begin

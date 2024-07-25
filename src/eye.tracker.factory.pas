@@ -27,7 +27,11 @@ type
 
 implementation
 
-uses eye.tracker.client,  eye.tracker.pupil, eye.tracker.eyelink;
+uses
+  eye.tracker.client,
+  eye.tracker.pupil,
+  eye.tracker.eyelink,
+  eye.tracker.gazepoint;
 
 var
   Client : TEyeTrackerClient = nil;
@@ -37,8 +41,10 @@ var
 class function TEyeTrackerFactory.New(ACode: TEyeTrackerCode): IEyeTracker;
 begin
   case ACode of
+    etGazepoint: Client := TGazepointEyeTracker.Create;
     etPupilLabs : Client := TPupilEyeTracker.Create;
     etEyeLink : Client := TEyeLinkEyeTracker.Create;
+
     otherwise begin
       Result := nil;
       Exit;

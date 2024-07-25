@@ -43,7 +43,7 @@ implementation
 
 uses
   SysUtils,
-  sdl.app.output,
+  //sdl.app.output,
   sdl.app.renderer.types,
   sdl.app.renderer.validation,
   session.parameters.global;
@@ -113,7 +113,7 @@ end;
 
 procedure TRendererThread.PrintMessage;
 begin
-  Print(Msg);
+  //Print(Msg);
 end;
 
 procedure TRendererThread.DoInvalidate;

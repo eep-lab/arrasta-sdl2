@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 
 from barplots import default_axis_config, save_or_show
 
-def line_plot_per_cycle(container, save=False, include_names=[], append_to_filename=''):
+def line_plot_per_cycle(container, save=False, include_names=[], append_to_filename='', group=False):
     """
     container = [{
         categories : [(name, hit_rate, color), ...],
@@ -71,18 +71,17 @@ def line_plot_per_cycle(container, save=False, include_names=[], append_to_filen
             std_hit_rates[name].append(np.std(rates))
 
     # we need a single plot with cycles at the x axis and hit_rates at the y axis, one line per name
-    fig, ax = plt.subplots(figsize=(4, 3))
+    fig, ax = plt.subplots(figsize=(6, 3))
     default_axis_config(ax, False)
     ax.set_xlim(0, max_cycle + 1)
-    ax.set_ylim(0, 1.2)
+    ax.set_ylim(-10, 120)
     ax.set_xticks(range(1, max_cycle + 1))
     ax.set_xlabel('Cycle')
-    ax.set_ylabel('Average hit proportion')
+    ax.set_ylabel('Percent correct (Group main)')
 
     # plot one line per name for all cycles
+    handles = []
     for name, hit_rates in average_hit_rates.items():
-        upper_errors = std_hit_rates[name]
-        lower_errors = [0] * len(upper_errors)
         # add a little bit of space in x direction to avoid overlapping lines
         x = np.array(range(1, max_cycle + 1)) + 0.08 * include_names.index(name)
 
@@ -90,7 +89,7 @@ def line_plot_per_cycle(container, save=False, include_names=[], append_to_filen
         if name == 'CD Probes 2':
             label = 'Textual Beh'
             marker = 'o'
-            markerfacecolor = 'white'
+            markerfacecolor = 'gray'
         elif name == 'AC Probes':
             label = 'SW-PW MTS'
             marker = '^'
@@ -101,34 +100,45 @@ def line_plot_per_cycle(container, save=False, include_names=[], append_to_filen
             markerfacecolor = 'white'
         else:
             raise ValueError('Unknown name: {}'.format(name))
-        # Draw the error bars
-        for i in range(len(x)):
-            ax.vlines(x[i], hit_rates[i] - lower_errors[i], hit_rates[i] + upper_errors[i],
-                    color='black')
 
-        # Draw the caps
-        for i in range(len(x)):
-            ax.hlines(hit_rates[i] + upper_errors[i], x[i] - 0.1, x[i] + 0.1,
-                      color='black')
+        # draw a dashed line at 0.5 and 1.0
+        ax.axhline(y=50, color='black', linewidth=0.8, linestyle='--')
+        ax.axhline(y=100, color='black', linewidth=0.8, linestyle='--')
 
-        ax.plot(x, hit_rates,
+        hit_rates = [rate * 100 for rate in hit_rates]
+        if group:
+            upper_errors = std_hit_rates[name]
+            lower_errors = [0] * len(upper_errors)
+            upper_errors = [rate * 100 for rate in upper_errors]
+
+            # Draw the error bars
+            for i in range(len(x)):
+                ax.vlines(x[i], hit_rates[i] - lower_errors[i], hit_rates[i] + upper_errors[i],
+                        linewidth=1.0,
+                        color='black')
+
+            # Draw the caps
+            for i in range(len(x)):
+                ax.hlines(hit_rates[i] + upper_errors[i], x[i] - 0.1, x[i] + 0.1,
+                        linewidth=1.0,
+                        color='black')
+
+        handle, = ax.plot(x, hit_rates,
                     markersize=8,
                     label=label,
                     color='black',
                     marker=marker,
+                    linewidth=1.0,
                     markerfacecolor=markerfacecolor, markeredgecolor='black')
-
-
-    # draw a dashed line at 0.5 and 1.0
-    ax.axhline(y=0.5, color='black', linestyle='--')
-    ax.axhline(y=1.0, color='black', linestyle='--')
+        handles.append(handle)
 
     # y ticks at 0, 0.5 and 1.0 only
-    yticks = [0, 0.5, 1.0]
+    yticks = [0, 50, 100]
     ax.set_yticks(yticks)
     ax.set_yticklabels(['{:.1f}'.format(y) for y in yticks])
-    # add legend at bottom right
-    ax.legend(loc='lower right')
+    # show legend outside the plot
+    handles = [handles[1], handles[2], handles[0]]
+    ax.legend(handles=handles, loc='upper left', bbox_to_anchor=(1.05, 0.5), ncol=1)
 
     # tight layout
     plt.tight_layout()

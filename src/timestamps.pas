@@ -23,7 +23,7 @@ uses
 
 {$IFDEF DARWIN}
   , ctypes
-  , MachTime
+  , timestamps.machtime
 {$ENDIF}
 
 {$IFDEF WINDOWS}

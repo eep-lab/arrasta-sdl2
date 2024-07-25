@@ -91,7 +91,7 @@ uses
   , sdl.app.renderer.validation
   , sdl.app.controls.custom
   , sdl.app.graphics.picture
-  , sdl.app.output
+  //, sdl.app.output
   , sdl.app.audio
   , sdl.app.grids.types
   , sdl.app.grids
@@ -370,10 +370,21 @@ procedure TMTSStimuli.SampleResponse(Sender: TObject);
 var
   LStimulus: TStimulus;
 begin
-  //if FIsDMTS then
-  //for LStimulus in FSamples do begin
-  //  LStimulus.Stop;
-  //end;
+  case FMTSModality.Samples of
+    ModalityA: begin
+      if GlobalTrialParameters.SimultaneousMTS then begin
+        { do nothing }
+      end else begin
+        for LStimulus in FSamples do begin
+          LStimulus.Hide;
+        end;
+      end;
+    end;
+
+    otherwise begin
+      { do nothing }
+    end;
+  end;
 
   case FMTSModality.Comparisons of
     ModalityD: begin { Speech }

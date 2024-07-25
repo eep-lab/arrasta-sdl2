@@ -42,6 +42,10 @@ function FilenameNoOverride(AFilename: string; out AFileIndex: integer): string;
 function NewConfigurationFile : string;
 function LoadConfigurationFile(AFilename : string) : string;
 
+function LoadProtocolIndex(AParticipantName : string) : integer;
+procedure SaveProtocolIndex(AParticipantName : string; AItemIndex : integer);
+
+
 implementation
 
 uses
@@ -56,6 +60,7 @@ uses
 
 const
   GLastValidBaseFilename = 'LastValidBaseFilename';
+  GLastProtocol = 'LastProtocol';
 
 procedure OverrideLastValidBaseFilenameFile(AFilename : string);
 var
@@ -79,6 +84,53 @@ var
 begin
   LFilename := Pool.BaseDataPath+GLastValidBaseFilename;
   Result := FileExists(LFilename);
+end;
+
+function LoadProtocolIndex(AParticipantName : string) : integer;
+var
+  LFolder : string;
+  LFilename : string;
+  LStringList : TStringList;
+begin
+  LFolder := ConcatPaths([
+    Pool.ConfigurationsRootBasePath,
+    AParticipantName]);
+  ForceDirectories(LFolder);
+  LFilename := ConcatPaths([LFolder, GLastProtocol]);
+
+  if FileExists(LFilename) then begin
+    LStringList := TStringList.Create;
+    try
+      LStringList.LoadFromFile(LFilename);
+      Result := LStringList[0].ToInteger;
+    finally
+      LStringList.Free;
+    end;
+  end else begin
+    Result := -1;
+  end;
+end;
+
+
+procedure SaveProtocolIndex(AParticipantName : string; AItemIndex : integer);
+var
+  LFolder : string;
+  LFilename : string;
+  LStringList : TStringList;
+begin
+  LFolder := ConcatPaths([
+    Pool.ConfigurationsRootBasePath,
+    AParticipantName]);
+  ForceDirectories(LFolder);
+  LFilename := ConcatPaths([LFolder, GLastProtocol]);
+  LStringList := TStringList.Create;
+  try
+    LStringList.Clear;
+    LStringList.Append(AItemIndex.ToString);
+    LStringList.SaveToFile(LFilename);
+  finally
+    LStringList.Free;
+  end;
 end;
 
 function GetLastValidInformationFile: string;
@@ -306,6 +358,7 @@ end;
 
 function NewConfigurationFile : string;
 begin
+  //RandSeed := Random;
   Result := Pool.BasePath + 'last_session.ini';
   if FileExists(Result) then
     DeleteFile(Result);

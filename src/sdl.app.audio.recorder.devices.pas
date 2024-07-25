@@ -110,7 +110,7 @@ implementation
 
 uses
   SysUtils,
-  sdl.app.output,
+  //sdl.app.output,
   sdl.app.renderer.types,
   sdl.app.renderer.validation,
   session.parameters.global;
@@ -270,7 +270,7 @@ end;
 
 procedure TAudioDevice.PrintMessage;
 begin
-  Print(Msg);
+  //Print(Msg);
 end;
 
 procedure TAudioDevice.DoInvalidate;
@@ -311,7 +311,7 @@ begin
   with FAudioSpec do begin
     Result := RECORDING_BUFFER_SECONDS *
       freq * SDL_AUDIO_BITSIZE(format) div 8 div 1024;
-    Print(Result.ToString);
+    //Print(Result.ToString);
   end;
 end;
 
@@ -401,11 +401,11 @@ begin
   FDeviceID := SDL_OpenAudioDevice(FDevices.Keys.ToArray[0], 1,
     FDevices.Values.ToArray[0], @FAudioSpec, SDL_AUDIO_ALLOW_FREQUENCY_CHANGE);
 
-  Print('Name:'+StrPas(FDevices.Keys.ToArray[0]));
-  Print('Channels:' + FAudioSpec.channels.ToString);
-  Print('Format:' + FAudioSpec.format.ToHexString);
-  Print('Samples:' + FAudioSpec.samples.ToString);
-  Print('Sample Rate:' + FAudioSpec.freq.ToString);
+  //Print('Name:'+StrPas(FDevices.Keys.ToArray[0]));
+  //Print('Channels:' + FAudioSpec.channels.ToString);
+  //Print('Format:' + FAudioSpec.format.ToHexString);
+  //Print('Samples:' + FAudioSpec.samples.ToString);
+  //Print('Sample Rate:' + FAudioSpec.freq.ToString);
   Result := FDeviceID <> 0;
   if not Result then begin
     raise
@@ -468,7 +468,7 @@ begin
       LWavWriter.WriteBuf(GPRecordingBuffer^, GetBufferByteSize);
       LWavWriter.FlushHeader;
     end else begin
-      Print('Error creating WAV file: ' + AFileName);
+      //Print('Error creating WAV file: ' + AFileName);
     end;
   finally
     LWavWriter.Free;
@@ -507,7 +507,7 @@ end;
 function TAudioPlaybackComponent.Open: Boolean;
 begin
   ListDevices(0, FDevices);
-  Print(StrPas(FDevices.Keys.ToArray[0]));
+  //Print(StrPas(FDevices.Keys.ToArray[0]));
   FDeviceID := SDL_OpenAudioDevice(FDevices.Keys.ToArray[0], 0,
     FDevices.Values.ToArray[0], @FAudioSpec, SDL_AUDIO_ALLOW_FREQUENCY_CHANGE);
   Result := FDeviceID <> 0;

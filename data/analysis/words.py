@@ -50,6 +50,7 @@ words_per_cycle = {
     5 : {'teaching': [fabo, nile], 'generalization': [fabe, nilo]},
     6 : {'teaching': [bole, nifa], 'generalization': [febi, lano]},
 }
+
 category_per_word = {
     nibo : 'Teaching',
     fale : 'Teaching',
@@ -64,25 +65,25 @@ category_per_word = {
     bole : 'Teaching',
     nifa : 'Teaching',
 
-    nibe : 'Assessment',
-    lofi : 'Assessment',
-    bofi : 'Assessment',
-    nale : 'Assessment',
-    leba : 'Assessment',
-    nofa : 'Assessment',
-    bona : 'Assessment',
-    lefi : 'Assessment',
-    fabe : 'Assessment',
-    nilo : 'Assessment',
-    febi : 'Assessment',
-    lano : 'Assessment',
-    lani : 'Generalization',
-    febo : 'Generalization',
-    nole : 'Generalization',
-    bifa : 'Generalization',
+    nibe : 'Generalization1',
+    lofi : 'Generalization1',
+    bofi : 'Generalization1',
+    nale : 'Generalization1',
+    leba : 'Generalization1',
+    nofa : 'Generalization1',
+    bona : 'Generalization1',
+    lefi : 'Generalization1',
+    fabe : 'Generalization1',
+    nilo : 'Generalization1',
+    febi : 'Generalization1',
+    lano : 'Generalization1',
+    lani : 'Generalization2',
+    febo : 'Generalization2',
+    nole : 'Generalization2',
+    bifa : 'Generalization2',
 
-    falo : 'Constant',
-    bena : 'Constant',
+    falo : 'Generalization3',
+    bena : 'Generalization3',
 }
 
 cycle_per_word = {

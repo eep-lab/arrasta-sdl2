@@ -1,0 +1,7 @@
+ID,Name,EndSessionOnCriterion,EndSessionOnNotCriterionAfterBlockRepetitions,RepeatStyle,EndCriterionStyle,EndCriterionEvaluationTime,MaxBlockRepetitionConsecutives,MaxBlockRepetitionInSession,NextBlockOnCriterion,NextBlockOnNotCriterion,EndCriterionValue,Reinforcement
+1,Pre-training,False,False,Global,MissCount,OnBlockEnd,,,2,-1,0,100
+2,Pre-training,False,False,Global,MissCount,OnBlockEnd,,,3,1,2,100
+3,Pre-training,False,False,Global,MissCount,OnBlockEnd,,,4,2,2,100
+4,Pre-training,False,False,Global,MissCount,OnBlockEnd,,,5,3,2,100
+5,Pre-training,False,False,Global,MissCount,OnBlockEnd,,,6,4,2,100
+6,Pre-training,False,False,Global,MissCount,OnBlockEnd,,,-1,5,2,100

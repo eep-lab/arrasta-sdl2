@@ -66,7 +66,7 @@ implementation
 
 uses
   Math,
-  sdl.app.output,
+  //sdl.app.output,
   sdl.app.events.custom,
   sdl.app.video.methods,
   sdl.app.controller.types,
@@ -158,7 +158,7 @@ var
   LWindowRect: TSDL_Rect;
   LGameControllers: cint;
 begin
-  LWindowRect := WindowSize;
+  LWindowRect := WindowBoundsRect;
   FWidth := LWindowRect.w;
   FHeight := LWindowRect.h;
   F2DAxis := TController2DAxis.Create;
@@ -171,27 +171,27 @@ begin
 
   SDL_JoystickUpdate;
   LGameControllers := SDL_NumJoysticks;
-  Print('NumJoysticks:'+LGameControllers.ToString);
+  //Print('NumJoysticks:'+LGameControllers.ToString);
   if LGameControllers > 0 then begin
     // '?'
-    Print(SDL_GameControllerNameForIndex(0));
+    //Print(SDL_GameControllerNameForIndex(0));
     FGameController := SDL_GameControllerOpen(0);
     if FGameController <> nil then begin
       F2DAxis.GameController := FGameController;
       if SDL_GameControllerHasRumble(FGameController) = SDL_TRUE then begin
-        Print('Has Rumble');
+        //Print('Has Rumble');
       end;
 
       if SDL_GameControllerHasRumbleTriggers(FGameController) = SDL_TRUE then begin
-        Print('Has Rumble Triggers');
+        //Print('Has Rumble Triggers');
       end;
 
       if SDL_GameControllerHasSensor(FGameController, SDL_SENSOR_ACCEL) = SDL_TRUE then begin
-        Print('Has Accelerometer');
+        //Print('Has Accelerometer');
       end;
 
       if SDL_GameControllerHasSensor(FGameController, SDL_SENSOR_GYRO) = SDL_TRUE then begin
-        Print('Has Gyroscope');
+        //Print('Has Gyroscope');
       end;
 
     end else begin

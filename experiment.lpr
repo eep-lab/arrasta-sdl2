@@ -32,7 +32,7 @@ begin
   Application.Title := 'Stimulus Control';
   Application.Scaled := True;
   Application.Initialize;
-  Application.CreateForm(TFormBackground, FormBackground);
+  Application.CreateForm(TFormMain, FormMain);
   Application.CreateForm(TFormMisc, FormMisc);
   Application.CreateForm(
     TFormManualSpeechValidation, FormManualSpeechValidation);

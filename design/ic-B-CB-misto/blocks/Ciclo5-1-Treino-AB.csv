@@ -1,0 +1,16 @@
+ID,Name,EndSessionOnCriterion,EndSessionOnNotCriterionAfterBlockRepetitions,RepeatStyle,EndCriterionStyle,EndCriterionEvaluationTime,MaxBlockRepetitionConsecutives,MaxBlockRepetitionInSession,NextBlockOnCriterion,NextBlockOnNotCriterion,EndCriterionValue,Reinforcement
+1,Training-AB,False,False,None,HitPorcentage,OnBlockEnd,,,2,,100,100
+2,Training-AB,False,False,None,HitPorcentage,OnBlockEnd,,,3,1,100,100
+3,Training-AB,False,False,None,HitPorcentage,OnBlockEnd,,,4,2,100,100
+4,Training-AB,False,False,None,HitPorcentage,OnBlockEnd,,,5,,100,100
+5,Training-AB,False,False,None,HitPorcentage,OnBlockEnd,,,6,4,100,100
+6,Training-AB,False,False,None,HitPorcentage,OnBlockEnd,,,7,5,83,100
+7,Training-AB,False,False,None,HitPorcentage,OnBlockEnd,,,8,6,83,100
+8,Training-AB,False,False,None,HitPorcentage,OnBlockEnd,,,9,,100,100
+9,Training-AB,False,False,None,HitPorcentage,OnBlockEnd,,,10,8,100,100
+10,Training-AB,False,False,None,HitPorcentage,OnBlockEnd,,,11,9,83,100
+11,Training-AB,False,False,None,HitPorcentage,OnBlockEnd,,,12,10,88,100
+12,Training-AB,False,False,None,HitPorcentage,OnBlockEnd,,,13,,100,100
+13,Training-AB,False,False,None,HitPorcentage,OnBlockEnd,,,14,12,100,100
+14,Training-AB,False,False,None,HitPorcentage,OnBlockEnd,,,15,13,87,100
+15,Training-AB,False,True,Consecutive,HitPorcentage,OnBlockEnd,3,,16,15,100,100

@@ -17,7 +17,7 @@ class Metadata:
 
     def load(self):
         if os.path.exists(self.entry):
-            with open(self.entry, 'r') as file:
+            with open(self.entry, 'r', encoding='utf-8') as file:
                 self.items = yaml.safe_load(file)
         else:
             self.items = {}

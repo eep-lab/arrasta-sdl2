@@ -50,7 +50,10 @@ type
 
 implementation
 
-uses timestamps.methods, sdl.app.video.methods, sdl.app.output;
+uses
+  timestamps.methods, sdl.app.video.methods
+  //, sdl.app.output
+  ;
 
 var
   ACriticalSection : TRTLCriticalSection;

@@ -11,7 +11,10 @@ function GetMediaPath(FileName: string): string;
 
 implementation
 
-uses Classes, SysUtils, sdl.app.output, SpeechLib_TLB;
+uses
+  Classes, SysUtils
+  //, sdl.app.output
+  , SpeechLib_TLB;
 
 function GetMediaPath(FileName: string): string;
 var

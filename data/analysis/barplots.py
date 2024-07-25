@@ -2,6 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 
+from my_statistics import Mann_Whitney_U
+
 def default_axis_config(ax, limit_y=True):
     if limit_y:
         ax.set_ylim(-.05, 1.1)
@@ -138,7 +140,12 @@ def box_plot(container, save=False, include_names=[], cycles=['1']):
     filename = f'Fig2_BC_CB_{appendice}.pdf'
     save_or_show(fig, save, filename)
 
-def dispersion_plot_per_cycle(container, save=False, style='boxplot', include_names=[], append_to_filename=''):
+def dispersion_plot_per_cycle(container,
+                              save=False,
+                              limit_y=False,
+                              style='boxplot',
+                              include_names=[],
+                              append_to_filename=''):
     """
     container = [{
         categories : [(name, hit_rate, color), ...],
@@ -183,8 +190,11 @@ def dispersion_plot_per_cycle(container, save=False, style='boxplot', include_na
     rows = number_of_plots // columns + 1
 
     # set height based on the number of rows
-    height = 2 * rows
-    fig, axs = plt.subplots(rows, columns, figsize=(6, height), sharex=True, sharey=True)
+    # height = 2 * rows
+    height = 1.5 * rows
+    width = 4
+    fig, axs = plt.subplots(rows, columns, figsize=(width, height), sharex=True, sharey=True)
+
     axs = axs.flatten()
 
     n = number_of_plots
@@ -196,8 +206,14 @@ def dispersion_plot_per_cycle(container, save=False, style='boxplot', include_na
     for i, (cycle, names) in enumerate(grouped_hit_rates.items()):
     # for i, (data, ax) in enumerate(zip(container, axs[:number_of_plots])):
         ax = axs[i % number_of_plots]
-        default_axis_config(ax)
-        ax.text(1.0, 0.5, cycle,
+        default_axis_config(ax, limit_y=limit_y)
+        if not limit_y:
+            # ax.set_ylim(50.0, 100.0)
+            # yticks = np.arange(50.0, 125.0, 25.0)
+            # ax.set_yticks(yticks)
+            # ax.set_yticklabels(['{:.1f}'.format(y) for y in yticks])
+            pass
+        ax.text(0.3, 0.8, cycle,
                 horizontalalignment='center',
                 verticalalignment='center',
                 transform=ax.transAxes,
@@ -207,6 +223,17 @@ def dispersion_plot_per_cycle(container, save=False, style='boxplot', include_na
             ax.boxplot(grouped_hit_rates[cycle].values(), showmeans=True)
             xticks = list(grouped_hit_rates[cycle].keys()) * (i+1)
             ax.set_xticks(range(len(xticks)))
+            ax.set_xticklabels(xticks, rotation=45, ha='right')
+        if style == 'violin':
+            # Kruskal_Wallis
+            print(cycle)
+            Mann_Whitney_U(grouped_hit_rates[cycle])
+            # values = [np.array(grouped_hit_rates[cycle][name]) * 100 for name in grouped_hit_rates[cycle]]
+            values = [np.array(grouped_hit_rates[cycle][name]) for name in grouped_hit_rates[cycle]]
+            # positions = np.arange(len(values)) * 0.5  # adjust the multiplier to change the distance between violins
+            ax.violinplot(values, showmeans=False, showmedians=True)
+            xticks = list(grouped_hit_rates[cycle].keys())
+            ax.set_xticks(range(1, len(xticks) + 1))  # start range from 1
             ax.set_xticklabels(xticks, rotation=45, ha='right')
         elif style == 'scatter':
             for name, hit_rates in grouped_hit_rates[cycle].items():
@@ -242,8 +269,10 @@ def dispersion_plot_per_cycle(container, save=False, style='boxplot', include_na
     #         plt.xticks(rotation=45, ha='right')
 
     # give a name to y axis
-    axs[0].set_ylabel('Hit proportion')
+    axs[2].set_ylabel('Percent correct')
+    
     plt.tight_layout()
+    plt.subplots_adjust(wspace=0.1, hspace=0.1)  # adjust the width and height spacing
 
     filename = 'Fig_per_cycle'+append_to_filename+'.pdf'
     save_or_show(fig, save, filename)
